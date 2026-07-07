@@ -1,0 +1,9 @@
+Bitrate	AVGPsnr	GLBPsnr	AVPsnrP	GLPsnrP	AOMSSIM	VPSSIMP	FASTSIM	PSNRHVS	WstPsnr	WstSsim	WstFast	WstHVS	AVPsrnY	APsnrCb	APsnrCr	  Block	WstBlck	Consist	WstCons	   Time	RcErr	AbsErr	APsnr611
+   5.54	100.000	100.000	100.000	100.000	100.000	100.000	 14.537	100.000	100.000	  1.000	 14.537	100.000	100.000	100.000	100.000	  0.000	  0.000	 11.912	  1.912	    4175  -97.83   97.83 100.000
+No mismatch detected in recon buffers
+Bitrate	AVGPsnr	GLBPsnr	AVPsnrP	GLPsnrP	AOMSSIM	VPSSIMP	FASTSIM	PSNRHVS	WstPsnr	WstSsim	WstFast	WstHVS	AVPsrnY	APsnrCb	APsnrCr	  Block	WstBlck	Consist	WstCons	   Time	RcErr	AbsErr	APsnr611
+   5.54	100.000	100.000	100.000	100.000	100.000	100.000	 14.537	100.000	100.000	  1.000	 14.537	100.000	100.000	100.000	100.000	  0.000	  0.000	100.000	100.000	    4201  -97.83   97.83 100.000
+No mismatch detected in recon buffers
+Bitrate	AVGPsnr	GLBPsnr	AVPsnrP	GLPsnrP	AOMSSIM	VPSSIMP	FASTSIM	PSNRHVS	WstPsnr	WstSsim	WstFast	WstHVS	AVPsrnY	APsnrCb	APsnrCr	  Block	WstBlck	Consist	WstCons	   Time	RcErr	AbsErr	APsnr611
+   5.54	100.000	100.000	100.000	100.000	100.000	100.000	 14.537	100.000	100.000	  1.000	 14.537	100.000	100.000	100.000	100.000	  0.000	  0.000	100.000	100.000	    4203  -97.83   97.83 100.000
+No mismatch detected in recon buffers

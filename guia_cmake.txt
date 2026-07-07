@@ -1,0 +1,80 @@
+# Criar o fonte puro do baseline
+git clone --depth 1 --branch v3.10.0 https://aomedia.googlesource.com/aom /workspace/src/aom
+
+# Configurar o ambiente de performance purista
+
+cmake -S /workspace/src/aom_baseline -B /workspace/build/libaom_perf_baseline \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DENABLE_CCACHE=1 \
+  -DENABLE_NASM=ON \
+  -DENABLE_EXAMPLES=ON \
+  -DENABLE_TESTS=OFF \
+  -DENABLE_DOCS=OFF \
+  -DCONFIG_INTERNAL_STATS=1
+
+# Compilar o baseline absoluto
+cmake --build /workspace/build/libaom_perf_baseline --target aomenc -j"$(nproc)" 2>&1 | tee /workspace/logs/build-libaom_perf_baseline.log
+
+
+
+
+
+# Configurar ambiente genérico em C puro (Sem limitar exemplos/testes se for usar)
+# Debug / Desenvolvimento Lógico (Seu dia a dia)
+# alterar o código na pasta /workspace/src/aom pelo Windows e validar se a lógica está correta e se os testes continuam passando.
+
+cmake -S /workspace/src/aom -B /workspace/build/libaom_dev_generic \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DAOM_TARGET_CPU=generic \
+  -DENABLE_CCACHE=1 \
+  -DENABLE_EXAMPLES=ON \
+  -DENABLE_TESTS=ON \
+  -DENABLE_DOCS=OFF \
+  -DCONFIG_INTERNAL_STATS=1
+
+# Compilar TUDO (necessário para gerar os testes unitários da AOMedia)
+cmake --build /workspace/build/libaom_dev_generic -j"$(nproc)" 2>&1 | tee /workspace/logs/build-libaom_dev_generic.log
+
+# Comando bônus para validar sua lógica após compilar:
+# ninja -C /workspace/build/libaom_dev_generic test
+
+
+# Cria um arquivo YUV de teste rápido (10 frames)
+# Antes de colocar um vídeo gigante para rodar, você precisa saber se a sua alteração não quebrou as regras sintáticas do padrão AV1 
+# (o que geraria um bitstream corrompido que nenhum player conseguiria abrir).
+dd if=/dev/zero bs=115200 count=10 of=/tmp/quick_test.yuv
+
+/workspace/build/libaom_dev_generic/aomenc \
+  -w 320 -h 240 \
+  --fps=30/1 \
+  --limit=10 \
+  --passes=1 \
+  --psnr \
+  -o /workspace/results/test_dev.ivf \
+  /tmp/quick_test.yuv
+
+
+
+
+
+
+
+
+
+# Experimento de Performance
+# Configurar o ambiente de alta performance com as SUAS modificações
+
+cmake -S /workspace/src/aom -B /workspace/build/libaom_perf \
+  -G Ninja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DENABLE_CCACHE=1 \
+  -DENABLE_NASM=ON \
+  -DENABLE_EXAMPLES=ON \
+  -DENABLE_TESTS=OFF \
+  -DENABLE_DOCS=OFF \
+  -DCONFIG_INTERNAL_STATS=1
+
+# Compilar o seu encoder otimizado (Aqui faz sentido focar no aomenc se quiser)
+cmake --build /workspace/build/libaom_perf --target aomenc -j"$(nproc)" 2>&1 | tee /workspace/logs/build-libaom_perf.log

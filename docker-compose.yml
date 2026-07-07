@@ -1,0 +1,36 @@
+services:
+  research_env:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: av1-dev:cuda12.6-ubuntu24.04
+
+    user: researcher
+
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+
+    volumes:
+      # Mapeamento explícito das pastas do Windows para manter permissões limpas
+      - ./src:/workspace/src
+      - ./logs:/workspace/logs
+      - ./results:/workspace/results
+      # Isola o build em um volume virtual nativo em ext4
+      - build_cache:/workspace/build
+    environment:
+      # Redireciona o ccache para dentro do volume nomeado, salvando seu histórico entre sessões
+      - CCACHE_DIR=/workspace/build/.ccache
+      - TZ=Etc/UTC
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  # Declaração do volume nomeado persistente para cache de compilação
+  build_cache:
