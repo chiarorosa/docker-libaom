@@ -1,0 +1,200 @@
+-- The C compiler identification is GNU 13.3.0
+-- The CXX compiler identification is GNU 13.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+--- aom_configure: Detected CPU: generic
+Running C compiler test: pie_check
+-- Performing Test C_TEST_COMPILED
+-- Performing Test C_TEST_COMPILED - Success
+CONFIG_PIC enabled for position independent executable (PIE) build
+Running C compiler test: unistd_check
+-- Performing Test C_TEST_COMPILED
+-- Performing Test C_TEST_COMPILED - Success
+Running CXX compiler test: unistd_check
+-- Performing Test CXX_TEST_COMPILED
+-- Performing Test CXX_TEST_COMPILED - Success
+Running C compiler test: fenv_check
+-- Performing Test C_TEST_COMPILED
+-- Performing Test C_TEST_COMPILED - Success
+--- Using ccache as compiler launcher.
+Checking C compiler flag support for: -std=c99
+-- Performing Test HAVE_C_FLAG
+-- Performing Test HAVE_C_FLAG - Success
+Checking C++ compiler flag support for: -std=c++11
+-- Performing Test HAVE_CXX_FLAG
+-- Performing Test HAVE_CXX_FLAG - Success
+Checking C compiler flag support for: -Wall
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wall
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wdisabled-optimization
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wdisabled-optimization
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wextra
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wextra
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wextra-semi
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Failed
+Checking C++ compiler flag support for: -Wextra-semi
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wextra-semi-stmt
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Failed
+Checking C++ compiler flag support for: -Wextra-semi-stmt
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Failed
+Checking C compiler flag support for: -Wfloat-conversion
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wfloat-conversion
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wformat=2
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wformat=2
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wimplicit-function-declaration
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wlogical-op
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wlogical-op
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wmissing-declarations
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wmissing-declarations
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wmissing-prototypes
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wpointer-arith
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wpointer-arith
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wshadow
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wshadow
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wshorten-64-to-32
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Failed
+Checking C++ compiler flag support for: -Wshorten-64-to-32
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Failed
+Checking C compiler flag support for: -Wsign-compare
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wsign-compare
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wstring-conversion
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Failed
+Checking C++ compiler flag support for: -Wstring-conversion
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Failed
+Checking C compiler flag support for: -Wtype-limits
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wtype-limits
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wundef
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wundef
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wuninitialized
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wuninitialized
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wunreachable-code-aggressive
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Failed
+Checking C++ compiler flag support for: -Wunreachable-code-aggressive
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Failed
+Checking C compiler flag support for: -Wunused
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wunused
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wvla
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wvla
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wc++14-extensions
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wc++17-extensions
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wc++20-extensions
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -Wstack-usage=100000
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -Wstack-usage=240000
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -D_LARGEFILE_SOURCE
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -D_LARGEFILE_SOURCE
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+Checking C compiler flag support for: -D_FILE_OFFSET_BITS=64
+-- Performing Test C_FLAG_SUPPORTED
+-- Performing Test C_FLAG_SUPPORTED - Success
+Checking C++ compiler flag support for: -D_FILE_OFFSET_BITS=64
+-- Performing Test CXX_FLAG_SUPPORTED
+-- Performing Test CXX_FLAG_SUPPORTED - Success
+-- Found Git: /usr/bin/git (found version "2.43.0") 
+-- Found Perl: /usr/bin/perl (found version "5.38.2") 
+-- Configuring done (4.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: /workspace/build/libaom_logpart
