@@ -41,6 +41,100 @@
 
 #define COLLECT_MOTION_SEARCH_FEATURE_SB 0
 
+// -----------------------------------------------------------------------------
+// Partition ground-truth logging (surrogate-model dataset generation).
+//
+// When built with -DLOG_PARTITION_DATA=1, the RD partition search records, for
+// every square block of interest evaluated during All-Intra encoding, the
+// source luma pixels together with the RDO partition decision, QP and frame
+// dimensions. Records are appended, as fixed-size binary structs, to the file
+// named by the AV1_PARTITION_LOG env var (default: av1_partition_data.bin).
+// A Python converter turns this binary into a training dataset. Disabled by
+// default so production builds are byte-identical.
+#ifndef LOG_PARTITION_DATA
+#define LOG_PARTITION_DATA 0
+#endif
+
+#if LOG_PARTITION_DATA
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "aom_ports/mem.h"  // CONVERT_TO_SHORTPTR
+
+#define AV1_PARTITION_LUMA_DIM 64
+#define AV1_PARTITION_LUMA_SIZE (AV1_PARTITION_LUMA_DIM * AV1_PARTITION_LUMA_DIM)
+
+// Fixed-size sample. Scalars are ordered large-to-small and the pixel buffer is
+// last, with explicit padding, so the layout has no implicit padding and the
+// Python side can parse it with a single struct format string. Total: 4116 B.
+typedef struct {
+  uint32_t sample_id;    // deterministic global counter
+  uint16_t frame_width;  // cm->width
+  uint16_t frame_height; // cm->height
+  uint16_t mi_row;
+  uint16_t mi_col;
+  uint8_t qindex;    // cm->quant_params.base_qindex (0..255)
+  uint8_t bit_depth; // 8 / 10 / 12
+  uint8_t bsize;     // BLOCK_SIZE enum value
+  uint8_t block_dim; // valid side in pixels: 8 / 16 / 32 / 64
+  uint8_t partition; // PARTITION_TYPE (0..9)
+  uint8_t pad[3];    // pad to a 4-byte boundary
+  uint8_t luma[AV1_PARTITION_LUMA_SIZE]; // Y block, top-left region valid
+} PartitionSample;
+
+static FILE *av1_partition_log_file = NULL;
+static uint32_t av1_partition_sample_counter = 0;
+
+// Returns the block side in pixels for the square sizes we log, or 0 otherwise.
+static int av1_partition_target_dim(BLOCK_SIZE bsize) {
+  switch (bsize) {
+    case BLOCK_64X64: return 64;
+    case BLOCK_32X32: return 32;
+    case BLOCK_16X16: return 16;
+    case BLOCK_8X8: return 8;
+    default: return 0;
+  }
+}
+
+// Copies the source luma of the current block into the (zero-padded) sample
+// buffer, reducing high-bitdepth pixels to 8-bit.
+static void av1_partition_capture_luma(const MACROBLOCK *x,
+                                       const MACROBLOCKD *xd, int block_dim,
+                                       PartitionSample *s) {
+  const struct buf_2d *src = &x->plane[0].src;
+  const int stride = src->stride;
+  memset(s->luma, 0, sizeof(s->luma));
+  if (is_cur_buf_hbd(xd)) {
+    const uint16_t *buf16 = CONVERT_TO_SHORTPTR(src->buf);
+    const int shift = xd->bd - 8;
+    for (int r = 0; r < block_dim; ++r) {
+      for (int c = 0; c < block_dim; ++c) {
+        s->luma[r * AV1_PARTITION_LUMA_DIM + c] =
+            (uint8_t)(buf16[r * stride + c] >> shift);
+      }
+    }
+  } else {
+    const uint8_t *buf8 = src->buf;
+    for (int r = 0; r < block_dim; ++r) {
+      memcpy(&s->luma[r * AV1_PARTITION_LUMA_DIM], &buf8[r * stride], block_dim);
+    }
+  }
+}
+
+// Appends a completed sample to the log file (opening it lazily).
+static void av1_partition_log_write(PartitionSample *s) {
+  if (av1_partition_log_file == NULL) {
+    const char *path = getenv("AV1_PARTITION_LOG");
+    if (path == NULL || path[0] == '\0') path = "av1_partition_data.bin";
+    av1_partition_log_file = fopen(path, "ab");
+    if (av1_partition_log_file == NULL) return;
+  }
+  s->sample_id = av1_partition_sample_counter++;
+  fwrite(s, sizeof(*s), 1, av1_partition_log_file);
+}
+#endif  // LOG_PARTITION_DATA
+
 void av1_reset_part_sf(PARTITION_SPEED_FEATURES *part_sf) {
   part_sf->partition_search_type = SEARCH_PARTITION;
   part_sf->less_rectangular_check_level = 0;
@@ -5537,6 +5631,28 @@ bool av1_rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
   // Set buffers and offsets.
   av1_set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
 
+#if LOG_PARTITION_DATA
+  // Capture the source luma of this block now, before the recursive search
+  // moves the plane pointers. The RDO decision is written out at the end of the
+  // function, once pc_tree->partitioning is known.
+  PartitionSample log_sample;
+  int log_this_block = 0;
+  const int log_block_dim = av1_partition_target_dim(bsize);
+  if (cpi->oxcf.mode == ALLINTRA && log_block_dim > 0) {
+    log_this_block = 1;
+    memset(&log_sample, 0, sizeof(log_sample));
+    log_sample.frame_width = (uint16_t)cm->width;
+    log_sample.frame_height = (uint16_t)cm->height;
+    log_sample.mi_row = (uint16_t)mi_row;
+    log_sample.mi_col = (uint16_t)mi_col;
+    log_sample.qindex = (uint8_t)cm->quant_params.base_qindex;
+    log_sample.bit_depth = (uint8_t)cm->seq_params->bit_depth;
+    log_sample.bsize = (uint8_t)bsize;
+    log_sample.block_dim = (uint8_t)log_block_dim;
+    av1_partition_capture_luma(x, xd, log_block_dim, &log_sample);
+  }
+#endif  // LOG_PARTITION_DATA
+
   if (cpi->oxcf.mode == ALLINTRA) {
     if (bsize == cm->seq_params->sb_size) {
       double var_min, var_max;
@@ -5824,6 +5940,10 @@ BEGIN_PARTITION_SEARCH:
   start_timing(cpi, encode_sb_time);
 #endif
   if (part_search_state.found_best_partition) {
+#if LOG_PARTITION_DATA
+    // Record the decision here, before pc_tree may be freed below.
+    if (log_this_block) log_sample.partition = (uint8_t)pc_tree->partitioning;
+#endif  // LOG_PARTITION_DATA
     if (bsize == cm->seq_params->sb_size) {
       // Encode the superblock.
       const int emit_output = multi_pass_mode != SB_DRY_PASS;
@@ -5872,6 +5992,15 @@ BEGIN_PARTITION_SEARCH:
 
   // Restore the rd multiplier.
   x->rdmult = orig_rdmult;
+
+#if LOG_PARTITION_DATA
+  // Emit the ground-truth sample now that the RDO decision is finalized. The
+  // partition value was captured above, before pc_tree could be freed.
+  if (log_this_block && part_search_state.found_best_partition) {
+    av1_partition_log_write(&log_sample);
+  }
+#endif  // LOG_PARTITION_DATA
+
   return part_search_state.found_best_partition;
 }
 #endif  // !CONFIG_REALTIME_ONLY
