@@ -43,6 +43,10 @@ def parse_args(argv):
     p.add_argument("--out-dir", default=None, help="Directory for sample PNGs")
     p.add_argument("--num-png", type=int, default=2,
                    help="PNGs to export per (block_dim, partition) combo")
+    p.add_argument("--frame-offsets", type=int, nargs="+", default=[0],
+                   help="Source frame index for each accumulated frame in the "
+                        ".bin, in encode order (e.g. 0 599). Frame boundaries "
+                        "are detected by the sample_id resetting to 0.")
     return p.parse_args(argv)
 
 
@@ -57,15 +61,24 @@ def main(argv):
         raise SystemExit("Not 4116-aligned: {} bytes".format(fsz))
     n = fsz // SAMPLE.size
 
-    # Frame-0 luma plane from the raw YUV.
-    with open(args.source, "rb") as f:
-        yplane = np.frombuffer(f.read(W * H), dtype=np.uint8).reshape(H, W)
+    # Lazy loader for the luma plane of any source frame (8-bit 4:2:0).
+    frame_bytes = W * H * 3 // 2
+    y_cache = {}
+
+    def load_y(offset):
+        if offset not in y_cache:
+            with open(args.source, "rb") as f:
+                f.seek(offset * frame_bytes)
+                y_cache[offset] = np.frombuffer(
+                    f.read(W * H), dtype=np.uint8).reshape(H, W)
+        return y_cache[offset]
 
     parts, dims = Counter(), Counter()
     qs, ws, hs = set(), set(), set()
-    prev_id = -1
-    id_ok = True
     checked = mismatched = edge_skipped = 0
+    seg_idx = -1        # index into args.frame_offsets
+    cur_y = None        # source luma of the current frame segment
+    unknown_seg = 0     # samples in segments beyond the declared offsets
     png_budget = defaultdict(int)
     png_saved = 0
     if args.out_dir:
@@ -75,9 +88,13 @@ def main(argv):
         for _ in range(n):
             (sid, fw, fh, mr, mc, q, bd, bs, bdim, part,
              luma) = SAMPLE.unpack(f.read(SAMPLE.size))
-            if sid != prev_id + 1:
-                id_ok = False
-            prev_id = sid
+            # sample_id resets to 0 at each new frame (fresh aomenc process).
+            if sid == 0:
+                seg_idx += 1
+                if seg_idx < len(args.frame_offsets):
+                    cur_y = load_y(args.frame_offsets[seg_idx])
+                else:
+                    cur_y = None
             if not (0 <= part <= 9):
                 raise SystemExit("bad partition {} @id {}".format(part, sid))
             if bdim not in (8, 16, 32, 64):
@@ -89,16 +106,19 @@ def main(argv):
             block = np.frombuffer(luma, dtype=np.uint8).reshape(
                 LUMA_DIM, LUMA_DIM)[:bdim, :bdim]
 
-            # Pixel-accuracy: only for blocks fully inside the frame.
+            # Pixel-accuracy: only for blocks fully inside the frame, compared
+            # against the source frame this segment came from.
             y0, x0 = mr * MI_SIZE, mc * MI_SIZE
-            if y0 + bdim <= H and x0 + bdim <= W:
-                ref = yplane[y0:y0 + bdim, x0:x0 + bdim]
+            if cur_y is None:
+                unknown_seg += 1
+            elif y0 + bdim <= H and x0 + bdim <= W:
+                ref = cur_y[y0:y0 + bdim, x0:x0 + bdim]
                 checked += 1
                 if not np.array_equal(block, ref):
                     mismatched += 1
                     if mismatched <= 3:
-                        print("  MISMATCH id={} dim={} @({},{})".format(
-                            sid, bdim, y0, x0))
+                        print("  MISMATCH id={} seg={} dim={} @({},{})".format(
+                            sid, seg_idx, bdim, y0, x0))
             else:
                 edge_skipped += 1
 
@@ -111,8 +131,14 @@ def main(argv):
                     os.path.join(args.out_dir, name))
                 png_saved += 1
 
+    segments = seg_idx + 1
+
     print("samples: {}  (file 4116-aligned, no leftover bytes)".format(n))
-    print("sample_id contiguous 0..n-1:", id_ok)
+    print("frame segments detected: {} (declared offsets: {})".format(
+        segments, args.frame_offsets))
+    if unknown_seg:
+        print("  WARNING: {} samples in undeclared segments (pass more "
+              "--frame-offsets)".format(unknown_seg))
     print("frame W/H recorded:", sorted(ws), sorted(hs),
           "(source {}x{})".format(W, H))
     print("qindex set:", sorted(qs))

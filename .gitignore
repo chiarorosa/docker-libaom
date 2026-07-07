@@ -1,1 +1,3 @@
 *.yuv
+__pycache__/
+*.pyc
