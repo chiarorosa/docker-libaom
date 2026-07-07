@@ -79,13 +79,13 @@ Força o codec a rodar estritamente em **C puro** (`generic`), impedindo que o A
 ```bash
 cmake -S /workspace/src/aom -B /workspace/build/libaom_dev_generic \
   -G Ninja \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DAOM_TARGET_CPU=generic \
-  -DENABLE_CCACHE=1 \
-  -DENABLE_EXAMPLES=ON \
-  -DENABLE_TESTS=ON \
-  -DENABLE_DOCS=OFF \
-  -DCONFIG_INTERNAL_STATS=1
+  -DCMAKE_BUILD_TYPE:STRING=RelWithDebInfo \
+  -DAOM_TARGET_CPU:STRING=generic \
+  -DENABLE_CCACHE:BOOL=1 \
+  -DENABLE_EXAMPLES:BOOL=ON \
+  -DENABLE_TESTS:BOOL=ON \
+  -DENABLE_DOCS:BOOL=OFF \
+  -DCONFIG_INTERNAL_STATS:BOOL=1
 
 ```
 
