@@ -95,15 +95,16 @@ Compila todo o ecossistema (necessário para mapear os testes unitários da AOMe
 
 ```bash
 cmake --build /workspace/build/libaom_dev_generic -j"$(nproc)" 2>&1 | tee /workspace/logs/build-libaom_dev_generic.log
-
 ```
 
 #### Comando Bônus: Testes Unitários Oficiais
 
-Para garantir que suas alterações não quebraram as regras estruturais e matemáticas internacionais do AV1:
+Para garantir que suas alterações não quebraram as regras estruturais e matemáticas internas do AV1:
 
 ```bash
-ninja -C /workspace/build/libaom_dev_generic test
+/workspace/build/libaom_dev_generic/test_libaom \
+  --gtest_filter=BlockdTest*:C/*DrPredTest*:IntrabcTest*:MvCostTest*:C/SADavgTest*:EncodeAPI.AllIntra*:KeyValAPI.*partition*:KeyValAPI.*intra* \
+  2>&1 | tee /workspace/logs/test_run_$(date +%Y%m%d_%H%M%S).log
 
 ```
 

@@ -1,0 +1,986 @@
+Note: Google Test filter = BlockdTest*:C/*DrPredTest*:IntrabcTest*:MvCostTest*:C/SADavgTest*:EncodeAPI.AllIntra*:KeyValAPI.*partition*:KeyValAPI.*intra*
+[==========] Running 472 tests from 7 test suites.
+[----------] Global test environment set-up.
+[----------] 1 test from BlockdTest
+[ RUN      ] BlockdTest.GetPartitionSubsize
+[       OK ] BlockdTest.GetPartitionSubsize (0 ms)
+[----------] 1 test from BlockdTest (0 ms total)
+
+[----------] 1 test from IntrabcTest
+[ RUN      ] IntrabcTest.DvValidation
+[       OK ] IntrabcTest.DvValidation (0 ms)
+[----------] 1 test from IntrabcTest (0 ms total)
+
+[----------] 3 tests from EncodeAPI
+[ RUN      ] EncodeAPI.AllIntraMode
+[       OK ] EncodeAPI.AllIntraMode (1 ms)
+[ RUN      ] EncodeAPI.AllIntraAndUsePsnr
+[       OK ] EncodeAPI.AllIntraAndUsePsnr (337 ms)
+[ RUN      ] EncodeAPI.AllIntraAndNoRefLast
+[       OK ] EncodeAPI.AllIntraAndNoRefLast (335 ms)
+[----------] 3 tests from EncodeAPI (674 ms total)
+
+[----------] 3 tests from MvCostTest
+[ RUN      ] MvCostTest.BuildMvComponentCostTableTest1
+[       OK ] MvCostTest.BuildMvComponentCostTableTest1 (0 ms)
+[ RUN      ] MvCostTest.BuildMvComponentCostTableTest2
+[       OK ] MvCostTest.BuildMvComponentCostTableTest2 (0 ms)
+[ RUN      ] MvCostTest.BuildMvComponentCostTableTest3
+[       OK ] MvCostTest.BuildMvComponentCostTableTest3 (0 ms)
+[----------] 3 tests from MvCostTest (0 ms total)
+
+[----------] 6 tests from C/LowbdDrPredTest
+[ RUN      ] C/LowbdDrPredTest.SaturatedValues/0
+[       OK ] C/LowbdDrPredTest.SaturatedValues/0 (2 ms)
+[ RUN      ] C/LowbdDrPredTest.SaturatedValues/1
+[       OK ] C/LowbdDrPredTest.SaturatedValues/1 (4 ms)
+[ RUN      ] C/LowbdDrPredTest.SaturatedValues/2
+[       OK ] C/LowbdDrPredTest.SaturatedValues/2 (3 ms)
+[ RUN      ] C/LowbdDrPredTest.OperationCheck/0
+[       OK ] C/LowbdDrPredTest.OperationCheck/0 (0 ms)
+[ RUN      ] C/LowbdDrPredTest.OperationCheck/1
+[       OK ] C/LowbdDrPredTest.OperationCheck/1 (0 ms)
+[ RUN      ] C/LowbdDrPredTest.OperationCheck/2
+[       OK ] C/LowbdDrPredTest.OperationCheck/2 (0 ms)
+[ DISABLED ] C/LowbdDrPredTest.DISABLED_Speed/0
+[ DISABLED ] C/LowbdDrPredTest.DISABLED_Speed/1
+[ DISABLED ] C/LowbdDrPredTest.DISABLED_Speed/2
+[----------] 6 tests from C/LowbdDrPredTest (11 ms total)
+
+[----------] 18 tests from C/HighbdDrPredTest
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/0
+[       OK ] C/HighbdDrPredTest.SaturatedValues/0 (2 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/1
+[       OK ] C/HighbdDrPredTest.SaturatedValues/1 (2 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/2
+[       OK ] C/HighbdDrPredTest.SaturatedValues/2 (2 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/3
+[       OK ] C/HighbdDrPredTest.SaturatedValues/3 (3 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/4
+[       OK ] C/HighbdDrPredTest.SaturatedValues/4 (2 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/5
+[       OK ] C/HighbdDrPredTest.SaturatedValues/5 (3 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/6
+[       OK ] C/HighbdDrPredTest.SaturatedValues/6 (2 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/7
+[       OK ] C/HighbdDrPredTest.SaturatedValues/7 (2 ms)
+[ RUN      ] C/HighbdDrPredTest.SaturatedValues/8
+[       OK ] C/HighbdDrPredTest.SaturatedValues/8 (2 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/0
+[       OK ] C/HighbdDrPredTest.OperationCheck/0 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/1
+[       OK ] C/HighbdDrPredTest.OperationCheck/1 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/2
+[       OK ] C/HighbdDrPredTest.OperationCheck/2 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/3
+[       OK ] C/HighbdDrPredTest.OperationCheck/3 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/4
+[       OK ] C/HighbdDrPredTest.OperationCheck/4 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/5
+[       OK ] C/HighbdDrPredTest.OperationCheck/5 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/6
+[       OK ] C/HighbdDrPredTest.OperationCheck/6 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/7
+[       OK ] C/HighbdDrPredTest.OperationCheck/7 (0 ms)
+[ RUN      ] C/HighbdDrPredTest.OperationCheck/8
+[       OK ] C/HighbdDrPredTest.OperationCheck/8 (0 ms)
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/0
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/1
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/2
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/3
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/4
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/5
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/6
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/7
+[ DISABLED ] C/HighbdDrPredTest.DISABLED_Speed/8
+[----------] 18 tests from C/HighbdDrPredTest (26 ms total)
+
+[----------] 440 tests from C/SADavgTest
+[ RUN      ] C/SADavgTest.MaxRef/0
+[       OK ] C/SADavgTest.MaxRef/0 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/1
+[       OK ] C/SADavgTest.MaxRef/1 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/2
+[       OK ] C/SADavgTest.MaxRef/2 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/3
+[       OK ] C/SADavgTest.MaxRef/3 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/4
+[       OK ] C/SADavgTest.MaxRef/4 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/5
+[       OK ] C/SADavgTest.MaxRef/5 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/6
+[       OK ] C/SADavgTest.MaxRef/6 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/7
+[       OK ] C/SADavgTest.MaxRef/7 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/8
+[       OK ] C/SADavgTest.MaxRef/8 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/9
+[       OK ] C/SADavgTest.MaxRef/9 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/10
+[       OK ] C/SADavgTest.MaxRef/10 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/11
+[       OK ] C/SADavgTest.MaxRef/11 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/12
+[       OK ] C/SADavgTest.MaxRef/12 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/13
+[       OK ] C/SADavgTest.MaxRef/13 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/14
+[       OK ] C/SADavgTest.MaxRef/14 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/15
+[       OK ] C/SADavgTest.MaxRef/15 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/16
+[       OK ] C/SADavgTest.MaxRef/16 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/17
+[       OK ] C/SADavgTest.MaxRef/17 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/18
+[       OK ] C/SADavgTest.MaxRef/18 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/19
+[       OK ] C/SADavgTest.MaxRef/19 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/20
+[       OK ] C/SADavgTest.MaxRef/20 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/21
+[       OK ] C/SADavgTest.MaxRef/21 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/22
+[       OK ] C/SADavgTest.MaxRef/22 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/23
+[       OK ] C/SADavgTest.MaxRef/23 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/24
+[       OK ] C/SADavgTest.MaxRef/24 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/25
+[       OK ] C/SADavgTest.MaxRef/25 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/26
+[       OK ] C/SADavgTest.MaxRef/26 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/27
+[       OK ] C/SADavgTest.MaxRef/27 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/28
+[       OK ] C/SADavgTest.MaxRef/28 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/29
+[       OK ] C/SADavgTest.MaxRef/29 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/30
+[       OK ] C/SADavgTest.MaxRef/30 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/31
+[       OK ] C/SADavgTest.MaxRef/31 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/32
+[       OK ] C/SADavgTest.MaxRef/32 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/33
+[       OK ] C/SADavgTest.MaxRef/33 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/34
+[       OK ] C/SADavgTest.MaxRef/34 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/35
+[       OK ] C/SADavgTest.MaxRef/35 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/36
+[       OK ] C/SADavgTest.MaxRef/36 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/37
+[       OK ] C/SADavgTest.MaxRef/37 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/38
+[       OK ] C/SADavgTest.MaxRef/38 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/39
+[       OK ] C/SADavgTest.MaxRef/39 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/40
+[       OK ] C/SADavgTest.MaxRef/40 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/41
+[       OK ] C/SADavgTest.MaxRef/41 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/42
+[       OK ] C/SADavgTest.MaxRef/42 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/43
+[       OK ] C/SADavgTest.MaxRef/43 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/44
+[       OK ] C/SADavgTest.MaxRef/44 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/45
+[       OK ] C/SADavgTest.MaxRef/45 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/46
+[       OK ] C/SADavgTest.MaxRef/46 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/47
+[       OK ] C/SADavgTest.MaxRef/47 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/48
+[       OK ] C/SADavgTest.MaxRef/48 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/49
+[       OK ] C/SADavgTest.MaxRef/49 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/50
+[       OK ] C/SADavgTest.MaxRef/50 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/51
+[       OK ] C/SADavgTest.MaxRef/51 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/52
+[       OK ] C/SADavgTest.MaxRef/52 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/53
+[       OK ] C/SADavgTest.MaxRef/53 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/54
+[       OK ] C/SADavgTest.MaxRef/54 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/55
+[       OK ] C/SADavgTest.MaxRef/55 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/56
+[       OK ] C/SADavgTest.MaxRef/56 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/57
+[       OK ] C/SADavgTest.MaxRef/57 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/58
+[       OK ] C/SADavgTest.MaxRef/58 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/59
+[       OK ] C/SADavgTest.MaxRef/59 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/60
+[       OK ] C/SADavgTest.MaxRef/60 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/61
+[       OK ] C/SADavgTest.MaxRef/61 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/62
+[       OK ] C/SADavgTest.MaxRef/62 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/63
+[       OK ] C/SADavgTest.MaxRef/63 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/64
+[       OK ] C/SADavgTest.MaxRef/64 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/65
+[       OK ] C/SADavgTest.MaxRef/65 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/66
+[       OK ] C/SADavgTest.MaxRef/66 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/67
+[       OK ] C/SADavgTest.MaxRef/67 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/68
+[       OK ] C/SADavgTest.MaxRef/68 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/69
+[       OK ] C/SADavgTest.MaxRef/69 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/70
+[       OK ] C/SADavgTest.MaxRef/70 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/71
+[       OK ] C/SADavgTest.MaxRef/71 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/72
+[       OK ] C/SADavgTest.MaxRef/72 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/73
+[       OK ] C/SADavgTest.MaxRef/73 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/74
+[       OK ] C/SADavgTest.MaxRef/74 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/75
+[       OK ] C/SADavgTest.MaxRef/75 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/76
+[       OK ] C/SADavgTest.MaxRef/76 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/77
+[       OK ] C/SADavgTest.MaxRef/77 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/78
+[       OK ] C/SADavgTest.MaxRef/78 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/79
+[       OK ] C/SADavgTest.MaxRef/79 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/80
+[       OK ] C/SADavgTest.MaxRef/80 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/81
+[       OK ] C/SADavgTest.MaxRef/81 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/82
+[       OK ] C/SADavgTest.MaxRef/82 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/83
+[       OK ] C/SADavgTest.MaxRef/83 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/84
+[       OK ] C/SADavgTest.MaxRef/84 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/85
+[       OK ] C/SADavgTest.MaxRef/85 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/86
+[       OK ] C/SADavgTest.MaxRef/86 (0 ms)
+[ RUN      ] C/SADavgTest.MaxRef/87
+[       OK ] C/SADavgTest.MaxRef/87 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/0
+[       OK ] C/SADavgTest.MaxSrc/0 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/1
+[       OK ] C/SADavgTest.MaxSrc/1 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/2
+[       OK ] C/SADavgTest.MaxSrc/2 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/3
+[       OK ] C/SADavgTest.MaxSrc/3 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/4
+[       OK ] C/SADavgTest.MaxSrc/4 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/5
+[       OK ] C/SADavgTest.MaxSrc/5 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/6
+[       OK ] C/SADavgTest.MaxSrc/6 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/7
+[       OK ] C/SADavgTest.MaxSrc/7 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/8
+[       OK ] C/SADavgTest.MaxSrc/8 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/9
+[       OK ] C/SADavgTest.MaxSrc/9 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/10
+[       OK ] C/SADavgTest.MaxSrc/10 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/11
+[       OK ] C/SADavgTest.MaxSrc/11 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/12
+[       OK ] C/SADavgTest.MaxSrc/12 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/13
+[       OK ] C/SADavgTest.MaxSrc/13 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/14
+[       OK ] C/SADavgTest.MaxSrc/14 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/15
+[       OK ] C/SADavgTest.MaxSrc/15 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/16
+[       OK ] C/SADavgTest.MaxSrc/16 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/17
+[       OK ] C/SADavgTest.MaxSrc/17 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/18
+[       OK ] C/SADavgTest.MaxSrc/18 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/19
+[       OK ] C/SADavgTest.MaxSrc/19 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/20
+[       OK ] C/SADavgTest.MaxSrc/20 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/21
+[       OK ] C/SADavgTest.MaxSrc/21 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/22
+[       OK ] C/SADavgTest.MaxSrc/22 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/23
+[       OK ] C/SADavgTest.MaxSrc/23 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/24
+[       OK ] C/SADavgTest.MaxSrc/24 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/25
+[       OK ] C/SADavgTest.MaxSrc/25 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/26
+[       OK ] C/SADavgTest.MaxSrc/26 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/27
+[       OK ] C/SADavgTest.MaxSrc/27 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/28
+[       OK ] C/SADavgTest.MaxSrc/28 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/29
+[       OK ] C/SADavgTest.MaxSrc/29 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/30
+[       OK ] C/SADavgTest.MaxSrc/30 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/31
+[       OK ] C/SADavgTest.MaxSrc/31 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/32
+[       OK ] C/SADavgTest.MaxSrc/32 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/33
+[       OK ] C/SADavgTest.MaxSrc/33 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/34
+[       OK ] C/SADavgTest.MaxSrc/34 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/35
+[       OK ] C/SADavgTest.MaxSrc/35 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/36
+[       OK ] C/SADavgTest.MaxSrc/36 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/37
+[       OK ] C/SADavgTest.MaxSrc/37 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/38
+[       OK ] C/SADavgTest.MaxSrc/38 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/39
+[       OK ] C/SADavgTest.MaxSrc/39 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/40
+[       OK ] C/SADavgTest.MaxSrc/40 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/41
+[       OK ] C/SADavgTest.MaxSrc/41 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/42
+[       OK ] C/SADavgTest.MaxSrc/42 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/43
+[       OK ] C/SADavgTest.MaxSrc/43 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/44
+[       OK ] C/SADavgTest.MaxSrc/44 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/45
+[       OK ] C/SADavgTest.MaxSrc/45 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/46
+[       OK ] C/SADavgTest.MaxSrc/46 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/47
+[       OK ] C/SADavgTest.MaxSrc/47 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/48
+[       OK ] C/SADavgTest.MaxSrc/48 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/49
+[       OK ] C/SADavgTest.MaxSrc/49 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/50
+[       OK ] C/SADavgTest.MaxSrc/50 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/51
+[       OK ] C/SADavgTest.MaxSrc/51 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/52
+[       OK ] C/SADavgTest.MaxSrc/52 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/53
+[       OK ] C/SADavgTest.MaxSrc/53 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/54
+[       OK ] C/SADavgTest.MaxSrc/54 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/55
+[       OK ] C/SADavgTest.MaxSrc/55 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/56
+[       OK ] C/SADavgTest.MaxSrc/56 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/57
+[       OK ] C/SADavgTest.MaxSrc/57 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/58
+[       OK ] C/SADavgTest.MaxSrc/58 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/59
+[       OK ] C/SADavgTest.MaxSrc/59 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/60
+[       OK ] C/SADavgTest.MaxSrc/60 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/61
+[       OK ] C/SADavgTest.MaxSrc/61 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/62
+[       OK ] C/SADavgTest.MaxSrc/62 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/63
+[       OK ] C/SADavgTest.MaxSrc/63 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/64
+[       OK ] C/SADavgTest.MaxSrc/64 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/65
+[       OK ] C/SADavgTest.MaxSrc/65 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/66
+[       OK ] C/SADavgTest.MaxSrc/66 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/67
+[       OK ] C/SADavgTest.MaxSrc/67 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/68
+[       OK ] C/SADavgTest.MaxSrc/68 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/69
+[       OK ] C/SADavgTest.MaxSrc/69 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/70
+[       OK ] C/SADavgTest.MaxSrc/70 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/71
+[       OK ] C/SADavgTest.MaxSrc/71 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/72
+[       OK ] C/SADavgTest.MaxSrc/72 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/73
+[       OK ] C/SADavgTest.MaxSrc/73 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/74
+[       OK ] C/SADavgTest.MaxSrc/74 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/75
+[       OK ] C/SADavgTest.MaxSrc/75 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/76
+[       OK ] C/SADavgTest.MaxSrc/76 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/77
+[       OK ] C/SADavgTest.MaxSrc/77 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/78
+[       OK ] C/SADavgTest.MaxSrc/78 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/79
+[       OK ] C/SADavgTest.MaxSrc/79 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/80
+[       OK ] C/SADavgTest.MaxSrc/80 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/81
+[       OK ] C/SADavgTest.MaxSrc/81 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/82
+[       OK ] C/SADavgTest.MaxSrc/82 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/83
+[       OK ] C/SADavgTest.MaxSrc/83 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/84
+[       OK ] C/SADavgTest.MaxSrc/84 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/85
+[       OK ] C/SADavgTest.MaxSrc/85 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/86
+[       OK ] C/SADavgTest.MaxSrc/86 (0 ms)
+[ RUN      ] C/SADavgTest.MaxSrc/87
+[       OK ] C/SADavgTest.MaxSrc/87 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/0
+[       OK ] C/SADavgTest.ShortRef/0 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/1
+[       OK ] C/SADavgTest.ShortRef/1 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/2
+[       OK ] C/SADavgTest.ShortRef/2 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/3
+[       OK ] C/SADavgTest.ShortRef/3 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/4
+[       OK ] C/SADavgTest.ShortRef/4 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/5
+[       OK ] C/SADavgTest.ShortRef/5 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/6
+[       OK ] C/SADavgTest.ShortRef/6 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/7
+[       OK ] C/SADavgTest.ShortRef/7 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/8
+[       OK ] C/SADavgTest.ShortRef/8 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/9
+[       OK ] C/SADavgTest.ShortRef/9 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/10
+[       OK ] C/SADavgTest.ShortRef/10 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/11
+[       OK ] C/SADavgTest.ShortRef/11 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/12
+[       OK ] C/SADavgTest.ShortRef/12 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/13
+[       OK ] C/SADavgTest.ShortRef/13 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/14
+[       OK ] C/SADavgTest.ShortRef/14 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/15
+[       OK ] C/SADavgTest.ShortRef/15 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/16
+[       OK ] C/SADavgTest.ShortRef/16 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/17
+[       OK ] C/SADavgTest.ShortRef/17 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/18
+[       OK ] C/SADavgTest.ShortRef/18 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/19
+[       OK ] C/SADavgTest.ShortRef/19 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/20
+[       OK ] C/SADavgTest.ShortRef/20 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/21
+[       OK ] C/SADavgTest.ShortRef/21 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/22
+[       OK ] C/SADavgTest.ShortRef/22 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/23
+[       OK ] C/SADavgTest.ShortRef/23 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/24
+[       OK ] C/SADavgTest.ShortRef/24 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/25
+[       OK ] C/SADavgTest.ShortRef/25 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/26
+[       OK ] C/SADavgTest.ShortRef/26 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/27
+[       OK ] C/SADavgTest.ShortRef/27 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/28
+[       OK ] C/SADavgTest.ShortRef/28 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/29
+[       OK ] C/SADavgTest.ShortRef/29 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/30
+[       OK ] C/SADavgTest.ShortRef/30 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/31
+[       OK ] C/SADavgTest.ShortRef/31 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/32
+[       OK ] C/SADavgTest.ShortRef/32 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/33
+[       OK ] C/SADavgTest.ShortRef/33 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/34
+[       OK ] C/SADavgTest.ShortRef/34 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/35
+[       OK ] C/SADavgTest.ShortRef/35 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/36
+[       OK ] C/SADavgTest.ShortRef/36 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/37
+[       OK ] C/SADavgTest.ShortRef/37 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/38
+[       OK ] C/SADavgTest.ShortRef/38 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/39
+[       OK ] C/SADavgTest.ShortRef/39 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/40
+[       OK ] C/SADavgTest.ShortRef/40 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/41
+[       OK ] C/SADavgTest.ShortRef/41 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/42
+[       OK ] C/SADavgTest.ShortRef/42 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/43
+[       OK ] C/SADavgTest.ShortRef/43 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/44
+[       OK ] C/SADavgTest.ShortRef/44 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/45
+[       OK ] C/SADavgTest.ShortRef/45 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/46
+[       OK ] C/SADavgTest.ShortRef/46 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/47
+[       OK ] C/SADavgTest.ShortRef/47 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/48
+[       OK ] C/SADavgTest.ShortRef/48 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/49
+[       OK ] C/SADavgTest.ShortRef/49 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/50
+[       OK ] C/SADavgTest.ShortRef/50 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/51
+[       OK ] C/SADavgTest.ShortRef/51 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/52
+[       OK ] C/SADavgTest.ShortRef/52 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/53
+[       OK ] C/SADavgTest.ShortRef/53 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/54
+[       OK ] C/SADavgTest.ShortRef/54 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/55
+[       OK ] C/SADavgTest.ShortRef/55 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/56
+[       OK ] C/SADavgTest.ShortRef/56 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/57
+[       OK ] C/SADavgTest.ShortRef/57 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/58
+[       OK ] C/SADavgTest.ShortRef/58 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/59
+[       OK ] C/SADavgTest.ShortRef/59 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/60
+[       OK ] C/SADavgTest.ShortRef/60 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/61
+[       OK ] C/SADavgTest.ShortRef/61 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/62
+[       OK ] C/SADavgTest.ShortRef/62 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/63
+[       OK ] C/SADavgTest.ShortRef/63 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/64
+[       OK ] C/SADavgTest.ShortRef/64 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/65
+[       OK ] C/SADavgTest.ShortRef/65 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/66
+[       OK ] C/SADavgTest.ShortRef/66 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/67
+[       OK ] C/SADavgTest.ShortRef/67 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/68
+[       OK ] C/SADavgTest.ShortRef/68 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/69
+[       OK ] C/SADavgTest.ShortRef/69 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/70
+[       OK ] C/SADavgTest.ShortRef/70 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/71
+[       OK ] C/SADavgTest.ShortRef/71 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/72
+[       OK ] C/SADavgTest.ShortRef/72 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/73
+[       OK ] C/SADavgTest.ShortRef/73 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/74
+[       OK ] C/SADavgTest.ShortRef/74 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/75
+[       OK ] C/SADavgTest.ShortRef/75 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/76
+[       OK ] C/SADavgTest.ShortRef/76 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/77
+[       OK ] C/SADavgTest.ShortRef/77 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/78
+[       OK ] C/SADavgTest.ShortRef/78 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/79
+[       OK ] C/SADavgTest.ShortRef/79 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/80
+[       OK ] C/SADavgTest.ShortRef/80 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/81
+[       OK ] C/SADavgTest.ShortRef/81 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/82
+[       OK ] C/SADavgTest.ShortRef/82 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/83
+[       OK ] C/SADavgTest.ShortRef/83 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/84
+[       OK ] C/SADavgTest.ShortRef/84 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/85
+[       OK ] C/SADavgTest.ShortRef/85 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/86
+[       OK ] C/SADavgTest.ShortRef/86 (0 ms)
+[ RUN      ] C/SADavgTest.ShortRef/87
+[       OK ] C/SADavgTest.ShortRef/87 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/0
+[       OK ] C/SADavgTest.UnalignedRef/0 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/1
+[       OK ] C/SADavgTest.UnalignedRef/1 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/2
+[       OK ] C/SADavgTest.UnalignedRef/2 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/3
+[       OK ] C/SADavgTest.UnalignedRef/3 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/4
+[       OK ] C/SADavgTest.UnalignedRef/4 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/5
+[       OK ] C/SADavgTest.UnalignedRef/5 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/6
+[       OK ] C/SADavgTest.UnalignedRef/6 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/7
+[       OK ] C/SADavgTest.UnalignedRef/7 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/8
+[       OK ] C/SADavgTest.UnalignedRef/8 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/9
+[       OK ] C/SADavgTest.UnalignedRef/9 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/10
+[       OK ] C/SADavgTest.UnalignedRef/10 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/11
+[       OK ] C/SADavgTest.UnalignedRef/11 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/12
+[       OK ] C/SADavgTest.UnalignedRef/12 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/13
+[       OK ] C/SADavgTest.UnalignedRef/13 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/14
+[       OK ] C/SADavgTest.UnalignedRef/14 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/15
+[       OK ] C/SADavgTest.UnalignedRef/15 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/16
+[       OK ] C/SADavgTest.UnalignedRef/16 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/17
+[       OK ] C/SADavgTest.UnalignedRef/17 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/18
+[       OK ] C/SADavgTest.UnalignedRef/18 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/19
+[       OK ] C/SADavgTest.UnalignedRef/19 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/20
+[       OK ] C/SADavgTest.UnalignedRef/20 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/21
+[       OK ] C/SADavgTest.UnalignedRef/21 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/22
+[       OK ] C/SADavgTest.UnalignedRef/22 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/23
+[       OK ] C/SADavgTest.UnalignedRef/23 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/24
+[       OK ] C/SADavgTest.UnalignedRef/24 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/25
+[       OK ] C/SADavgTest.UnalignedRef/25 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/26
+[       OK ] C/SADavgTest.UnalignedRef/26 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/27
+[       OK ] C/SADavgTest.UnalignedRef/27 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/28
+[       OK ] C/SADavgTest.UnalignedRef/28 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/29
+[       OK ] C/SADavgTest.UnalignedRef/29 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/30
+[       OK ] C/SADavgTest.UnalignedRef/30 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/31
+[       OK ] C/SADavgTest.UnalignedRef/31 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/32
+[       OK ] C/SADavgTest.UnalignedRef/32 (1 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/33
+[       OK ] C/SADavgTest.UnalignedRef/33 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/34
+[       OK ] C/SADavgTest.UnalignedRef/34 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/35
+[       OK ] C/SADavgTest.UnalignedRef/35 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/36
+[       OK ] C/SADavgTest.UnalignedRef/36 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/37
+[       OK ] C/SADavgTest.UnalignedRef/37 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/38
+[       OK ] C/SADavgTest.UnalignedRef/38 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/39
+[       OK ] C/SADavgTest.UnalignedRef/39 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/40
+[       OK ] C/SADavgTest.UnalignedRef/40 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/41
+[       OK ] C/SADavgTest.UnalignedRef/41 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/42
+[       OK ] C/SADavgTest.UnalignedRef/42 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/43
+[       OK ] C/SADavgTest.UnalignedRef/43 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/44
+[       OK ] C/SADavgTest.UnalignedRef/44 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/45
+[       OK ] C/SADavgTest.UnalignedRef/45 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/46
+[       OK ] C/SADavgTest.UnalignedRef/46 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/47
+[       OK ] C/SADavgTest.UnalignedRef/47 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/48
+[       OK ] C/SADavgTest.UnalignedRef/48 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/49
+[       OK ] C/SADavgTest.UnalignedRef/49 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/50
+[       OK ] C/SADavgTest.UnalignedRef/50 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/51
+[       OK ] C/SADavgTest.UnalignedRef/51 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/52
+[       OK ] C/SADavgTest.UnalignedRef/52 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/53
+[       OK ] C/SADavgTest.UnalignedRef/53 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/54
+[       OK ] C/SADavgTest.UnalignedRef/54 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/55
+[       OK ] C/SADavgTest.UnalignedRef/55 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/56
+[       OK ] C/SADavgTest.UnalignedRef/56 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/57
+[       OK ] C/SADavgTest.UnalignedRef/57 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/58
+[       OK ] C/SADavgTest.UnalignedRef/58 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/59
+[       OK ] C/SADavgTest.UnalignedRef/59 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/60
+[       OK ] C/SADavgTest.UnalignedRef/60 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/61
+[       OK ] C/SADavgTest.UnalignedRef/61 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/62
+[       OK ] C/SADavgTest.UnalignedRef/62 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/63
+[       OK ] C/SADavgTest.UnalignedRef/63 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/64
+[       OK ] C/SADavgTest.UnalignedRef/64 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/65
+[       OK ] C/SADavgTest.UnalignedRef/65 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/66
+[       OK ] C/SADavgTest.UnalignedRef/66 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/67
+[       OK ] C/SADavgTest.UnalignedRef/67 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/68
+[       OK ] C/SADavgTest.UnalignedRef/68 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/69
+[       OK ] C/SADavgTest.UnalignedRef/69 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/70
+[       OK ] C/SADavgTest.UnalignedRef/70 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/71
+[       OK ] C/SADavgTest.UnalignedRef/71 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/72
+[       OK ] C/SADavgTest.UnalignedRef/72 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/73
+[       OK ] C/SADavgTest.UnalignedRef/73 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/74
+[       OK ] C/SADavgTest.UnalignedRef/74 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/75
+[       OK ] C/SADavgTest.UnalignedRef/75 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/76
+[       OK ] C/SADavgTest.UnalignedRef/76 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/77
+[       OK ] C/SADavgTest.UnalignedRef/77 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/78
+[       OK ] C/SADavgTest.UnalignedRef/78 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/79
+[       OK ] C/SADavgTest.UnalignedRef/79 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/80
+[       OK ] C/SADavgTest.UnalignedRef/80 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/81
+[       OK ] C/SADavgTest.UnalignedRef/81 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/82
+[       OK ] C/SADavgTest.UnalignedRef/82 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/83
+[       OK ] C/SADavgTest.UnalignedRef/83 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/84
+[       OK ] C/SADavgTest.UnalignedRef/84 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/85
+[       OK ] C/SADavgTest.UnalignedRef/85 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/86
+[       OK ] C/SADavgTest.UnalignedRef/86 (0 ms)
+[ RUN      ] C/SADavgTest.UnalignedRef/87
+[       OK ] C/SADavgTest.UnalignedRef/87 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/0
+[       OK ] C/SADavgTest.ShortSrc/0 (431 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/1
+[       OK ] C/SADavgTest.ShortSrc/1 (210 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/2
+[       OK ] C/SADavgTest.ShortSrc/2 (211 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/3
+[       OK ] C/SADavgTest.ShortSrc/3 (111 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/4
+[       OK ] C/SADavgTest.ShortSrc/4 (54 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/5
+[       OK ] C/SADavgTest.ShortSrc/5 (52 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/6
+[       OK ] C/SADavgTest.ShortSrc/6 (26 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/7
+[       OK ] C/SADavgTest.ShortSrc/7 (13 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/8
+[       OK ] C/SADavgTest.ShortSrc/8 (13 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/9
+[       OK ] C/SADavgTest.ShortSrc/9 (6 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/10
+[       OK ] C/SADavgTest.ShortSrc/10 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/11
+[       OK ] C/SADavgTest.ShortSrc/11 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/12
+[       OK ] C/SADavgTest.ShortSrc/12 (2 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/13
+[       OK ] C/SADavgTest.ShortSrc/13 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/14
+[       OK ] C/SADavgTest.ShortSrc/14 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/15
+[       OK ] C/SADavgTest.ShortSrc/15 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/16
+[       OK ] C/SADavgTest.ShortSrc/16 (431 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/17
+[       OK ] C/SADavgTest.ShortSrc/17 (220 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/18
+[       OK ] C/SADavgTest.ShortSrc/18 (220 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/19
+[       OK ] C/SADavgTest.ShortSrc/19 (108 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/20
+[       OK ] C/SADavgTest.ShortSrc/20 (54 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/21
+[       OK ] C/SADavgTest.ShortSrc/21 (55 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/22
+[       OK ] C/SADavgTest.ShortSrc/22 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/23
+[       OK ] C/SADavgTest.ShortSrc/23 (13 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/24
+[       OK ] C/SADavgTest.ShortSrc/24 (13 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/25
+[       OK ] C/SADavgTest.ShortSrc/25 (6 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/26
+[       OK ] C/SADavgTest.ShortSrc/26 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/27
+[       OK ] C/SADavgTest.ShortSrc/27 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/28
+[       OK ] C/SADavgTest.ShortSrc/28 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/29
+[       OK ] C/SADavgTest.ShortSrc/29 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/30
+[       OK ] C/SADavgTest.ShortSrc/30 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/31
+[       OK ] C/SADavgTest.ShortSrc/31 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/32
+[       OK ] C/SADavgTest.ShortSrc/32 (432 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/33
+[       OK ] C/SADavgTest.ShortSrc/33 (217 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/34
+[       OK ] C/SADavgTest.ShortSrc/34 (220 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/35
+[       OK ] C/SADavgTest.ShortSrc/35 (107 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/36
+[       OK ] C/SADavgTest.ShortSrc/36 (54 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/37
+[       OK ] C/SADavgTest.ShortSrc/37 (54 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/38
+[       OK ] C/SADavgTest.ShortSrc/38 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/39
+[       OK ] C/SADavgTest.ShortSrc/39 (13 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/40
+[       OK ] C/SADavgTest.ShortSrc/40 (13 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/41
+[       OK ] C/SADavgTest.ShortSrc/41 (6 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/42
+[       OK ] C/SADavgTest.ShortSrc/42 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/43
+[       OK ] C/SADavgTest.ShortSrc/43 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/44
+[       OK ] C/SADavgTest.ShortSrc/44 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/45
+[       OK ] C/SADavgTest.ShortSrc/45 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/46
+[       OK ] C/SADavgTest.ShortSrc/46 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/47
+[       OK ] C/SADavgTest.ShortSrc/47 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/48
+[       OK ] C/SADavgTest.ShortSrc/48 (431 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/49
+[       OK ] C/SADavgTest.ShortSrc/49 (215 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/50
+[       OK ] C/SADavgTest.ShortSrc/50 (216 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/51
+[       OK ] C/SADavgTest.ShortSrc/51 (108 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/52
+[       OK ] C/SADavgTest.ShortSrc/52 (54 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/53
+[       OK ] C/SADavgTest.ShortSrc/53 (53 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/54
+[       OK ] C/SADavgTest.ShortSrc/54 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/55
+[       OK ] C/SADavgTest.ShortSrc/55 (13 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/56
+[       OK ] C/SADavgTest.ShortSrc/56 (14 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/57
+[       OK ] C/SADavgTest.ShortSrc/57 (7 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/58
+[       OK ] C/SADavgTest.ShortSrc/58 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/59
+[       OK ] C/SADavgTest.ShortSrc/59 (3 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/60
+[       OK ] C/SADavgTest.ShortSrc/60 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/61
+[       OK ] C/SADavgTest.ShortSrc/61 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/62
+[       OK ] C/SADavgTest.ShortSrc/62 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/63
+[       OK ] C/SADavgTest.ShortSrc/63 (0 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/64
+[       OK ] C/SADavgTest.ShortSrc/64 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/65
+[       OK ] C/SADavgTest.ShortSrc/65 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/66
+[       OK ] C/SADavgTest.ShortSrc/66 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/67
+[       OK ] C/SADavgTest.ShortSrc/67 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/68
+[       OK ] C/SADavgTest.ShortSrc/68 (28 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/69
+[       OK ] C/SADavgTest.ShortSrc/69 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/70
+[       OK ] C/SADavgTest.ShortSrc/70 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/71
+[       OK ] C/SADavgTest.ShortSrc/71 (27 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/72
+[       OK ] C/SADavgTest.ShortSrc/72 (6 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/73
+[       OK ] C/SADavgTest.ShortSrc/73 (6 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/74
+[       OK ] C/SADavgTest.ShortSrc/74 (7 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/75
+[       OK ] C/SADavgTest.ShortSrc/75 (7 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/76
+[       OK ] C/SADavgTest.ShortSrc/76 (6 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/77
+[       OK ] C/SADavgTest.ShortSrc/77 (7 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/78
+[       OK ] C/SADavgTest.ShortSrc/78 (7 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/79
+[       OK ] C/SADavgTest.ShortSrc/79 (7 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/80
+[       OK ] C/SADavgTest.ShortSrc/80 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/81
+[       OK ] C/SADavgTest.ShortSrc/81 (2 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/82
+[       OK ] C/SADavgTest.ShortSrc/82 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/83
+[       OK ] C/SADavgTest.ShortSrc/83 (2 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/84
+[       OK ] C/SADavgTest.ShortSrc/84 (2 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/85
+[       OK ] C/SADavgTest.ShortSrc/85 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/86
+[       OK ] C/SADavgTest.ShortSrc/86 (1 ms)
+[ RUN      ] C/SADavgTest.ShortSrc/87
+[       OK ] C/SADavgTest.ShortSrc/87 (2 ms)
+[----------] 440 tests from C/SADavgTest (4935 ms total)
+
+[----------] Global test environment tear-down
+[==========] 472 tests from 7 test suites ran. (5648 ms total)
+[  PASSED  ] 472 tests.
+
+  YOU HAVE 12 DISABLED TESTS
+
