@@ -92,7 +92,7 @@ def class_weights_3(truth, device):
 
 
 def train_student(rec, hidden, device, epochs, lr, alpha, temp, wd=1e-4,
-                  batch=4096):
+                  batch=4096, use_class_weight=True):
     feat = torch.tensor(rec["feat"], dtype=torch.float32)
     teach = torch.tensor(rec["teacher"], dtype=torch.float32)
     truth = torch.tensor(rec["truth"], dtype=torch.long)
@@ -106,7 +106,10 @@ def train_student(rec, hidden, device, epochs, lr, alpha, temp, wd=1e-4,
 
     net = studentmod.make_student(featmod.NUM_FEATURES, hidden).to(device)
     opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=wd)
-    cw = class_weights_3(rec["truth"], device)
+    # Class weighting counters imbalance but suppresses confident P(NONE); for a
+    # confidence-thresholded pruner, unweighted CE gives sharper, better-ranked
+    # probabilities (the threshold tau, not the loss, handles the tradeoff).
+    cw = class_weights_3(rec["truth"], device) if use_class_weight else None
     n = len(feat)
     for ep in range(epochs):
         perm = torch.randperm(n)
@@ -152,6 +155,9 @@ def main(argv):
     p.add_argument("--alpha", type=float, default=0.5,
                    help="hard-CE weight; (1-alpha) is KD weight")
     p.add_argument("--temp", type=float, default=3.0)
+    p.add_argument("--no-class-weight", action="store_true",
+                   help="drop student class weighting for sharper P(NONE) "
+                        "(better for a confidence-thresholded pruner)")
     p.add_argument("--limit", type=int, default=None)
     args = p.parse_args(argv)
 
@@ -179,7 +185,8 @@ def main(argv):
             continue
         counts = np.bincount(rec["truth"], minlength=3).tolist()
         net, norm = train_student(rec, args.hidden, device, args.epochs,
-                                  args.lr, args.alpha, args.temp)
+                                  args.lr, args.alpha, args.temp,
+                                  use_class_weight=not args.no_class_weight)
         # Quick self-check: student vs teacher argmax agreement.
         with torch.no_grad():
             fb = torch.tensor(rec["feat"], dtype=torch.float32, device=device)
