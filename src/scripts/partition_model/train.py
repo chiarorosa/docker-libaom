@@ -174,8 +174,11 @@ def main(argv):
     p.add_argument("--variant", default="tiny", choices=["tiny", "small", "base"])
     p.add_argument("--fusion-dim", type=int, default=128)
     p.add_argument("--epochs", type=int, default=30)
+    p.add_argument("--warmup-epochs", type=int, default=3,
+                   help="linear LR warmup; from-scratch ConvNeXt needs it to "
+                        "avoid collapsing to the class prior")
     p.add_argument("--batch-size", type=int, default=128)
-    p.add_argument("--lr", type=float, default=3e-4)
+    p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--weight-decay", type=float, default=0.05)
     p.add_argument("--class-weight", default="inv",
                    choices=["inv", "sqrt-inv", "none"])
@@ -226,7 +229,15 @@ def main(argv):
     model = PartitionSurrogate(args.variant, args.fusion_dim).to(device)
     optim = torch.optim.AdamW(model.parameters(), lr=args.lr,
                               weight_decay=args.weight_decay)
-    sched = torch.optim.lr_scheduler.CosineAnnealingLR(optim, args.epochs)
+    warm = max(0, min(args.warmup_epochs, args.epochs - 1))
+    cos = torch.optim.lr_scheduler.CosineAnnealingLR(optim, args.epochs - warm)
+    if warm > 0:
+        lin = torch.optim.lr_scheduler.LinearLR(
+            optim, start_factor=0.02, total_iters=warm)
+        sched = torch.optim.lr_scheduler.SequentialLR(
+            optim, [lin, cos], milestones=[warm])
+    else:
+        sched = cos
     use_amp = (not args.no_amp) and device.type == "cuda"
     scaler = torch.amp.GradScaler(enabled=use_amp) if use_amp else None
 
