@@ -1542,6 +1542,132 @@ void av1_ml_predict_breakout(AV1_COMP *const cpi, const MACROBLOCK *const x,
 }
 #undef FEATURES
 
+// Distilled ML partition pruner. Off by default: the production build is
+// byte-identical. Enable with -DPARTITION_ML_STUDENT=1 (mirrors the
+// LOG_PARTITION_DATA instrumentation switch).
+#ifndef PARTITION_ML_STUDENT
+#define PARTITION_ML_STUDENT 0
+#endif
+#if PARTITION_ML_STUDENT
+#include <stdlib.h>
+#include "av1/encoder/partition_student_weights.h"
+
+// Pruning thresholds, read once from the environment so a benchmark tau-sweep
+// needs no rebuild (same pattern as AV1_PARTITION_LOG). Defaults are
+// conservative; the operating point is chosen from the oracle simulation.
+static void student_get_thresholds(float *tau_none, float *tau_split) {
+  static int inited = 0;
+  static float t_none = 0.9f, t_split = 0.9f;
+  if (!inited) {
+    const char *e_none = getenv("AV1_STUDENT_TAU_NONE");
+    const char *e_split = getenv("AV1_STUDENT_TAU_SPLIT");
+    if (e_none) t_none = (float)atof(e_none);
+    if (e_split) t_split = (float)atof(e_split);
+    inited = 1;
+  }
+  *tau_none = t_none;
+  *tau_split = t_split;
+}
+
+// Population variance of a region via exact integer sums, matching
+// features.py::_int_var: (count*sumsq - sum*sum) / count^2.
+static double student_var(int64_t sum, int64_t sumsq, int64_t count) {
+  const double num = (double)(count * sumsq - sum * sum);
+  return num / ((double)count * (double)count);
+}
+
+// Handcrafted block features. MUST stay bit-for-bit aligned with
+// src/scripts/partition_model/features.py (integer accumulators; log1p/ratios in
+// double, then stored as float, matching numpy's float64->float32 path).
+static void student_block_features(const MACROBLOCK *x, BLOCK_SIZE bsize,
+                                   float *feats) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int n = block_size_wide[bsize];
+  const int half = n / 2;
+  const int stride = x->plane[AOM_PLANE_Y].src.stride;
+  uint8_t blk[64 * 64];
+  if (is_cur_buf_hbd(xd)) {
+    const int shift = xd->bd - 8;
+    const uint16_t *src = CONVERT_TO_SHORTPTR(x->plane[AOM_PLANE_Y].src.buf);
+    for (int r = 0; r < n; ++r)
+      for (int c = 0; c < n; ++c)
+        blk[r * n + c] = (uint8_t)(src[r * stride + c] >> shift);
+  } else {
+    const uint8_t *src = x->plane[AOM_PLANE_Y].src.buf;
+    for (int r = 0; r < n; ++r)
+      for (int c = 0; c < n; ++c) blk[r * n + c] = src[r * stride + c];
+  }
+
+  int64_t sum = 0, sumsq = 0;
+  int64_t qs[4] = { 0, 0, 0, 0 }, qss[4] = { 0, 0, 0, 0 };
+  for (int r = 0; r < n; ++r) {
+    for (int c = 0; c < n; ++c) {
+      const int v = blk[r * n + c];
+      sum += v;
+      sumsq += (int64_t)v * v;
+      const int q = (r >= half) * 2 + (c >= half);  // TL,TR,BL,BR
+      qs[q] += v;
+      qss[q] += (int64_t)v * v;
+    }
+  }
+  int64_t hgrad = 0, vgrad = 0;
+  for (int r = 0; r < n; ++r)
+    for (int c = 0; c < n - 1; ++c)
+      hgrad += abs((int)blk[r * n + c + 1] - (int)blk[r * n + c]);
+  for (int r = 0; r < n - 1; ++r)
+    for (int c = 0; c < n; ++c)
+      vgrad += abs((int)blk[(r + 1) * n + c] - (int)blk[r * n + c]);
+
+  const int64_t qcount = (int64_t)half * half;
+  double qv[4];
+  double qmax = 0.0, qmin = 0.0;
+  for (int i = 0; i < 4; ++i) {
+    qv[i] = student_var(qs[i], qss[i], qcount);
+    if (i == 0 || qv[i] > qmax) qmax = qv[i];
+    if (i == 0 || qv[i] < qmin) qmin = qv[i];
+  }
+  const double var = student_var(sum, sumsq, (int64_t)n * n);
+  const double spread = (qmax - qmin) / (qmax + 1.0);
+  const double orient =
+      ((double)hgrad - (double)vgrad) / ((double)hgrad + (double)vgrad + 1.0);
+
+  feats[0] = (float)log1p(var);
+  feats[1] = (float)log1p(qv[0]);
+  feats[2] = (float)log1p(qv[1]);
+  feats[3] = (float)log1p(qv[2]);
+  feats[4] = (float)log1p(qv[3]);
+  feats[5] = (float)spread;
+  feats[6] = (float)log1p((double)hgrad);
+  feats[7] = (float)log1p((double)vgrad);
+  feats[8] = (float)orient;
+  feats[9] = (float)((double)x->qindex / 255.0);
+}
+
+// Runs the distilled student for the current square block and prunes the
+// partition search accordingly. Only ever REMOVES candidates (never forces an
+// illegal one), so bitstream validity is preserved: P(NONE) commits to NONE
+// (which stays legal), P(SPLIT) forces square split (legal since the caller's
+// gate guarantees bsize >= 8x8 and the whole block is in frame).
+static void student_prune_partition(const MACROBLOCK *x,
+                                    PartitionSearchState *part_state) {
+  const BLOCK_SIZE bsize = part_state->part_blk_params.bsize;
+  const NN_CONFIG *nnconfig = av1_partition_student_nnconfig(bsize);
+  if (!nnconfig) return;
+  float feats[AV1_PARTITION_STUDENT_NUM_FEATURES];
+  student_block_features(x, bsize, feats);
+  float logits[3], probs[3];
+  av1_nn_predict(feats, nnconfig, 1, logits);
+  av1_nn_softmax(logits, probs, 3);  // [P(NONE), P(SPLIT), P(REST)]
+  float tau_none, tau_split;
+  student_get_thresholds(&tau_none, &tau_split);
+  if (probs[0] > tau_none) {
+    av1_disable_all_splits(part_state);
+  } else if (probs[1] > tau_split) {
+    av1_set_square_split_only(part_state);
+  }
+}
+#endif  // PARTITION_ML_STUDENT
+
 void av1_prune_partitions_before_search(AV1_COMP *const cpi,
                                         MACROBLOCK *const x,
                                         SIMPLE_MOTION_DATA_TREE *const sms_tree,
@@ -1683,6 +1809,15 @@ void av1_prune_partitions_before_search(AV1_COMP *const cpi,
         &cpi->common, x, x->part_search_info.quad_tree_idx,
         cpi->sf.part_sf.intra_cnn_based_part_prune_level, part_state);
   }
+
+#if PARTITION_ML_STUDENT
+  // Distilled ML student pruning (intra only), gated like the intra CNN above.
+  const int try_student_prune =
+      frame_is_intra_only(cm) && cm->seq_params->sb_size >= BLOCK_64X64 &&
+      bsize <= BLOCK_64X64 && blk_params->bsize_at_least_8x8 &&
+      av1_is_whole_blk_in_frame(blk_params, mi_params);
+  if (try_student_prune) student_prune_partition(x, part_state);
+#endif  // PARTITION_ML_STUDENT
 
   // Use simple motion search to prune out split or non-split partitions. This
   // must be done prior to PARTITION_SPLIT to propagate the initial mvs to a

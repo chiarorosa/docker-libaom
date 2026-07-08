@@ -110,7 +110,7 @@ def main(argv):
             featmod.NUM_FEATURES)
         + arrays_all
         + configs_all
-        + "static INLINE const NN_CONFIG *av1_partition_student_nnconfig(\n"
+        + "static inline const NN_CONFIG *av1_partition_student_nnconfig(\n"
           "    BLOCK_SIZE bsize) {\n"
           "  switch (bsize) {\n"
         + switch
