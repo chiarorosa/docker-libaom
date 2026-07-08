@@ -29,7 +29,7 @@ import torch.nn.functional as F  # noqa: E402
 from torch.utils.data import DataLoader  # noqa: E402
 
 from partition_defs import (  # noqa: E402
-    LEVELS, NUM_PARTITION_TYPES, PARTITION_NAMES, legality_mask,
+    MODEL_LEVELS, NUM_PARTITION_TYPES, PARTITION_NAMES, legality_mask,
     geometric_cost_matrix, geometric_soft_targets)
 import data as datamod  # noqa: E402
 from model import PartitionSurrogate  # noqa: E402
@@ -43,7 +43,7 @@ def build_level_targets(temp, eps, device):
     cost = geometric_cost_matrix()
     soft = geometric_soft_targets(cost, temp=temp, eps=eps)  # (10,10)
     per_level = {}
-    for dim, _ in LEVELS:
+    for dim, _ in MODEL_LEVELS:
         legal = legality_mask(dim)
         t = soft.copy()
         t[:, ~legal] = 0.0
@@ -55,7 +55,7 @@ def build_level_targets(temp, eps, device):
 def build_class_weights(counts, scheme, device, clip=10.0):
     """Per-level class weights from training label counts."""
     weights = {}
-    for dim, _ in LEVELS:
+    for dim, _ in MODEL_LEVELS:
         c = counts[dim].astype(np.float64)
         legal = legality_mask(dim)
         w = np.ones(NUM_PARTITION_TYPES, dtype=np.float64)
@@ -131,21 +131,24 @@ def run_epoch(model, loader, targets, weights, device, optim=None, scaler=None):
     train = optim is not None
     model.train(train)
     conf = {dim: np.zeros((NUM_PARTITION_TYPES, NUM_PARTITION_TYPES),
-                          dtype=np.int64) for dim, _ in LEVELS}
+                          dtype=np.int64) for dim, _ in MODEL_LEVELS}
+    per_level = {dim: 0.0 for dim, _ in MODEL_LEVELS}
     tot_loss, n_batches = 0.0, 0
     for x, labels in loader:
         x = x.to(device, non_blocking=True)
-        labels = {d: labels[d].to(device, non_blocking=True) for d, _ in LEVELS}
+        labels = {d: labels[d].to(device, non_blocking=True) for d, _ in MODEL_LEVELS}
         with torch.set_grad_enabled(train), torch.autocast(
                 device_type=device.type, enabled=scaler is not None):
             out = model(x)
-            swce = sw = 0.0
-            for dim, _ in LEVELS:
+            # Average the per-level mean losses EQUALLY across levels, so the
+            # more populous levels (16 >> 32 >> 64 in node count) don't dominate
+            # the gradient and starve the coarse levels.
+            level_loss = {}
+            for dim, _ in MODEL_LEVELS:
                 a, b = masked_level_loss(out[dim], labels[dim],
                                          targets[dim], weights[dim])
-                swce = swce + a
-                sw = sw + b
-            loss = swce / sw.clamp_min(1.0)
+                level_loss[dim] = a / b.clamp_min(1.0)
+            loss = sum(level_loss.values()) / len(MODEL_LEVELS)
         if train:
             optim.zero_grad(set_to_none=True)
             if scaler is not None:
@@ -156,11 +159,14 @@ def run_epoch(model, loader, targets, weights, device, optim=None, scaler=None):
                 loss.backward()
                 optim.step()
         else:
-            for dim, _ in LEVELS:
+            for dim, _ in MODEL_LEVELS:
                 confusion_from_batch(conf[dim], out[dim].float(), labels[dim])
         tot_loss += float(loss.detach())
+        for dim, _ in MODEL_LEVELS:
+            per_level[dim] += float(level_loss[dim].detach())
         n_batches += 1
-    return tot_loss / max(n_batches, 1), conf
+    nb = max(n_batches, 1)
+    return tot_loss / nb, conf, {d: per_level[d] / nb for d, _ in MODEL_LEVELS}
 
 
 def main(argv):
@@ -173,13 +179,13 @@ def main(argv):
     p.add_argument("--out-dir", default="/workspace/results/models/surrogate")
     p.add_argument("--variant", default="tiny", choices=["tiny", "small", "base"])
     p.add_argument("--fusion-dim", type=int, default=128)
-    p.add_argument("--epochs", type=int, default=30)
+    p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--warmup-epochs", type=int, default=3,
                    help="linear LR warmup; from-scratch ConvNeXt needs it to "
                         "avoid collapsing to the class prior")
     p.add_argument("--batch-size", type=int, default=128)
     p.add_argument("--lr", type=float, default=1e-3)
-    p.add_argument("--weight-decay", type=float, default=0.05)
+    p.add_argument("--weight-decay", type=float, default=0.01)
     p.add_argument("--class-weight", default="inv",
                    choices=["inv", "sqrt-inv", "none"])
     p.add_argument("--cost-temp", type=float, default=0.5)
@@ -244,30 +250,30 @@ def main(argv):
     os.makedirs(args.out_dir, exist_ok=True)
     metrics_csv = os.path.join(args.out_dir, "metrics.csv")
     fields = (["epoch", "train_loss", "val_loss", "headline_macro_f1"]
-              + ["f1_{}".format(d) for d, _ in LEVELS]
-              + ["acc_{}".format(d) for d, _ in LEVELS]
-              + ["split_recall_{}".format(d) for d, _ in LEVELS])
+              + ["f1_{}".format(d) for d, _ in MODEL_LEVELS]
+              + ["acc_{}".format(d) for d, _ in MODEL_LEVELS]
+              + ["split_recall_{}".format(d) for d, _ in MODEL_LEVELS])
     mf = open(metrics_csv, "w", newline="")
     writer = csv.DictWriter(mf, fieldnames=fields)
     writer.writeheader()
 
     best = -1.0
     for epoch in range(args.epochs):
-        tr_loss, _ = run_epoch(model, train_ld, targets, weights, device,
-                               optim=optim, scaler=scaler)
-        va_loss, conf = run_epoch(model, val_ld, targets, weights, device)
+        tr_loss, _, tr_per = run_epoch(model, train_ld, targets, weights, device,
+                                       optim=optim, scaler=scaler)
+        va_loss, conf, _ = run_epoch(model, val_ld, targets, weights, device)
         sched.step()
 
-        summ = {dim: summarize_confusion(conf[dim]) for dim, _ in LEVELS}
+        summ = {dim: summarize_confusion(conf[dim]) for dim, _ in MODEL_LEVELS}
         # Headline: cell-support-weighted mean of per-level macro-F1.
-        sup = np.array([summ[d]["support"].sum() for d, _ in LEVELS], float)
-        f1s = np.array([summ[d]["macro_f1"] for d, _ in LEVELS])
+        sup = np.array([summ[d]["support"].sum() for d, _ in MODEL_LEVELS], float)
+        f1s = np.array([summ[d]["macro_f1"] for d, _ in MODEL_LEVELS])
         headline = float((f1s * sup).sum() / sup.sum()) if sup.sum() else 0.0
 
         row = {"epoch": epoch, "train_loss": round(tr_loss, 4),
                "val_loss": round(va_loss, 4),
                "headline_macro_f1": round(headline, 4)}
-        for dim, _ in LEVELS:
+        for dim, _ in MODEL_LEVELS:
             row["f1_{}".format(dim)] = round(summ[dim]["macro_f1"], 4)
             row["acc_{}".format(dim)] = round(summ[dim]["acc"], 4)
             # SPLIT (class 3) recall -- the safety-critical one for pruning.
@@ -278,7 +284,9 @@ def main(argv):
 
         print("epoch {:>2} | train {:.4f} val {:.4f} | headline F1 {:.4f}".format(
             epoch, tr_loss, va_loss, headline))
-        for dim, _ in LEVELS:
+        print("   train loss/level: " + "  ".join(
+            "{}px {:.4f}".format(d, tr_per[d]) for d, _ in MODEL_LEVELS))
+        for dim, _ in MODEL_LEVELS:
             print("   {:>2}px: acc {:.3f} macroF1 {:.3f} SPLIT-rec {:.3f}".format(
                 dim, summ[dim]["acc"], summ[dim]["macro_f1"],
                 summ[dim]["recall"][3]))
@@ -287,7 +295,7 @@ def main(argv):
             best = headline
             torch.save({"model": model.state_dict(), "args": vars(args),
                         "epoch": epoch, "headline_macro_f1": headline,
-                        "val_confusion": {d: conf[d] for d, _ in LEVELS}},
+                        "val_confusion": {d: conf[d] for d, _ in MODEL_LEVELS}},
                        os.path.join(args.out_dir, "surrogate_best.pt"))
             print("   -> saved best (headline F1 {:.4f})".format(headline))
 

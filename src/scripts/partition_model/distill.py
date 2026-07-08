@@ -22,7 +22,7 @@ if HERE not in sys.path:
 import torch  # noqa: E402
 import torch.nn.functional as F  # noqa: E402
 
-from partition_defs import LEVELS, NUM_PARTITION_TYPES  # noqa: E402
+from partition_defs import MODEL_LEVELS, NUM_PARTITION_TYPES  # noqa: E402
 import data as datamod  # noqa: E402
 import features as featmod  # noqa: E402
 import student as studentmod  # noqa: E402
@@ -33,7 +33,7 @@ def build_distill_set(entries, surrogate, device, batch=256, limit=None,
                       verbose=True):
     """Per-block-size distillation arrays.
     Returns {dim: {"feat":(N,F), "teacher":(N,3), "truth":(N,)}}."""
-    out = {dim: {"feat": [], "teacher": [], "truth": []} for dim, _ in LEVELS}
+    out = {dim: {"feat": [], "teacher": [], "truth": []} for dim, _ in MODEL_LEVELS}
     buf_inputs, buf_members, buf_qidx = [], [], []
 
     def flush():
@@ -43,9 +43,11 @@ def build_distill_set(entries, surrogate, device, batch=256, limit=None,
         with torch.no_grad():
             logits = surrogate(x)
             probs = {dim: F.softmax(logits[dim].float(), dim=-1).cpu().numpy()
-                     for dim, _ in LEVELS}
+                     for dim, _ in MODEL_LEVELS}
         for bi, members in enumerate(buf_members):
             for dim, r, c, luma, label in members:
+                if dim not in out:
+                    continue  # 8x8 leaves are not modeled (always NONE)
                 teacher10 = probs[dim][bi, r, c]
                 out[dim]["feat"].append(
                     featmod.block_features(luma, buf_qidx[bi]))
@@ -76,7 +78,7 @@ def build_distill_set(entries, surrogate, device, batch=256, limit=None,
             break
     flush()
 
-    for dim, _ in LEVELS:
+    for dim, _ in MODEL_LEVELS:
         out[dim] = {k: np.asarray(v) for k, v in out[dim].items()}
     return out
 
@@ -178,7 +180,7 @@ def main(argv):
 
     os.makedirs(args.out_dir, exist_ok=True)
     bundle = {"hidden": args.hidden, "students": {}, "norm": {}}
-    for dim, _ in LEVELS:
+    for dim, _ in MODEL_LEVELS:
         rec = data[dim]
         if len(rec["truth"]) == 0:
             print("[dim {}] no samples, skipping".format(dim))

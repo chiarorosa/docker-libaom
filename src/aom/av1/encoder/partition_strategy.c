@@ -1812,9 +1812,10 @@ void av1_prune_partitions_before_search(AV1_COMP *const cpi,
 
 #if PARTITION_ML_STUDENT
   // Distilled ML student pruning (intra only), gated like the intra CNN above.
+  // Only 16/32/64: 8x8 is a terminal leaf (always NONE) with no split to prune.
   const int try_student_prune =
       frame_is_intra_only(cm) && cm->seq_params->sb_size >= BLOCK_64X64 &&
-      bsize <= BLOCK_64X64 && blk_params->bsize_at_least_8x8 &&
+      bsize <= BLOCK_64X64 && bsize > BLOCK_8X8 &&
       av1_is_whole_blk_in_frame(blk_params, mi_params);
   if (try_student_prune) student_prune_partition(x, part_state);
 #endif  // PARTITION_ML_STUDENT

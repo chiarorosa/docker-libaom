@@ -38,12 +38,20 @@ MI_SIZE = 4
 SB_SIZE_MI = SB_SIZE_PX // MI_SIZE  # 16
 
 # Per level: (block_dim px, grid side). Level 64 is the 1x1 root; 8 is 8x8.
+# LEVELS spans the whole tree (used to assemble superblocks and to count the
+# search a NONE-commit cuts). 8x8 is a terminal leaf in the 4K All-Intra regime
+# (sub-8x8 is never explored -> 8x8 is ALWAYS NONE), so it is NOT a decision
+# point: it is excluded from the MODEL (heads/loss/student/pruning) but kept in
+# the tree because pruning a 16x16 to NONE saves exactly its four 8x8 children.
 LEVELS = [
     (64, 1),
     (32, 2),
     (16, 4),
     (8, 8),
 ]
+
+# Levels the surrogate/student actually predict and the C pruner acts on.
+MODEL_LEVELS = [(64, 1), (32, 2), (16, 4)]
 
 # Legal partition sets per block size (av1 partitioning rules):
 #   - NONE/HORZ/VERT/SPLIT are legal for every square block >= 8x8.

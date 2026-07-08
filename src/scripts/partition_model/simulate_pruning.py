@@ -34,7 +34,7 @@ if HERE not in sys.path:
 import torch  # noqa: E402
 import torch.nn.functional as F  # noqa: E402
 
-from partition_defs import LEVELS  # noqa: E402
+from partition_defs import MODEL_LEVELS  # noqa: E402
 import data as datamod  # noqa: E402
 import features as featmod  # noqa: E402
 import student as studentmod  # noqa: E402
@@ -63,12 +63,12 @@ def collect_superblocks(entries, limit=None):
 def score_with_student(sbs, bundle, device):
     """Attach 3-class probs from the distilled per-size MLPs (once per node)."""
     nets = {}
-    for dim, _ in LEVELS:
+    for dim, _ in MODEL_LEVELS:
         if dim in bundle["students"]:
             net = studentmod.make_student(featmod.NUM_FEATURES, bundle["hidden"])
             net.load_state_dict(bundle["students"][dim])
             nets[dim] = net.to(device).eval()
-    for dim, _ in LEVELS:
+    for dim, _ in MODEL_LEVELS:
         if dim not in nets:
             continue
         idx = [(si, key) for si, sb in enumerate(sbs) for key in sb["nodes"]
@@ -95,9 +95,11 @@ def score_with_surrogate(sbs, surrogate, device, batch=256):
         with torch.no_grad():
             logits = surrogate(x)
             probs = {dim: F.softmax(logits[dim].float(), dim=-1).cpu().numpy()
-                     for dim, _ in LEVELS}
+                     for dim, _ in MODEL_LEVELS}
         for k, si in enumerate(buf_idx):
             for (dim, r, c) in sbs[si]["nodes"]:
+                if dim not in probs:
+                    continue  # 8x8 leaves are not modeled
                 sbs[si]["nodes"][(dim, r, c)]["prob"] = studentmod.collapse_probs(
                     probs[dim][k, r, c])
         buf_idx.clear()
