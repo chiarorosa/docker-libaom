@@ -29,6 +29,7 @@ import argparse
 import csv
 import glob
 import os
+import pickle
 import re
 import shutil
 import struct
@@ -128,6 +129,37 @@ def count_bin(path):
     return n, base_q, dim_c, part_c
 
 
+def counts_from_pkl(pkl_path):
+    """Recover (num_samples, base_qindex, dim_counts, part_counts) from a .pkl,
+    used to rebuild a manifest row when resuming over an already-converted
+    (seq,QP) whose .bin was deleted."""
+    with open(pkl_path, "rb") as f:
+        d = pickle.load(f)
+    part = list(d["partition"].tolist())
+    bdim = d["block_dim"].tolist()
+    q = d["qindex"].tolist()
+    n = len(part)
+    base_q = int(q[0]) if n else None
+    return n, base_q, Counter(bdim), Counter(part)
+
+
+def make_row(base, w, h, total, offs, qp, base_q, n, dim_c, part_c, bin_path,
+             pkl_path, cpu_used, threads):
+    row = {
+        "sequence": base, "width": w, "height": h, "total_frames": total,
+        "num_frames_used": len(offs), "frames_used": ";".join(map(str, offs)),
+        "cq_level": qp, "base_qindex": base_q, "cpu_used": cpu_used,
+        "threads": threads, "num_samples": n, "bin_path": bin_path,
+        "pkl_path": pkl_path,
+        "timestamp": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    for d in DIMS:
+        row["dim{}".format(d)] = dim_c.get(d, 0)
+    for i, name in enumerate(PART_NAMES):
+        row["part_{}".format(name)] = part_c.get(i, 0)
+    return row
+
+
 def extract_frame(seq, frame_bytes, offset, dst):
     """Copy one raw frame at `offset` to `dst` via a direct seek (dd skip),
     avoiding a sequential read of the whole file for large offsets."""
@@ -185,6 +217,13 @@ def main(argv):
 
     manifest_path = os.path.join(args.out_dir, "manifest.csv")
     new = not os.path.exists(manifest_path)
+    # Resume support: stems (Name_cqNN) already recorded in the manifest.
+    done_stems = set()
+    if not new:
+        with open(manifest_path, newline="") as rf:
+            for r in csv.DictReader(rf):
+                done_stems.add(
+                    os.path.splitext(os.path.basename(r.get("pkl_path", "")))[0])
     mf = open(manifest_path, "a", newline="")
     writer = csv.DictWriter(mf, fieldnames=MANIFEST_FIELDS)
     if new:
@@ -212,6 +251,22 @@ def main(argv):
                 stem = "{}_cq{:02d}".format(base, qp)
                 bin_path = os.path.join(args.out_dir, stem + ".bin")
                 pkl_path = os.path.join(args.out_dir, stem + ".pkl")
+
+                # Resume: skip a (seq,QP) whose .pkl already exists. Backfill its
+                # manifest row from the .pkl if it is missing (e.g. salvaged run).
+                if os.path.exists(pkl_path):
+                    if stem not in done_stems:
+                        n, base_q, dim_c, part_c = counts_from_pkl(pkl_path)
+                        writer.writerow(make_row(
+                            base, w, h, total, offs, qp, base_q, n, dim_c,
+                            part_c, bin_path, pkl_path, args.cpu_used,
+                            args.threads))
+                        mf.flush()
+                        done_stems.add(stem)
+                    print("  cq={} already done (pkl exists), skipping".format(qp),
+                          flush=True)
+                    continue
+
                 if os.path.exists(bin_path):
                     os.remove(bin_path)  # fresh per (seq,QP)
                 print("  cq={} encoding {} frame(s)...".format(qp, len(offs)),
@@ -227,22 +282,11 @@ def main(argv):
                     print("  (removed {} to save space)".format(
                         os.path.basename(bin_path)))
 
-                row = {
-                    "sequence": base, "width": w, "height": h,
-                    "total_frames": total, "num_frames_used": len(offs),
-                    "frames_used": ";".join(map(str, offs)),
-                    "cq_level": qp, "base_qindex": base_q,
-                    "cpu_used": args.cpu_used, "threads": args.threads,
-                    "num_samples": n, "bin_path": bin_path, "pkl_path": pkl_path,
-                    "timestamp": datetime.now(timezone.utc).isoformat(
-                        timespec="seconds"),
-                }
-                for d in DIMS:
-                    row["dim{}".format(d)] = dim_c.get(d, 0)
-                for i, name in enumerate(PART_NAMES):
-                    row["part_{}".format(name)] = part_c.get(i, 0)
-                writer.writerow(row)
+                writer.writerow(make_row(
+                    base, w, h, total, offs, qp, base_q, n, dim_c, part_c,
+                    bin_path, pkl_path, args.cpu_used, args.threads))
                 mf.flush()
+                done_stems.add(stem)
                 print("  -> {} samples, base_qindex={}, pkl={}".format(
                     n, base_q, pkl_path))
         finally:
