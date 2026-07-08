@@ -179,6 +179,9 @@ def main(argv):
     p.add_argument("--out-dir", default="/workspace/results/models/surrogate")
     p.add_argument("--variant", default="tiny", choices=["tiny", "small", "base"])
     p.add_argument("--fusion-dim", type=int, default=128)
+    p.add_argument("--pretrained", action="store_true",
+                   help="ImageNet-pretrained ConvNeXt backbone (stem averaged "
+                        "RGB->luma); disambiguates info-ceiling vs weak extractor")
     p.add_argument("--epochs", type=int, default=60)
     p.add_argument("--warmup-epochs", type=int, default=3,
                    help="linear LR warmup; from-scratch ConvNeXt needs it to "
@@ -232,7 +235,8 @@ def main(argv):
     val_ld = DataLoader(val_ds, batch_size=args.batch_size, shuffle=False,
                         num_workers=args.num_workers, pin_memory=True)
 
-    model = PartitionSurrogate(args.variant, args.fusion_dim).to(device)
+    model = PartitionSurrogate(args.variant, args.fusion_dim,
+                               pretrained=args.pretrained).to(device)
     optim = torch.optim.AdamW(model.parameters(), lr=args.lr,
                               weight_decay=args.weight_decay)
     warm = max(0, min(args.warmup_epochs, args.epochs - 1))
