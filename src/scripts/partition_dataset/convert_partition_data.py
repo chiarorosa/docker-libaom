@@ -90,6 +90,7 @@ def iter_samples(path):
 def build_dataset(args):
     luma_list, labels, qindex, block_dim = [], [], [], []
     frame_w, frame_h, mi_row, mi_col = [], [], [], []
+    sample_ids = []
     class_counts, dim_counts = Counter(), Counter()
     kept = total = 0
 
@@ -120,6 +121,7 @@ def build_dataset(args):
         frame_h.append(fh)
         mi_row.append(mr)
         mi_col.append(mc)
+        sample_ids.append(sample_id)
         class_counts[PARTITION_NAMES[part]] += 1
         dim_counts[bdim] += 1
         kept += 1
@@ -140,6 +142,10 @@ def build_dataset(args):
         "frame_height": np.array(frame_h, dtype=np.uint16),
         "mi_row": np.array(mi_row, dtype=np.uint16),
         "mi_col": np.array(mi_col, dtype=np.uint16),
+        # Per-process record counter; resets to 0 at each new frame (each frame
+        # is a separate aomenc process). Frame boundaries = where sample_id == 0.
+        # Enables regrouping per-block samples into per-frame superblock trees.
+        "sample_id": np.array(sample_ids, dtype=np.uint32),
         "meta": {
             "sequence": args.seq,
             "source": args.input,

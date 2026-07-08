@@ -1,3 +1,14 @@
 *.yuv
 __pycache__/
 *.pyc
+
+# ML training artifacts (reproducible from scripts + dataset; kept out of git)
+results/models/
+results/dataset_smoke/
+results/dataset_reduced_cq32/
+*.npz
+*.pt
+.venv-ml/
+# Full dataset payload is not committed (reproducible); only manifest.csv is.
+results/dataset/*.bin
+results/dataset/*.pkl

@@ -1,0 +1,14 @@
+# ConvNeXt-AV1 surrogate — training deps (run inside the research_env container,
+# GPU: RTX 3060 Ti / CUDA 12.6). Install into a persistent venv on the build
+# volume so it survives --rm sessions:
+#   python3 -m venv /workspace/build/venv-ml
+#   /workspace/build/venv-ml/bin/pip install -r requirements.txt
+#
+# PyTorch cu121 wheels run on the container's 12.6 driver (forward compatible).
+# Pin adjustable if a newer CUDA build is preferred.
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1
+torchvision==0.20.1
+numpy>=1.26,<2.3
+scipy>=1.11
+pandas>=2.1
