@@ -200,25 +200,38 @@ da §4). Após corrigir o carregador e re-treinar toda a cadeia sobre pixels rea
 Benchmark fim-a-fim com a cadeia corrigida (taxa BD vs. âncora libaom v3.10.0 de
 controle; speedup = tempo âncora / tempo teste; ponto de operação seguro):
 
-| ponto | política | taxa BD % | speedup |
+**Curva operacional (estudante), do ponto seguro ao agressivo:**
+
+| ponto | τ_none/split/rest | taxa BD % | speedup |
 |---|---|---:|---:|
-| P0 | só NONE-commit (política antiga) | 0,25 | 1,03× |
-| P_rect | + poda de retangulares (A1) | 0,49 | 1,05× |
-| **P_ref** | refinado por nível | **0,42** | **1,07×** |
-| H8 | substituto (teto, via replay) | −0,11 | 1,02× |
+| P0 | 0,84/0,90/− (só NONE-commit) | 0,25 | 1,03× |
+| P_rect | 0,95/0,90/0,20 (+ poda rect) | 0,49 | 1,05× |
+| P_ref | refinado por nível | 0,42 | 1,07× |
+| A1 | 0,80/0,90/0,20 | 0,42 | 1,08× |
+| A2 | 0,70/0,90/0,30 | 1,23 | **1,18×** |
+| A3 | 0,60/0,85/0,40 | 1,62 | **1,29×** |
+| H8 substituto | 0,90/0,90/0,20 (teto, replay) | −0,11 | 1,02× |
 
 **Leitura honesta.**
-1. **A poda é segura.** Corrigido o bug, a taxa BD é **desprezível (~0,4 %)**; o
-   H8 (substituto) chega a um ganho marginal (−0,11 %), confirmando que o modelo
-   real é preciso — quase nunca poda uma decisão que a busca RD não tomaria.
-2. **O ganho de tempo é modesto (~3–7 %).** Bem abaixo dos ~35 % de "redução de
-   custo" previstos pela simulação. O modelo de custo (candidatos × n²)
-   **superestima** o tempo real: no cpu-used=0 a maior parte do tempo por nó está
-   na busca de modo/transformada (aproximadamente constante por bloco), não no
-   número de formas candidatas; desativar retangulares elimina candidatos
-   relativamente baratos, mantendo a recursão de SPLIT (a parte cara).
-3. **A alavanca do Pré-H7 ajuda, mas pouco.** P_rect > P0 (1,05× vs 1,03×), e o
-   refinado por nível é o melhor compromisso (1,07× a 0,42 %). O teto útil da poda
-   guiada só por luminância é baixo — o que corrobora, agora com dado limpo, uma
-   versão matizada de H1–H3: a luminância informa, mas o grande ganho exige o
-   contexto de taxa-distorção na entrada (H9).
+1. **A poda é segura e sintonizável.** Corrigido o bug, a taxa BD acompanha
+   suavemente a agressividade (0,25 % → 1,62 %) e o substituto (H8) chega a ganho
+   marginal (−0,11 %), confirmando que o modelo real quase nunca poda uma decisão
+   que a busca RD tomaria.
+2. **O speedup escala com a agressividade:** ~7 % a 0,4 % de taxa BD (seguro),
+   ~18 % a 1,2 %, **~29 % a 1,6 %**. Não satura — é uma curva de compromisso útil,
+   competitiva com heurísticas publicadas de poda de particionamento All-Intra.
+3. **A simulação de custo superestima o tempo absoluto** (previa ~35 %), mas
+   **prediz corretamente a direção e a ordem** dos pontos: no cpu-used=0 boa parte
+   do tempo por nó está na busca de modo/transformada (quase constante por bloco),
+   então a fração de candidatos podados não se converte 1:1 em tempo — mas a poda
+   ainda entrega até ~29 %.
+4. **A alavanca do Pré-H7 (poda de rect) contribui** no regime seguro (P_rect/A1),
+   enquanto o ganho maior no regime agressivo vem do NONE-commit (que corta a
+   recursão de SPLIT, a parte cara). Ambas as ações do espaço ampliado são úteis
+   em faixas distintas da curva.
+
+**Fechamento.** Com dado limpo, a poda guiada por luminância entrega um ganho de
+tempo real e sintonizável (~7–29 %) a custo de taxa BD baixo (0,4–1,6 %). Para
+empurrar a fronteira além disso, a evidência aponta para **H9** (enriquecer a
+entrada com contexto de taxa-distorção), a única alavanca que eleva o teto de
+informação em si — não mais o espaço de ações, já esgotado aqui.
