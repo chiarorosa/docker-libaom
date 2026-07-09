@@ -284,6 +284,7 @@ def main(argv):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     entries = datamod.discover_pkls(args.dataset_dir)
     _, val_e = datamod.split_entries(entries, args.val_seqs, None)
+    datamod.assert_real_luma(val_e)
     sbs = collect_superblocks(val_e, limit=args.limit)
     total_nodes = sum(len(s["nodes"]) for s in sbs)
 

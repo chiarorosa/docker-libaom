@@ -118,6 +118,28 @@ def _denorm_uint8(block):
     return b.astype(np.uint8)
 
 
+def assert_real_luma(entries, n_check=4):
+    """Guard against the blank-luma bug: confirm the assembled luma carries real
+    8-bit texture, not the all-zero blocks produced when float[0,1] pkl pixels
+    are silently truncated. Cheap: inspects a few superblocks from the first pkl.
+    Raises SystemExit if the luma looks degenerate."""
+    if not entries:
+        return
+    seen = 0
+    for sb in iter_superblock_members(entries[0]["path"]):
+        L = np.asarray(sb["luma"])
+        if L.max() <= 1 or float(L.var()) < 1.0:
+            raise SystemExit(
+                "blank/degenerate training luma in {} (max={}, var={:.3f}). The "
+                "dataset stores float[0,1]; the loader must de-normalize to "
+                "uint8[0,255] (see data._denorm_uint8).".format(
+                    os.path.basename(entries[0]["path"]), int(L.max()),
+                    float(L.var())))
+        seen += 1
+        if seen >= n_check:
+            break
+
+
 def _load_and_group(path):
     """Load one .pkl and group sample indices by (frame, superblock).
     Returns (arrays_dict, groups) where groups maps (frame, sb_row, sb_col) to a

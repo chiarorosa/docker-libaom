@@ -215,6 +215,7 @@ def main(argv):
         len(train_e), len(val_e), args.val_seqs))
     if not train_e or not val_e:
         raise SystemExit("Empty train or val split; check --val-seqs / dataset.")
+    datamod.assert_real_luma(train_e)
 
     train_d = datamod.assemble_split(train_e, args.cache_dir, tag="train",
                                      rebuild=args.rebuild_cache, limit=args.limit)

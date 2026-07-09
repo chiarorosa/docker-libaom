@@ -177,6 +177,7 @@ def main(argv):
 
     entries = datamod.discover_pkls(args.dataset_dir)
     train_e, _ = datamod.split_entries(entries, args.val_seqs, args.train_seqs)
+    datamod.assert_real_luma(train_e)
     print("distilling from {} train pkl(s)".format(len(train_e)))
     data = build_distill_set(train_e, surrogate, device, limit=args.limit)
 
