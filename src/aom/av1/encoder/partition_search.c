@@ -67,21 +67,43 @@
 
 // Fixed-size sample. Scalars are ordered large-to-small and the pixel buffer is
 // last, with explicit padding, so the layout has no implicit padding and the
-// Python side can parse it with a single struct format string. Total: 4116 B.
+// Python side can parse it with a single struct format string. Total: 4144 B.
+//
+// Beyond the block luma (pixel features), the sample carries the cheap
+// rate-distortion context the H9 study needs (see docs/PLANO_H9...):
+//   [B] neighbor partition context (above/left block sizes + availability),
+//   [C] the DC dequant step (quantization strength),
+//   [E] the PARTITION_NONE rate/dist/rdcost (the RD ceiling; logged after the
+//       NONE search, not part of the pre-search deployed model).
+// The intra-residual proxy [D] is a Hadamard SATD computed from the block luma,
+// so it needs no field here (both training and inference derive it from pixels).
 typedef struct {
+  int64_t none_dist;     // [E] PARTITION_NONE distortion (0 if NONE not tried)
+  int64_t none_rdcost;   // [E] PARTITION_NONE rdcost
   uint32_t sample_id;    // deterministic global counter
+  uint32_t none_rate;    // [E] PARTITION_NONE rate
   uint16_t frame_width;  // cm->width
   uint16_t frame_height; // cm->height
   uint16_t mi_row;
   uint16_t mi_col;
+  uint16_t dc_q;         // [C] luma DC dequant step (x->plane[0].dequant_QTX[0])
   uint8_t qindex;    // cm->quant_params.base_qindex (0..255)
   uint8_t bit_depth; // 8 / 10 / 12
   uint8_t bsize;     // BLOCK_SIZE enum value
   uint8_t block_dim; // valid side in pixels: 8 / 16 / 32 / 64
   uint8_t partition; // PARTITION_TYPE (0..9)
-  uint8_t pad[3];    // pad to a 4-byte boundary
+  uint8_t above_bsize; // [B] BLOCK_SIZE of the above neighbor (0 if none)
+  uint8_t left_bsize;  // [B] BLOCK_SIZE of the left neighbor (0 if none)
+  uint8_t neigh_avail; // [B] bit0 = has_above, bit1 = has_left
+  uint8_t pad[6];      // pad so sizeof == 4144 (multiple of 8, no implicit pad)
   uint8_t luma[AV1_PARTITION_LUMA_SIZE]; // Y block, top-left region valid
 } PartitionSample;
+
+// Layout guard: the Python parser hard-codes this size. Break the build if the
+// struct ever picks up implicit padding or a field changes width.
+typedef char partition_sample_size_check[(sizeof(PartitionSample) == 4144)
+                                              ? 1
+                                              : -1];
 
 static FILE *av1_partition_log_file = NULL;
 static uint32_t av1_partition_sample_counter = 0;
@@ -5649,6 +5671,17 @@ bool av1_rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
     log_sample.bit_depth = (uint8_t)cm->seq_params->bit_depth;
     log_sample.bsize = (uint8_t)bsize;
     log_sample.block_dim = (uint8_t)log_block_dim;
+    // [B] Neighbor partition context (already-coded above/left blocks; causal,
+    // and identical to what the pre-search pruner can read at inference).
+    log_sample.neigh_avail =
+        (uint8_t)((xd->above_mbmi ? 1 : 0) | (xd->left_mbmi ? 2 : 0));
+    log_sample.above_bsize =
+        (uint8_t)(xd->above_mbmi ? xd->above_mbmi->bsize : 0);
+    log_sample.left_bsize = (uint8_t)(xd->left_mbmi ? xd->left_mbmi->bsize : 0);
+    // [C] Luma DC dequant step (quantization strength). Computed from the
+    // quant table (robust regardless of when plane quantizers are initialized).
+    log_sample.dc_q = (uint16_t)av1_dc_quant_QTX(
+        cm->quant_params.base_qindex, 0, cm->seq_params->bit_depth);
     av1_partition_capture_luma(x, xd, log_block_dim, &log_sample);
   }
 #endif  // LOG_PARTITION_DATA
@@ -5776,6 +5809,20 @@ BEGIN_PARTITION_SEARCH:
   none_partition_search(cpi, td, tile_data, x, pc_tree, sms_tree, &x_ctx,
                         &part_search_state, &best_rdc, &pb_source_variance,
                         none_rd, &part_none_rd);
+
+#if LOG_PARTITION_DATA
+  // [E] Capture the PARTITION_NONE RD stats now, before this_rdc is reused by
+  // the rectangular/split stages. Fields stay 0 ("no NONE stats" on the Python
+  // side) when NONE was not evaluated (none_rd==0) or produced an invalid result
+  // (rate==INT_MAX, the libaom validity sentinel).
+  if (log_this_block && part_search_state.none_rd > 0 &&
+      part_search_state.this_rdc.rate != INT_MAX) {
+    const RD_STATS *none_rdc = &part_search_state.this_rdc;
+    log_sample.none_rate = (uint32_t)AOMMAX(none_rdc->rate, 0);
+    log_sample.none_dist = (int64_t)AOMMAX(none_rdc->dist, 0);
+    log_sample.none_rdcost = (int64_t)AOMMAX(none_rdc->rdcost, 0);
+  }
+#endif  // LOG_PARTITION_DATA
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, none_partition_search_time);

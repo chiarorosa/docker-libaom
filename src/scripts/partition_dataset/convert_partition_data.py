@@ -35,10 +35,14 @@ from collections import Counter
 import numpy as np
 
 # Must match PartitionSample in av1/encoder/partition_search.c exactly.
+# Layout (little-endian): [E] none_dist(q) none_rdcost(q); sample_id(I)
+# none_rate(I); frame_w,frame_h,mi_row,mi_col,dc_q (5H); qindex,bit_depth,bsize,
+# block_dim,partition,above_bsize,left_bsize,neigh_avail (8B); 6 pad; luma(4096s).
 LUMA_DIM = 64
 LUMA_SIZE = LUMA_DIM * LUMA_DIM
-SAMPLE_STRUCT = struct.Struct("<I4H5B3x{}s".format(LUMA_SIZE))
-SAMPLE_SIZE = SAMPLE_STRUCT.size  # expected: 4116
+SAMPLE_STRUCT = struct.Struct("<qqII5H8B6x{}s".format(LUMA_SIZE))
+SAMPLE_SIZE = SAMPLE_STRUCT.size  # expected: 4144
+EXPECTED_SIZE = 4144
 
 # PARTITION_TYPE names (av1/common/enums.h), index == label value.
 PARTITION_NAMES = [
@@ -74,10 +78,10 @@ def iter_samples(path):
         f.seek(0, 2)
         filesize = f.tell()
         f.seek(0)
-        if SAMPLE_SIZE != 4116:
+        if SAMPLE_SIZE != EXPECTED_SIZE:
             raise SystemExit(
-                "Struct size mismatch: got {}, expected 4116. The C layout and "
-                "this parser are out of sync.".format(SAMPLE_SIZE))
+                "Struct size mismatch: got {}, expected {}. The C layout and "
+                "this parser are out of sync.".format(SAMPLE_SIZE, EXPECTED_SIZE))
         if filesize % SAMPLE_SIZE != 0:
             raise SystemExit(
                 "Corrupt/truncated file: size {} is not a multiple of the "
@@ -91,12 +95,15 @@ def build_dataset(args):
     luma_list, labels, qindex, block_dim = [], [], [], []
     frame_w, frame_h, mi_row, mi_col = [], [], [], []
     sample_ids = []
+    # H9 rate-distortion context ([B] neighbor, [C] quant, [E] none RD).
+    above_bsz, left_bsz, neigh_av, dc_qs = [], [], [], []
+    none_rate, none_dist, none_rdcost = [], [], []
     class_counts, dim_counts = Counter(), Counter()
     kept = total = 0
 
     for rec in iter_samples(args.input):
-        (sample_id, fw, fh, mr, mc, qidx, bit_depth, bsize, bdim, part,
-         luma_bytes) = rec
+        (n_dist, n_rdcost, sample_id, n_rate, fw, fh, mr, mc, dc_q, qidx,
+         bit_depth, bsize, bdim, part, above_b, left_b, navl, luma_bytes) = rec
         total += 1
 
         if part > 9:
@@ -122,6 +129,13 @@ def build_dataset(args):
         mi_row.append(mr)
         mi_col.append(mc)
         sample_ids.append(sample_id)
+        above_bsz.append(above_b)
+        left_bsz.append(left_b)
+        neigh_av.append(navl)
+        dc_qs.append(dc_q)
+        none_rate.append(n_rate)
+        none_dist.append(n_dist)
+        none_rdcost.append(n_rdcost)
         class_counts[PARTITION_NAMES[part]] += 1
         dim_counts[bdim] += 1
         kept += 1
@@ -146,6 +160,14 @@ def build_dataset(args):
         # is a separate aomenc process). Frame boundaries = where sample_id == 0.
         # Enables regrouping per-block samples into per-frame superblock trees.
         "sample_id": np.array(sample_ids, dtype=np.uint32),
+        # H9 rate-distortion context.
+        "above_bsize": np.array(above_bsz, dtype=np.uint8),   # [B]
+        "left_bsize": np.array(left_bsz, dtype=np.uint8),     # [B]
+        "neigh_avail": np.array(neigh_av, dtype=np.uint8),    # [B] bit0 up bit1 lf
+        "dc_q": np.array(dc_qs, dtype=np.uint16),             # [C]
+        "none_rate": np.array(none_rate, dtype=np.uint32),    # [E]
+        "none_dist": np.array(none_dist, dtype=np.int64),     # [E]
+        "none_rdcost": np.array(none_rdcost, dtype=np.int64), # [E]
         "meta": {
             "sequence": args.seq,
             "source": args.input,
