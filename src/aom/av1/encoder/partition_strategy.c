@@ -1549,9 +1549,45 @@ void av1_ml_predict_breakout(AV1_COMP *const cpi, const MACROBLOCK *const x,
 #define PARTITION_ML_STUDENT 0
 #endif
 #if PARTITION_ML_STUDENT
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "av1/encoder/partition_student_weights.h"
+
+// Attribution ablation. The end-to-end speedup must be shown to come from the
+// distilled ConvNeXt->student model's node SELECTION, not merely from the
+// pruning policy that wraps it. AV1_STUDENT_BASELINE swaps the score source
+// while keeping the identical policy (thresholds + actions):
+//   ml       (default) -- the distilled per-size MLP (av1_nn_predict);
+//   variance -- P(NONE) = exp(-var/V0): the obvious hand heuristic (flat -> NONE);
+//   random   -- P(NONE) = deterministic uniform hash of the node identity.
+// If the ML curve Pareto-dominates both baselines (lower BD-rate at equal
+// speedup), the gain is attributable to the model, not the wrapper.
+enum { BASELINE_ML = 0, BASELINE_VARIANCE, BASELINE_RANDOM };
+
+static int student_baseline_mode(void) {
+  static int inited = 0, mode = BASELINE_ML;
+  if (!inited) {
+    const char *e = getenv("AV1_STUDENT_BASELINE");
+    if (e && !strcmp(e, "variance")) mode = BASELINE_VARIANCE;
+    else if (e && !strcmp(e, "random")) mode = BASELINE_RANDOM;
+    inited = 1;
+  }
+  return mode;
+}
+
+// Deterministic uniform [0,1) hash of a node identity (integer avalanche), so
+// random pruning is reproducible and adds no timing jitter.
+static float student_hash01(uint32_t a, uint32_t b, uint32_t c) {
+  uint32_t h = a * 2654435761u + b * 2246822519u + c * 3266489917u;
+  h ^= h >> 15;
+  h *= 2246822519u;
+  h ^= h >> 13;
+  h *= 3266489917u;
+  h ^= h >> 16;
+  return (float)(h & 0xFFFFFFu) / (float)0x1000000u;
+}
 
 // Per-level pruning thresholds, read once from the environment so a benchmark
 // tau-sweep needs no rebuild (same pattern as AV1_PARTITION_LOG). Globals
@@ -1881,6 +1917,34 @@ static void student_dump_features(const PartitionBlkParams *blk, int qindex,
 // (which stays legal), P(SPLIT) forces square split (legal since the caller's
 // gate guarantees bsize >= 8x8 and the whole block is in frame), and low
 // P(REST) merely disables the rect/AB/4-way candidates (Pre-H7 lever A1).
+// Population variance of the current block's luma on the [0,255] scale, same
+// integer accumulators as the feature extractor (used by the variance baseline).
+static double student_block_variance(const MACROBLOCK *x, BLOCK_SIZE bsize) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int n = block_size_wide[bsize];
+  const int stride = x->plane[AOM_PLANE_Y].src.stride;
+  int64_t sum = 0, sumsq = 0;
+  if (is_cur_buf_hbd(xd)) {
+    const int shift = xd->bd - 8;
+    const uint16_t *s = CONVERT_TO_SHORTPTR(x->plane[AOM_PLANE_Y].src.buf);
+    for (int r = 0; r < n; ++r)
+      for (int c = 0; c < n; ++c) {
+        const int v = s[r * stride + c] >> shift;
+        sum += v;
+        sumsq += (int64_t)v * v;
+      }
+  } else {
+    const uint8_t *s = x->plane[AOM_PLANE_Y].src.buf;
+    for (int r = 0; r < n; ++r)
+      for (int c = 0; c < n; ++c) {
+        const int v = s[r * stride + c];
+        sum += v;
+        sumsq += (int64_t)v * v;
+      }
+  }
+  return student_var(sum, sumsq, (int64_t)n * n);
+}
+
 static void student_prune_partition(const AV1_COMMON *cm, const MACROBLOCK *x,
                                     PartitionSearchState *part_state) {
   const PartitionBlkParams *blk = &part_state->part_blk_params;
@@ -1888,12 +1952,26 @@ static void student_prune_partition(const AV1_COMMON *cm, const MACROBLOCK *x,
   if (!nnconfig) return;
   float probs[3];
   const float *replay = student_replay_lookup(cm, blk);
+  const int baseline = student_baseline_mode();
   if (replay) {
     probs[0] = replay[0];
     probs[1] = replay[1];
     probs[2] = replay[2];
   } else if (student_replay_n > 0) {
     return;  // replay mode: a missing record means "do not prune"
+  } else if (baseline == BASELINE_VARIANCE) {
+    // Obvious hand heuristic: flat block -> NONE. V0=1000 (on [0,255]^2) spreads
+    // exp(-var/V0) across [0,1] for real 4K content so tau_none sweeps the rate.
+    const float flat = (float)exp(-student_block_variance(x, blk->bsize) / 1000.0);
+    probs[0] = flat;
+    probs[1] = 1.0f - flat;
+    probs[2] = 1.0f;  // rect-off left to tau_rest (kept off in the ablation)
+  } else if (baseline == BASELINE_RANDOM) {
+    // Uniform hash of node identity: prune (1 - tau_none) of nodes at random.
+    probs[0] = student_hash01((uint32_t)cm->current_frame.frame_number,
+                              (uint32_t)blk->mi_row, (uint32_t)blk->mi_col);
+    probs[1] = 0.0f;
+    probs[2] = 1.0f;
   } else {
     float feats[AV1_PARTITION_STUDENT_NUM_FEATURES];
     student_node_features(x, blk, feats);
