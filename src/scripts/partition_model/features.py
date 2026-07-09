@@ -190,6 +190,129 @@ def batch_features(luma_list, qindex_arr):
     return out
 
 
+# --------------------------------------------------------------------------
+# H9: rate-distortion context features (blocks B/C/D/E). Offline-first: this is
+# the feature set the Fase-2 signal gate evaluates; only the subset that beats
+# the variance baseline is later transliterated to C. Feature layout:
+#   A  0..23  pixels (node_features above; index 0 is the variance baseline)
+#   B 24..31  neighbor partition context (free)
+#   C 32..35  quantization / position (free)
+#   D 36..37  intra-residual proxy: Hadamard SATD of the block (cheap)
+#   E 38..40  PARTITION_NONE rate/dist/rdcost (ceiling; not deployable pre-search)
+# --------------------------------------------------------------------------
+NUM_FEATURES_H9 = 41
+H9_FEATURE_NAMES = FEATURE_NAMES + [
+    "has_above", "has_left", "above_w_log2", "above_h_log2",
+    "left_w_log2", "left_h_log2", "neigh_finer", "neigh_aniso",
+    "log_dc_q2", "pos_row", "pos_col", "depth_log2",
+    "log_satd", "satd_l1l2",
+    "log_none_rate", "log_none_dist", "log_none_rdcost",
+]
+
+# Feature subsets for the attribution ablation (Fase 2).
+H9_SUBSETS = {
+    "variance": [0],
+    "pixels24": list(range(24)),
+    "H9a": list(range(36)),        # A + B + C (free)
+    "H9b": list(range(38)),        # + D (cheap)
+    "H9c": list(range(41)),        # + E (ceiling)
+}
+
+# BLOCK_SIZE (av1/common/enums.h) -> (width_px, height_px).
+_BSIZE_PX = {
+    0: (4, 4), 1: (4, 8), 2: (8, 4), 3: (8, 8), 4: (8, 16), 5: (16, 8),
+    6: (16, 16), 7: (16, 32), 8: (32, 16), 9: (32, 32), 10: (32, 64),
+    11: (64, 32), 12: (64, 64), 13: (64, 128), 14: (128, 64), 15: (128, 128),
+    16: (4, 16), 17: (16, 4), 18: (8, 32), 19: (32, 8), 20: (16, 64),
+    21: (64, 16),
+}
+
+
+def _bsize_wh_log2(bsize):
+    """(mi_size_wide_log2, mi_size_high_log2) for a BLOCK_SIZE (mi = 4 px)."""
+    w, h = _BSIZE_PX.get(int(bsize), (4, 4))
+    return int(np.log2(w // 4)) if w >= 4 else 0, \
+        int(np.log2(h // 4)) if h >= 4 else 0
+
+
+_HADAMARD_CACHE = {}
+
+
+def _hadamard(n):
+    """n x n Sylvester-Hadamard matrix (+-1), cached."""
+    if n not in _HADAMARD_CACHE:
+        h = np.array([[1]], dtype=np.int64)
+        while h.shape[0] < n:
+            h = np.block([[h, h], [h, -h]])
+        _HADAMARD_CACHE[n] = h
+    return _HADAMARD_CACHE[n]
+
+
+def block_satd(luma):
+    """Sum of |AC| Hadamard coefficients of the block (integer-exact rate proxy).
+    Distinct from variance: an L1 measure in the transform domain, sensitive to
+    how energy spreads across frequencies (predictability), not just its total."""
+    b = np.asarray(luma).astype(np.int64)
+    n = b.shape[0]
+    h = _hadamard(n)
+    coeff = h @ b @ h                      # 2D Walsh-Hadamard (integer, exact)
+    return int(np.abs(coeff).sum() - abs(int(b.sum())))  # drop the DC term
+
+
+def node_features_h9(sb_luma, dim, r, c, qindex, ctx):
+    """Full 41-feature H9 vector for the (dim, r, c) node. `ctx` is the per-node
+    rate-distortion context dict from data.iter_superblock_members. Slice with
+    H9_SUBSETS for the ablation. All blocks tolerate missing (zero) context."""
+    f = np.empty(NUM_FEATURES_H9, dtype=np.float32)
+    f[:NUM_FEATURES] = node_features(sb_luma, dim, r, c, qindex)  # A
+    sb = np.asarray(sb_luma).astype(np.int64)
+    block = sb[r * dim:(r + 1) * dim, c * dim:(c + 1) * dim]
+    var = _int_var(block)
+
+    # [B] neighbor partition context. Missing neighbor -> current block size
+    # (matches the native features' has_x ? neigh : bsize convention).
+    navl = ctx.get("neigh_avail", 0)
+    has_above = navl & 1
+    has_left = (navl >> 1) & 1
+    cur_w, cur_h = _bsize_wh_log2(ctx.get("bsize_enum", -1)) if ctx.get(
+        "bsize_enum", -1) >= 0 else (int(np.log2(dim // 4)), int(np.log2(dim // 4)))
+    aw, ah = (_bsize_wh_log2(ctx["above_bsize"]) if has_above else (cur_w, cur_h))
+    lw, lh = (_bsize_wh_log2(ctx["left_bsize"]) if has_left else (cur_w, cur_h))
+    cur_area = cur_w + cur_h
+    navail = max(has_above + has_left, 1)
+    finer = ((has_above and aw + ah < cur_area) +
+             (has_left and lw + lh < cur_area)) / navail
+    aniso = ((has_above * np.sign(aw - ah)) +
+             (has_left * np.sign(lw - lh))) / navail
+    f[24] = has_above
+    f[25] = has_left
+    f[26] = aw
+    f[27] = ah
+    f[28] = lw
+    f[29] = lh
+    f[30] = finer
+    f[31] = aniso
+
+    # [C] quantization / position.
+    dc_q = ctx.get("dc_q", 0)
+    fw, fh = ctx.get("frame_w", 0), ctx.get("frame_h", 0)
+    f[32] = np.log1p((dc_q * dc_q) / 256.0)
+    f[33] = ctx.get("mi_row", 0) / (fh / 4.0) if fh > 0 else 0.0
+    f[34] = ctx.get("mi_col", 0) / (fw / 4.0) if fw > 0 else 0.0
+    f[35] = np.log2(dim // 4) if dim >= 4 else 0.0
+
+    # [D] Hadamard SATD proxy (distinct from variance).
+    satd = block_satd(block)
+    f[36] = np.log1p(satd)
+    f[37] = satd / (var * dim * dim + 1.0)
+
+    # [E] PARTITION_NONE RD stats (ceiling; 0 when NONE absent).
+    f[38] = np.log1p(max(ctx.get("none_rate", 0), 0))
+    f[39] = np.log1p(max(ctx.get("none_dist", 0), 0))
+    f[40] = np.log1p(max(ctx.get("none_rdcost", 0), 0))
+    return f
+
+
 if __name__ == "__main__":
     rng = np.random.default_rng(0)
     sb = rng.integers(0, 256, size=(64, 64), dtype=np.uint8)

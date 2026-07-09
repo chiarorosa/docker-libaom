@@ -150,6 +150,7 @@ def _load_and_group(path):
         raise SystemExit(
             "{}: pkl has no 'sample_id' (regenerate with the updated converter; "
             "frame regrouping needs it).".format(path))
+    n = len(d["partition"])
     arr = {
         "luma": d["luma"],
         "part": np.asarray(d["partition"]),
@@ -157,6 +158,18 @@ def _load_and_group(path):
         "bdim": np.asarray(d["block_dim"]),
         "mir": np.asarray(d["mi_row"]).astype(np.int64),
         "mic": np.asarray(d["mi_col"]).astype(np.int64),
+        "fw": np.asarray(d.get("frame_width", np.zeros(n))).astype(np.int64),
+        "fh": np.asarray(d.get("frame_height", np.zeros(n))).astype(np.int64),
+        # H9 rate-distortion context ([B]/[C]/[E]); zeros for legacy pkls.
+        "above_bsize": np.asarray(d.get("above_bsize", np.zeros(n, np.uint8))),
+        "left_bsize": np.asarray(d.get("left_bsize", np.zeros(n, np.uint8))),
+        "neigh_avail": np.asarray(d.get("neigh_avail", np.zeros(n, np.uint8))),
+        "dc_q": np.asarray(d.get("dc_q", np.zeros(n))).astype(np.int64),
+        "none_rate": np.asarray(d.get("none_rate", np.zeros(n))).astype(np.int64),
+        "none_dist": np.asarray(d.get("none_dist", np.zeros(n))).astype(np.int64),
+        "none_rdcost":
+            np.asarray(d.get("none_rdcost", np.zeros(n))).astype(np.int64),
+        "has_rd": "neigh_avail" in d,  # True only for H9-instrumented pkls
     }
     frame = _frame_index(np.asarray(d["sample_id"]))
     sb_row = arr["mir"] // SB_SIZE_MI
@@ -178,6 +191,21 @@ def iter_superblock_members(path):
     arr, groups = _load_and_group(path)
     luma, bdim, part, qidx = arr["luma"], arr["bdim"], arr["part"], arr["qidx"]
     mir, mic = arr["mir"], arr["mic"]
+
+    def node_ctx(i):
+        """Per-node rate-distortion context ([B]/[C]/[E]) for member index i."""
+        return {
+            "mi_row": int(mir[i]), "mi_col": int(mic[i]),
+            "frame_w": int(arr["fw"][i]), "frame_h": int(arr["fh"][i]),
+            "above_bsize": int(arr["above_bsize"][i]),
+            "left_bsize": int(arr["left_bsize"][i]),
+            "neigh_avail": int(arr["neigh_avail"][i]),
+            "dc_q": int(arr["dc_q"][i]),
+            "none_rate": int(arr["none_rate"][i]),
+            "none_dist": int(arr["none_dist"][i]),
+            "none_rdcost": int(arr["none_rdcost"][i]),
+        }
+
     for (_, sr, sc), idxs in groups.items():
         root = next((i for i in idxs if bdim[i] == SB_SIZE_PX), None)
         if root is None:
@@ -185,7 +213,7 @@ def iter_superblock_members(path):
         block = _denorm_uint8(luma[root])
         if block.shape != (SB_SIZE_PX, SB_SIZE_PX):
             continue
-        members, ok = [], True
+        members, ctx, ok = [], [], True
         for i in idxs:
             dim = int(bdim[i])
             if dim not in (d for d, _ in LEVELS):
@@ -196,10 +224,11 @@ def iter_superblock_members(path):
                 ok = False
                 break
             members.append((dim, r, c, _denorm_uint8(luma[i]), int(part[i])))
+            ctx.append(node_ctx(i))
         if not ok:
             continue
         yield {"luma": block, "qindex": int(qidx[root]),
-               "members": members}
+               "members": members, "ctx": ctx, "has_rd": arr["has_rd"]}
 
 
 def assemble_pkl(path):
