@@ -132,6 +132,11 @@ def main(argv):
                    help="timing repeats; median is reported")
     p.add_argument("--tau-none", type=float, default=0.9)
     p.add_argument("--tau-split", type=float, default=0.9)
+    p.add_argument("--tau-rest", type=float, default=-1.0,
+                   help="P(REST) threshold for the rect-off action; -1 = off")
+    p.add_argument("--env", action="append", default=[],
+                   help="extra KEY=VAL for the test encoder (repeatable), e.g. "
+                        "per-level overrides AV1_STUDENT_TAU_NONE_16=0.9")
     p.add_argument("--out-dir", default="/workspace/results/benchmark")
     args = p.parse_args(argv)
 
@@ -148,31 +153,35 @@ def main(argv):
                                         "y_psnr", "encode_s", "frames"])
     rw.writeheader()
 
+    test_env = {"AV1_STUDENT_TAU_NONE": str(args.tau_none),
+                "AV1_STUDENT_TAU_SPLIT": str(args.tau_split),
+                "AV1_STUDENT_TAU_REST": str(args.tau_rest)}
+    for kv in args.env:
+        k, _, v = kv.partition("=")
+        test_env[k] = v
+
     print("ANCHOR:", args.anchor_enc)
     anchor = run_encoder("anchor", args.anchor_enc, args.decoder, seqs, args,
                          {}, work, rw)
-    print("TEST (tau_none={} tau_split={}):".format(args.tau_none, args.tau_split))
+    print("TEST", test_env, ":")
     test = run_encoder("test", args.test_enc, args.decoder, seqs, args,
-                       {"AV1_STUDENT_TAU_NONE": str(args.tau_none),
-                        "AV1_STUDENT_TAU_SPLIT": str(args.tau_split)},
-                       work, rw)
+                       test_env, work, rw)
     rf.close()
 
+    taus_label = ";".join("{}={}".format(k, v) for k, v in sorted(
+        test_env.items()))
     summary_csv = os.path.join(args.out_dir, "summary.csv")
     with open(summary_csv, "w", newline="") as sf:
         sw = csv.writer(sf)
-        sw.writerow(["sequence", "bd_rate_pct", "time_speedup_x",
-                     "tau_none", "tau_split"])
-        print("\n=== SUMMARY (tau_none={} tau_split={}) ===".format(
-            args.tau_none, args.tau_split))
+        sw.writerow(["sequence", "bd_rate_pct", "time_speedup_x", "taus"])
+        print("\n=== SUMMARY ({}) ===".format(taus_label))
         print("{:<28} {:>10} {:>12}".format("sequence", "BD-rate%", "speedup x"))
         for base in anchor:
             bd = bd_rate(anchor[base]["rate"], anchor[base]["psnr"],
                          test[base]["rate"], test[base]["psnr"])
             speed = (sum(anchor[base]["time"]) / max(sum(test[base]["time"]),
                                                      1e-9))
-            sw.writerow([base, round(bd, 3), round(speed, 3),
-                         args.tau_none, args.tau_split])
+            sw.writerow([base, round(bd, 3), round(speed, 3), taus_label])
             print("{:<28} {:>10.3f} {:>12.3f}".format(base[:27], bd, speed))
     print("\nruns ->", runs_csv, "\nsummary ->", summary_csv)
 

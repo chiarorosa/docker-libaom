@@ -1549,24 +1549,44 @@ void av1_ml_predict_breakout(AV1_COMP *const cpi, const MACROBLOCK *const x,
 #define PARTITION_ML_STUDENT 0
 #endif
 #if PARTITION_ML_STUDENT
+#include <stdio.h>
 #include <stdlib.h>
 #include "av1/encoder/partition_student_weights.h"
 
-// Pruning thresholds, read once from the environment so a benchmark tau-sweep
-// needs no rebuild (same pattern as AV1_PARTITION_LOG). Defaults are
-// conservative; the operating point is chosen from the oracle simulation.
-static void student_get_thresholds(float *tau_none, float *tau_split) {
+// Per-level pruning thresholds, read once from the environment so a benchmark
+// tau-sweep needs no rebuild (same pattern as AV1_PARTITION_LOG). Globals
+// AV1_STUDENT_TAU_{NONE,SPLIT,REST} apply to all levels; per-size overrides
+// AV1_STUDENT_TAU_NONE_16 etc. mirror the oracle simulation's per-level maps.
+// tau_rest < 0 (default) disables the rect-off action.
+typedef struct {
+  float none, split, rest;
+} StudentTaus;
+
+static float student_env_tau(const char *name, float fallback) {
+  const char *e = getenv(name);
+  return e ? (float)atof(e) : fallback;
+}
+
+static const StudentTaus *student_get_taus(int n) {
   static int inited = 0;
-  static float t_none = 0.9f, t_split = 0.9f;
+  static StudentTaus taus[3];  // index: 0 -> 16px, 1 -> 32px, 2 -> 64px
   if (!inited) {
-    const char *e_none = getenv("AV1_STUDENT_TAU_NONE");
-    const char *e_split = getenv("AV1_STUDENT_TAU_SPLIT");
-    if (e_none) t_none = (float)atof(e_none);
-    if (e_split) t_split = (float)atof(e_split);
+    static const char *suffix[3] = { "_16", "_32", "_64" };
+    const float g_none = student_env_tau("AV1_STUDENT_TAU_NONE", 0.9f);
+    const float g_split = student_env_tau("AV1_STUDENT_TAU_SPLIT", 0.9f);
+    const float g_rest = student_env_tau("AV1_STUDENT_TAU_REST", -1.0f);
+    for (int i = 0; i < 3; ++i) {
+      char name[40];
+      snprintf(name, sizeof(name), "AV1_STUDENT_TAU_NONE%s", suffix[i]);
+      taus[i].none = student_env_tau(name, g_none);
+      snprintf(name, sizeof(name), "AV1_STUDENT_TAU_SPLIT%s", suffix[i]);
+      taus[i].split = student_env_tau(name, g_split);
+      snprintf(name, sizeof(name), "AV1_STUDENT_TAU_REST%s", suffix[i]);
+      taus[i].rest = student_env_tau(name, g_rest);
+    }
     inited = 1;
   }
-  *tau_none = t_none;
-  *tau_split = t_split;
+  return &taus[n == 16 ? 0 : (n == 32 ? 1 : 2)];
 }
 
 // Population variance of a region via exact integer sums, matching
@@ -1576,47 +1596,86 @@ static double student_var(int64_t sum, int64_t sumsq, int64_t count) {
   return num / ((double)count * (double)count);
 }
 
-// Handcrafted block features. MUST stay bit-for-bit aligned with
-// src/scripts/partition_model/features.py (integer accumulators; log1p/ratios in
-// double, then stored as float, matching numpy's float64->float32 path).
-static void student_block_features(const MACROBLOCK *x, BLOCK_SIZE bsize,
-                                   float *feats) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const int n = block_size_wide[bsize];
-  const int half = n / 2;
-  const int stride = x->plane[AOM_PLANE_Y].src.stride;
-  uint8_t blk[64 * 64];
-  if (is_cur_buf_hbd(xd)) {
-    const int shift = xd->bd - 8;
-    const uint16_t *src = CONVERT_TO_SHORTPTR(x->plane[AOM_PLANE_Y].src.buf);
-    for (int r = 0; r < n; ++r)
-      for (int c = 0; c < n; ++c)
-        blk[r * n + c] = (uint8_t)(src[r * stride + c] >> shift);
-  } else {
-    const uint8_t *src = x->plane[AOM_PLANE_Y].src.buf;
-    for (int r = 0; r < n; ++r)
-      for (int c = 0; c < n; ++c) blk[r * n + c] = src[r * stride + c];
-  }
+// Population variance of 4 doubles, sequential accumulation in the fixed
+// order features.py::_var_of uses (numpy sums <=128 elements sequentially).
+static double student_var4(double a, double b, double c, double d) {
+  double m = a;
+  m += b;
+  m += c;
+  m += d;
+  m /= 4.0;
+  double ss = (a - m) * (a - m);
+  ss += (b - m) * (b - m);
+  ss += (c - m) * (c - m);
+  ss += (d - m) * (d - m);
+  return ss / 4.0;
+}
 
+// Population variance of n int64 values (row/column sums), same sequential
+// double accumulation as features.py::_var_of.
+static double student_var_n(const int64_t *v, int n) {
+  double m = 0.0;
+  for (int i = 0; i < n; ++i) m += (double)v[i];
+  m /= (double)n;
+  double ss = 0.0;
+  for (int i = 0; i < n; ++i) ss += ((double)v[i] - m) * ((double)v[i] - m);
+  return ss / (double)n;
+}
+
+// Integer variance of an n x n view at `p` (stride `stride`).
+static double student_view_var(const uint8_t *p, int stride, int n) {
   int64_t sum = 0, sumsq = 0;
-  int64_t qs[4] = { 0, 0, 0, 0 }, qss[4] = { 0, 0, 0, 0 };
   for (int r = 0; r < n; ++r) {
     for (int c = 0; c < n; ++c) {
-      const int v = blk[r * n + c];
+      const int v = p[r * stride + c];
+      sum += v;
+      sumsq += (int64_t)v * v;
+    }
+  }
+  return student_var(sum, sumsq, (int64_t)n * n);
+}
+
+// Block-only features 0..17 of an n x n view; returns the block variance.
+// MUST stay bit-for-bit aligned with features.py::_block_feats18 (integer
+// accumulators; log1p/ratios in double, then stored as float, matching
+// numpy's float64->float32 path).
+static double student_feats18(const uint8_t *b, int stride, int n, int qindex,
+                              float *feats) {
+  const int half = n / 2;
+  int64_t sum = 0, sumsq = 0;
+  int64_t qs[4] = { 0, 0, 0, 0 }, qss[4] = { 0, 0, 0, 0 };
+  int64_t rowsum[64] = { 0 }, colsum[64] = { 0 };
+  for (int r = 0; r < n; ++r) {
+    for (int c = 0; c < n; ++c) {
+      const int v = b[r * stride + c];
       sum += v;
       sumsq += (int64_t)v * v;
       const int q = (r >= half) * 2 + (c >= half);  // TL,TR,BL,BR
       qs[q] += v;
       qss[q] += (int64_t)v * v;
+      rowsum[r] += v;
+      colsum[c] += v;
     }
   }
-  int64_t hgrad = 0, vgrad = 0;
-  for (int r = 0; r < n; ++r)
-    for (int c = 0; c < n - 1; ++c)
-      hgrad += abs((int)blk[r * n + c + 1] - (int)blk[r * n + c]);
-  for (int r = 0; r < n - 1; ++r)
-    for (int c = 0; c < n; ++c)
-      vgrad += abs((int)blk[(r + 1) * n + c] - (int)blk[r * n + c]);
+  int64_t hgrad = 0, vgrad = 0, strong = 0;
+  int maxgrad = 0;
+  for (int r = 0; r < n; ++r) {
+    for (int c = 0; c < n - 1; ++c) {
+      const int d = abs((int)b[r * stride + c + 1] - (int)b[r * stride + c]);
+      hgrad += d;
+      if (d > maxgrad) maxgrad = d;
+      if (d > 16) ++strong;  // EDGE_THRESH
+    }
+  }
+  for (int r = 0; r < n - 1; ++r) {
+    for (int c = 0; c < n; ++c) {
+      const int d =
+          abs((int)b[(r + 1) * stride + c] - (int)b[r * stride + c]);
+      vgrad += d;
+      if (d > maxgrad) maxgrad = d;
+      if (d > 16) ++strong;
+    }
+  }
 
   const int64_t qcount = (int64_t)half * half;
   double qv[4];
@@ -1627,43 +1686,228 @@ static void student_block_features(const MACROBLOCK *x, BLOCK_SIZE bsize,
     if (i == 0 || qv[i] < qmin) qmin = qv[i];
   }
   const double var = student_var(sum, sumsq, (int64_t)n * n);
-  const double spread = (qmax - qmin) / (qmax + 1.0);
-  const double orient =
-      ((double)hgrad - (double)vgrad) / ((double)hgrad + (double)vgrad + 1.0);
+  const double vrow = student_var_n(rowsum, n);
+  const double vcol = student_var_n(colsum, n);
+  const int64_t num_grads = 2 * (int64_t)n * (n - 1);
+  const double mean = (double)sum / (double)((int64_t)n * n);
 
   feats[0] = (float)log1p(var);
   feats[1] = (float)log1p(qv[0]);
   feats[2] = (float)log1p(qv[1]);
   feats[3] = (float)log1p(qv[2]);
   feats[4] = (float)log1p(qv[3]);
-  feats[5] = (float)spread;
-  feats[6] = (float)log1p((double)hgrad);
-  feats[7] = (float)log1p((double)vgrad);
-  feats[8] = (float)orient;
-  feats[9] = (float)((double)x->qindex / 255.0);
+  feats[5] = (float)((qmax - qmin) / (qmax + 1.0));
+  feats[6] = (float)log1p(student_var4((double)qs[0], (double)qs[1],
+                                       (double)qs[2], (double)qs[3]));
+  feats[7] = (float)log1p(student_var4(qv[0], qv[1], qv[2], qv[3]));
+  feats[8] = (float)log1p((double)hgrad);
+  feats[9] = (float)log1p((double)vgrad);
+  feats[10] = (float)(((double)hgrad - (double)vgrad) /
+                      ((double)hgrad + (double)vgrad + 1.0));
+  feats[11] = (float)log1p(vrow);
+  feats[12] = (float)log1p(vcol);
+  feats[13] = (float)((vrow - vcol) / (vrow + vcol + 1.0));
+  feats[14] = (float)log1p((double)maxgrad);
+  feats[15] = (float)((double)strong / (double)num_grads);
+  feats[16] = (float)(mean / 255.0);
+  feats[17] = (float)((double)qindex / 255.0);
+  return var;
+}
+
+// Full 24-feature vector for the current partition node: the 18 block-only
+// features plus hierarchical context (parent 2n x 2n texture, sibling
+// contrast, position inside the 64x64 unit), matching
+// features.py::node_features. The caller's whole-64x64-unit gate guarantees
+// the parent region lies inside the frame.
+static void student_node_features(const MACROBLOCK *x,
+                                  const PartitionBlkParams *blk,
+                                  float *feats) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int n = block_size_wide[blk->bsize];
+  const int stride = x->plane[AOM_PLANE_Y].src.stride;
+  // Grid cell of this block inside its 64x64 unit at this level; the parent
+  // quadrant index is the cell's parity. At 64px the parent is the block
+  // itself and the sibling contrasts collapse to zero (features.py semantics).
+  const int cell_r = (blk->mi_row & 15) / (n >> 2);
+  const int cell_c = (blk->mi_col & 15) / (n >> 2);
+  const int is64 = (n == 64);
+  const int dr = is64 ? 0 : (cell_r & 1);
+  const int dc = is64 ? 0 : (cell_c & 1);
+  const int pn = is64 ? n : 2 * n;  // parent side, <= 64
+
+  // Copy the parent region from the source frame (the block itself at 64px).
+  uint8_t pbuf[64 * 64];
+  if (is_cur_buf_hbd(xd)) {
+    const int shift = xd->bd - 8;
+    const uint16_t *src = CONVERT_TO_SHORTPTR(x->plane[AOM_PLANE_Y].src.buf) -
+                          (dr * n) * stride - (dc * n);
+    for (int r = 0; r < pn; ++r)
+      for (int c = 0; c < pn; ++c)
+        pbuf[r * pn + c] = (uint8_t)(src[r * stride + c] >> shift);
+  } else {
+    const uint8_t *src =
+        x->plane[AOM_PLANE_Y].src.buf - (dr * n) * stride - (dc * n);
+    for (int r = 0; r < pn; ++r)
+      for (int c = 0; c < pn; ++c) pbuf[r * pn + c] = src[r * stride + c];
+  }
+
+  const uint8_t *block = pbuf + (dr * n) * pn + (dc * n);
+  const double var = student_feats18(block, pn, n, x->qindex, feats);
+
+  double pvar, sib[3];
+  if (is64) {
+    pvar = var;
+    sib[0] = sib[1] = sib[2] = var;
+  } else {
+    pvar = student_view_var(pbuf, pn, pn);
+    int k = 0;
+    for (int qr = 0; qr < 2; ++qr) {
+      for (int qc = 0; qc < 2; ++qc) {
+        if (qr == dr && qc == dc) continue;
+        sib[k++] = student_view_var(pbuf + (qr * n) * pn + (qc * n), pn, n);
+      }
+    }
+  }
+  double sib_mean = sib[0];
+  sib_mean += sib[1];
+  sib_mean += sib[2];
+  sib_mean /= 3.0;
+  double sib_max = sib[0];
+  if (sib[1] > sib_max) sib_max = sib[1];
+  if (sib[2] > sib_max) sib_max = sib[2];
+
+  feats[18] = (float)log1p(pvar);
+  feats[19] = (float)((var - pvar) / (var + pvar + 1.0));
+  feats[20] = (float)log1p(sib_mean);
+  feats[21] = (float)((var - sib_max) / (var + sib_max + 1.0));
+  feats[22] = (float)((double)(cell_r * n) / 64.0);
+  feats[23] = (float)((double)(cell_c * n) / 64.0);
+}
+
+// H8 surrogate replay: an external model (the ConvNeXt surrogate) is scored
+// OFFLINE over the source frames -- its input is source luma + qindex only, so
+// precomputation is exact -- and its per-node 3-class probabilities are read
+// back here, replacing av1_nn_predict. This measures the surrogate's BD-rate
+// ceiling through the very same pruning policy the student ships with,
+// without writing convolutional inference in C.
+// File (AV1_STUDENT_PROBS_FILE): records of int32 {frame, sb_row, sb_col}
+// followed by 21 nodes x 3 floats ([64] ++ [32 row-major] ++ [16 row-major]).
+typedef struct {
+  int32_t key;  // frame * (1 << 20) + sb_row * (1 << 10) + sb_col
+  float probs[21][3];
+} StudentReplayRec;
+
+static StudentReplayRec *student_replay_tab = NULL;
+static int student_replay_n = -1;  // -1: not loaded yet; 0: disabled
+
+static int student_replay_cmp(const void *a, const void *b) {
+  const int32_t ka = ((const StudentReplayRec *)a)->key;
+  const int32_t kb = ((const StudentReplayRec *)b)->key;
+  return (ka > kb) - (ka < kb);
+}
+
+static void student_replay_init(void) {
+  student_replay_n = 0;
+  const char *path = getenv("AV1_STUDENT_PROBS_FILE");
+  if (!path) return;
+  FILE *fp = fopen(path, "rb");
+  if (!fp) return;
+  fseek(fp, 0, SEEK_END);
+  const long sz = ftell(fp);
+  fseek(fp, 0, SEEK_SET);
+  const size_t rec_bytes = 3 * sizeof(int32_t) + 21 * 3 * sizeof(float);
+  const int n = (int)(sz / rec_bytes);
+  student_replay_tab = (StudentReplayRec *)malloc(n * sizeof(*student_replay_tab));
+  for (int i = 0; i < n; ++i) {
+    int32_t head[3];
+    if (fread(head, sizeof(head), 1, fp) != 1 ||
+        fread(student_replay_tab[i].probs, sizeof(float), 21 * 3, fp) != 21 * 3)
+      break;
+    student_replay_tab[i].key =
+        head[0] * (1 << 20) + head[1] * (1 << 10) + head[2];
+    student_replay_n = i + 1;
+  }
+  fclose(fp);
+  qsort(student_replay_tab, student_replay_n, sizeof(*student_replay_tab),
+        student_replay_cmp);
+}
+
+// Returns the replayed 3-class probs for this node, or NULL (no table /
+// missing record -> caller falls back to the distilled student / no pruning).
+static const float *student_replay_lookup(const AV1_COMMON *cm,
+                                          const PartitionBlkParams *blk) {
+  if (student_replay_n < 0) student_replay_init();
+  if (student_replay_n == 0) return NULL;
+  const int frame = (int)cm->current_frame.frame_number;
+  const int sb_row = (blk->mi_row & ~15) >> 4, sb_col = (blk->mi_col & ~15) >> 4;
+  StudentReplayRec probe;
+  probe.key = frame * (1 << 20) + sb_row * (1 << 10) + sb_col;
+  const StudentReplayRec *rec = (const StudentReplayRec *)bsearch(
+      &probe, student_replay_tab, student_replay_n,
+      sizeof(*student_replay_tab), student_replay_cmp);
+  if (!rec) return NULL;
+  const int n = block_size_wide[blk->bsize];
+  const int cell_r = (blk->mi_row & 15) / (n >> 2);
+  const int cell_c = (blk->mi_col & 15) / (n >> 2);
+  const int node = (n == 64) ? 0
+                   : (n == 32 ? 1 + cell_r * 2 + cell_c
+                              : 5 + cell_r * 4 + cell_c);
+  return rec->probs[node];
+}
+
+// Optional feature dump for the C <-> Python parity check: set
+// AV1_STUDENT_FEATURE_DUMP=<path> to append one fixed-size record per scored
+// node (single-threaded runs only).
+static void student_dump_features(const PartitionBlkParams *blk, int qindex,
+                                  const float *feats) {
+  static FILE *fp = NULL;
+  static int checked = 0;
+  if (!checked) {
+    const char *path = getenv("AV1_STUDENT_FEATURE_DUMP");
+    if (path) fp = fopen(path, "ab");
+    checked = 1;
+  }
+  if (!fp) return;
+  const int32_t head[4] = { block_size_wide[blk->bsize], blk->mi_row,
+                            blk->mi_col, qindex };
+  fwrite(head, sizeof(head), 1, fp);
+  fwrite(feats, sizeof(float), AV1_PARTITION_STUDENT_NUM_FEATURES, fp);
 }
 
 // Runs the distilled student for the current square block and prunes the
 // partition search accordingly. Only ever REMOVES candidates (never forces an
 // illegal one), so bitstream validity is preserved: P(NONE) commits to NONE
 // (which stays legal), P(SPLIT) forces square split (legal since the caller's
-// gate guarantees bsize >= 8x8 and the whole block is in frame).
-static void student_prune_partition(const MACROBLOCK *x,
+// gate guarantees bsize >= 8x8 and the whole block is in frame), and low
+// P(REST) merely disables the rect/AB/4-way candidates (Pre-H7 lever A1).
+static void student_prune_partition(const AV1_COMMON *cm, const MACROBLOCK *x,
                                     PartitionSearchState *part_state) {
-  const BLOCK_SIZE bsize = part_state->part_blk_params.bsize;
-  const NN_CONFIG *nnconfig = av1_partition_student_nnconfig(bsize);
+  const PartitionBlkParams *blk = &part_state->part_blk_params;
+  const NN_CONFIG *nnconfig = av1_partition_student_nnconfig(blk->bsize);
   if (!nnconfig) return;
-  float feats[AV1_PARTITION_STUDENT_NUM_FEATURES];
-  student_block_features(x, bsize, feats);
-  float logits[3], probs[3];
-  av1_nn_predict(feats, nnconfig, 1, logits);
-  av1_nn_softmax(logits, probs, 3);  // [P(NONE), P(SPLIT), P(REST)]
-  float tau_none, tau_split;
-  student_get_thresholds(&tau_none, &tau_split);
-  if (probs[0] > tau_none) {
+  float probs[3];
+  const float *replay = student_replay_lookup(cm, blk);
+  if (replay) {
+    probs[0] = replay[0];
+    probs[1] = replay[1];
+    probs[2] = replay[2];
+  } else if (student_replay_n > 0) {
+    return;  // replay mode: a missing record means "do not prune"
+  } else {
+    float feats[AV1_PARTITION_STUDENT_NUM_FEATURES];
+    student_node_features(x, blk, feats);
+    student_dump_features(blk, x->qindex, feats);
+    float logits[3];
+    av1_nn_predict(feats, nnconfig, 1, logits);
+    av1_nn_softmax(logits, probs, 3);  // [P(NONE), P(SPLIT), P(REST)]
+  }
+  const StudentTaus *tau = student_get_taus(block_size_wide[blk->bsize]);
+  if (probs[0] > tau->none) {
     av1_disable_all_splits(part_state);
-  } else if (probs[1] > tau_split) {
+  } else if (probs[1] > tau->split) {
     av1_set_square_split_only(part_state);
+  } else if (probs[2] < tau->rest) {
+    av1_disable_rect_partitions(part_state);
   }
 }
 #endif  // PARTITION_ML_STUDENT
@@ -1813,11 +2057,15 @@ void av1_prune_partitions_before_search(AV1_COMP *const cpi,
 #if PARTITION_ML_STUDENT
   // Distilled ML student pruning (intra only), gated like the intra CNN above.
   // Only 16/32/64: 8x8 is a terminal leaf (always NONE) with no split to prune.
+  // The whole containing 64x64 unit must be in frame: the parent-context
+  // features read the parent 2n x 2n region, and the training data only holds
+  // whole superblocks (partial edge units were never logged).
   const int try_student_prune =
       frame_is_intra_only(cm) && cm->seq_params->sb_size >= BLOCK_64X64 &&
       bsize <= BLOCK_64X64 && bsize > BLOCK_8X8 &&
-      av1_is_whole_blk_in_frame(blk_params, mi_params);
-  if (try_student_prune) student_prune_partition(x, part_state);
+      (blk_params->mi_row & ~15) + 16 <= mi_params->mi_rows &&
+      (blk_params->mi_col & ~15) + 16 <= mi_params->mi_cols;
+  if (try_student_prune) student_prune_partition(cm, x, part_state);
 #endif  // PARTITION_ML_STUDENT
 
   // Use simple motion search to prune out split or non-split partitions. This

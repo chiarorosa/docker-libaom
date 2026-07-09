@@ -34,7 +34,7 @@ def build_distill_set(entries, surrogate, device, batch=256, limit=None,
     """Per-block-size distillation arrays.
     Returns {dim: {"feat":(N,F), "teacher":(N,3), "truth":(N,)}}."""
     out = {dim: {"feat": [], "teacher": [], "truth": []} for dim, _ in MODEL_LEVELS}
-    buf_inputs, buf_members, buf_qidx = [], [], []
+    buf_inputs, buf_members, buf_qidx, buf_sbluma = [], [], [], []
 
     def flush():
         if not buf_inputs:
@@ -45,17 +45,18 @@ def build_distill_set(entries, surrogate, device, batch=256, limit=None,
             probs = {dim: F.softmax(logits[dim].float(), dim=-1).cpu().numpy()
                      for dim, _ in MODEL_LEVELS}
         for bi, members in enumerate(buf_members):
-            for dim, r, c, luma, label in members:
+            for dim, r, c, _luma, label in members:
                 if dim not in out:
                     continue  # 8x8 leaves are not modeled (always NONE)
                 teacher10 = probs[dim][bi, r, c]
-                out[dim]["feat"].append(
-                    featmod.block_features(luma, buf_qidx[bi]))
+                out[dim]["feat"].append(featmod.node_features(
+                    buf_sbluma[bi], dim, r, c, buf_qidx[bi]))
                 out[dim]["teacher"].append(studentmod.collapse_probs(teacher10))
                 out[dim]["truth"].append(studentmod.collapse_label(label))
         buf_inputs.clear()
         buf_members.clear()
         buf_qidx.clear()
+        buf_sbluma.clear()
 
     n_sb = 0
     for e in entries:
@@ -66,6 +67,7 @@ def build_distill_set(entries, surrogate, device, batch=256, limit=None,
             buf_inputs.append(np.stack([luma, qplane]))
             buf_members.append(sb["members"])
             buf_qidx.append(sb["qindex"])
+            buf_sbluma.append(sb["luma"])
             n_sb += 1
             if len(buf_inputs) >= batch:
                 flush()
@@ -151,7 +153,7 @@ def main(argv):
     p.add_argument("--val-seqs", nargs="+", default=["Jockey"])
     p.add_argument("--train-seqs", nargs="+", default=None)
     p.add_argument("--out-dir", default="/workspace/results/models/student")
-    p.add_argument("--hidden", type=int, nargs="+", default=[24, 16])
+    p.add_argument("--hidden", type=int, nargs="+", default=[64, 32])
     p.add_argument("--epochs", type=int, default=40)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--alpha", type=float, default=0.5,
