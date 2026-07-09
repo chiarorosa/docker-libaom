@@ -116,8 +116,51 @@ Pareto** ambas as baselines — menor taxa BD para o mesmo speedup. Se dominar, 
 ganho é atribuível à **seleção de nós do modelo**, não ao invólucro; se empatar
 com `variance`, a contribuição seria trivial.
 
-> **Resultado:** *(preenchido quando a ablação — `ablation_attrib.py` — concluir;
-> curva em `results/benchmark/ablation_attrib/curve.csv`.)*
+**Resultado (Jockey held-out, cpu-used=0, 2 quadros; taxa BD em speedup casado
+por interpolação — `analyze_ablation.py`, dados em
+`results/benchmark/ablation_matched.csv`):**
+
+| speedup | ML (proposta) | variância | aleatório | menor BD |
+|---:|---:|---:|---:|:--|
+| 1,05× | 0,24 % | **0,17 %** | — | variância |
+| 1,15× | 1,06 % | **0,41 %** | — | variância |
+| 1,30× | 1,39 % | **0,76 %** | 2,94 % | variância |
+| 1,45× | 1,66 % | **1,12 %** | 4,08 % | variância |
+| 1,55× | 1,90 % | **1,36 %** | 4,75 % | variância |
+| 1,90× | — | **1,92 %** | 5,99 % | variância |
+
+**Veredito — resultado negativo, reportado com transparência:**
+
+1. **O modelo aprende sinal real.** O ML domina o baseline **aleatório** em todos
+   os níveis (a 1,3×: 1,39 % vs 2,94 %); sua seleção de nós está muito acima do
+   acaso.
+2. **Mas o ML NÃO supera o limiar de variância.** Em todos os pontos comparáveis,
+   o heurístico trivial (bloco liso → NONE) entrega **menor** taxa BD para o mesmo
+   speedup. A proposta ConvNeXt→estudante, no espaço de ações NONE-commit, **não
+   é atribuivelmente superior** a uma única estatística de textura.
+3. **Agravante:** a variância é **um dos 24 atributos de entrada do estudante**;
+   um modelo bem ajustado não deveria ser dominado por uma de suas próprias
+   features. Duas leituras possíveis: (a) a variância é **estatística quase
+   suficiente** para o NONE-commit no domínio de pixels; (b) a destilação/treino
+   **degrada** esse sinal simples (o substituto atinge apenas F1 0,20).
+
+**Interpretação para a tese.** Este é o resultado mais forte a favor de que o
+teto é **informacional** (limitado pelos pixels, não pelo modelo): mesmo com a
+cadeia corrigida, o aparato convolucional não extrai da luminância mais do que a
+variância já resume. Reforça, com dado limpo, uma versão matizada de H1–H3 e
+**motiva H9** (enriquecer a entrada com contexto de taxa-distorção) como a única
+via para superar o baseline de variância — porque o sinal de pixels está
+saturado.
+
+**Ressalvas (a checar antes de fechar a redação):**
+- **Ruído de 2 quadros:** as diferenças (~0,5–0,65 %) são consistentes e
+  monótonas nos 6 pontos, o que argumenta contra ruído puro; ainda assim,
+  confirmar com ≥10 quadros e outra(s) sequência(s) held-out reforça a afirmação.
+- **Escopo NONE-commit:** a ablação isola a ação dominante; o ML **poderia** somar
+  valor na ação de retangulares (A1), que a variância não modela naturalmente —
+  a testar contra um baseline direcional/anisotrópico.
+- **Treino do estudante:** que ele perca para a própria feature sugere espaço de
+  melhoria na calibração/destilação, independente do teto informacional.
 
 ---
 
