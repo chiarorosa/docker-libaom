@@ -122,6 +122,25 @@ contagem de nós — os dois números serão reportados lado a lado.
 
 ## 4. Resultados da simulação oráculo v2 (Jockey held-out, 1,4 M nós)
 
+> **AVISO (2026-07-09): as tabelas desta seção foram geradas com modelos
+> treinados sobre luma corrompida (todo zero — ver bug abaixo) e estão
+> SUPERADAS.** Os números reais (modelos re-treinados sobre pixels de verdade)
+> estão na §6. Mantidas aqui apenas para registro histórico do raciocínio das
+> alavancas.
+>
+> **Bug da luma em branco.** Descobriu-se, ao validar o H7 fim-a-fim, que o
+> dataset armazena a luma como `float32` em [0,1], mas os consumidores de treino
+> assumiam `uint8` [0,255]: `features.py` fazia `astype(int64)` (0,11 → 0,
+> zerando todo atributo manual) e o carregador do substituto dividia por 255 de
+> novo. **Substituto e estudante treinaram sobre imagem em branco.** O encoder em
+> C lê `uint8` real, então na inferência o modelo recebia atributos numa escala
+> totalmente distinta → previsões degeneradas → poda catastrófica (+6,4 % de taxa
+> BD, limiares inertes). Verificou-se que `round(luma×255)` reproduz o quadro-
+> fonte **exatamente** (o dado é íntegro; sem re-extração); corrigiu-se no
+> carregador (`data._denorm_uint8`) e re-treinou-se a cadeia. **Consequência
+> teórica: o "teto de informação da luminância" de H1–H6 foi medido sobre entrada
+> vazia e precisa ser relido à luz da §6.**
+
 Confirmação quantitativa das alavancas. Colunas: redução de **nós** (métrica
 antiga, comparável a H1–H6) e de **custo** (proxy de tempo, A2); risco de RD.
 
@@ -159,3 +178,47 @@ antiga, comparável a H1–H6) e de **custo** (proxy de tempo, A2); risco de RD.
 - **P_rect (agressivo, tese Pré-H7):** τ=0,95 / 0,90 / 0,20 — poda de rect pura.
 - **P_ref (refinado por nível):** limiares 0,95/0,95/0,80 · 0,90/0,90/0,90 ·
   0,10/0,20/−1 (níveis 16/32/64).
+
+---
+
+## 5. Correção do bug e re-medição (§4 → §6)
+
+A validação fim-a-fim do H7 revelou o bug da luma em branco (detalhado no aviso
+da §4). Após corrigir o carregador e re-treinar toda a cadeia sobre pixels reais:
+
+- **Substituto:** macro-F1 subiu de **0,12 → 0,20**. Há sinal real na luminância
+  que o artefato de entrada vazia escondia; ainda assim o problema permanece
+  difícil (0,20 em 10 classes), coerente com a decisão de particionamento ser
+  guiada por taxa-distorção/contexto, não só pela textura.
+- **Simulação oráculo (estudante real, Jockey):** agora os limiares **controlam**
+  o compromisso (o estudante cego era inerte). Ponto τ_none=0,95/τ_rest=0,20:
+  **34,7 % de redução de custo a 0,01 % de SPLIT perdido e 1,5 % de rect-off
+  errado**; ponto refinado 36,9 % a 0,88 % de SPLIT perdido.
+
+## 6. Resultados reais do H7 + H8 (Jockey held-out, cpu-used=0)
+
+Benchmark fim-a-fim com a cadeia corrigida (taxa BD vs. âncora libaom v3.10.0 de
+controle; speedup = tempo âncora / tempo teste; ponto de operação seguro):
+
+| ponto | política | taxa BD % | speedup |
+|---|---|---:|---:|
+| P0 | só NONE-commit (política antiga) | 0,25 | 1,03× |
+| P_rect | + poda de retangulares (A1) | 0,49 | 1,05× |
+| **P_ref** | refinado por nível | **0,42** | **1,07×** |
+| H8 | substituto (teto, via replay) | −0,11 | 1,02× |
+
+**Leitura honesta.**
+1. **A poda é segura.** Corrigido o bug, a taxa BD é **desprezível (~0,4 %)**; o
+   H8 (substituto) chega a um ganho marginal (−0,11 %), confirmando que o modelo
+   real é preciso — quase nunca poda uma decisão que a busca RD não tomaria.
+2. **O ganho de tempo é modesto (~3–7 %).** Bem abaixo dos ~35 % de "redução de
+   custo" previstos pela simulação. O modelo de custo (candidatos × n²)
+   **superestima** o tempo real: no cpu-used=0 a maior parte do tempo por nó está
+   na busca de modo/transformada (aproximadamente constante por bloco), não no
+   número de formas candidatas; desativar retangulares elimina candidatos
+   relativamente baratos, mantendo a recursão de SPLIT (a parte cara).
+3. **A alavanca do Pré-H7 ajuda, mas pouco.** P_rect > P0 (1,05× vs 1,03×), e o
+   refinado por nível é o melhor compromisso (1,07× a 0,42 %). O teto útil da poda
+   guiada só por luminância é baixo — o que corrobora, agora com dado limpo, uma
+   versão matizada de H1–H3: a luminância informa, mas o grande ganho exige o
+   contexto de taxa-distorção na entrada (H9).

@@ -74,6 +74,9 @@ def main(argv):
     p.add_argument("--repeats", type=int, default=1)
     p.add_argument("--replay-dir", default="/workspace/results/benchmark/h8_probs",
                    help="dir holding surrogate replay files jockey_cq{cq}.bin")
+    p.add_argument("--preset", choices=["safe", "aggressive"], default="safe",
+                   help="operating-point set: 'safe' (H7/H8 headline) or "
+                        "'aggressive' (map the upper end of the speedup curve)")
     p.add_argument("--out-dir", default="/workspace/results/benchmark/h7h8")
     args = p.parse_args(argv)
 
@@ -83,22 +86,38 @@ def main(argv):
     # Operating points. Student policies (H7) run on the distilled per-size MLP;
     # the surrogate point (H8) replays precomputed probs through the same hook.
     rep = os.path.join(args.replay_dir, "jockey_cq{cq}.bin")
-    points = [
-        ("P0_oldpolicy", args.test_enc,
-         {"AV1_STUDENT_TAU_NONE": "0.84", "AV1_STUDENT_TAU_SPLIT": "0.90",
-          "AV1_STUDENT_TAU_REST": "-1"}),
-        ("P_rect", args.test_enc,
-         {"AV1_STUDENT_TAU_NONE": "0.95", "AV1_STUDENT_TAU_SPLIT": "0.90",
-          "AV1_STUDENT_TAU_REST": "0.20"}),
-        ("P_ref", args.test_enc,
-         {"AV1_STUDENT_TAU_NONE_16": "0.85", "AV1_STUDENT_TAU_NONE_32": "0.80",
-          "AV1_STUDENT_TAU_NONE_64": "0.80", "AV1_STUDENT_TAU_SPLIT": "0.90",
-          "AV1_STUDENT_TAU_REST_16": "0.20", "AV1_STUDENT_TAU_REST_32": "0.20",
-          "AV1_STUDENT_TAU_REST_64": "0.20"}),
-        ("H8_surrogate", args.test_enc,
-         {"AV1_STUDENT_TAU_NONE": "0.90", "AV1_STUDENT_TAU_SPLIT": "0.90",
-          "AV1_STUDENT_TAU_REST": "0.20", "replay_tmpl": rep}),
-    ]
+    if args.preset == "safe":
+        points = [
+            ("P0_oldpolicy", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE": "0.84", "AV1_STUDENT_TAU_SPLIT": "0.90",
+              "AV1_STUDENT_TAU_REST": "-1"}),
+            ("P_rect", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE": "0.95", "AV1_STUDENT_TAU_SPLIT": "0.90",
+              "AV1_STUDENT_TAU_REST": "0.20"}),
+            ("P_ref", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE_16": "0.85", "AV1_STUDENT_TAU_NONE_32":
+              "0.80", "AV1_STUDENT_TAU_NONE_64": "0.80", "AV1_STUDENT_TAU_SPLIT":
+              "0.90", "AV1_STUDENT_TAU_REST_16": "0.20", "AV1_STUDENT_TAU_REST_32":
+              "0.20", "AV1_STUDENT_TAU_REST_64": "0.20"}),
+            ("H8_surrogate", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE": "0.90", "AV1_STUDENT_TAU_SPLIT": "0.90",
+              "AV1_STUDENT_TAU_REST": "0.20", "replay_tmpl": rep}),
+        ]
+    else:  # aggressive: map the upper end of the speedup/BD-rate curve
+        points = [
+            ("A1_none80", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE": "0.80", "AV1_STUDENT_TAU_SPLIT": "0.90",
+              "AV1_STUDENT_TAU_REST": "0.20"}),
+            ("A2_none70", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE": "0.70", "AV1_STUDENT_TAU_SPLIT": "0.90",
+              "AV1_STUDENT_TAU_REST": "0.30"}),
+            ("A3_none60_rest40", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE": "0.60", "AV1_STUDENT_TAU_SPLIT": "0.85",
+              "AV1_STUDENT_TAU_REST": "0.40"}),
+            ("H8_surrogate_aggr", args.test_enc,
+             {"AV1_STUDENT_TAU_NONE": "0.80", "AV1_STUDENT_TAU_SPLIT": "0.90",
+              "AV1_STUDENT_TAU_REST": "0.30", "replay_tmpl": rep}),
+        ]
     # Drop H8 if replay files are absent (H7-only run).
     if not all(os.path.exists(rep.format(cq=cq)) for cq in args.cqs):
         print("[warn] replay files missing in {}; skipping H8_surrogate".format(
