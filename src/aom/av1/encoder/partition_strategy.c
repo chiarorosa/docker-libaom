@@ -1855,11 +1855,11 @@ static const float *student_replay_lookup(const AV1_COMMON *cm,
   return rec->probs[node];
 }
 
-// Optional feature dump for the C <-> Python parity check: set
+// Optional feature/prob dump for the C <-> Python parity check: set
 // AV1_STUDENT_FEATURE_DUMP=<path> to append one fixed-size record per scored
-// node (single-threaded runs only).
+// node (single-threaded runs only): head[4] ++ feats[N] ++ probs[3].
 static void student_dump_features(const PartitionBlkParams *blk, int qindex,
-                                  const float *feats) {
+                                  const float *feats, const float *probs) {
   static FILE *fp = NULL;
   static int checked = 0;
   if (!checked) {
@@ -1872,6 +1872,7 @@ static void student_dump_features(const PartitionBlkParams *blk, int qindex,
                             blk->mi_col, qindex };
   fwrite(head, sizeof(head), 1, fp);
   fwrite(feats, sizeof(float), AV1_PARTITION_STUDENT_NUM_FEATURES, fp);
+  fwrite(probs, sizeof(float), 3, fp);
 }
 
 // Runs the distilled student for the current square block and prunes the
@@ -1896,10 +1897,10 @@ static void student_prune_partition(const AV1_COMMON *cm, const MACROBLOCK *x,
   } else {
     float feats[AV1_PARTITION_STUDENT_NUM_FEATURES];
     student_node_features(x, blk, feats);
-    student_dump_features(blk, x->qindex, feats);
     float logits[3];
     av1_nn_predict(feats, nnconfig, 1, logits);
     av1_nn_softmax(logits, probs, 3);  // [P(NONE), P(SPLIT), P(REST)]
+    student_dump_features(blk, x->qindex, feats, probs);
   }
   const StudentTaus *tau = student_get_taus(block_size_wide[blk->bsize]);
   if (probs[0] > tau->none) {

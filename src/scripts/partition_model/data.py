@@ -101,6 +101,23 @@ def _frame_index(sample_id):
     return np.cumsum(sample_id == 0) - 1
 
 
+def _denorm_uint8(block):
+    """Return an 8-bit [0,255] luma view of a stored block.
+
+    The converter (convert_partition_data.py, default --dtype float32) stores
+    luma as float32 == uint8/255, a LOSSLESS encoding of the original 8-bit
+    pixels (verified: round(x*255) recovers the source frame exactly). The
+    feature pipeline (features.py int accumulators) and the C encoder both work
+    on 8-bit [0,255]; feeding the raw [0,1] float truncates every pixel to 0
+    (int cast) or double-normalizes (surrogate /255), which silently blanks the
+    input. Recover the 8-bit scale here so every consumer sees the same pixels
+    the encoder does. uint8 blocks (--dtype uint8) pass through unchanged."""
+    b = np.asarray(block)
+    if np.issubdtype(b.dtype, np.floating):
+        return np.rint(b * 255.0).clip(0, 255).astype(np.uint8)
+    return b.astype(np.uint8)
+
+
 def _load_and_group(path):
     """Load one .pkl and group sample indices by (frame, superblock).
     Returns (arrays_dict, groups) where groups maps (frame, sb_row, sb_col) to a
@@ -143,7 +160,7 @@ def iter_superblock_members(path):
         root = next((i for i in idxs if bdim[i] == SB_SIZE_PX), None)
         if root is None:
             continue
-        block = np.asarray(luma[root])
+        block = _denorm_uint8(luma[root])
         if block.shape != (SB_SIZE_PX, SB_SIZE_PX):
             continue
         members, ok = [], True
@@ -156,10 +173,10 @@ def iter_superblock_members(path):
             if not (0 <= r < side and 0 <= c < side):
                 ok = False
                 break
-            members.append((dim, r, c, np.asarray(luma[i]), int(part[i])))
+            members.append((dim, r, c, _denorm_uint8(luma[i]), int(part[i])))
         if not ok:
             continue
-        yield {"luma": block.astype(np.uint8), "qindex": int(qidx[root]),
+        yield {"luma": block, "qindex": int(qidx[root]),
                "members": members}
 
 

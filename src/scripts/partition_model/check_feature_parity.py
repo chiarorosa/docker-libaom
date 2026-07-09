@@ -29,8 +29,10 @@ if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
 import features as featmod  # noqa: E402
+import student as studentmod  # noqa: E402
 
-REC = struct.Struct("<4i{}f".format(featmod.NUM_FEATURES))
+# head[4] ++ feats[N] ++ probs[3]
+REC = struct.Struct("<4i{}f".format(featmod.NUM_FEATURES + 3))
 
 
 def make_yuv(path, w, h, seed=0):
@@ -67,6 +69,9 @@ def main(argv):
     p.add_argument("--cpu-used", type=int, default=0)
     p.add_argument("--atol", type=float, default=2e-6,
                    help="max |C - Python| accepted (float32 ulp headroom)")
+    p.add_argument("--students", default="/workspace/results/models/"
+                                        "student_ctx/students.pt",
+                   help="if set, also verify C probs vs this PyTorch student")
     args = p.parse_args(argv)
 
     import re
@@ -100,13 +105,28 @@ def main(argv):
     if n_rec == 0:
         raise SystemExit("no records: is the build PARTITION_ML_STUDENT=1?")
 
+    # Optional: PyTorch students to re-score the dumped C features and compare
+    # the resulting 3-class probs against the encoder's own probs.
+    nets = None
+    if args.students and os.path.exists(args.students):
+        import torch
+        import torch.nn.functional as F
+        bundle = torch.load(args.students, map_location="cpu")
+        nets = {}
+        for dim in bundle["students"]:
+            net = studentmod.make_student(featmod.NUM_FEATURES, bundle["hidden"])
+            net.load_state_dict(bundle["students"][dim])
+            nets[dim] = net.eval()
+
     worst = np.zeros(featmod.NUM_FEATURES)
+    worst_prob = np.zeros(3)
     seen = set()
     checked = 0
     for i in range(n_rec):
         vals = REC.unpack_from(blob, i * REC.size)
         n, mi_row, mi_col, qindex = vals[:4]
-        cf = np.array(vals[4:], dtype=np.float32)
+        cf = np.array(vals[4:4 + featmod.NUM_FEATURES], dtype=np.float32)
+        cprobs = np.array(vals[4 + featmod.NUM_FEATURES:], dtype=np.float32)
         key = (n, mi_row, mi_col)
         if key in seen:
             continue  # rd_pick_partition may revisit a node; one check suffices
@@ -118,6 +138,14 @@ def main(argv):
         pf = featmod.node_features(sb, n, r_cell, c_cell, qindex)
         worst = np.maximum(worst, np.abs(cf.astype(np.float64) -
                                          pf.astype(np.float64)))
+        if nets is not None and n in nets:
+            import torch
+            import torch.nn.functional as F
+            with torch.no_grad():
+                logits = nets[n](torch.tensor(pf, dtype=torch.float32)[None])
+                pprobs = F.softmax(logits, dim=-1)[0].numpy()
+            worst_prob = np.maximum(worst_prob, np.abs(
+                cprobs.astype(np.float64) - pprobs.astype(np.float64)))
         checked += 1
 
     print("checked {} unique nodes ({} records)".format(checked, n_rec))
@@ -129,9 +157,18 @@ def main(argv):
             bad += 1
         print("  [{:>2}] {:<18} max|dC-dPy| = {:.3e}{}".format(
             k, featmod.FEATURE_NAMES[k], worst[k], flag))
+    if nets is not None:
+        print("--- probs (C encoder vs PyTorch student on C features) ---")
+        prob_atol = 1e-3  # nn_predict prec-reduce + float32 headroom
+        for k, nm in enumerate(["P(NONE)", "P(SPLIT)", "P(REST)"]):
+            flag = "  <-- MISMATCH" if worst_prob[k] > prob_atol else ""
+            print("  {:<8} max|dC-dPy| = {:.3e}{}".format(nm, worst_prob[k],
+                                                          flag))
+            if worst_prob[k] > prob_atol:
+                bad += 1
     if bad:
-        raise SystemExit("PARITY FAILED: {} feature(s) above atol={}".format(
-            bad, args.atol))
+        raise SystemExit("PARITY FAILED: {} channel(s) above tolerance".format(
+            bad))
     print("PARITY OK (atol={})".format(args.atol))
 
 
