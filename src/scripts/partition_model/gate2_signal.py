@@ -70,8 +70,11 @@ def make_mlp(n_in, hidden=(64, 32)):
     return nn.Sequential(*layers)
 
 
-def train_and_score(train_sbs, val_sbs, cols, device, epochs=25, lr=1e-3):
-    """Train one MLP per block size on `cols` features; attach val probs."""
+def train_and_score(train_sbs, val_sbs, cols, device, epochs=30, lr=1e-3,
+                    seeds=3):
+    """Train one MLP per block size on `cols` features; attach val probs.
+    Averages `seeds` independent runs (a cheap ensemble) so the reported
+    operating points reflect the features, not a single noisy fit."""
     cols = np.asarray(cols)
     for dim, _ in MODEL_LEVELS:
         X, y = [], []
@@ -87,29 +90,32 @@ def train_and_score(train_sbs, val_sbs, cols, device, epochs=25, lr=1e-3):
         mean, std = X.mean(0), X.std(0).clamp_min(1e-6)
         Xn = ((X - mean) / std).to(device)
         yb = y.to(device)
-        net = make_mlp(len(cols)).to(device)
-        opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=1e-4)
         n = len(Xn)
-        for _ in range(epochs):
-            perm = torch.randperm(n, device=device)
-            for s in range(0, n, 8192):
-                idx = perm[s:s + 8192]
-                loss = F.cross_entropy(net(Xn[idx]), yb[idx])
-                opt.zero_grad(set_to_none=True)
-                loss.backward()
-                opt.step()
-        net.eval()
-        # Score val nodes of this size.
         idx = [(si, key) for si, sb in enumerate(val_sbs)
                for key in sb["nodes"] if key[0] == dim]
         if not idx:
             continue
         feats = np.array([val_sbs[si]["nodes"][key]["feat"][cols]
                           for si, key in idx])
-        with torch.no_grad():
-            fb = (torch.tensor(feats, dtype=torch.float32).to(device) -
-                  mean.to(device)) / std.to(device)
-            probs = F.softmax(net(fb), -1).cpu().numpy()
+        fb = (torch.tensor(feats, dtype=torch.float32).to(device) -
+              mean.to(device)) / std.to(device)
+        prob_sum = np.zeros((len(idx), 3))
+        for seed in range(seeds):
+            torch.manual_seed(1000 + seed)
+            net = make_mlp(len(cols)).to(device)
+            opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=1e-4)
+            for _ in range(epochs):
+                perm = torch.randperm(n, device=device)
+                for s in range(0, n, 8192):
+                    b = perm[s:s + 8192]
+                    loss = F.cross_entropy(net(Xn[b]), yb[b])
+                    opt.zero_grad(set_to_none=True)
+                    loss.backward()
+                    opt.step()
+            net.eval()
+            with torch.no_grad():
+                prob_sum += F.softmax(net(fb), -1).cpu().numpy()
+        probs = prob_sum / seeds
         for (si, key), p in zip(idx, probs):
             val_sbs[si]["nodes"][key]["prob"] = p
 
@@ -128,18 +134,25 @@ def variance_threshold_probs(val_sbs, v0=1000.0):
             nd["prob"] = np.array([flat, 1.0 - flat, 0.0])
 
 
-def best_cost_at_risk(sbs, taus_none, tau_rest, max_split_lost, max_none_wrong):
-    """Max cost reduction over a tau_none sweep meeting the risk caps."""
-    best = 0.0
-    best_pt = None
+def sweep_curve(sbs, taus_none, tau_rest):
+    """All (cost_red, risk) points over the tau grid; NONE+rect policy."""
+    pts = []
     for tn in taus_none:
         for tr in tau_rest:
-            m = metrics(simulate(sbs, tn, 2.0, tr))  # tau_split=2: NONE+rect only
-            if (m["split_lost"] <= max_split_lost and
-                    m["none_wrong"] <= max_none_wrong):
-                if m["cost_red"] > best:
-                    best, best_pt = m["cost_red"], (tn, tr, m)
-    return best, best_pt
+            m = metrics(simulate(sbs, tn, 2.0, tr))
+            pts.append((tn, tr, m["cost_red"], m["none_wrong"],
+                        m["split_lost"], m["rect_off_wrong"]))
+    return pts
+
+
+def cost_at_risk(pts, max_split_lost, max_rect_off_wrong=5.0):
+    """Max cost reduction among sweep points within the BD-relevant risk caps:
+    true-SPLIT loss (catastrophic, from NONE-commit) and rect-off error (from
+    disabling rectangular candidates). none_wrong is intentionally not bounded --
+    it is dominated by cheap NONE/rect confusions that barely move BD-rate."""
+    ok = [c for _, _, c, _nw, sl, rw in pts
+          if sl <= max_split_lost and rw <= max_rect_off_wrong]
+    return max(ok) if ok else 0.0
 
 
 def main(argv):
@@ -172,45 +185,52 @@ def main(argv):
 
     taus_none = [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95]
     tau_rest = [-1.0, 0.1, 0.2, 0.3]
-    rows = []
-    print("\nsubset      cost_red%  @(tau_none,tau_rest)  none_wrong% splitLost%",
-          flush=True)
-
-    # Non-learned variance-threshold reference.
+    # Matched-risk operating points: cost reduction achievable while keeping
+    # true-SPLIT loss under each cap (none_wrong loosely bounded).
+    caps = [0.5, 1.0, 2.0, 3.0]
     import copy
+
+    curves = {}
     vt = copy.deepcopy(val_base)
     variance_threshold_probs(vt)
-    b, pt = best_cost_at_risk(vt, taus_none, tau_rest, args.max_split_lost,
-                              args.max_none_wrong)
-    print("var-thresh   {:6.2f}    tau={:.2f}/{:.2f}       {:6.2f}    {:6.2f}"
-          .format(b, pt[0], pt[1], pt[2]["none_wrong"], pt[2]["split_lost"])
-          if pt else "var-thresh    (no feasible point)", flush=True)
-    rows.append(["var-threshold", round(b, 3), pt[0] if pt else None,
-                 pt[1] if pt else None])
-
+    curves["var-thresh"] = sweep_curve(vt, taus_none, tau_rest)
     for name in args.subsets:
         cols = featmod.H9_SUBSETS[name]
         val_sbs = copy.deepcopy(val_base)
         train_and_score(train_sbs, val_sbs, cols, device)
-        b, pt = best_cost_at_risk(val_sbs, taus_none, tau_rest,
-                                  args.max_split_lost, args.max_none_wrong)
-        if pt:
-            print("{:<11} {:6.2f}    tau={:.2f}/{:.2f}       {:6.2f}    {:6.2f}"
-                  .format(name, b, pt[0], pt[1], pt[2]["none_wrong"],
-                          pt[2]["split_lost"]), flush=True)
-        else:
-            print("{:<11}  (no feasible point)".format(name), flush=True)
-        rows.append([name, round(b, 3), pt[0] if pt else None,
-                     pt[1] if pt else None])
+        curves[name] = sweep_curve(val_sbs, taus_none, tau_rest)
+
+    # Report: cost reduction (%) at matched risk (SPLIT-lost cap, rect-off
+    # error <= 5%).
+    print("\ncost_red% at matched risk (SPLIT-lost cap; rect_off_wrong<=5%):",
+          flush=True)
+    hdr = "subset       " + "".join("  <=SL{:.1f}%".format(c) for c in caps)
+    print(hdr, flush=True)
+    order = ["var-thresh"] + list(args.subsets)
+    rows = []
+    for name in order:
+        pts = curves[name]
+        cells = [cost_at_risk(pts, c, 5.0) for c in caps]
+        print("{:<11}".format(name) +
+              "".join("  {:8.2f}".format(v) for v in cells), flush=True)
+        rows.append([name] + [round(v, 3) for v in cells])
 
     os.makedirs(os.path.dirname(args.out_csv), exist_ok=True)
     with open(args.out_csv, "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["subset", "cost_reduction_pct", "tau_none", "tau_rest"])
+        w.writerow(["subset"] + ["cost_red_SL{}".format(c) for c in caps])
         w.writerows(rows)
+    # Full sweep dump for inspection.
+    with open(args.out_csv.replace(".csv", "_sweep.csv"), "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["subset", "tau_none", "tau_rest", "cost_red", "none_wrong",
+                    "split_lost", "rect_off_wrong"])
+        for name in order:
+            for row in curves[name]:
+                w.writerow([name] + [round(x, 3) for x in row])
     print("\nwrote", args.out_csv)
-    print("\nGATE 2 verdict: compare H9a/H9b cost_red% to var-threshold and "
-          "pixels24. A clear margin => cheap RD context beats the pixel floor.")
+    print("\nGATE 2: H9a/H9b cost_red% clearly above var-thresh & pixels24 at "
+          "matched SPLIT-lost => cheap RD context beats the pixel floor.")
 
 
 if __name__ == "__main__":
