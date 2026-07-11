@@ -25,3 +25,6 @@ results/dataset_h9/
 results/dataset_new/
 results/benchmark/_work/
 results/benchmark/h8_probs/
+
+# Transient build/training logs
+logs/
