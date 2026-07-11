@@ -38,6 +38,98 @@ posição) é necessário e suficiente para superar esse teto**, produzindo uma 
 aprendida com ganho de tempo atribuível ao ML. Falta confirmar no encoder real
 (Gate 5).
 
+### 1.1 Por que o `dataset_h9` existe — de um resultado negativo forte a uma direção positiva
+
+O `dataset_h9` não é "mais um dataset": é o experimento que converte um resultado
+negativo numa contribuição positiva. A sequência:
+
+1. **Resultado negativo (ablação de atribuição).** No domínio de pixels, um
+   baseline trivial — apenas a variância do bloco — empata ou supera o modelo de
+   ML em todo ponto de speedup comparável. Ou seja, o ganho **não era atribuível
+   ao aprendizado**: nenhum dos 24 atributos de pixel fazia o modelo bater a
+   variância isolada.
+2. **Por que esse negativo tem valor.** Ele caracteriza, com rigor, que a
+   informação de particionamento **presente nos pixels satura numa estatística
+   trivial**. É um resultado negativo forte: mostra, com evidência, que aumentar a
+   capacidade do modelo no domínio de pixels não leva a lugar nenhum.
+3. **A virada positiva (hipótese H9).** O particionamento do AV1 é, por definição,
+   uma decisão de **taxa-distorção (RD)**. Logo, o sinal capaz de elevar o limite é
+   o **contexto RD** que a própria decisão usa — e boa parte dele é **barata e já
+   está residente na memória do encoder**: tamanho dos blocos vizinhos (acima/
+   esquerda), força de quantização (qindex) e posição no quadro. É informação que
+   **não está nos pixels**.
+4. **`dataset_h9` materializa a hipótese.** Re-extração das 16 sequências
+   adicionando os campos B (vizinhança), C (quantização/posição) e E (custo RD real
+   do `PARTITION_NONE`, registrado apenas como referência de limite superior).
+5. **Evidência positiva até aqui (Gate 2, offline).** MLPs por tamanho de bloco
+   sobre o conjunto **H9a** (pixels + vizinhança + quant/posição, tudo de custo
+   zero) superam a variância em ~50% relativo, de forma consistente. A confirmação
+   definitiva no encoder real (Gate 5) permanece pendente.
+
+### 1.2 O que roda no encoder — o professor (ConvNeXt) nunca foi a heurística
+
+Há dois artefatos com papéis distintos, e é fácil confundi-los:
+
+- **ConvNeXt (o "substituto"/professor).** Modelo convolucional de ~107 MB que
+  observa o superbloco 64×64 inteiro. Usado **apenas em tempo de treino** — como
+  professor numa **destilação de conhecimento** — e como **referência de limite
+  superior** (experimento H8: quanto um modelo convolucional forte alcançaria,
+  medido por replay no encoder). É pesado demais para inferência a cada nó de
+  particionamento; **nunca foi embarcado no encoder**.
+- **Estudante (o que de fato roda).** Uma **MLP pequena por tamanho de bloco**,
+  executada pela função nativa `av1_nn_predict` do libaom sobre atributos manuais
+  do bloco. É esse artefato que produz o melhor resultado atual — a curva de
+  **~7–29% de speedup a 0,4–1,6% de BD-rate** (`h7h8_real`). O ConvNeXt destilou
+  conhecimento para ele em treino, mas não participa da inferência.
+
+**Consequência para o enquadramento da tese.** O objetivo original ("aplicar
+convoluções para reduzir o tempo de codificação") realizou-se, na prática, como
+convoluções no papel de **professor + referência de limite superior**, não como o
+mecanismo embarcado. Mais: a ablação de atribuição e o Gate 2 indicam que o **ganho
+implantável é tabular** (atributos manuais + contexto RD barato), **não
+convolucional**. Por isso a Fase 3 recomendada treina o estudante diretamente sobre
+H9a, em vez de reintroduzir o ConvNeXt.
+
+### 1.3 O papel do ConvNeXt na escrita da tese (e a tensão do objetivo declarado)
+
+O trabalho com o ConvNeXt não é descartável — é peça central da narrativa
+metodológica, mesmo não estando no pruner embarcado.
+
+**Onde ele entra na escrita:**
+- **Metodologia:** a arquitetura do substituto ConvNeXt multinível (luma+qindex,
+  cabeças por nível espelhando a hierarquia de particionamento do AV1), a
+  destilação de conhecimento substituto → estudante, e a infraestrutura de
+  avaliação (instrumentação em C, extração do ground truth em cpu-used=0, harness
+  de BD-rate + speedup, simulação oráculo, ablação de atribuição).
+- **Resultados/Discussão:** a correção do bug da luma (por que H1–H6 foram
+  refeitos), a curva operacional H7/H8, e a ablação de atribuição — o **resultado
+  negativo** (a variância trivial empata/supera o ML em speedup comparável).
+
+**Por que o ConvNeXt é indispensável, não opcional:** ele é o que dá
+**credibilidade ao resultado negativo**. A afirmação "os pixels saturam na
+variância" só é rigorosa porque o modelo de pixels testado **não era fraco**. Se
+houvesse apenas uma MLP pequena falhando em superar a variância, caberia a objeção
+"o modelo tinha capacidade insuficiente". Ter um modelo convolucional de alta
+capacidade, com o experimento de limite superior (H8), e ainda assim **não separar
+da variância** em speedup comparável, fecha essa objeção — transforma "o modelo não
+conseguiu" em "**o domínio de pixels não contém o sinal**".
+
+**Elo com a solução final:** é esse aprendizado que **motiva e justifica** a virada
+para o contexto RD (H9a). Sem o ConvNeXt, a virada seria um palpite; com ele, é uma
+conclusão baseada em evidência. A técnica de "medir o teto para saber quanto ainda
+resta" também migra para o lado RD: o H9c (`none_rdcost`) é o análogo do que o
+ConvNeXt/H8 foi para os pixels.
+
+**Tensão do objetivo declarado (decisão de narrativa a tomar).** Se o objetivo da
+tese permanecer "aplicar convoluções para reduzir o tempo de codificação", há uma
+tensão: a **solução implantada não é convolucional**. O enquadramento mais fiel aos
+dados é: *caracterizar com rigor o que a decisão de particionamento precisa — e o
+que ela não precisa (mais capacidade no domínio de pixels) — e entregar um ganho de
+tempo atribuível a partir de contexto RD barato*. Nesse enquadramento, as
+convoluções são o **instrumento de diagnóstico e a referência de limite superior**,
+protagonistas da investigação, não do mecanismo embarcado. Recomenda-se revisar
+título/resumo/objetivos com essa informação explícita.
+
 ---
 
 ## 2. Status por fase
