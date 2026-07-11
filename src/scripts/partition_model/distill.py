@@ -96,7 +96,7 @@ def class_weights_3(truth, device):
 
 
 def train_student(rec, hidden, device, epochs, lr, alpha, temp, wd=1e-4,
-                  batch=4096, use_class_weight=True):
+                  batch=4096, use_class_weight=True, in_features=None):
     feat = torch.tensor(rec["feat"], dtype=torch.float32)
     teach = torch.tensor(rec["teacher"], dtype=torch.float32)
     truth = torch.tensor(rec["truth"], dtype=torch.long)
@@ -108,7 +108,8 @@ def train_student(rec, hidden, device, epochs, lr, alpha, temp, wd=1e-4,
     std = feat.std(0).clamp_min(1e-1)
     feat = (feat - mean) / std
 
-    net = studentmod.make_student(featmod.NUM_FEATURES, hidden).to(device)
+    nfeat = featmod.NUM_FEATURES if in_features is None else in_features
+    net = studentmod.make_student(nfeat, hidden).to(device)
     opt = torch.optim.AdamW(net.parameters(), lr=lr, weight_decay=wd)
     # Class weighting counters imbalance but suppresses confident P(NONE); for a
     # confidence-thresholded pruner, unweighted CE gives sharper, better-ranked
