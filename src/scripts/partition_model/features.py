@@ -201,6 +201,7 @@ def batch_features(luma_list, qindex_arr):
 #   E 38..40  PARTITION_NONE rate/dist/rdcost (ceiling; not deployable pre-search)
 # --------------------------------------------------------------------------
 NUM_FEATURES_H9 = 41
+NUM_FEATURES_H9A = 36  # A(0..23) + B(24..31) + C(32..35); D/E excluded from deploy
 H9_FEATURE_NAMES = FEATURE_NAMES + [
     "has_above", "has_left", "above_w_log2", "above_h_log2",
     "left_w_log2", "left_h_log2", "neigh_finer", "neigh_aniso",
