@@ -38,7 +38,6 @@ def collect_by_dim(entries, per_pkl=None, limit=None):
     """Per-block-size {'feat':(N,36), 'truth':(N,)} arrays over the
     H9-instrumented dataset. per_pkl caps superblocks taken from each pkl
     (diverse sampling across seqs/QPs); limit is a global superblock cap."""
-    nfa = featmod.NUM_FEATURES_H9A
     acc = {dim: {"feat": [], "truth": []} for dim, _ in MODEL_LEVELS}
     n_sb = 0
     for e in entries:
@@ -50,10 +49,8 @@ def collect_by_dim(entries, per_pkl=None, limit=None):
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 if dim not in acc:
                     continue
-                ctx = dict(sb["ctx"][k])
-                ctx["bsize_enum"] = -1
-                f = featmod.node_features_h9(sb["luma"], dim, r, c,
-                                             sb["qindex"], ctx)[:nfa]
+                f = featmod.node_features_h9a(sb["luma"], dim, r, c,
+                                              sb["qindex"], sb["ctx"][k])
                 acc[dim]["feat"].append(f)
                 acc[dim]["truth"].append(studentmod.collapse_label(label))
             n_sb += 1

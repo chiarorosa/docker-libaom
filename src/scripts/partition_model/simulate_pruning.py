@@ -67,17 +67,17 @@ def collect_superblocks(entries, feature_set="pixels24", limit=None):
     """List of superblocks: {nodes:{(dim,r,c):{truth,feat}}, luma, qindex}.
     feature_set: 'pixels24' -> node_features (24); 'h9a' -> node_features_h9[:36]
     with the per-node RD context (blocks B/C)."""
-    nfa = featmod.NUM_FEATURES_H9A
     sbs = []
     for e in entries:
         for sb in datamod.iter_superblock_members(e["path"]):
+            if feature_set == "h9a" and not sb.get("has_rd"):
+                raise SystemExit("{}: no RD context; re-extract with the H9 "
+                                 "instrumentation.".format(e["path"]))
             nodes = {}
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 if feature_set == "h9a":
-                    ctx = dict(sb["ctx"][k])
-                    ctx["bsize_enum"] = -1
-                    feat = featmod.node_features_h9(sb["luma"], dim, r, c,
-                                                    sb["qindex"], ctx)[:nfa]
+                    feat = featmod.node_features_h9a(sb["luma"], dim, r, c,
+                                                      sb["qindex"], sb["ctx"][k])
                 else:
                     feat = featmod.node_features(sb["luma"], dim, r, c,
                                                  sb["qindex"])
@@ -314,7 +314,8 @@ def main(argv):
     p.add_argument("--surrogate", default=None,
                    help="if set, score nodes with this ConvNeXt ckpt instead of "
                         "the distilled students (ceiling diagnostic)")
-    p.add_argument("--val-seqs", nargs="+", default=["Jockey"])
+    p.add_argument("--val-seqs", nargs="+",
+                   default=["HoneyBee", "FlowerPan", "Lips"])
     p.add_argument("--tau-none", type=float, nargs="+",
                    default=[0.6, 0.7, 0.8, 0.9, 0.95])
     p.add_argument("--tau-split", type=float, nargs="+", default=[0.7, 0.9])

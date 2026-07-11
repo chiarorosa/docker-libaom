@@ -314,6 +314,16 @@ def node_features_h9(sb_luma, dim, r, c, qindex, ctx):
     return f
 
 
+def node_features_h9a(sb_luma, dim, r, c, qindex, ctx):
+    """H9a deploy vector (A+B+C = 36 features) for one node. Copies ctx and
+    forces bsize_enum=-1 (train/eval convention: use the dim-derived block width,
+    since the current block's bsize enum is unavailable pre-search). Single source
+    of truth for the deployed feature layout -- the C side mirrors THIS."""
+    c2 = dict(ctx)
+    c2["bsize_enum"] = -1
+    return node_features_h9(sb_luma, dim, r, c, qindex, c2)[:NUM_FEATURES_H9A]
+
+
 if __name__ == "__main__":
     rng = np.random.default_rng(0)
     sb = rng.integers(0, 256, size=(64, 64), dtype=np.uint8)
