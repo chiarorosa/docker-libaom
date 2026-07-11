@@ -1755,9 +1755,8 @@ static double student_feats18(const uint8_t *b, int stride, int n, int qindex,
 // contrast, position inside the 64x64 unit), matching
 // features.py::node_features. The caller's whole-64x64-unit gate guarantees
 // the parent region lies inside the frame.
-static void student_node_features(const MACROBLOCK *x,
-                                  const PartitionBlkParams *blk,
-                                  float *feats) {
+static void student_node_features(const AV1_COMMON *cm, const MACROBLOCK *x,
+                                  const PartitionBlkParams *blk, float *feats) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const int n = block_size_wide[blk->bsize];
   const int stride = x->plane[AOM_PLANE_Y].src.stride;
@@ -1818,6 +1817,43 @@ static void student_node_features(const MACROBLOCK *x,
   feats[21] = (float)((var - sib_max) / (var + sib_max + 1.0));
   feats[22] = (float)((double)(cell_r * n) / 64.0);
   feats[23] = (float)((double)(cell_c * n) / 64.0);
+
+  // --- H9a block B: neighbor partition context (mirrors node_features_h9). ---
+  // Missing neighbor -> current (square) block, matching the Python fallback.
+  const BLOCK_SIZE bsz = blk->bsize;
+  const int has_above = !!xd->above_mbmi;
+  const int has_left = !!xd->left_mbmi;
+  const BLOCK_SIZE above_bsize = has_above ? xd->above_mbmi->bsize : bsz;
+  const BLOCK_SIZE left_bsize = has_left ? xd->left_mbmi->bsize : bsz;
+  const int aw = mi_size_wide_log2[above_bsize];
+  const int ah = mi_size_high_log2[above_bsize];
+  const int lw = mi_size_wide_log2[left_bsize];
+  const int lh = mi_size_high_log2[left_bsize];
+  const int cur_wh = mi_size_wide_log2[bsz];   // square at modeled levels
+  const int cur_area = cur_wh + cur_wh;
+  const int navail = (has_above + has_left) > 0 ? (has_above + has_left) : 1;
+  const double finer =
+      (double)((has_above && (aw + ah < cur_area)) +
+               (has_left && (lw + lh < cur_area))) / navail;
+  const double aniso =
+      (double)((has_above ? ((aw > ah) - (aw < ah)) : 0) +
+               (has_left ? ((lw > lh) - (lw < lh)) : 0)) / navail;
+  feats[24] = (float)has_above;
+  feats[25] = (float)has_left;
+  feats[26] = (float)aw;
+  feats[27] = (float)ah;
+  feats[28] = (float)lw;
+  feats[29] = (float)lh;
+  feats[30] = (float)finer;
+  feats[31] = (float)aniso;
+
+  // --- H9a block C: quantization / position. ---
+  const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+  feats[32] = (float)log1p((double)(dc_q * dc_q) / 256.0);
+  const int frame_w = cm->width, frame_h = cm->height;
+  feats[33] = frame_h > 0 ? (float)((double)blk->mi_row / (frame_h / 4.0)) : 0.0f;
+  feats[34] = frame_w > 0 ? (float)((double)blk->mi_col / (frame_w / 4.0)) : 0.0f;
+  feats[35] = (float)mi_size_wide_log2[bsz];
 }
 
 // H8 surrogate replay: an external model (the ConvNeXt surrogate) is scored
@@ -1894,7 +1930,8 @@ static const float *student_replay_lookup(const AV1_COMMON *cm,
 // Optional feature/prob dump for the C <-> Python parity check: set
 // AV1_STUDENT_FEATURE_DUMP=<path> to append one fixed-size record per scored
 // node (single-threaded runs only): head[4] ++ feats[N] ++ probs[3].
-static void student_dump_features(const PartitionBlkParams *blk, int qindex,
+static void student_dump_features(const AV1_COMMON *cm, const MACROBLOCK *x,
+                                  const PartitionBlkParams *blk, int qindex,
                                   const float *feats, const float *probs) {
   static FILE *fp = NULL;
   static int checked = 0;
@@ -1904,8 +1941,16 @@ static void student_dump_features(const PartitionBlkParams *blk, int qindex,
     checked = 1;
   }
   if (!fp) return;
-  const int32_t head[4] = { block_size_wide[blk->bsize], blk->mi_row,
-                            blk->mi_col, qindex };
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const int has_above = !!xd->above_mbmi;
+  const int has_left = !!xd->left_mbmi;
+  const int neigh_avail = has_above | (has_left << 1);
+  const int above_bsize = has_above ? xd->above_mbmi->bsize : blk->bsize;
+  const int left_bsize = has_left ? xd->left_mbmi->bsize : blk->bsize;
+  const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+  const int32_t head[10] = { block_size_wide[blk->bsize], blk->mi_row,
+                             blk->mi_col, qindex, neigh_avail, above_bsize,
+                             left_bsize, dc_q, cm->width, cm->height };
   fwrite(head, sizeof(head), 1, fp);
   fwrite(feats, sizeof(float), AV1_PARTITION_STUDENT_NUM_FEATURES, fp);
   fwrite(probs, sizeof(float), 3, fp);
@@ -1974,11 +2019,11 @@ static void student_prune_partition(const AV1_COMMON *cm, const MACROBLOCK *x,
     probs[2] = 1.0f;
   } else {
     float feats[AV1_PARTITION_STUDENT_NUM_FEATURES];
-    student_node_features(x, blk, feats);
+    student_node_features(cm, x, blk, feats);
     float logits[3];
     av1_nn_predict(feats, nnconfig, 1, logits);
     av1_nn_softmax(logits, probs, 3);  // [P(NONE), P(SPLIT), P(REST)]
-    student_dump_features(blk, x->qindex, feats, probs);
+    student_dump_features(cm, x, blk, x->qindex, feats, probs);
   }
   const StudentTaus *tau = student_get_taus(block_size_wide[blk->bsize]);
   if (probs[0] > tau->none) {
