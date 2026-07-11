@@ -145,8 +145,8 @@ título/resumo/objetivos com essa informação explícita.
 | H9 Fase 1 | instrumentação RD (B/C/E) + re-extração 16 seqs | ✅ | `a17c525`, `a6748c5`, `dataset_h9/` (64 pkl) |
 | H9 Fase 2 | Gate 2 offline (sinal do contexto RD) | ✅ **PASSOU** | `8866757`, `models/gate2_final.csv` |
 | H9 Fase 3 | estudante tabular direto sobre H9a; Gate 3 (val) | ✅ **PASSOU** | `173aa8f`, `models/student_h9a/` |
-| **H9 Fase 4** | sincronizar features B/C em C; paridade; no-op byte-idêntico | ⏳ **PRÓXIMO** | — |
-| H9 Fase 5 | benchmark no teste held-out + ablação de atribuição + SOTA nativo | ⬜ | — |
+| H9 Fase 4 | features B/C em C; paridade C↔Python; no-op byte-idêntico | ✅ **PASSOU** | `b3cd3c1`..`ecf436b`, `models/student_h9a/gate4_evidence.txt` |
+| **H9 Fase 5** | benchmark no teste held-out + ablação de atribuição + SOTA nativo | ⏳ **PRÓXIMO** | — |
 
 Legenda: ✅ concluído · ⏳ próximo · ⬜ pendente.
 
@@ -177,7 +177,7 @@ teste held-out).
 
 ---
 
-## 4. Fase 3 — CONCLUÍDA (Gate 3 passou) e próximo passo (Fase 4)
+## 4. Fases 3–4 CONCLUÍDAS e próximo passo (Fase 5)
 
 **O que foi feito (decisão pela evidência).** A questão em aberto — ConvNeXt+ramo
 RD vs tabular — foi resolvida pelo dado: como o ganho H9a é **tabular e não-pixel**,
@@ -203,14 +203,25 @@ reforçando o Gate 2. SPLIT-recall (métrica de segurança) 0,98/0,82 em 64/32px
 Artefatos: `results/models/student_h9a/` (`students.pt`, `oracle_sim_*.csv`, header
 de 36 features exportado — o `student_real` implantado ficou intocado).
 
-**PRÓXIMO PASSO (Fase 4 — integração em C).** Sincronizar as features B/C dentro de
-`student_node_features` (`partition_strategy.c`) — leitura de `xd->above/left_mbmi`,
-`dc_q`, posição — espelhando **`features.node_features_h9a`** (fonte única de verdade
-do layout de 36 features). Estender `check_feature_parity.py` para os índices 24–35;
-verificar **no-op byte-idêntico** (flag off = baseline) e paridade C↔Python das
-probabilidades; então trocar o header implantado pelo de 36 features. **Fase 5:**
-benchmark no teste (Jockey/RaceNight/RiverBank, ≥10 quadros) + ablação de atribuição
-(H9a vs pixels vs variância vs aleatório) + comparação com `intra_cnn_based_part_prune`.
+**Fase 4 — CONCLUÍDA (integração em C).** As features B/C foram sincronizadas em
+`student_node_features` (`partition_strategy.c`), espelhando `node_features_h9a`;
+o estudante H9a (36 features) é agora o **implantado**. Gate 4 passou:
+- **paridade C↔Python** verde — 36/36 features a `0.0e+00`, probs <1e-3 (588 nós);
+- **no-op byte-idêntico** ao `aom_baseline` com a flag desligada (md5 igual, em
+  quadro texturizado);
+- decode válido + testes AllIntra. Evidência: `models/student_h9a/gate4_evidence.txt`.
+
+Ressalva (do review final): a paridade prova a **aritmética** das features; o
+**sourcing** do ctx (vizinhança/quant lidos em runtime) é validado por revisão de
+código contra o idioma nativo e, fim-a-fim, pelo benchmark da Fase 5.
+
+**PRÓXIMO PASSO (Fase 5 — benchmark de tese).** No conjunto de **teste** held-out
+(Jockey/RaceNight/RiverBank, ≥10 quadros): curva taxa BD × speedup do estudante H9a
+com `libaom_perf` (rebuild com o código de 36 features) vs `libaom_perf_anchor`;
+**ablação de atribuição** em speedup casado (H9a vs pixels vs variância vs aleatório,
+via `ablation_attrib.py`/`analyze_ablation.py`); comparação com o
+`intra_cnn_based_part_prune` nativo. Gate 5 (sucesso da tese): H9a domina a variância
+em taxa BD a speedup casado, por margem além do ruído, em ≥2 das 3 seqs de teste.
 
 ---
 
