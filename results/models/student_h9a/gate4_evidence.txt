@@ -1,0 +1,15 @@
+Gate 4 evidence — Fase 4 (H9a C integration), branch ml-partition-dev
+
+[no-op byte-identical] flag-OFF src/aom == aom_baseline
+  input: textured 448x256 all-intra frame, cpu-used=0, cq=32
+         (exercises rect/AB/4-way partition + full mode search)
+  libaom_noop        (src/aom, PARTITION_ML_STUDENT off, Release): b904f11c9fa02d5ea25460cb976ef29d
+  libaom_perf_anchor (aom_baseline, Release):                      b904f11c9fa02d5ea25460cb976ef29d
+  => IDENTICAL: all H9a code is inert under #if PARTITION_ML_STUDENT.
+
+[C<->Python parity] flag ON: PARITY OK — 36/36 features max|dC-dPy|=0.0e+00,
+  probs within 1e-3, on 588 unique nodes (check_feature_parity.py).
+
+[decode] flag-on stream decoded by aom_baseline aomdec: 172076 bytes, valid.
+
+[unit tests] libaom_dev_generic: EncodeAPI.AllIntra* 3/3 PASSED, 0 failures.
