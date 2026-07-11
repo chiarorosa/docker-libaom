@@ -71,6 +71,7 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `build_dataset.py` | Orquestrador N seqs × N QP; amostragem temporal (`--skip`); **retomável**; escreve `manifest.csv`. Lançar com venv python. |
 | `convert_partition_data.py` | `.bin` → `.pkl`; parseia `PartitionSample` (4144 B); expõe luma + rótulo + **contexto RD** (above/left_bsize, neigh_avail, dc_q, none_rate/dist/rdcost) |
 | `validate_partition_data.py` | Integridade + acurácia de pixels vs YUV-fonte + exportação PNG |
+| `pkl_to_npz.py` | Converte `.pkl` (float32) → `.npz` uint8 para arquivamento/DOI (Zenodo); ver `ZENODO_datasheet.md`. Não executado por padrão. |
 
 ### 2.3 Avaliação — `src/scripts/benchmark/`
 | Script | Papel |
