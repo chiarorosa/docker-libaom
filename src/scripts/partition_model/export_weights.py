@@ -78,11 +78,12 @@ def main(argv):
     args = p.parse_args(argv)
 
     bundle = torch.load(args.students, map_location="cpu")
+    nfeat = bundle.get("num_features", featmod.NUM_FEATURES)
     dims = sorted(bundle["students"].keys())
 
     arrays_all, configs_all = "", ""
     for dim in dims:
-        net = studentmod.make_student(featmod.NUM_FEATURES, bundle["hidden"])
+        net = studentmod.make_student(nfeat, bundle["hidden"])
         net.load_state_dict(bundle["students"][dim])
         cfg = studentmod.export_nn_config(net)
         a, c = emit_config(dim, cfg)
@@ -102,12 +103,11 @@ def main(argv):
           "// Distilled AV1 partition student: per-size MLP, features from\n"
           "// src/scripts/partition_model/features.py (NUM_FEATURES={}).\n"
           "// Output softmax = [P(NONE), P(SPLIT), P(REST)].\n".format(
-              featmod.NUM_FEATURES)
+              nfeat)
         + "#ifndef {g}\n#define {g}\n\n".format(g=guard)
         + '#include "av1/encoder/ml.h"\n#include "av1/common/enums.h"\n\n'
         + "#ifdef __cplusplus\nextern \"C\" {\n#endif\n\n"
-        + "#define AV1_PARTITION_STUDENT_NUM_FEATURES {}\n\n".format(
-            featmod.NUM_FEATURES)
+        + "#define AV1_PARTITION_STUDENT_NUM_FEATURES {}\n\n".format(nfeat)
         + arrays_all
         + configs_all
         + "static inline const NN_CONFIG *av1_partition_student_nnconfig(\n"
