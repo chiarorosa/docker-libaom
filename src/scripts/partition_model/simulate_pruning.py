@@ -63,18 +63,25 @@ def node_cost(dim):
     return CANDS[dim] * dim * dim
 
 
-def collect_superblocks(entries, limit=None):
-    """List of superblocks: {nodes:{(dim,r,c):{truth,feat}}, luma, qindex}."""
+def collect_superblocks(entries, feature_set="pixels24", limit=None):
+    """List of superblocks: {nodes:{(dim,r,c):{truth,feat}}, luma, qindex}.
+    feature_set: 'pixels24' -> node_features (24); 'h9a' -> node_features_h9[:36]
+    with the per-node RD context (blocks B/C)."""
+    nfa = featmod.NUM_FEATURES_H9A
     sbs = []
     for e in entries:
         for sb in datamod.iter_superblock_members(e["path"]):
             nodes = {}
-            for dim, r, c, _luma, label in sb["members"]:
-                nodes[(dim, r, c)] = {
-                    "truth": label,
-                    "feat": featmod.node_features(sb["luma"], dim, r, c,
-                                                  sb["qindex"]),
-                }
+            for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
+                if feature_set == "h9a":
+                    ctx = dict(sb["ctx"][k])
+                    ctx["bsize_enum"] = -1
+                    feat = featmod.node_features_h9(sb["luma"], dim, r, c,
+                                                    sb["qindex"], ctx)[:nfa]
+                else:
+                    feat = featmod.node_features(sb["luma"], dim, r, c,
+                                                 sb["qindex"])
+                nodes[(dim, r, c)] = {"truth": label, "feat": feat}
             sbs.append({"nodes": nodes, "luma": sb["luma"],
                         "qindex": sb["qindex"]})
             if limit and len(sbs) >= limit:
@@ -85,9 +92,10 @@ def collect_superblocks(entries, limit=None):
 def score_with_student(sbs, bundle, device):
     """Attach 3-class probs from the distilled per-size MLPs (once per node)."""
     nets = {}
+    nfeat = bundle.get("num_features", featmod.NUM_FEATURES)
     for dim, _ in MODEL_LEVELS:
         if dim in bundle["students"]:
-            net = studentmod.make_student(featmod.NUM_FEATURES, bundle["hidden"])
+            net = studentmod.make_student(nfeat, bundle["hidden"])
             net.load_state_dict(bundle["students"][dim])
             nets[dim] = net.to(device).eval()
     for dim, _ in MODEL_LEVELS:
@@ -104,6 +112,52 @@ def score_with_student(sbs, bundle, device):
         for (si, key), p in zip(idx, probs):
             sbs[si]["nodes"][key]["prob"] = p
     return sbs
+
+
+def score_with_variance(sbs, v0=1000.0):
+    """Non-learned baseline: P(NONE)=exp(-var/v0) from feature 0 (log_var).
+    Only modeled levels are scored; 8x8 leaves stay terminal, as the models do."""
+    modeled = {d for d, _ in MODEL_LEVELS}
+    for sb in sbs:
+        for key, nd in sb["nodes"].items():
+            if key[0] not in modeled:
+                continue
+            var = float(np.expm1(nd["feat"][0]))     # feature 0 is log1p(var)
+            flat = float(np.exp(-var / v0))
+            nd["prob"] = np.array([flat, 1.0 - flat, 0.0])
+    return sbs
+
+
+def classification_report(sbs):
+    """Per-size macro-F1 and SPLIT-recall from the scored probs (argmax) vs the
+    3-class collapsed truth (Gate 3a). truth is the raw 10-class PARTITION_TYPE;
+    collapse_label maps it to [NONE, SPLIT, REST]."""
+    per = {d: {"pred": [], "true": []} for d, _ in MODEL_LEVELS}
+    for sb in sbs:
+        for (dim, r, c), nd in sb["nodes"].items():
+            if dim not in per or "prob" not in nd:
+                continue
+            per[dim]["pred"].append(int(np.argmax(nd["prob"])))
+            per[dim]["true"].append(studentmod.collapse_label(nd["truth"]))
+    print("\nper-size classification (Gate 3a): macro-F1 | SPLIT-recall")
+    for dim, _ in MODEL_LEVELS:
+        pred = np.array(per[dim]["pred"])
+        true = np.array(per[dim]["true"])
+        if len(true) == 0:
+            continue
+        f1s = []
+        for cls in range(3):
+            tp = int(((pred == cls) & (true == cls)).sum())
+            fp = int(((pred == cls) & (true != cls)).sum())
+            fn = int(((pred != cls) & (true == cls)).sum())
+            prec = tp / (tp + fp) if tp + fp else 0.0
+            rec = tp / (tp + fn) if tp + fn else 0.0
+            f1s.append(2 * prec * rec / (prec + rec) if prec + rec else 0.0)
+        split_tp = int(((pred == 1) & (true == 1)).sum())
+        split_fn = int(((pred != 1) & (true == 1)).sum())
+        srec = split_tp / (split_tp + split_fn) if split_tp + split_fn else 0.0
+        print("  {:>2}px  macroF1={:.3f}  SPLITrecall={:.3f}".format(
+            dim, float(np.mean(f1s)), srec))
 
 
 def score_with_surrogate(sbs, surrogate, device, batch=256):
@@ -279,16 +333,30 @@ def main(argv):
     p.add_argument("--out-csv", default="/workspace/results/models/student/"
                                         "oracle_sim.csv")
     p.add_argument("--limit", type=int, default=None)
+    p.add_argument("--baseline", choices=["variance"], default=None,
+                   help="score with the non-learned variance threshold instead "
+                        "of a model (Gate 3 comparison)")
+    p.add_argument("--v0", type=float, default=1000.0,
+                   help="variance-baseline scale: P(NONE)=exp(-var/v0)")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     entries = datamod.discover_pkls(args.dataset_dir)
     _, val_e = datamod.split_entries(entries, args.val_seqs, None)
     datamod.assert_real_luma(val_e)
-    sbs = collect_superblocks(val_e, limit=args.limit)
+
+    if args.baseline == "variance":
+        feature_set, mode = "pixels24", "variance"
+    elif args.surrogate:
+        feature_set, mode = "pixels24", "surrogate"
+    else:
+        bundle = torch.load(args.students, map_location=device)
+        feature_set, mode = bundle.get("feature_set", "pixels24"), "student"
+
+    sbs = collect_superblocks(val_e, feature_set=feature_set, limit=args.limit)
     total_nodes = sum(len(s["nodes"]) for s in sbs)
 
-    if args.surrogate:
+    if mode == "surrogate":
         from model import PartitionSurrogate
         ckpt = torch.load(args.surrogate, map_location=device)
         sa = ckpt.get("args", {})
@@ -297,13 +365,17 @@ def main(argv):
         net.load_state_dict(ckpt["model"])
         sbs = score_with_surrogate(sbs, net, device)
         model_tag = "SURROGATE " + args.surrogate
+    elif mode == "variance":
+        sbs = score_with_variance(sbs, args.v0)
+        model_tag = "VARIANCE-BASELINE v0={}".format(args.v0)
     else:
-        bundle = torch.load(args.students, map_location=device)
         sbs = score_with_student(sbs, bundle, device)
-        model_tag = "STUDENT " + args.students
+        model_tag = "STUDENT {} (feature_set={})".format(args.students,
+                                                          feature_set)
     print("scored with:", model_tag)
     print("superblocks: {}, nodes: {} (val seqs {})".format(
         len(sbs), total_nodes, args.val_seqs))
+    classification_report(sbs)
 
     os.makedirs(os.path.dirname(args.out_csv), exist_ok=True)
     rows = []
@@ -374,6 +446,14 @@ def main(argv):
                     "true_split_lost_pct", "true_rect_lost_pct",
                     "rect_off_coverage_pct", "rect_off_wrong_pct", "label"])
         w.writerows(rows)
+
+    caps = [0.5, 1.0, 2.0]
+    print("\ncost_red% at matched risk (split-lost cap):")
+    print("  cap%   cost_red%")
+    for cap in caps:
+        feas = [r[4] for r in rows if r[6] <= cap]  # r[4]=cost_red, r[6]=split_lost
+        print("  {:<5} {:8.2f}".format(cap, max(feas) if feas else 0.0))
+
     print("wrote", args.out_csv)
 
 
