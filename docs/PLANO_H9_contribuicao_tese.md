@@ -258,3 +258,95 @@ taxa-distorção**, e não a uma heurística trivial. Caso o Gate 2 refute H9 no
 domínio pré-NONE, a tese entrega a **caracterização rigorosa do teto informacional
 do particionamento** (um resultado científico negativo, porém forte e original),
 com o estudo de teto H9c delimitando o que seria possível.
+
+---
+
+## Apêndice A — Projeto detalhado de features (especificação para a Fase 1)
+
+Sequências de teste congeladas: **Jockey, RaceNight, RiverBank**.
+
+Legenda de custo: **livre** (dado já residente, custo de inferência ~0) ·
+**barato** (uma operação leve por nó, a pagar-se no benchmark) · **teto**
+(disponível só pós-NONE; não entra no modelo implantado, só no estudo de teto).
+Ponto de disponibilidade: **pré** (no gancho atual, antes de qualquer busca RD) ·
+**pós-NONE** (após avaliar PARTITION_NONE).
+
+### Bloco A — Pixels (24 atuais, mantidos; inclui o baseline de variância)
+Já implementados e com paridade C↔Python verificada. Servem para que o modelo
+H9 seja **superconjunto** do baseline de variância (comparação limpa). Referência:
+`features.py`, `student_node_features`. Nenhuma mudança.
+
+| idx | nome | conteúdo | custo | ponto |
+|--:|---|---|---|---|
+| 0–17 | bloco-próprio | variância, quadrantes, gradientes h/v, perfis linha/coluna, bordas, DC, qindex | livre | pré |
+| 18–23 | contexto hierárquico | var pai, contraste pai/irmãos, posição no superbloco | livre | pré |
+
+### Bloco B — Contexto de vizinhança de particionamento (H9a) — **livre**
+Espelha `partition_strategy.c:627–636` (features nativas comprovadas). Fonte:
+`xd->above_mbmi`, `xd->left_mbmi` (vizinhos já codificados em ordem raster →
+causal e disponível na inferência).
+
+| idx | nome | fórmula / fonte | just. |
+|--:|---|---|---|
+| 24 | has_above | `!!xd->above_mbmi` | disponibilidade de borda superior |
+| 25 | has_left | `!!xd->left_mbmi` | idem esquerda |
+| 26 | above_w_log2 | `mi_size_wide_log2[above_bsize]` | largura do vizinho de cima |
+| 27 | above_h_log2 | `mi_size_high_log2[above_bsize]` | altura do vizinho de cima |
+| 28 | left_w_log2 | `mi_size_wide_log2[left_bsize]` | largura do vizinho da esquerda |
+| 29 | left_h_log2 | `mi_size_high_log2[left_bsize]` | altura do vizinho da esquerda |
+| 30 | neigh_finer | `(min(above,left area) < área atual)` | vizinhos mais finos ⇒ este tende a dividir |
+| 31 | neigh_aniso | `sign(above/left mais largo que alto)` | pista para HORZ vs VERT (rect) |
+
+**Justificativa:** particionamento é espacialmente correlacionado; se os vizinhos
+são finos, este bloco tende a dividir — informação **ausente dos pixels** e de
+custo zero. É a aposta principal do H9.
+
+### Bloco C — Quantização e posição (H9a) — **livre**
+| idx | nome | fórmula / fonte | just. |
+|--:|---|---|---|
+| 32 | log_dc_q2 | `log1p(dc_q²/256)` (como `:624`) | força de quantização molda a decisão RD |
+| 33 | pos_row_norm | `mi_row / mi_rows` | correlação vertical de conteúdo (céu/chão) |
+| 34 | pos_col_norm | `mi_col / mi_cols` | correlação horizontal |
+| 35 | depth_log2 | `mi_size_wide_log2[bsize]` | profundidade na árvore (prior por nível) |
+
+**Justificativa:** o mesmo bloco decide diferente sob QP diferente; a posição
+captura estrutura global barata que a janela local do bloco não vê.
+
+### Bloco D — Proxy de resíduo intra (H9b) — **barato**
+| idx | nome | fórmula / fonte | just. |
+|--:|---|---|---|
+| 36 | satd_pred | SATD (Hadamard) do resíduo de uma predição intra barata a partir dos vizinhos reconstruídos (PAETH ou melhor-de-{DC,PAETH,2 direcionais} por SAD) | proxy de **taxa** de codificar o bloco inteiro |
+| 37 | satd_gain | `SATD(fonte) − SATD(resíduo)`, normalizado | quão **predizível** é o bloco a partir dos vizinhos |
+
+**Detalhe crítico (evita repetir a variância):** um resíduo de predição
+**constante** (DC) tem a mesma variância do bloco — não agrega. Por isso o proxy
+usa **SATD** (energia no domínio da transformada = proxy de taxa) sobre uma
+predição **não-constante** (direcional/PAETH). Isto mede predizibilidade, que a
+variância não captura. Custo: uma predição + Hadamard por nó — reusa
+`aom_satd`/predição intra existentes; a pagar-se no benchmark (se não pagar,
+recua-se para H9a, que é grátis).
+
+### Bloco E — rdcost do PARTITION_NONE (H9c) — **teto**, pós-NONE
+| idx | nome | fórmula / fonte | just. |
+|--:|---|---|---|
+| 38 | log_none_rate | `log1p(none_rdc->rate)` | taxa real do NONE |
+| 39 | log_none_dist | `log1p(none_rdc->dist)` | distorção real do NONE |
+| 40 | log_none_rdcost | `log1p(none_rdc->rdcost)` | custo RD real do NONE |
+
+**Justificativa e papel:** é o sinal RD mais forte (o que `ml_early_term_after_none`
+usa, `:741–743`). **Não entra no modelo implantado** (exigiria pagar o NONE em
+todo nó); serve como **estudo de teto** — mede quanto H9a/H9b deixam na mesa, o
+análogo RD do que o ConvNeXt/H8 foi para os pixels. Registrado no dataset via
+escrita do sample **após** a avaliação do PARTITION_NONE em `av1_rd_pick_partition`.
+
+### Resumo dos conjuntos de ablação (Fase 2)
+| conjunto | blocos | custo | papel |
+|---|---|---|---|
+| variância | A[0] só | livre | baseline a superar |
+| pixels-24 | A | livre | ML antigo (≈ variância) |
+| **H9a** | A+B+C | **livre** | **aposta principal** |
+| **H9b** | A+B+C+D | barato | + predizibilidade |
+| H9c | A+B+C+D+E | teto | limite superior de contexto RD |
+
+O modelo **implantado** será o melhor entre H9a e H9b que passe o Gate 2 e se
+pague no benchmark; H9c fica como teto reportado.

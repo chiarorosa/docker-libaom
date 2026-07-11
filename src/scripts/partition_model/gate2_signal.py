@@ -38,10 +38,15 @@ import student as studentmod  # noqa: E402
 from simulate_pruning import simulate, metrics, _subtree_size  # noqa: E402
 
 
-def collect(entries, limit=None):
-    """Superblocks with full 41-feature H9 vectors + truth per node."""
+def collect(entries, limit=None, per_pkl=None):
+    """Superblocks with full 41-feature H9 vectors + truth per node.
+
+    `per_pkl` caps superblocks taken from EACH pkl (even, diverse sampling
+    across sequences/QPs); `limit` is a global cap (biased to early pkls, for
+    quick smoke runs)."""
     sbs = []
     for e in entries:
+        took = 0
         for sb in datamod.iter_superblock_members(e["path"]):
             if not sb.get("has_rd"):
                 raise SystemExit("{}: no RD context; re-extract with the H9 "
@@ -56,6 +61,9 @@ def collect(entries, limit=None):
                                                      sb["qindex"], ctx),
                 }
             sbs.append({"nodes": nodes})
+            took += 1
+            if per_pkl and took >= per_pkl:
+                break
             if limit and len(sbs) >= limit:
                 return sbs
     return sbs
@@ -167,6 +175,8 @@ def main(argv):
     p.add_argument("--max-split-lost", type=float, default=1.0)
     p.add_argument("--max-none-wrong", type=float, default=5.0)
     p.add_argument("--limit", type=int, default=None)
+    p.add_argument("--per-pkl", type=int, default=None,
+                   help="cap superblocks taken from each pkl (diverse sampling)")
     p.add_argument("--out-csv",
                    default="/workspace/results/models/gate2_signal.csv")
     args = p.parse_args(argv)
@@ -178,8 +188,8 @@ def main(argv):
     datamod.assert_real_luma(train_e)
     print("train pkls: {}, val pkls: {} (val {})".format(
         len(train_e), len(val_e), args.val_seqs), flush=True)
-    train_sbs = collect(train_e, limit=args.limit)
-    val_base = collect(val_e, limit=args.limit)
+    train_sbs = collect(train_e, limit=args.limit, per_pkl=args.per_pkl)
+    val_base = collect(val_e, limit=args.limit, per_pkl=args.per_pkl)
     print("train superblocks: {}, val: {}".format(len(train_sbs), len(val_base)),
           flush=True)
 
