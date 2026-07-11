@@ -9,7 +9,14 @@ Gate 4 evidence — Fase 4 (H9a C integration), branch ml-partition-dev
 
 [C<->Python parity] flag ON: PARITY OK — 36/36 features max|dC-dPy|=0.0e+00,
   probs within 1e-3, on 588 unique nodes (check_feature_parity.py).
+  Scope: proves feature ARITHMETIC (identical inputs). Neighbor/quant ctx
+  fields round-trip C->dump->Python, so their 0.0 delta is tautological; ctx
+  SOURCING is validated by code review vs the native idiom and by Fase 5.
+  The independent signals are block A + neigh_finer/aniso + depth_log2.
 
 [decode] flag-on stream decoded by aom_baseline aomdec: 172076 bytes, valid.
 
 [unit tests] libaom_dev_generic: EncodeAPI.AllIntra* 3/3 PASSED, 0 failures.
+  Note: KeyValAPI.*partition*/*intra* filters matched 0 tests (names absent in
+  this libaom fork), NOT a silent regression — the byte-identical no-op above
+  is the dispositive safety proof.

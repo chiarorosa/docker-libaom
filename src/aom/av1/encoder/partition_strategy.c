@@ -1929,7 +1929,11 @@ static const float *student_replay_lookup(const AV1_COMMON *cm,
 
 // Optional feature/prob dump for the C <-> Python parity check: set
 // AV1_STUDENT_FEATURE_DUMP=<path> to append one fixed-size record per scored
-// node (single-threaded runs only): head[4] ++ feats[N] ++ probs[3].
+// node (single-threaded runs only): head[10] { n, mi_row, mi_col, qindex,
+// neigh_avail, above_bsize, left_bsize, dc_q, frame_w, frame_h } ++ feats[N]
+// ++ probs[3]. The extra head fields are the raw RD context the C side used,
+// so the Python parity check can recompute node_features_h9a from identical
+// inputs (isolating feature arithmetic from ctx sourcing).
 static void student_dump_features(const AV1_COMMON *cm, const MACROBLOCK *x,
                                   const PartitionBlkParams *blk, int qindex,
                                   const float *feats, const float *probs) {

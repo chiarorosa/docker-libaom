@@ -2,14 +2,24 @@
 """C <-> Python parity check for the student feature extractor (Fase D gate).
 
 Encodes one frame with the PARTITION_ML_STUDENT build while
-AV1_STUDENT_FEATURE_DUMP makes the C side append one record per scored node
-(int32 n, mi_row, mi_col, qindex + float32 feats[NUM_FEATURES]). This script
-then recomputes every vector with features.node_features() from the same
-source pixels and reports the worst absolute deviation per feature.
+AV1_STUDENT_FEATURE_DUMP makes the C side append one record per scored node:
+head[10] (int32 n, mi_row, mi_col, qindex, neigh_avail, above_bsize,
+left_bsize, dc_q, frame_w, frame_h) + float32 feats[NUM_FEATURES_H9A] +
+probs[3]. This script rebuilds the RD context from the head and recomputes
+every vector with features.node_features_h9a from the same source pixels,
+reporting the worst absolute deviation per feature.
+
+Scope: this proves the feature ARITHMETIC matches given identical inputs. The
+neighbor/quant ctx fields round-trip C -> dump -> Python, so their delta is
+tautologically ~0; the ctx SOURCING (that C reads the right above/left bsize
+and dc_q at runtime) is validated by code review against the native idiom
+(partition_strategy.c ~=623-636) and, end-to-end, by the Fase 5 benchmark.
+The independent signal here is block A (pixels, recomputed from source luma)
+plus the derived neigh_finer/neigh_aniso/depth_log2.
 
 Expected result: bit-identical for the integer-derived features; <= 1-2 ulp
 (float32) on log1p outputs, which is harmless to the MLP. Any larger deviation
-means the two implementations diverged and MUST be fixed before H7.
+means the two implementations diverged and MUST be fixed before the benchmark.
 
 Run inside the container, e.g.:
   venv-ml/bin/python check_feature_parity.py \
