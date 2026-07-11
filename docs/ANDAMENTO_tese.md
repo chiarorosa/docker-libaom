@@ -144,8 +144,8 @@ título/resumo/objetivos com essa informação explícita.
 | H9 Fase 0 | protocolo congelado (test/val/train, QPs, métricas) | ✅ | `aabbbee`, `PROTOCOLO_avaliacao.md` |
 | H9 Fase 1 | instrumentação RD (B/C/E) + re-extração 16 seqs | ✅ | `a17c525`, `a6748c5`, `dataset_h9/` (64 pkl) |
 | H9 Fase 2 | Gate 2 offline (sinal do contexto RD) | ✅ **PASSOU** | `8866757`, `models/gate2_final.csv` |
-| **H9 Fase 3** | **retreinar surrogate + destilar estudante com features H9a** | ⏳ **PRÓXIMO** | — |
-| H9 Fase 4 | sincronizar features B/C em C; paridade; no-op byte-idêntico | ⬜ | — |
+| H9 Fase 3 | estudante tabular direto sobre H9a; Gate 3 (val) | ✅ **PASSOU** | `173aa8f`, `models/student_h9a/` |
+| **H9 Fase 4** | sincronizar features B/C em C; paridade; no-op byte-idêntico | ⏳ **PRÓXIMO** | — |
 | H9 Fase 5 | benchmark no teste held-out + ablação de atribuição + SOTA nativo | ⬜ | — |
 
 Legenda: ✅ concluído · ⏳ próximo · ⬜ pendente.
@@ -177,37 +177,47 @@ teste held-out).
 
 ---
 
-## 4. PRÓXIMO PASSO (Fase 3 — imediato)
+## 4. Fase 3 — CONCLUÍDA (Gate 3 passou) e próximo passo (Fase 4)
 
-Retreinar a cadeia com o conjunto de features **H9a** (índices 0–35 de
-`features.node_features_h9`), sobre `dataset_h9`, respeitando a partição
-congelada.
+**O que foi feito (decisão pela evidência).** A questão em aberto — ConvNeXt+ramo
+RD vs tabular — foi resolvida pelo dado: como o ganho H9a é **tabular e não-pixel**,
+o ConvNeXt pixel-only não pode ensiná-lo, e o Gate 2 já provou a MLP-por-tamanho.
+Logo, treinou-se o **estudante implantável diretamente** sobre H9a (36 features =
+A pixels + B vizinhança + C quant/pos), CE de rótulo duro, **sem professor**, na
+partição congelada. O ConvNeXt (`surrogate_real`) permanece como teto H8 de pixels;
+o H9c segue como teto RD. Planos: `docs/superpowers/{specs,plans}/2026-07-11-*`.
 
-1. **Substituto com ramo de contexto RD.** Decidir pela evidência: ou estender o
-   ConvNeXt com um ramo lateral que injeta as features B/C, ou — dado que o ganho
-   é tabular — um substituto tabular mais forte. Treinar em treino, selecionar em
-   validação (`train.py`, adaptado para o vetor H9a). *Gate:* macro-F1/SPLIT-recall
-   ≥ substituto pixels.
-2. **Destilar o estudante H9a** (`distill.py`) e checar na simulação oráculo
-   (`simulate_pruning.py`) que o estudante ≥ variância na validação.
-3. **Exportar pesos** (`export_weights.py`) → `partition_student_weights.h`.
+**Gate 3 (validação HoneyBee/FlowerPan/Lips), alavanca NONE-commit, risco casado
+(SPLIT-lost ≤ 1%), redução de custo do oráculo:**
 
-*Comandos de arranque:* ver `RASTREABILIDADE.md` §6 (mesma cadeia, com o vetor de
-features H9a e `--dataset-dir results/dataset_h9`).
+| modelo | cost_red% @ SL≤1% | menor SPLIT-lost alcançável |
+|---|---:|---:|
+| variância | ~0 | 22,6% (não opera em risco baixo) |
+| pixels24 | ~26–35 | ~0,3% |
+| **H9a** | **~55–58** | 0,19% |
 
-**Depois (Fase 4):** sincronizar as features B/C em C dentro de
+O **H9a dobra os pixels e domina a variância** (que nem chega a risco baixo),
+reforçando o Gate 2. SPLIT-recall (métrica de segurança) 0,98/0,82 em 64/32px vs
+0,73/0,52 dos pixels. **Ressalva mantida:** o oráculo superestima o tempo real
+(~5×); vale a margem relativa; o **Gate 5** (encoder real) é o árbitro.
+Artefatos: `results/models/student_h9a/` (`students.pt`, `oracle_sim_*.csv`, header
+de 36 features exportado — o `student_real` implantado ficou intocado).
+
+**PRÓXIMO PASSO (Fase 4 — integração em C).** Sincronizar as features B/C dentro de
 `student_node_features` (`partition_strategy.c`) — leitura de `xd->above/left_mbmi`,
-`dc_q`, posição; estender `check_feature_parity.py` para os novos índices;
-verificar no-op byte-idêntico. **Fase 5:** benchmark no teste (Jockey/RaceNight/
-RiverBank, ≥10 quadros) + ablação de atribuição (H9a vs pixels vs variância vs
-aleatório) + comparação com o `intra_cnn_based_part_prune` nativo.
+`dc_q`, posição — espelhando **`features.node_features_h9a`** (fonte única de verdade
+do layout de 36 features). Estender `check_feature_parity.py` para os índices 24–35;
+verificar **no-op byte-idêntico** (flag off = baseline) e paridade C↔Python das
+probabilidades; então trocar o header implantado pelo de 36 features. **Fase 5:**
+benchmark no teste (Jockey/RaceNight/RiverBank, ≥10 quadros) + ablação de atribuição
+(H9a vs pixels vs variância vs aleatório) + comparação com `intra_cnn_based_part_prune`.
 
 ---
 
 ## 5. Decisões em aberto
 
-- **Arquitetura do substituto H9a** (ConvNeXt+ramo RD vs tabular) — decidir na
-  Fase 3 pela validação.
+- ~~**Arquitetura do substituto H9a** (ConvNeXt+ramo RD vs tabular)~~ — **RESOLVIDO
+  na Fase 3**: estudante tabular direto sobre H9a (sem professor); ver §4.
 - **Publicação do dataset** — `docs/ZENODO_datasheet.md` pronto; conversão para
   `.npz` uint8 (`pkl_to_npz.py`) **não executada** (backup bruto bin+pkl indo para
   Google Drive primeiro).
