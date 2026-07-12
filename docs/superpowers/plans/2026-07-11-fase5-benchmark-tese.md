@@ -70,16 +70,36 @@ echo "pilot pid $!"'
 - [ ] **Monitorar** (`tail` do log; sem output incremental durante cada encode):
 `docker exec av1_bench tail -20 /workspace/results/benchmark/h9_pilot.log`
 
-- [ ] **Gate do piloto:** (i) rodou ponta a ponta sem erro (curva + ablação +
-analyze produziram CSVs); (ii) sinal direcional são — a curva ml tem BD/speedup
-plausíveis e a ablação mostra ml ≤ variância em BD a speedup casado (ruidoso em 2
-quadros, mas não deve inverter grosseiramente). Se quebrar, corrigir antes do full.
+- [x] **Gate do piloto (FEITO):** rodou ponta a ponta; sinal direcional forte
+(ml ~0% BD @1,2–1,34× vs variância 2,4–3,7%). Achado: faixas de speedup não se
+sobrepõem com grid estreito → grid largo (T2.5).
 
 ---
 
-### T3 — Full (detached, dias) + monitoramento
+### T2.5 — Calibração na VALIDAÇÃO (HoneyBee) — congela o grid sem tocar em teste
+
+```bash
+docker exec av1_bench bash -lc 'cd /workspace &&
+S=src/samples/HoneyBee_3840x2160_120fps_420_8bit_YUV_RAW.yuv &&
+nohup bash -c "
+build/venv-ml/bin/python src/scripts/benchmark/ablation_attrib.py --seq \$S \
+  --frames 3 --cqs 32 43 --methods ml variance random \
+  --tau-none 0.95 0.90 0.80 0.70 0.60 0.50 --out-dir results/benchmark/h9_calib &&
+build/venv-ml/bin/python src/scripts/benchmark/analyze_ablation.py \
+  --dirs results/benchmark/h9_calib && echo CALIB_DONE
+" > results/benchmark/h9_calib.log 2>&1 &
+echo "calib pid \$!"'
+```
+- [ ] **Gate da calibração:** as faixas de speedup de `ml` e `variância` se
+sobrepõem (o `analyze_ablation` compara em ≥2 níveis de speedup casado). Se não,
+alargar/deslocar o grid e repetir (ainda em validação). Congelar o grid resultante.
+
+---
+
+### T3 — Full (detached, ~18–24h) + monitoramento
 
 Protocolo congelado. Por sequência (Jockey→RaceNight→RiverBank), retomável.
+Ablação com o grid **congelado** na T2.5.
 
 - [ ] **Lançar por sequência** (exemplo Jockey; repetir com RaceNight/RiverBank):
 ```bash
@@ -91,12 +111,13 @@ build/venv-ml/bin/python src/scripts/benchmark/h7h8_bench.py --seq $S --frames 1
 build/venv-ml/bin/python src/scripts/benchmark/h7h8_bench.py --seq $S --frames 10 \
   --cqs 20 32 43 55 --preset aggressive --out-dir $O/curve_aggr &&
 build/venv-ml/bin/python src/scripts/benchmark/ablation_attrib.py --seq $S --frames 10 \
-  --cqs 20 32 43 55 --methods ml variance random --tau-none 0.90 0.80 0.70 --out-dir $O/ablation
+  --cqs 20 32 43 55 --methods ml variance random \
+  --tau-none 0.95 0.90 0.80 0.70 0.60 0.50 --out-dir $O/ablation
 " > results/benchmark/h9_test_Jockey.log 2>&1 &
 echo "full Jockey pid $!"'
 ```
-Cada seq ≈ 2,5–3 dias. Monitorar; ao concluir uma seq, lançar a próxima (ou
-encadear). Retomável: uma seq incompleta é re-lançada isolada.
+Cada seq ≈ 6–8 h (~34 s/quadro; 10 quadros); total ~18–24 h. Monitorar; ao concluir
+uma seq, lançar a próxima (ou encadear). Retomável: uma seq incompleta é re-lançada.
 
 ---
 

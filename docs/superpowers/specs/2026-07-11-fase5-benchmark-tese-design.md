@@ -60,16 +60,35 @@ estudante implantado H9a. Total: 6 pontos operacionais mapeando a fronteira.
 
 **Ablação de atribuição** (`ablation_attrib.py`, NONE-commit puro: split=inf,
 rest=off): métodos **ml / variance / random** (`AV1_STUDENT_BASELINE`), sweep
-`--tau-none` (default `{0.6, 0.75, 0.9}`; usar `{0.90, 0.80, 0.70}` para casar com
-a região de operação do oráculo). Tudo no mesmo `libaom_perf` (variância e aleatório
-são computados em C, independentes das features; ml usa o header de 36).
+`--tau-none` **alargado** `{0.95, 0.90, 0.80, 0.70, 0.60, 0.50}` (mesmo grid para os
+três métodos). Motivo: métodos diferentes podam a taxas diferentes por τ, então um
+grid estreito deixa suas faixas de speedup **sem sobreposição**, e a comparação a
+speedup casado (`analyze_ablation.py`) não interpola. O grid largo garante
+sobreposição. É uma correção **neutra ao método** (faixa de medição), não tuning de
+operating point. Tudo no mesmo `libaom_perf` (variância e aleatório computados em C,
+independentes das features; ml usa o header de 36).
 
-## 6. Piloto (valida o pipeline; roda primeiro)
+## 6. Duas etapas antes do full (papéis separados, integridade preservada)
 
-Config reduzida — **Jockey só, 2 quadros, cq {32,43}**:
-- Curva: `h7h8_bench.py --preset safe` (P0/P_rect/P_ref; H8 auto-dropped) — 3 pontos.
-- Ablação: `ablation_attrib.py --methods ml variance random --tau-none 0.90 0.80`.
-- ~20 encodes × (~2 quadros @ cpu-used=0 4K ≈ 13 min) ≈ **~4 h**, detached.
+**Correção de custo (medida no rebuild):** o encode de benchmark roda a **~34
+s/quadro** em 4K cpu-used=0 single-thread (não ~500 s — aquele número era da
+extração de ground-truth com `LOG_PARTITION_DATA`). Logo o full inteiro é **~18–24 h**,
+não dias.
+
+**6.1 Piloto de plumbing (FEITO, Jockey/2fr).** Serviu **só** para validar o pipeline
+ponta a ponta (rebuild → `h7h8_bench` → `ablation_attrib` → `analyze_ablation`).
+Passou. Os números do Jockey são **preview direcional** e **não** informam config
+(Jockey é teste). Achado: com grid estreito as faixas de speedup não se sobrepõem
+(ml 1,2–1,34×, variância 1,85–2,12×) → motivou o grid largo (§5). Bônus: o H8 rodou
+(replay antigo do Jockey existe) — é o teto de pixels, ignorado para o Gate 5.
+
+**6.2 Calibração na VALIDAÇÃO (roda agora, antes do full).** Rodar a ablação com o
+grid largo (§5) numa seq de **validação** (**HoneyBee**), poucos quadros (~3, cq
+{32,43}) — a razão de speedup é ~independente do nº de quadros. Objetivo: confirmar
+que as faixas de `ml`/`variância` se **sobrepõem** com o grid largo (e ajustá-lo se
+não). Por ser **dado de validação**, esses números podem **legitimamente** informar
+o congelamento do grid, **sem tocar em teste**. Saída: `results/benchmark/h9_calib/`.
+Após esta etapa o grid está **congelado**; o full no teste é intocado.
 
 **Gate do piloto (não é o Gate 5):** (i) o pipeline roda ponta a ponta sem erro
 (rebuild → encode → decode → BD/speedup → `analyze_ablation.py`); (ii) sinal
