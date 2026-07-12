@@ -29,6 +29,11 @@ def load_curves(dirs):
     return pts
 
 
+def ts_pct(speedup):
+    """Time saving %% from a speedup ratio: TS = (1 - 1/speedup)*100."""
+    return (1.0 - 1.0 / speedup) * 100.0
+
+
 def interp_bd(curve, s):
     """Linear-interpolate BD-rate at speedup s; None if out of range."""
     xs = [p[0] for p in curve]
@@ -54,14 +59,15 @@ def main(argv):
     args = p.parse_args(argv)
 
     pts = load_curves(args.dirs)
-    print("raw points per method (speedup, BD%):")
+    print("raw points per method (speedup, TS%, BD%):")
     for m in sorted(pts):
         print("  {:<9}".format(m),
-              " ".join("({:.2f},{:.2f})".format(s, b) for s, b in pts[m]))
+              " ".join("({:.2f}x,{:.1f}%,{:.2f})".format(s, ts_pct(s), b)
+                       for s, b in pts[m]))
 
     methods = sorted(pts)
     print("\nBD-rate% at matched speedup (lower is better; '.' = out of range):")
-    print("speedup  " + "".join("{:>12}".format(m) for m in methods) +
+    print("speedup   TS%   " + "".join("{:>12}".format(m) for m in methods) +
           "   winner")
     rows = []
     for s in args.speedups:
@@ -71,20 +77,20 @@ def main(argv):
         cells = "".join(
             ("{:>12.3f}".format(vals[m]) if vals[m] is not None else
              "{:>12}".format(".")) for m in methods)
-        print("{:>6.2f}x  {}   {}".format(s, cells, winner))
-        rows.append([s] + [vals[m] for m in methods] + [winner])
+        print("{:>6.2f}x {:>5.1f}  {}   {}".format(s, ts_pct(s), cells, winner))
+        rows.append([s, round(ts_pct(s), 2)] + [vals[m] for m in methods] + [winner])
 
     if args.out_csv:
         with open(args.out_csv, "w", newline="") as f:
             w = csv.writer(f)
-            w.writerow(["speedup_x"] + methods + ["winner"])
+            w.writerow(["speedup_x", "ts_pct"] + methods + ["winner"])
             w.writerows(rows)
         print("\nwrote", args.out_csv)
 
     # Verdict
     ml_wins = [r for r in rows if r[-1] == "ml"]
     comparable = [r for r in rows
-                  if sum(1 for v in r[1:-1] if v is not None) >= 2]
+                  if sum(1 for v in r[2:-1] if v is not None) >= 2]
     print("\nVERDICT: 'ml' is lowest-BD at {}/{} comparable speedup levels.".format(
         len(ml_wins), len(comparable)))
 

@@ -74,16 +74,17 @@ def main(argv):
             [("encoder", "cq", "kbps", "y_psnr", "encode_s")] + rows)
     with open(os.path.join(args.out_dir, "curve.csv"), "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["method", "tau_none", "bd_rate_pct", "speedup_x"])
-        w.writerows([(m, tn, round(bd, 3), round(s, 3))
-                     for m, tn, bd, s in summary])
+        w.writerow(["method", "tau_none", "bd_rate_pct", "speedup_x", "ts_pct"])
+        w.writerows([(m, tn, round(bd, 3), round(s, 3),
+                      round((1 - 1 / s) * 100, 2)) for m, tn, bd, s in summary])
 
     print("\n=== ATTRIBUTION ABLATION (Jockey held-out, {} frames) ===".format(
         args.frames))
-    print("{:<10} {:>8} {:>10} {:>10}".format("method", "tau_none", "BD-rate%",
-                                              "speedup"))
+    print("{:<10} {:>8} {:>10} {:>8} {:>10}".format("method", "tau_none",
+                                                    "BD-rate%", "TS%", "speedup"))
     for m, tn, bd, s in summary:
-        print("{:<10} {:>8.2f} {:>10.3f} {:>10.3f}".format(m, tn, bd, s))
+        print("{:<10} {:>8.2f} {:>10.3f} {:>8.1f} {:>10.3f}".format(
+            m, tn, bd, (1 - 1 / s) * 100, s))
     print("ABLATION_DONE")
 
 

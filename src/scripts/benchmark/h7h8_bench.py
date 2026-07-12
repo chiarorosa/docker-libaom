@@ -143,14 +143,17 @@ def main(argv):
             [("encoder", "cq", "kbps", "y_psnr", "encode_s")] + all_rows)
     with open(os.path.join(args.out_dir, "summary.csv"), "w", newline="") as f:
         wtr = csv.writer(f)
-        wtr.writerow(["point", "bd_rate_pct", "time_speedup_x"])
-        wtr.writerows([(n, round(b, 3), round(s, 3)) for n, b, s in summary])
+        wtr.writerow(["point", "bd_rate_pct", "time_speedup_x", "ts_pct"])
+        wtr.writerows([(n, round(b, 3), round(s, 3), round((1 - 1 / s) * 100, 2))
+                       for n, b, s in summary])
 
     print("\n=== H7+H8 SUMMARY (Jockey held-out, {} frames) ===".format(
         args.frames))
-    print("{:<16} {:>10} {:>12}".format("point", "BD-rate%", "speedup x"))
+    print("{:<16} {:>10} {:>8} {:>12}".format("point", "BD-rate%", "TS%",
+                                              "speedup x"))
     for n, b, s in summary:
-        print("{:<16} {:>10.3f} {:>12.3f}".format(n, b, s))
+        print("{:<16} {:>10.3f} {:>8.1f} {:>12.3f}".format(
+            n, b, (1 - 1 / s) * 100, s))
     print("H7H8_DONE")
 
 
