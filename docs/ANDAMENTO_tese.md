@@ -332,10 +332,11 @@ generalização externa genuína e (ii) resultados **comparáveis à literatura*
 o próprio botão de velocidade do AV1**. Codificar **N quadros × 4 cq** em cada seq
 CTC, **pareando o tempo** de quatro configurações:
 1. **LIBAOM original** — cpu-used=0, busca completa (âncora de qualidade).
-2. **LIBAOM + ML (ponto equilibrado)** — cpu-used=0 + poda H9a no operating point de
-   **melhor equilíbrio BD-rate × TS** (o "joelho" da curva). Seleção a partir dos
-   **dados de teste** (Fase 5). Candidato: ~P_ref/A1 (**~0,6–0,9% BD a TS ~30–35%,
-   1,4–1,5×**).
+2. **LIBAOM + ML (ponto equilibrado, levemente conservador em BD)** — cpu-used=0 +
+   poda H9a no operating point de **bom equilíbrio BD-rate × TS**, puxado para o lado
+   **conservador em BD**. Seleção a partir dos **dados de teste** (Fase 5). Candidato:
+   **~P_rect** (τ_none=0,95 + rect-off τ_rest=0,20) → médias das 3 seqs **~0,46% BD a
+   TS ~26,5% (1,36×)** — BD menor que P_ref/A1 (~0,6%) mantendo TS relevante.
 3. **LIBAOM + ML (ponto agressivo)** — cpu-used=0 + poda H9a no ponto de **máxima TS
    com BD-rate ainda implantável e justificável**. Candidato: ~A3 (**~1,4–2% BD a
    TS ~48–57%, 2,0–2,3×**). **Justificativa via variância + aleatório:** nesse
@@ -396,8 +397,9 @@ condições universais.
   disponibilizará); (b) **N quadros** por seq; (d) **quais presets nativos**
   (cpu-used=1 e 2, ou outro par); (e) métrica de pareamento (BD-rate a speedup
   casado, os três pilares). **(c) RESOLVIDO — dois operating points de ML**
-  (§4.2): equilibrado (~P_ref/A1, melhor BD×TS, escolhido nos dados de teste) e
-  agressivo (~A3, máxima TS com BD implantável, justificado vs variância/aleatório).
+  (§4.2): equilibrado **conservador em BD** (~P_rect, ~0,46% BD a TS ~26%, escolhido
+  nos dados de teste) e agressivo (~A3, máxima TS com BD implantável, justificado
+  vs variância/aleatório).
   Os τ exatos dos dois pontos serão fixados a partir das curvas de teste da Fase 5
   antes de rodar a CTC.
 
