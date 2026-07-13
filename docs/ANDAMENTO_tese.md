@@ -146,9 +146,9 @@ título/resumo/objetivos com essa informação explícita.
 | H9 Fase 2 | Gate 2 offline (sinal do contexto RD) | ✅ **PASSOU** | `8866757`, `models/gate2_final.csv` |
 | H9 Fase 3 | estudante tabular direto sobre H9a; Gate 3 (val) | ✅ **PASSOU** | `173aa8f`, `models/student_h9a/` |
 | H9 Fase 4 | features B/C em C; paridade C↔Python; no-op byte-idêntico | ✅ **PASSOU** | `b3cd3c1`..`ecf436b`, `models/student_h9a/gate4_evidence.txt` |
-| **H9 Fase 5** | benchmark no teste held-out + ablação de atribuição + SOTA nativo | ⏳ **PRÓXIMO** | — |
+| **H9 Fase 5** | benchmark no teste held-out + ablação de atribuição | 🔄 **EM ANDAMENTO** (2/3 seqs) | ver §4.1 |
 
-Legenda: ✅ concluído · ⏳ próximo · ⬜ pendente.
+Legenda: ✅ concluído · ⏳ próximo · 🔄 em andamento · ⬜ pendente.
 
 ---
 
@@ -222,6 +222,59 @@ com `libaom_perf` (rebuild com o código de 36 features) vs `libaom_perf_anchor`
 via `ablation_attrib.py`/`analyze_ablation.py`); comparação com o
 `intra_cnn_based_part_prune` nativo. Gate 5 (sucesso da tese): H9a domina a variância
 em taxa BD a speedup casado, por margem além do ruído, em ≥2 das 3 seqs de teste.
+
+---
+
+## 4.1 Fase 5 — resultados PARCIAIS (em andamento, 2/3 seqs)
+
+**Estado:** benchmark real detached rodando; Jockey e RaceNight concluídos,
+RiverBank em execução. `RESULTADOS_fase5.md` (final) ainda não escrito. Resultados
+em `results/benchmark/h9_test/<seq>/{curve_safe,curve_aggr,ablation}`. Encoder de
+teste `libaom_perf` (36 features, flag on) vs âncora `libaom_perf_anchor` (libaom
+cru); cpu-used=0, single-thread, 10 quadros, cq {20,32,43,55}.
+
+**Calibração (validação, HoneyBee) — grid de τ:** com grid alargado
+`{0.95..0.50}`, ml e variância **sobrepuseram** e o ml **dominou** (a tempo casado:
+@1,5× ml 0,66% vs var 3,53%; @1,75× 1,41% vs 4,92%). Congelou o grid.
+
+**Pilar 1 — redução de tempo (curva H9a vs baseline): FORTE e consistente.**
+
+| seq | melhor ponto barato | ponto agressivo |
+|---|---|---|
+| Jockey | 0,19% BD @ TS 21,6% (1,28×) | 2,03% BD @ TS 57,2% (2,34×) |
+| RaceNight | 0,27% BD @ TS 18,1% (1,22×) | 1,72% BD @ TS 50,7% (2,03×) |
+
+**Pilar 2 — atribuição ao aprendizado (ml vs aleatório): CLARO.** A tempo casado,
+o ml domina o aleatório nas duas seqs (ex. RaceNight @1,3×: ml 0,90% vs random
+6,01%). O ganho é do modelo, não de poda aleatória.
+
+**Pilar 3 — vs variância (a barra difícil): SEM head-to-head limpo no teste.**
+Em Jockey e RaceNight (2/2), as faixas de speedup de ml e variância **NÃO se
+sobrepõem**: ml opera em baixo speedup e baixo BD (≤1,46–1,59×, <1,7% BD); a
+variância só opera agressivo (≥1,89–2,13×, ≥1,76–3,96% BD). São **regimes
+disjuntos** — a variância, mesmo no ajuste mais conservador (τ=0,95), já pula para
+alto speedup/alto BD e **não alcança a região implantável de baixo-BD** onde o ml
+vive.
+
+- **Leitura honesta:** a dominação limpa "ml vence a variância a tempo casado" só
+  se materializou na **validação** (onde o grid sobrepôs). No **teste**, o resultado
+  é diferente e mais matizado: ml e variância servem a operating points distintos;
+  o ml ocupa a fronteira controlável e barata que a variância grosseira não
+  acessa; a variância domina apenas em regime agressivo (que custa BD alto).
+- **Causa da não-sobreposição (nota metodológica):** o grid foi congelado na
+  calibração do HoneyBee, onde a variância τ=0,95 dava 1,34× (sobrepunha). O
+  conteúdo de teste poda mais agressivo sob variância, então τ=0,95 já dá 1,9–2,1×.
+  Faltou o lado da variância descer a τ=0,97/0,99. **Não estendido** — seria mexer
+  em config vendo dado de teste (viola o congelamento anti-cherry-picking). Fica
+  como limitação documentada / trabalho futuro.
+
+**Implicação para a escrita:** o Gate 5, como enquadrado ("ml domina variância a
+speedup casado em ≥2/3 seqs"), **não** é atingido no teste por não-sobreposição.
+O que a tese pode afirmar com honestidade: (i) redução de tempo forte vs baseline;
+(ii) ganho atribuível ao aprendizado (vs aleatório); (iii) o ml entrega uma
+fronteira taxa-BD × tempo controlável e de baixo custo **inacessível à heurística
+trivial da variância**, cuja regra grosseira só sabe podar agressivo. RiverBank
+(3ª seq) pode ou não alterar o quadro; o veredito final sai quando o full fechar.
 
 ---
 
