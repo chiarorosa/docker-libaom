@@ -268,13 +268,42 @@ vive.
   em config vendo dado de teste (viola o congelamento anti-cherry-picking). Fica
   como limitação documentada / trabalho futuro.
 
+**Cruzamento a BD casado (dual do speedup casado).** Como as faixas não sobrepõem
+em speedup, testou-se o eixo BD (mesma qualidade → quem economiza mais tempo).
+Resultado (`results/benchmark/matched_bd.py`): com o ml **implantado (rect-off)**,
+há sobreposição em BD só no **Jockey** (1,76–2,03%), onde o ml ganha — @BD 1,76%:
+ml **2,17× (TS 53,4%)** vs variância 1,89× (TS 47%). No **RaceNight** é disjunto até
+em BD (variância mínima 3,96% > ml máx 1,72%). Ressalva: usa a política rica do ml
+(rect-off) contra a variância sem — é comparação **sistema-vs-sistema**, não
+atribuição pura.
+
+**Atribuição LIMPA (política casada) — o argumento mais forte.** O rect-off é ação
+**secundária** do ml (3ª saída, P(REST)); a alavanca **primária** é o NONE-commit.
+A variância **estruturalmente não faz rect-off** (fixa P(REST)=1). Logo, a
+comparação justa usa o **modo primário do ml (NONE-commit puro) vs variância,
+política idêntica** — e aí há uma afirmação de atribuição **pura** que dispensa
+sobreposição de speedup:
+
+> Sob a **mesma política** (NONE-commit, sem rect-off para ninguém), variando só a
+> **fonte de escore**, o escore do ml **alcança pontos de baixo-BD que o da
+> variância não alcança**: ml de **0,09–0,10%** BD para cima; variância **nunca
+> abaixo de 1,76% (Jockey) / 3,96% (RaceNight)**. Tudo idêntico exceto o escore →
+> o ganho é do modelo. O escore RD é **mais discriminativo** (commita NONE só
+> quando é o caso, BD ~0%); a variância commita em qualquer bloco liso, inclusive
+> nos que deveriam dividir (daí o piso de BD alto).
+
+Isto é matched-*policy* e caracteriza a **região alcançável** — não precisa de
+sobreposição de speedup, e vale nas 2 seqs de teste. **O valor central do ml não
+depende do rect-off.**
+
 **Implicação para a escrita:** o Gate 5, como enquadrado ("ml domina variância a
 speedup casado em ≥2/3 seqs"), **não** é atingido no teste por não-sobreposição.
-O que a tese pode afirmar com honestidade: (i) redução de tempo forte vs baseline;
-(ii) ganho atribuível ao aprendizado (vs aleatório); (iii) o ml entrega uma
-fronteira taxa-BD × tempo controlável e de baixo custo **inacessível à heurística
-trivial da variância**, cuja regra grosseira só sabe podar agressivo. RiverBank
-(3ª seq) pode ou não alterar o quadro; o veredito final sai quando o full fechar.
+Mas a tese afirma com honestidade e rigor: (i) redução de tempo forte vs baseline;
+(ii) ganho atribuível ao aprendizado (vs aleatório); (iii) **atribuição a política
+casada** — o escore do ml alcança a fronteira implantável de baixo-BD que o da
+variância é incapaz de tocar (a barra difícil, agora respondida de forma limpa);
+(iv) na validação, dominação direta a speedup casado. RiverBank (3ª seq) pode ou
+não alterar o quadro; o veredito final sai quando o full fechar.
 
 ---
 
