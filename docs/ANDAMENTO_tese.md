@@ -147,6 +147,7 @@ título/resumo/objetivos com essa informação explícita.
 | H9 Fase 3 | estudante tabular direto sobre H9a; Gate 3 (val) | ✅ **PASSOU** | `173aa8f`, `models/student_h9a/` |
 | H9 Fase 4 | features B/C em C; paridade C↔Python; no-op byte-idêntico | ✅ **PASSOU** | `b3cd3c1`..`ecf436b`, `models/student_h9a/gate4_evidence.txt` |
 | H9 Fase 5 | benchmark no teste held-out + ablação de atribuição | ✅ **CONCLUÍDA** (veredito matizado) | `docs/RESULTADOS_fase5.md`, `benchmark/h9_test/` |
+| **H9 Fase 6** | validação universal (seqs CTC) vs presets nativos cpu-used 1/2 | ⏳ **PRÓXIMO** | ver §4.2 |
 
 Legenda: ✅ concluído · ⏳ próximo · 🔄 em andamento · ⬜ pendente.
 
@@ -318,6 +319,38 @@ não alterar o quadro; o veredito final sai quando o full fechar.
 
 ---
 
+## 4.2 PRÓXIMO PASSO — Fase 6: validação universal (CTC) vs presets nativos
+
+**Motivação (validação externa real).** As 16 seqs do split 10/3/3 (treino/val/
+teste, todas UVG 4K) são o **universo do próprio ML** — mesmo as de teste, embora
+held-out do treino, são da mesma fonte/distribuição. As sequências da **CTC**
+(*Common Test Conditions*) são **balizadores universais entre codificadores de
+vídeo** (padrão da comunidade), fora do universo do ML. Rodá-las é (i) uma
+generalização externa genuína e (ii) resultados **comparáveis à literatura**.
+
+**Comparação (o que de fato importa na prática):** posicionar o pruner ML **contra
+o próprio botão de velocidade do AV1**. Codificar **N quadros × 4 cq** em cada seq
+CTC, **pareando o tempo** de quatro configurações:
+1. **LIBAOM original** — cpu-used=0, busca completa (âncora de qualidade).
+2. **LIBAOM + ML** — cpu-used=0 + poda H9a, **versão única e ótima** (um operating
+   point escolhido da curva, não a varredura).
+3. **preset nativo cpu-used=1** — o modo nativo de acelerar.
+4. **preset nativo cpu-used=2** — idem, mais agressivo. *(cpu 1 e 2 a decidir.)*
+
+**A pergunta-chave:** o **ML (cpu0 + poda) fica numa fronteira taxa-BD × tempo
+melhor que os presets nativos**? Se o ML+cpu0 entrega BD-rate menor a speedup
+casado que cpu1/cpu2, a poda aprendida **agrega valor além do que o encoder já faz
+de graça** com seus presets — é a comparação que um profissional realmente faz
+("por que não só usar cpu-used=1?"). Esta é a validação decisiva da utilidade
+prática da contribuição, distinta da ablação de atribuição (que compara *fontes de
+escore* sob mesma política).
+
+*Nota:* isto **substitui** como próximo passo o "trabalho futuro" do
+`RESULTADOS_fase5.md` §5 (grid da variância / variância+rect-off na validação),
+que fica secundário.
+
+---
+
 ## 5. Decisões em aberto
 
 - ~~**Arquitetura do substituto H9a** (ConvNeXt+ramo RD vs tabular)~~ — **RESOLVIDO
@@ -327,6 +360,12 @@ não alterar o quadro; o veredito final sai quando o full fechar.
   Google Drive primeiro).
 - **Extensão pós-NONE (H9c)** — opcional, documentada como headroom; só se o
   Gate 5 do H9a pré-busca ficar aquém.
+- **Fase 6 (CTC) — parâmetros a decidir:** (a) **quais sequências CTC** (o usuário
+  disponibilizará); (b) **N quadros** por seq; (c) **qual operating point** do H9a é
+  a "versão única e ótima" (candidato natural: um ponto conservador ~P_ref, ~0,6% BD
+  a TS ~30%, ou o melhor compromisso da curva); (d) **quais presets nativos**
+  (cpu-used=1 e 2, ou outro par); (e) métrica de pareamento (BD-rate a speedup
+  casado, os três pilares).
 
 ---
 
