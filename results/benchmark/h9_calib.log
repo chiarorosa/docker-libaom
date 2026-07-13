@@ -1,0 +1,94 @@
+=== ANCHOR (once) ===
+  [anchor] cq32: 39.0025 dB, 23100.0 kbps, 134.0s
+  [anchor] cq43: 38.1199 dB, 12162.9 kbps, 95.3s
+=== ml_tn0.95 ===
+  [ml_tn0.95] cq32: 39.0023 dB, 23062.9 kbps, 120.2s
+  [ml_tn0.95] cq43: 38.1155 dB, 12174.3 kbps, 88.1s
+=== ml_tn0.90 ===
+  [ml_tn0.90] cq32: 39.0021 dB, 23083.3 kbps, 112.5s
+  [ml_tn0.90] cq43: 38.1189 dB, 12173.4 kbps, 84.8s
+=== ml_tn0.80 ===
+  [ml_tn0.80] cq32: 38.9968 dB, 23014.9 kbps, 100.7s
+  [ml_tn0.80] cq43: 38.1123 dB, 12153.4 kbps, 76.9s
+=== ml_tn0.70 ===
+  [ml_tn0.70] cq32: 38.9937 dB, 22944.2 kbps, 88.2s
+  [ml_tn0.70] cq43: 38.1000 dB, 12123.0 kbps, 69.5s
+=== ml_tn0.60 ===
+  [ml_tn0.60] cq32: 38.9882 dB, 22984.2 kbps, 77.3s
+  [ml_tn0.60] cq43: 38.0907 dB, 12110.6 kbps, 61.5s
+=== ml_tn0.50 ===
+  [ml_tn0.50] cq32: 38.9776 dB, 22944.6 kbps, 65.5s
+  [ml_tn0.50] cq43: 38.0656 dB, 12030.8 kbps, 53.8s
+=== variance_tn0.95 ===
+  [variance_tn0.95] cq32: 38.9786 dB, 23214.2 kbps, 93.9s
+  [variance_tn0.95] cq43: 38.0821 dB, 12177.4 kbps, 77.5s
+=== variance_tn0.90 ===
+  [variance_tn0.90] cq32: 38.9605 dB, 23282.6 kbps, 72.2s
+  [variance_tn0.90] cq43: 38.0404 dB, 12102.4 kbps, 64.4s
+=== variance_tn0.80 ===
+  [variance_tn0.80] cq32: 38.9348 dB, 23301.0 kbps, 49.6s
+  [variance_tn0.80] cq43: 37.9750 dB, 12013.6 kbps, 48.2s
+=== variance_tn0.70 ===
+  [variance_tn0.70] cq32: 38.9183 dB, 23447.4 kbps, 38.0s
+  [variance_tn0.70] cq43: 37.9334 dB, 11943.1 kbps, 38.8s
+=== variance_tn0.60 ===
+  [variance_tn0.60] cq32: 38.9056 dB, 23574.7 kbps, 31.9s
+  [variance_tn0.60] cq43: 37.9061 dB, 11938.0 kbps, 33.1s
+=== variance_tn0.50 ===
+  [variance_tn0.50] cq32: 38.8996 dB, 23644.3 kbps, 28.3s
+  [variance_tn0.50] cq43: 37.8956 dB, 11922.2 kbps, 29.9s
+=== random_tn0.95 ===
+  [random_tn0.95] cq32: 38.9898 dB, 23108.3 kbps, 123.3s
+  [random_tn0.95] cq43: 38.0924 dB, 12161.0 kbps, 89.5s
+=== random_tn0.90 ===
+  [random_tn0.90] cq32: 38.9831 dB, 23285.1 kbps, 113.4s
+  [random_tn0.90] cq43: 38.0694 dB, 12174.2 kbps, 84.2s
+=== random_tn0.80 ===
+  [random_tn0.80] cq32: 38.9629 dB, 23366.6 kbps, 94.8s
+  [random_tn0.80] cq43: 38.0224 dB, 12129.3 kbps, 72.5s
+=== random_tn0.70 ===
+  [random_tn0.70] cq32: 38.9449 dB, 23409.6 kbps, 78.6s
+  [random_tn0.70] cq43: 37.9884 dB, 12099.3 kbps, 63.3s
+=== random_tn0.60 ===
+  [random_tn0.60] cq32: 38.9370 dB, 23454.3 kbps, 66.7s
+  [random_tn0.60] cq43: 37.9558 dB, 12015.9 kbps, 55.1s
+=== random_tn0.50 ===
+  [random_tn0.50] cq32: 38.9232 dB, 23546.6 kbps, 55.7s
+  [random_tn0.50] cq43: 37.9322 dB, 11983.6 kbps, 47.8s
+
+=== ATTRIBUTION ABLATION (Jockey held-out, 3 frames) ===
+method     tau_none   BD-rate%    speedup
+ml             0.95      0.130      1.101
+ml             0.90      0.058      1.162
+ml             0.80      0.254      1.291
+ml             0.70      0.527      1.454
+ml             0.60      1.100      1.652
+ml             0.50      1.961      1.922
+variance       0.95      2.565      1.338
+variance       0.90      4.598      1.678
+variance       0.80      7.545      2.344
+variance       0.70      9.725      2.985
+variance       0.60     11.495      3.530
+variance       0.50     12.245      3.939
+random         0.95      1.463      1.077
+random         0.90      2.986      1.160
+random         0.80      5.413      1.371
+random         0.70      7.284      1.615
+random         0.60      8.465      1.882
+random         0.50      9.956      2.216
+ABLATION_DONE
+raw points per method (speedup, TS%, BD%):
+  ml        (1.10x,9.2%,0.13) (1.16x,13.9%,0.06) (1.29x,22.5%,0.25) (1.45x,31.2%,0.53) (1.65x,39.5%,1.10) (1.92x,48.0%,1.96)
+  random    (1.08x,7.1%,1.46) (1.16x,13.8%,2.99) (1.37x,27.1%,5.41) (1.61x,38.1%,7.28) (1.88x,46.9%,8.46) (2.22x,54.9%,9.96)
+  variance  (1.34x,25.3%,2.56) (1.68x,40.4%,4.60) (2.34x,57.3%,7.54) (2.98x,66.5%,9.72) (3.53x,71.7%,11.49) (3.94x,74.6%,12.24)
+
+BD-rate% at matched speedup (lower is better; '.' = out of range):
+speedup   TS%             ml      random    variance   winner
+  1.15x  13.0         0.072       2.803           .   ml
+  1.30x  23.1         0.269       4.596           .   ml
+  1.50x  33.3         0.660       6.402       3.534   ml
+  1.75x  42.9         1.413       7.881       4.917   ml
+  2.00x  50.0             .       8.992       6.023   variance
+
+VERDICT: 'ml' is lowest-BD at 4/5 comparable speedup levels.
+CALIB_DONE

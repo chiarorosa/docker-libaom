@@ -1,0 +1,6 @@
+train pkls: 40 (train seqs ['Beauty', 'Bosphorus', 'CityAlley', 'FlowerFocus', 'FlowerKids', 'ReadySetGo', 'ShakeNDry', 'SunBath', 'Twilight', 'YachtRide'])
+collected 120000 superblocks
+[dim 64] n=120000 counts(N/S/R)=[36188, 74684, 9128] truth-acc=0.816
+[dim 32] n=424579 counts(N/S/R)=[218470, 104201, 101908] truth-acc=0.735
+[dim 16] n=1316179 counts(N/S/R)=[999866, 53651, 262662] truth-acc=0.848
+Saved -> results/models/student_h9a/students.pt

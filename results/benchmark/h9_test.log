@@ -1,0 +1,556 @@
+########## SEQ Jockey ##########
+=== ANCHOR (once) ===
+  [anchor] cq20: 40.8763 dB, 50369.1 kbps, 894.5s
+  [anchor] cq32: 39.8757 dB, 17783.1 kbps, 341.3s
+  [anchor] cq43: 38.7335 dB, 8715.3 kbps, 240.0s
+  [anchor] cq55: 36.6929 dB, 3991.1 kbps, 160.2s
+=== P0_oldpolicy ===
+  [P0_oldpolicy] cq20: 40.8758 dB, 50397.3 kbps, 717.0s
+  [P0_oldpolicy] cq32: 39.8719 dB, 17756.6 kbps, 252.8s
+  [P0_oldpolicy] cq43: 38.7313 dB, 8729.6 kbps, 187.5s
+  [P0_oldpolicy] cq55: 36.6733 dB, 3972.6 kbps, 125.7s
+=== P_rect ===
+  [P_rect] cq20: 40.8744 dB, 50526.4 kbps, 650.6s
+  [P_rect] cq32: 39.8703 dB, 17789.4 kbps, 236.4s
+  [P_rect] cq43: 38.7259 dB, 8759.7 kbps, 175.6s
+  [P_rect] cq55: 36.6623 dB, 3991.7 kbps, 121.2s
+=== P_ref ===
+  [P_ref] cq20: 40.8732 dB, 50448.0 kbps, 619.1s
+  [P_ref] cq32: 39.8693 dB, 17784.0 kbps, 209.1s
+  [P_ref] cq43: 38.7188 dB, 8749.0 kbps, 161.9s
+  [P_ref] cq55: 36.6478 dB, 3982.4 kbps, 113.1s
+=== H8_surrogate ===
+  [H8_surrogate] cq20: 40.8792 dB, 50474.8 kbps, 867.6s
+  [H8_surrogate] cq32: 39.8741 dB, 17779.8 kbps, 334.1s
+  [H8_surrogate] cq43: 38.7349 dB, 8730.0 kbps, 238.1s
+  [H8_surrogate] cq55: 36.6835 dB, 3993.1 kbps, 154.9s
+
+=== H7+H8 SUMMARY (Jockey held-out, 10 frames) ===
+point              BD-rate%      TS%    speedup x
+P0_oldpolicy          0.194     21.6        1.275
+P_rect                0.762     27.6        1.382
+P_ref                 0.919     32.6        1.483
+H8_surrogate          0.118      2.5        1.026
+H7H8_DONE
+=== ANCHOR (once) ===
+  [anchor] cq20: 40.8763 dB, 50369.1 kbps, 888.5s
+  [anchor] cq32: 39.8757 dB, 17783.1 kbps, 340.5s
+  [anchor] cq43: 38.7335 dB, 8715.3 kbps, 241.0s
+  [anchor] cq55: 36.6929 dB, 3991.1 kbps, 159.9s
+=== A1_none80 ===
+  [A1_none80] cq20: 40.8703 dB, 50364.1 kbps, 602.8s
+  [A1_none80] cq32: 39.8693 dB, 17793.7 kbps, 207.2s
+  [A1_none80] cq43: 38.7189 dB, 8747.4 kbps, 160.8s
+  [A1_none80] cq55: 36.6493 dB, 3981.9 kbps, 113.3s
+=== A2_none70 ===
+  [A2_none70] cq20: 40.8628 dB, 50251.5 kbps, 432.5s
+  [A2_none70] cq32: 39.8615 dB, 17753.9 kbps, 175.2s
+  [A2_none70] cq43: 38.7049 dB, 8714.4 kbps, 142.2s
+  [A2_none70] cq55: 36.6155 dB, 3969.5 kbps, 102.9s
+=== A3_none60_rest40 ===
+  [A3_none60_rest40] cq20: 40.8573 dB, 50204.2 kbps, 334.8s
+  [A3_none60_rest40] cq32: 39.8529 dB, 17763.5 kbps, 143.7s
+  [A3_none60_rest40] cq43: 38.6856 dB, 8695.1 kbps, 124.3s
+  [A3_none60_rest40] cq55: 36.5825 dB, 3943.4 kbps, 95.4s
+=== H8_surrogate_aggr ===
+  [H8_surrogate_aggr] cq20: 40.8799 dB, 50523.1 kbps, 851.3s
+  [H8_surrogate_aggr] cq32: 39.8740 dB, 17779.6 kbps, 326.8s
+  [H8_surrogate_aggr] cq43: 38.7312 dB, 8745.0 kbps, 226.9s
+  [H8_surrogate_aggr] cq55: 36.6758 dB, 3992.7 kbps, 145.6s
+
+=== H7+H8 SUMMARY (Jockey held-out, 10 frames) ===
+point              BD-rate%      TS%    speedup x
+A1_none80             0.929     33.5        1.503
+A2_none70             1.372     47.7        1.911
+A3_none60_rest40      2.026     57.2        2.335
+H8_surrogate_aggr      0.333      4.9        1.051
+H7H8_DONE
+=== ANCHOR (once) ===
+  [anchor] cq20: 40.8763 dB, 50369.1 kbps, 887.4s
+  [anchor] cq32: 39.8757 dB, 17783.1 kbps, 344.7s
+  [anchor] cq43: 38.7335 dB, 8715.3 kbps, 241.0s
+  [anchor] cq55: 36.6929 dB, 3991.1 kbps, 159.9s
+=== ml_tn0.95 ===
+  [ml_tn0.95] cq20: 40.8775 dB, 50423.5 kbps, 879.8s
+  [ml_tn0.95] cq32: 39.8741 dB, 17759.3 kbps, 307.5s
+  [ml_tn0.95] cq43: 38.7315 dB, 8733.2 kbps, 218.4s
+  [ml_tn0.95] cq55: 36.6952 dB, 3996.0 kbps, 142.0s
+=== ml_tn0.90 ===
+  [ml_tn0.90] cq20: 40.8746 dB, 50278.9 kbps, 841.7s
+  [ml_tn0.90] cq32: 39.8729 dB, 17752.1 kbps, 281.5s
+  [ml_tn0.90] cq43: 38.7292 dB, 8705.2 kbps, 204.1s
+  [ml_tn0.90] cq55: 36.6825 dB, 3986.8 kbps, 133.6s
+=== ml_tn0.80 ===
+  [ml_tn0.80] cq20: 40.8682 dB, 50033.1 kbps, 752.3s
+  [ml_tn0.80] cq32: 39.8698 dB, 17719.7 kbps, 246.4s
+  [ml_tn0.80] cq43: 38.7234 dB, 8691.1 kbps, 187.0s
+  [ml_tn0.80] cq55: 36.6580 dB, 3959.9 kbps, 123.0s
+=== ml_tn0.70 ===
+  [ml_tn0.70] cq20: 40.8609 dB, 49776.4 kbps, 702.6s
+  [ml_tn0.70] cq32: 39.8648 dB, 17681.7 kbps, 219.5s
+  [ml_tn0.70] cq43: 38.7125 dB, 8659.5 kbps, 171.8s
+  [ml_tn0.70] cq55: 36.6361 dB, 3920.5 kbps, 114.0s
+=== ml_tn0.60 ===
+  [ml_tn0.60] cq20: 40.8560 dB, 49604.0 kbps, 661.1s
+  [ml_tn0.60] cq32: 39.8568 dB, 17614.1 kbps, 190.7s
+  [ml_tn0.60] cq43: 38.6978 dB, 8626.5 kbps, 154.4s
+  [ml_tn0.60] cq55: 36.6095 dB, 3918.0 kbps, 108.7s
+=== ml_tn0.50 ===
+  [ml_tn0.50] cq20: 40.8510 dB, 49395.5 kbps, 625.0s
+  [ml_tn0.50] cq32: 39.8487 dB, 17569.8 kbps, 163.1s
+  [ml_tn0.50] cq43: 38.6789 dB, 8575.5 kbps, 138.6s
+  [ml_tn0.50] cq55: 36.5801 dB, 3871.2 kbps, 102.2s
+=== variance_tn0.95 ===
+  [variance_tn0.95] cq20: 40.8166 dB, 49089.8 kbps, 387.9s
+  [variance_tn0.95] cq32: 39.8381 dB, 17626.4 kbps, 192.2s
+  [variance_tn0.95] cq43: 38.6803 dB, 8607.7 kbps, 166.1s
+  [variance_tn0.95] cq55: 36.6145 dB, 3923.3 kbps, 120.0s
+=== variance_tn0.90 ===
+  [variance_tn0.90] cq20: 40.8049 dB, 48934.6 kbps, 310.3s
+  [variance_tn0.90] cq32: 39.8296 dB, 17625.6 kbps, 163.3s
+  [variance_tn0.90] cq43: 38.6559 dB, 8559.8 kbps, 148.5s
+  [variance_tn0.90] cq55: 36.5595 dB, 3877.3 kbps, 111.5s
+=== variance_tn0.80 ===
+  [variance_tn0.80] cq20: 40.7954 dB, 48923.2 kbps, 255.7s
+  [variance_tn0.80] cq32: 39.8183 dB, 17675.0 kbps, 141.1s
+  [variance_tn0.80] cq43: 38.6301 dB, 8560.2 kbps, 133.4s
+  [variance_tn0.80] cq55: 36.5071 dB, 3840.3 kbps, 103.4s
+=== variance_tn0.70 ===
+  [variance_tn0.70] cq20: 40.7892 dB, 49035.4 kbps, 224.7s
+  [variance_tn0.70] cq32: 39.8099 dB, 17774.2 kbps, 125.5s
+  [variance_tn0.70] cq43: 38.6141 dB, 8555.5 kbps, 121.8s
+  [variance_tn0.70] cq55: 36.4613 dB, 3816.6 kbps, 97.3s
+=== variance_tn0.60 ===
+  [variance_tn0.60] cq20: 40.7848 dB, 49076.6 kbps, 203.2s
+  [variance_tn0.60] cq32: 39.8058 dB, 17825.2 kbps, 114.8s
+  [variance_tn0.60] cq43: 38.6009 dB, 8567.1 kbps, 113.8s
+  [variance_tn0.60] cq55: 36.4355 dB, 3795.4 kbps, 92.7s
+=== variance_tn0.50 ===
+  [variance_tn0.50] cq20: 40.7787 dB, 49020.4 kbps, 184.4s
+  [variance_tn0.50] cq32: 39.8029 dB, 17856.5 kbps, 105.4s
+  [variance_tn0.50] cq43: 38.5931 dB, 8569.7 kbps, 106.7s
+  [variance_tn0.50] cq55: 36.4058 dB, 3783.6 kbps, 89.0s
+=== random_tn0.95 ===
+  [random_tn0.95] cq20: 40.8623 dB, 50230.0 kbps, 823.0s
+  [random_tn0.95] cq32: 39.8677 dB, 17764.4 kbps, 319.1s
+  [random_tn0.95] cq43: 38.7211 dB, 8719.0 kbps, 229.7s
+  [random_tn0.95] cq55: 36.6617 dB, 3975.7 kbps, 152.8s
+=== random_tn0.90 ===
+  [random_tn0.90] cq20: 40.8464 dB, 50046.9 kbps, 750.4s
+  [random_tn0.90] cq32: 39.8576 dB, 17830.7 kbps, 295.0s
+  [random_tn0.90] cq43: 38.6969 dB, 8720.2 kbps, 215.4s
+  [random_tn0.90] cq55: 36.6173 dB, 3969.6 kbps, 146.9s
+=== random_tn0.80 ===
+  [random_tn0.80] cq20: 40.8216 dB, 49796.4 kbps, 624.3s
+  [random_tn0.80] cq32: 39.8393 dB, 17931.5 kbps, 248.0s
+  [random_tn0.80] cq43: 38.6593 dB, 8726.4 kbps, 190.4s
+  [random_tn0.80] cq55: 36.5386 dB, 3917.7 kbps, 131.6s
+=== random_tn0.70 ===
+  [random_tn0.70] cq20: 40.8035 dB, 49617.4 kbps, 518.3s
+  [random_tn0.70] cq32: 39.8257 dB, 18002.7 kbps, 210.2s
+  [random_tn0.70] cq43: 38.6336 dB, 8718.5 kbps, 168.0s
+  [random_tn0.70] cq55: 36.4739 dB, 3884.6 kbps, 119.3s
+=== random_tn0.60 ===
+  [random_tn0.60] cq20: 40.7905 dB, 49425.5 kbps, 433.0s
+  [random_tn0.60] cq32: 39.8156 dB, 17984.4 kbps, 182.0s
+  [random_tn0.60] cq43: 38.6135 dB, 8707.5 kbps, 150.3s
+  [random_tn0.60] cq55: 36.4328 dB, 3852.0 kbps, 110.8s
+=== random_tn0.50 ===
+  [random_tn0.50] cq20: 40.7802 dB, 49378.5 kbps, 352.7s
+  [random_tn0.50] cq32: 39.8040 dB, 18045.5 kbps, 153.9s
+  [random_tn0.50] cq43: 38.5926 dB, 8685.0 kbps, 132.2s
+  [random_tn0.50] cq55: 36.3850 dB, 3809.2 kbps, 100.7s
+
+=== ATTRIBUTION ABLATION (Jockey held-out, 10 frames) ===
+method     tau_none   BD-rate%      TS%    speedup
+ml             0.95      0.158      5.2      1.055
+ml             0.90      0.103     10.5      1.118
+ml             0.80      0.206     19.9      1.248
+ml             0.70      0.303     26.0      1.352
+ml             0.60      0.695     31.7      1.465
+ml             0.50      0.917     37.0      1.587
+variance       0.95      1.764     47.0      1.885
+variance       0.90      2.426     55.1      2.226
+variance       0.80      3.577     61.2      2.577
+variance       0.70      4.475     65.1      2.868
+variance       0.60      5.139     67.9      3.113
+variance       0.50      5.610     70.3      3.363
+random         0.95      0.683      6.6      1.071
+random         0.90      1.928     13.8      1.160
+random         0.80      3.817     26.9      1.367
+random         0.70      5.153     37.8      1.608
+random         0.60      5.967     46.4      1.864
+random         0.50      6.858     54.7      2.208
+ABLATION_DONE
+########## SEQ Jockey DONE ##########
+########## SEQ RaceNight ##########
+=== ANCHOR (once) ===
+  [anchor] cq20: 38.3792 dB, 96625.9 kbps, 1038.2s
+  [anchor] cq32: 37.0593 dB, 23447.0 kbps, 372.7s
+  [anchor] cq43: 36.1832 dB, 10929.4 kbps, 281.6s
+  [anchor] cq55: 34.7362 dB, 4848.4 kbps, 183.4s
+=== P0_oldpolicy ===
+  [P0_oldpolicy] cq20: 38.3808 dB, 96807.9 kbps, 931.1s
+  [P0_oldpolicy] cq32: 37.0573 dB, 23454.0 kbps, 273.3s
+  [P0_oldpolicy] cq43: 36.1747 dB, 10905.5 kbps, 200.6s
+  [P0_oldpolicy] cq55: 34.7260 dB, 4842.9 kbps, 130.9s
+=== P_rect ===
+  [P_rect] cq20: 38.3652 dB, 95888.6 kbps, 745.8s
+  [P_rect] cq32: 37.0584 dB, 23499.1 kbps, 262.9s
+  [P_rect] cq43: 36.1802 dB, 10950.9 kbps, 192.1s
+  [P_rect] cq55: 34.7270 dB, 4855.5 kbps, 132.2s
+=== P_ref ===
+  [P_ref] cq20: 38.3536 dB, 95205.8 kbps, 740.5s
+  [P_ref] cq32: 37.0572 dB, 23487.8 kbps, 237.5s
+  [P_ref] cq43: 36.1701 dB, 10915.6 kbps, 178.9s
+  [P_ref] cq55: 34.7150 dB, 4832.7 kbps, 121.9s
+=== H8_surrogate ===
+  [H8_surrogate] cq20: 38.3838 dB, 97032.9 kbps, 1018.3s
+  [H8_surrogate] cq32: 37.0569 dB, 23431.6 kbps, 365.5s
+  [H8_surrogate] cq43: 36.1732 dB, 10896.7 kbps, 274.1s
+  [H8_surrogate] cq55: 34.7080 dB, 4837.8 kbps, 172.4s
+
+=== H7+H8 SUMMARY (Jockey held-out, 10 frames) ===
+point              BD-rate%      TS%    speedup x
+P0_oldpolicy          0.268     18.1        1.221
+P_rect                0.467     28.9        1.407
+P_ref                 0.736     31.8        1.467
+H8_surrogate          0.338      2.4        1.025
+H7H8_DONE
+=== ANCHOR (once) ===
+  [anchor] cq20: 38.3792 dB, 96625.9 kbps, 1041.0s
+  [anchor] cq32: 37.0593 dB, 23447.0 kbps, 378.3s
+  [anchor] cq43: 36.1832 dB, 10929.4 kbps, 281.7s
+  [anchor] cq55: 34.7362 dB, 4848.4 kbps, 184.5s
+=== A1_none80 ===
+  [A1_none80] cq20: 38.3516 dB, 95166.5 kbps, 737.7s
+  [A1_none80] cq32: 37.0563 dB, 23475.1 kbps, 234.2s
+  [A1_none80] cq43: 36.1687 dB, 10891.2 kbps, 176.9s
+  [A1_none80] cq55: 34.7137 dB, 4829.4 kbps, 121.4s
+=== A2_none70 ===
+  [A2_none70] cq20: 38.3618 dB, 96171.8 kbps, 628.3s
+  [A2_none70] cq32: 37.0517 dB, 23468.1 kbps, 194.7s
+  [A2_none70] cq43: 36.1627 dB, 10918.4 kbps, 161.3s
+  [A2_none70] cq55: 34.7053 dB, 4833.8 kbps, 115.0s
+=== A3_none60_rest40 ===
+  [A3_none60_rest40] cq20: 38.3481 dB, 95408.7 kbps, 517.0s
+  [A3_none60_rest40] cq32: 37.0434 dB, 23405.8 kbps, 161.6s
+  [A3_none60_rest40] cq43: 36.1528 dB, 10889.8 kbps, 144.1s
+  [A3_none60_rest40] cq55: 34.6873 dB, 4825.0 kbps, 107.6s
+=== H8_surrogate_aggr ===
+  [H8_surrogate_aggr] cq20: 38.3772 dB, 96631.9 kbps, 1012.2s
+  [H8_surrogate_aggr] cq32: 37.0534 dB, 23408.7 kbps, 349.7s
+  [H8_surrogate_aggr] cq43: 36.1612 dB, 10867.4 kbps, 254.5s
+  [H8_surrogate_aggr] cq55: 34.6412 dB, 4786.7 kbps, 154.0s
+
+=== H7+H8 SUMMARY (Jockey held-out, 10 frames) ===
+point              BD-rate%      TS%    speedup x
+A1_none80             0.729     32.6        1.484
+A2_none70             1.165     41.7        1.715
+A3_none60_rest40      1.722     50.7        2.027
+H8_surrogate_aggr      0.932      6.1        1.065
+H7H8_DONE
+=== ANCHOR (once) ===
+  [anchor] cq20: 38.3792 dB, 96625.9 kbps, 1033.7s
+  [anchor] cq32: 37.0593 dB, 23447.0 kbps, 372.9s
+  [anchor] cq43: 36.1832 dB, 10929.4 kbps, 282.1s
+  [anchor] cq55: 34.7362 dB, 4848.4 kbps, 182.8s
+=== ml_tn0.95 ===
+  [ml_tn0.95] cq20: 38.3784 dB, 96572.7 kbps, 1044.9s
+  [ml_tn0.95] cq32: 37.0589 dB, 23439.1 kbps, 331.4s
+  [ml_tn0.95] cq43: 36.1810 dB, 10932.0 kbps, 233.7s
+  [ml_tn0.95] cq55: 34.7337 dB, 4848.8 kbps, 157.8s
+=== ml_tn0.90 ===
+  [ml_tn0.90] cq20: 38.3846 dB, 97035.5 kbps, 1032.1s
+  [ml_tn0.90] cq32: 37.0580 dB, 23462.0 kbps, 308.7s
+  [ml_tn0.90] cq43: 36.1786 dB, 10907.8 kbps, 219.8s
+  [ml_tn0.90] cq55: 34.7321 dB, 4853.3 kbps, 143.1s
+=== ml_tn0.80 ===
+  [ml_tn0.80] cq20: 38.3776 dB, 96775.4 kbps, 1011.5s
+  [ml_tn0.80] cq32: 37.0568 dB, 23449.0 kbps, 281.3s
+  [ml_tn0.80] cq43: 36.1702 dB, 10874.9 kbps, 206.3s
+  [ml_tn0.80] cq55: 34.7181 dB, 4821.9 kbps, 134.8s
+=== ml_tn0.70 ===
+  [ml_tn0.70] cq20: 38.3648 dB, 96181.9 kbps, 928.6s
+  [ml_tn0.70] cq32: 37.0520 dB, 23366.3 kbps, 258.1s
+  [ml_tn0.70] cq43: 36.1631 dB, 10846.5 kbps, 197.7s
+  [ml_tn0.70] cq55: 34.7099 dB, 4808.4 kbps, 130.6s
+=== ml_tn0.60 ===
+  [ml_tn0.60] cq20: 38.3449 dB, 95148.6 kbps, 839.4s
+  [ml_tn0.60] cq32: 37.0430 dB, 23261.9 kbps, 232.7s
+  [ml_tn0.60] cq43: 36.1533 dB, 10812.3 kbps, 185.8s
+  [ml_tn0.60] cq55: 34.6895 dB, 4792.9 kbps, 125.4s
+=== ml_tn0.50 ===
+  [ml_tn0.50] cq20: 38.3160 dB, 93541.1 kbps, 778.4s
+  [ml_tn0.50] cq32: 37.0345 dB, 23179.4 kbps, 205.2s
+  [ml_tn0.50] cq43: 36.1386 dB, 10734.9 kbps, 174.8s
+  [ml_tn0.50] cq55: 34.6700 dB, 4759.3 kbps, 120.4s
+=== variance_tn0.95 ===
+  [variance_tn0.95] cq20: 38.0415 dB, 79428.4 kbps, 362.2s
+  [variance_tn0.95] cq32: 37.0318 dB, 23325.0 kbps, 200.2s
+  [variance_tn0.95] cq43: 36.1453 dB, 10834.3 kbps, 186.0s
+  [variance_tn0.95] cq55: 34.7039 dB, 4821.6 kbps, 129.5s
+=== variance_tn0.90 ===
+  [variance_tn0.90] cq20: 38.0125 dB, 77919.0 kbps, 304.3s
+  [variance_tn0.90] cq32: 37.0203 dB, 23162.9 kbps, 174.8s
+  [variance_tn0.90] cq43: 36.1297 dB, 10755.0 kbps, 171.5s
+  [variance_tn0.90] cq55: 34.6770 dB, 4788.3 kbps, 122.6s
+=== variance_tn0.80 ===
+  [variance_tn0.80] cq20: 38.0028 dB, 77997.3 kbps, 264.2s
+  [variance_tn0.80] cq32: 37.0107 dB, 23130.6 kbps, 154.0s
+  [variance_tn0.80] cq43: 36.1108 dB, 10691.3 kbps, 154.6s
+  [variance_tn0.80] cq55: 34.6351 dB, 4739.3 kbps, 115.0s
+=== variance_tn0.70 ===
+  [variance_tn0.70] cq20: 37.9932 dB, 77723.7 kbps, 243.9s
+  [variance_tn0.70] cq32: 37.0045 dB, 23098.7 kbps, 143.9s
+  [variance_tn0.70] cq43: 36.0959 dB, 10657.4 kbps, 147.9s
+  [variance_tn0.70] cq55: 34.6086 dB, 4702.1 kbps, 111.0s
+=== variance_tn0.60 ===
+  [variance_tn0.60] cq20: 37.9874 dB, 77633.9 kbps, 229.7s
+  [variance_tn0.60] cq32: 36.9980 dB, 23156.2 kbps, 134.2s
+  [variance_tn0.60] cq43: 36.0808 dB, 10638.6 kbps, 138.3s
+  [variance_tn0.60] cq55: 34.5746 dB, 4673.5 kbps, 107.0s
+=== variance_tn0.50 ===
+  [variance_tn0.50] cq20: 37.9752 dB, 77498.8 kbps, 213.5s
+  [variance_tn0.50] cq32: 36.9922 dB, 23260.9 kbps, 124.8s
+  [variance_tn0.50] cq43: 36.0607 dB, 10630.7 kbps, 130.2s
+  [variance_tn0.50] cq55: 34.5206 dB, 4632.3 kbps, 102.1s
+=== random_tn0.95 ===
+  [random_tn0.95] cq20: 38.3040 dB, 93695.1 kbps, 957.4s
+  [random_tn0.95] cq32: 37.0441 dB, 23487.2 kbps, 344.5s
+  [random_tn0.95] cq43: 36.1526 dB, 10903.7 kbps, 263.6s
+  [random_tn0.95] cq55: 34.6684 dB, 4804.4 kbps, 174.9s
+=== random_tn0.90 ===
+  [random_tn0.90] cq20: 38.2495 dB, 91570.5 kbps, 871.2s
+  [random_tn0.90] cq32: 37.0309 dB, 23498.2 kbps, 311.2s
+  [random_tn0.90] cq43: 36.1241 dB, 10847.5 kbps, 243.0s
+  [random_tn0.90] cq55: 34.6087 dB, 4760.7 kbps, 162.7s
+=== random_tn0.80 ===
+  [random_tn0.80] cq20: 38.1600 dB, 87960.0 kbps, 710.4s
+  [random_tn0.80] cq32: 37.0086 dB, 23577.8 kbps, 255.1s
+  [random_tn0.80] cq43: 36.0773 dB, 10832.8 kbps, 206.2s
+  [random_tn0.80] cq55: 34.5057 dB, 4707.3 kbps, 143.1s
+=== random_tn0.70 ===
+  [random_tn0.70] cq20: 38.0831 dB, 84476.5 kbps, 578.7s
+  [random_tn0.70] cq32: 36.9924 dB, 23688.8 kbps, 212.7s
+  [random_tn0.70] cq43: 36.0425 dB, 10793.1 kbps, 176.5s
+  [random_tn0.70] cq55: 34.4333 dB, 4643.7 kbps, 127.1s
+=== random_tn0.60 ===
+  [random_tn0.60] cq20: 38.0321 dB, 82263.7 kbps, 480.7s
+  [random_tn0.60] cq32: 36.9792 dB, 23697.1 kbps, 180.7s
+  [random_tn0.60] cq43: 36.0176 dB, 10787.6 kbps, 154.8s
+  [random_tn0.60] cq55: 34.3688 dB, 4596.1 kbps, 114.4s
+=== random_tn0.50 ===
+  [random_tn0.50] cq20: 37.9996 dB, 81062.1 kbps, 391.0s
+  [random_tn0.50] cq32: 36.9666 dB, 23788.8 kbps, 149.2s
+  [random_tn0.50] cq43: 35.9943 dB, 10728.9 kbps, 132.2s
+  [random_tn0.50] cq55: 34.3146 dB, 4541.0 kbps, 102.0s
+
+=== ATTRIBUTION ABLATION (Jockey held-out, 10 frames) ===
+method     tau_none   BD-rate%      TS%    speedup
+ml             0.95      0.091      5.5      1.059
+ml             0.90      0.129      9.0      1.098
+ml             0.80      0.326     12.7      1.145
+ml             0.70      0.595     19.0      1.235
+ml             0.60      1.143     26.1      1.353
+ml             0.50      1.683     31.7      1.463
+variance       0.95      3.962     53.1      2.132
+variance       0.90      4.477     58.7      2.420
+variance       0.80      5.328     63.3      2.721
+variance       0.70      5.949     65.4      2.894
+variance       0.60      6.839     67.5      3.072
+variance       0.50      8.141     69.5      3.280
+random         0.95      2.405      7.0      1.075
+random         0.90      4.258     15.1      1.178
+random         0.80      7.772     29.7      1.423
+random         0.70     10.266     41.5      1.709
+random         0.60     12.142     50.3      2.011
+random         0.50     13.638     58.6      2.417
+ABLATION_DONE
+########## SEQ RaceNight DONE ##########
+########## SEQ RiverBank ##########
+=== ANCHOR (once) ===
+  [anchor] cq20: 40.9720 dB, 137122.4 kbps, 834.4s
+  [anchor] cq32: 38.1931 dB, 63131.6 kbps, 532.5s
+  [anchor] cq43: 35.3465 dB, 27770.4 kbps, 467.3s
+  [anchor] cq55: 32.2392 dB, 10432.4 kbps, 274.6s
+=== P0_oldpolicy ===
+  [P0_oldpolicy] cq20: 40.9744 dB, 137231.9 kbps, 661.4s
+  [P0_oldpolicy] cq32: 38.1897 dB, 63095.0 kbps, 448.2s
+  [P0_oldpolicy] cq43: 35.3433 dB, 27750.7 kbps, 404.0s
+  [P0_oldpolicy] cq55: 32.2363 dB, 10405.6 kbps, 227.5s
+=== P_rect ===
+  [P_rect] cq20: 40.9754 dB, 137327.0 kbps, 595.1s
+  [P_rect] cq32: 38.1923 dB, 63195.4 kbps, 422.7s
+  [P_rect] cq43: 35.3419 dB, 27788.1 kbps, 384.8s
+  [P_rect] cq55: 32.2356 dB, 10445.5 kbps, 223.6s
+=== P_ref ===
+  [P_ref] cq20: 40.9758 dB, 137368.9 kbps, 588.8s
+  [P_ref] cq32: 38.1938 dB, 63224.6 kbps, 416.0s
+  [P_ref] cq43: 35.3418 dB, 27765.0 kbps, 379.1s
+  [P_ref] cq55: 32.2233 dB, 10398.0 kbps, 214.6s
+=== H8_surrogate ===
+  [H8_surrogate] cq20: 40.9731 dB, 137183.0 kbps, 824.2s
+  [H8_surrogate] cq32: 38.1828 dB, 63138.0 kbps, 516.6s
+  [H8_surrogate] cq43: 35.3153 dB, 27693.1 kbps, 444.2s
+  [H8_surrogate] cq55: 32.1690 dB, 10320.1 kbps, 254.1s
+
+=== H7+H8 SUMMARY (Jockey held-out, 10 frames) ===
+point              BD-rate%      TS%    speedup x
+P0_oldpolicy          0.003     17.4        1.211
+P_rect                0.163     22.9        1.297
+P_ref                 0.129     24.2        1.319
+H8_surrogate          0.531      3.3        1.034
+H7H8_DONE
+=== ANCHOR (once) ===
+  [anchor] cq20: 40.9720 dB, 137122.4 kbps, 832.7s
+  [anchor] cq32: 38.1931 dB, 63131.6 kbps, 530.6s
+  [anchor] cq43: 35.3465 dB, 27770.4 kbps, 466.9s
+  [anchor] cq55: 32.2392 dB, 10432.4 kbps, 274.8s
+=== A1_none80 ===
+  [A1_none80] cq20: 40.9757 dB, 137346.4 kbps, 585.9s
+  [A1_none80] cq32: 38.1925 dB, 63213.3 kbps, 410.0s
+  [A1_none80] cq43: 35.3387 dB, 27773.8 kbps, 375.4s
+  [A1_none80] cq55: 32.2217 dB, 10398.8 kbps, 214.0s
+=== A2_none70 ===
+  [A2_none70] cq20: 40.9737 dB, 137480.4 kbps, 548.1s
+  [A2_none70] cq32: 38.1934 dB, 63272.4 kbps, 373.0s
+  [A2_none70] cq43: 35.3318 dB, 27712.0 kbps, 348.9s
+  [A2_none70] cq55: 32.2076 dB, 10349.9 kbps, 198.1s
+=== A3_none60_rest40 ===
+  [A3_none60_rest40] cq20: 40.9712 dB, 137605.1 kbps, 517.4s
+  [A3_none60_rest40] cq32: 38.1814 dB, 63191.0 kbps, 324.2s
+  [A3_none60_rest40] cq43: 35.3061 dB, 27538.2 kbps, 308.0s
+  [A3_none60_rest40] cq55: 32.1843 dB, 10272.3 kbps, 181.8s
+=== H8_surrogate_aggr ===
+  [H8_surrogate_aggr] cq20: 40.9696 dB, 137089.0 kbps, 816.2s
+  [H8_surrogate_aggr] cq32: 38.1520 dB, 63070.0 kbps, 495.5s
+  [H8_surrogate_aggr] cq43: 35.2410 dB, 27507.1 kbps, 410.0s
+  [H8_surrogate_aggr] cq55: 32.0319 dB, 10051.2 kbps, 222.4s
+
+=== H7+H8 SUMMARY (Jockey held-out, 10 frames) ===
+point              BD-rate%      TS%    speedup x
+A1_none80             0.190     24.7        1.328
+A2_none70             0.226     30.3        1.434
+A3_none60_rest40      0.378     36.8        1.581
+H8_surrogate_aggr      1.661      7.6        1.083
+H7H8_DONE
+=== ANCHOR (once) ===
+  [anchor] cq20: 40.9720 dB, 137122.4 kbps, 837.8s
+  [anchor] cq32: 38.1931 dB, 63131.6 kbps, 529.1s
+  [anchor] cq43: 35.3465 dB, 27770.4 kbps, 466.9s
+  [anchor] cq55: 32.2392 dB, 10432.4 kbps, 274.0s
+=== ml_tn0.95 ===
+  [ml_tn0.95] cq20: 40.9704 dB, 137081.9 kbps, 820.2s
+  [ml_tn0.95] cq32: 38.1922 dB, 63123.3 kbps, 516.1s
+  [ml_tn0.95] cq43: 35.3450 dB, 27771.6 kbps, 452.2s
+  [ml_tn0.95] cq55: 32.2322 dB, 10395.3 kbps, 265.9s
+=== ml_tn0.90 ===
+  [ml_tn0.90] cq20: 40.9704 dB, 137103.2 kbps, 819.9s
+  [ml_tn0.90] cq32: 38.1919 dB, 63096.6 kbps, 506.7s
+  [ml_tn0.90] cq43: 35.3442 dB, 27761.4 kbps, 443.7s
+  [ml_tn0.90] cq55: 32.2329 dB, 10403.0 kbps, 259.4s
+=== ml_tn0.80 ===
+  [ml_tn0.80] cq20: 40.9698 dB, 137069.8 kbps, 805.4s
+  [ml_tn0.80] cq32: 38.1900 dB, 63084.8 kbps, 490.6s
+  [ml_tn0.80] cq43: 35.3389 dB, 27731.1 kbps, 428.5s
+  [ml_tn0.80] cq55: 32.2222 dB, 10375.8 kbps, 249.3s
+=== ml_tn0.70 ===
+  [ml_tn0.70] cq20: 40.9676 dB, 137192.4 kbps, 798.5s
+  [ml_tn0.70] cq32: 38.1830 dB, 63036.2 kbps, 478.9s
+  [ml_tn0.70] cq43: 35.3296 dB, 27622.4 kbps, 415.3s
+  [ml_tn0.70] cq55: 32.2053 dB, 10294.9 kbps, 237.4s
+=== ml_tn0.60 ===
+  [ml_tn0.60] cq20: 40.9638 dB, 137064.3 kbps, 779.6s
+  [ml_tn0.60] cq32: 38.1785 dB, 63000.4 kbps, 461.7s
+  [ml_tn0.60] cq43: 35.3067 dB, 27459.6 kbps, 392.2s
+  [ml_tn0.60] cq55: 32.1821 dB, 10202.4 kbps, 227.0s
+=== ml_tn0.50 ===
+  [ml_tn0.50] cq20: 40.9587 dB, 136955.5 kbps, 767.7s
+  [ml_tn0.50] cq32: 38.1591 dB, 62745.8 kbps, 436.5s
+  [ml_tn0.50] cq43: 35.2757 dB, 27227.4 kbps, 366.7s
+  [ml_tn0.50] cq55: 32.1423 dB, 10062.7 kbps, 214.6s
+=== variance_tn0.95 ===
+  [variance_tn0.95] cq20: 40.8730 dB, 135929.6 kbps, 617.2s
+  [variance_tn0.95] cq32: 38.1332 dB, 62697.5 kbps, 430.3s
+  [variance_tn0.95] cq43: 35.3005 dB, 27486.0 kbps, 413.7s
+  [variance_tn0.95] cq55: 32.2077 dB, 10350.8 kbps, 254.2s
+=== variance_tn0.90 ===
+  [variance_tn0.90] cq20: 40.7693 dB, 135534.0 kbps, 462.3s
+  [variance_tn0.90] cq32: 38.0242 dB, 61968.8 kbps, 341.3s
+  [variance_tn0.90] cq43: 35.2026 dB, 26891.9 kbps, 345.2s
+  [variance_tn0.90] cq55: 32.1471 dB, 10113.8 kbps, 229.0s
+=== variance_tn0.80 ===
+  [variance_tn0.80] cq20: 40.6712 dB, 136396.8 kbps, 327.1s
+  [variance_tn0.80] cq32: 37.8813 dB, 61470.4 kbps, 256.3s
+  [variance_tn0.80] cq43: 35.0273 dB, 26103.2 kbps, 269.6s
+  [variance_tn0.80] cq55: 31.9953 dB, 9645.1 kbps, 191.6s
+=== variance_tn0.70 ===
+  [variance_tn0.70] cq20: 40.6137 dB, 137171.1 kbps, 260.8s
+  [variance_tn0.70] cq32: 37.7937 dB, 61411.3 kbps, 207.4s
+  [variance_tn0.70] cq43: 34.9115 dB, 25737.4 kbps, 224.6s
+  [variance_tn0.70] cq55: 31.8401 dB, 9256.0 kbps, 164.1s
+=== variance_tn0.60 ===
+  [variance_tn0.60] cq20: 40.5682 dB, 138068.9 kbps, 214.8s
+  [variance_tn0.60] cq32: 37.7254 dB, 61513.5 kbps, 169.0s
+  [variance_tn0.60] cq43: 34.8126 dB, 25463.4 kbps, 186.8s
+  [variance_tn0.60] cq55: 31.7010 dB, 8926.7 kbps, 140.3s
+=== variance_tn0.50 ===
+  [variance_tn0.50] cq20: 40.5265 dB, 139433.4 kbps, 174.3s
+  [variance_tn0.50] cq32: 37.6605 dB, 61821.5 kbps, 132.5s
+  [variance_tn0.50] cq43: 34.7297 dB, 25391.2 kbps, 150.1s
+  [variance_tn0.50] cq55: 31.5688 dB, 8643.4 kbps, 114.9s
+=== random_tn0.95 ===
+  [random_tn0.95] cq20: 40.9115 dB, 137443.1 kbps, 762.6s
+  [random_tn0.95] cq32: 38.1300 dB, 63265.1 kbps, 487.3s
+  [random_tn0.95] cq43: 35.2507 dB, 27565.9 kbps, 436.8s
+  [random_tn0.95] cq55: 32.1270 dB, 10200.2 kbps, 257.6s
+=== random_tn0.90 ===
+  [random_tn0.90] cq20: 40.8543 dB, 138012.7 kbps, 698.0s
+  [random_tn0.90] cq32: 38.0592 dB, 63358.3 kbps, 443.5s
+  [random_tn0.90] cq43: 35.1522 dB, 27353.5 kbps, 398.8s
+  [random_tn0.90] cq55: 32.0059 dB, 9956.0 kbps, 239.2s
+=== random_tn0.80 ===
+  [random_tn0.80] cq20: 40.7611 dB, 138459.0 kbps, 575.4s
+  [random_tn0.80] cq32: 37.9465 dB, 63163.5 kbps, 367.8s
+  [random_tn0.80] cq43: 35.0088 dB, 26928.3 kbps, 338.0s
+  [random_tn0.80] cq55: 31.8454 dB, 9578.9 kbps, 208.6s
+=== random_tn0.70 ===
+  [random_tn0.70] cq20: 40.6911 dB, 139017.1 kbps, 479.0s
+  [random_tn0.70] cq32: 37.8646 dB, 63132.3 kbps, 307.7s
+  [random_tn0.70] cq43: 34.8985 dB, 26590.2 kbps, 291.1s
+  [random_tn0.70] cq55: 31.7249 dB, 9275.4 kbps, 182.4s
+=== random_tn0.60 ===
+  [random_tn0.60] cq20: 40.6347 dB, 139276.6 kbps, 401.4s
+  [random_tn0.60] cq32: 37.7962 dB, 62987.9 kbps, 257.6s
+  [random_tn0.60] cq43: 34.8169 dB, 26266.5 kbps, 248.4s
+  [random_tn0.60] cq55: 31.6298 dB, 8998.0 kbps, 160.1s
+=== random_tn0.50 ===
+  [random_tn0.50] cq20: 40.5860 dB, 139724.3 kbps, 328.9s
+  [random_tn0.50] cq32: 37.7349 dB, 62878.8 kbps, 211.5s
+  [random_tn0.50] cq43: 34.7492 dB, 25986.3 kbps, 209.9s
+  [random_tn0.50] cq55: 31.5549 dB, 8786.1 kbps, 139.4s
+
+=== ATTRIBUTION ABLATION (Jockey held-out, 10 frames) ===
+method     tau_none   BD-rate%      TS%    speedup
+ml             0.95      0.008      2.5      1.026
+ml             0.90      0.001      3.7      1.039
+ml             0.80      0.044      6.4      1.068
+ml             0.70      0.030      8.4      1.092
+ml             0.60      0.076     11.7      1.133
+ml             0.50      0.162     15.3      1.181
+variance       0.95      0.754     18.6      1.229
+variance       0.90      2.037     34.6      1.530
+variance       0.80      4.738     50.4      2.018
+variance       0.70      7.052     59.3      2.460
+variance       0.60      9.207     66.3      2.965
+variance       0.50     11.705     72.9      3.687
+random         0.95      1.991      7.8      1.084
+random         0.90      4.147     15.6      1.185
+random         0.80      7.011     29.3      1.415
+random         0.70      9.278     40.2      1.673
+random         0.60     10.853     49.4      1.975
+random         0.50     12.268     57.8      2.369
+ABLATION_DONE
+########## SEQ RiverBank DONE ##########
+FULL_DONE
