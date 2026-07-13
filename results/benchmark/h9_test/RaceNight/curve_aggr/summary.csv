@@ -1,0 +1,5 @@
+point,bd_rate_pct,time_speedup_x,ts_pct
+A1_none80,0.729,1.484,32.63
+A2_none70,1.165,1.715,41.69
+A3_none60_rest40,1.722,2.027,50.66
+H8_surrogate_aggr,0.932,1.065,6.1

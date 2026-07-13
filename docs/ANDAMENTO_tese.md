@@ -146,7 +146,7 @@ título/resumo/objetivos com essa informação explícita.
 | H9 Fase 2 | Gate 2 offline (sinal do contexto RD) | ✅ **PASSOU** | `8866757`, `models/gate2_final.csv` |
 | H9 Fase 3 | estudante tabular direto sobre H9a; Gate 3 (val) | ✅ **PASSOU** | `173aa8f`, `models/student_h9a/` |
 | H9 Fase 4 | features B/C em C; paridade C↔Python; no-op byte-idêntico | ✅ **PASSOU** | `b3cd3c1`..`ecf436b`, `models/student_h9a/gate4_evidence.txt` |
-| **H9 Fase 5** | benchmark no teste held-out + ablação de atribuição | 🔄 **EM ANDAMENTO** (2/3 seqs) | ver §4.1 |
+| H9 Fase 5 | benchmark no teste held-out + ablação de atribuição | ✅ **CONCLUÍDA** (veredito matizado) | `docs/RESULTADOS_fase5.md`, `benchmark/h9_test/` |
 
 Legenda: ✅ concluído · ⏳ próximo · 🔄 em andamento · ⬜ pendente.
 
@@ -295,6 +295,17 @@ sobreposição de speedup:
 Isto é matched-*policy* e caracteriza a **região alcançável** — não precisa de
 sobreposição de speedup, e vale nas 2 seqs de teste. **O valor central do ml não
 depende do rect-off.**
+
+**FULL CONCLUÍDO (3/3 seqs) — 2026-07-13. Ver `docs/RESULTADOS_fase5.md`.**
+RiverBank confirmou o padrão: sem sobreposição de speedup (3/3), mas o escore do
+ml alcança BD mínimo 0,008% vs 0,75% da variância (razão 94×; Jockey 11×,
+RaceNight 44×). Veredito Gate 5: a **forma estrita** ("ml domina variância a
+speedup casado em ≥2/3") **não** é atingida no teste por não-sobreposição; mas a
+contribuição está sustentada — (i) redução de tempo forte vs baseline (TS ~30–48%
+a 0,6–1,4% BD, 3/3); (ii) ml ≫ aleatório (3/3); (iii) atribuição a política casada
+(escore do ml alcança baixo-BD inacessível à variância, 3/3); (iv) validação com
+dominação direta. Limitações + trabalho futuro (grid da variância a τ=0,97/0,99 na
+validação; variância com rect-off; SOTA nativo) em `RESULTADOS_fase5.md` §5.
 
 **Implicação para a escrita:** o Gate 5, como enquadrado ("ml domina variância a
 speedup casado em ≥2/3 seqs"), **não** é atingido no teste por não-sobreposição.
