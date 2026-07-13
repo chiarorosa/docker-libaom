@@ -349,6 +349,25 @@ escore* sob mesma política).
 `RESULTADOS_fase5.md` §5 (grid da variância / variância+rect-off na validação),
 que fica secundário.
 
+**Papel na tese — dois conjuntos, dois capítulos (justificativa estrutural).** Há
+uma separação clara de função entre os dois cenários experimentais:
+
+- **Universo do ML (Fases 2–5): VALIDAÇÃO da solução proposta.** Os experimentos
+  nas sequências do aprendizado de máquina (split 10/3/3), com **ml + variância +
+  aleatório e todas as combinações** de política/atribuição (Gates, ablações,
+  speedup/BD/política casada, oráculo), são **parte fundamental da validação** — eles
+  provam *por que* a solução funciona e que o ganho é **atribuível** ao modelo e ao
+  contexto RD. Pertencem à **Metodologia/validação** da tese.
+- **CTC (Fase 6): os RESULTADOS FINAIS.** As sequências da CTC, com **libaom original
+  + 2 presets nativos vs o ML final** (versão única e ótima), são os **números de
+  manchete** da tese — validação externa universal, comparável à literatura, e o
+  posicionamento prático contra o botão de velocidade nativo. Pertencem ao capítulo
+  de **Resultados**.
+
+Ou seja: **validação (ML-set) ≠ resultado final (CTC)**. Os dois são necessários — o
+primeiro sustenta e caracteriza a contribuição; o segundo a mede como produto, em
+condições universais.
+
 ---
 
 ## 5. Decisões em aberto
