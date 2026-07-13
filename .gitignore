@@ -1,4 +1,8 @@
 *.yuv
+# Raw test sequences (y4m) are huge and reproducible from their source URLs
+# (e.g. src/samples/aomctc_test_set/a1_4k_source.txt). Never commit them.
+*.y4m
+*.crdownload
 __pycache__/
 *.pyc
 opsnr.stt
