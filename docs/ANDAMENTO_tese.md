@@ -332,10 +332,23 @@ generalização externa genuína e (ii) resultados **comparáveis à literatura*
 o próprio botão de velocidade do AV1**. Codificar **N quadros × 4 cq** em cada seq
 CTC, **pareando o tempo** de quatro configurações:
 1. **LIBAOM original** — cpu-used=0, busca completa (âncora de qualidade).
-2. **LIBAOM + ML** — cpu-used=0 + poda H9a, **versão única e ótima** (um operating
-   point escolhido da curva, não a varredura).
-3. **preset nativo cpu-used=1** — o modo nativo de acelerar.
-4. **preset nativo cpu-used=2** — idem, mais agressivo. *(cpu 1 e 2 a decidir.)*
+2. **LIBAOM + ML (ponto equilibrado)** — cpu-used=0 + poda H9a no operating point de
+   **melhor equilíbrio BD-rate × TS** (o "joelho" da curva). Seleção a partir dos
+   **dados de teste** (Fase 5). Candidato: ~P_ref/A1 (**~0,6–0,9% BD a TS ~30–35%,
+   1,4–1,5×**).
+3. **LIBAOM + ML (ponto agressivo)** — cpu-used=0 + poda H9a no ponto de **máxima TS
+   com BD-rate ainda implantável e justificável**. Candidato: ~A3 (**~1,4–2% BD a
+   TS ~48–57%, 2,0–2,3×**). **Justificativa via variância + aleatório:** nesse
+   speedup (~2×) — região onde a variância *opera* — a variância custa ~2,4–4% BD e o
+   aleatório ~6–12%, enquanto o ML mantém ~1,4–2%; logo o ponto agressivo é
+   defensável (o ML preserva BD onde as heurísticas triviais explodem).
+4. **preset nativo cpu-used=1** — o modo nativo de acelerar.
+5. **preset nativo cpu-used=2** — idem, mais agressivo. *(cpu 1 e 2 a decidir.)*
+
+**Dois pontos de ML** (não um): (i) o **equilibrado** posiciona o ML no regime
+"quase de graça" contra os presets; (ii) o **agressivo** mede o ML no regime de
+alta economia, com o BD justificado pela comparação com variância/aleatório no
+mesmo speedup.
 
 **A pergunta-chave:** o **ML (cpu0 + poda) fica numa fronteira taxa-BD × tempo
 melhor que os presets nativos**? Se o ML+cpu0 entrega BD-rate menor a speedup
@@ -380,11 +393,13 @@ condições universais.
 - **Extensão pós-NONE (H9c)** — opcional, documentada como headroom; só se o
   Gate 5 do H9a pré-busca ficar aquém.
 - **Fase 6 (CTC) — parâmetros a decidir:** (a) **quais sequências CTC** (o usuário
-  disponibilizará); (b) **N quadros** por seq; (c) **qual operating point** do H9a é
-  a "versão única e ótima" (candidato natural: um ponto conservador ~P_ref, ~0,6% BD
-  a TS ~30%, ou o melhor compromisso da curva); (d) **quais presets nativos**
+  disponibilizará); (b) **N quadros** por seq; (d) **quais presets nativos**
   (cpu-used=1 e 2, ou outro par); (e) métrica de pareamento (BD-rate a speedup
-  casado, os três pilares).
+  casado, os três pilares). **(c) RESOLVIDO — dois operating points de ML**
+  (§4.2): equilibrado (~P_ref/A1, melhor BD×TS, escolhido nos dados de teste) e
+  agressivo (~A3, máxima TS com BD implantável, justificado vs variância/aleatório).
+  Os τ exatos dos dois pontos serão fixados a partir das curvas de teste da Fase 5
+  antes de rodar a CTC.
 
 ---
 
