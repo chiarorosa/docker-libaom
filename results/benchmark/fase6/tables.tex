@@ -1,0 +1,85 @@
+% Fase 6 -- CTC All-Intra, Class A1 4K 10-bit. Anchor = libaom original
+% (cpu-used=0). BD-Rate/BD-PSNR on PSNR-Y; TS%/Speedup vs anchor.
+\begin{table}[t]
+\centering
+\caption{Fase 6 -- final CTC results (All Intra, Class~A1, 4K, 10-bit). Anchor: unmodified libaom, \texttt{cpu-used=0}. Negative BD-Rate means bitrate savings; TS and speedup are versus the anchor.}
+\label{tab:fase6-ctc}
+\begin{tabular}{llrrrr}
+\toprule
+Sequence & Configuration & BD-Rate (\%) & BD-PSNR (dB) & TS (\%) & Speedup$\times$ \\
+\midrule
+BoxingPractice & ML balanced (P\_rect) & +0.63 & -0.02 & 19.4 & 1.25 \\
+ & ML aggressive (A3) & +1.54 & -0.05 & 31.7 & 1.49 \\
+ & libaom cpu-used=1 & +0.59 & -0.02 & 33.5 & 1.53 \\
+ & libaom cpu-used=2 & +0.60 & -0.02 & 42.3 & 1.77 \\
+ & libaom cpu-used=3 & +3.17 & -0.11 & 66.4 & 2.99 \\
+\midrule
+Crosswalk & ML balanced (P\_rect) & +0.50 & -0.01 & 20.2 & 1.26 \\
+ & ML aggressive (A3) & +1.11 & -0.02 & 35.0 & 1.60 \\
+ & libaom cpu-used=1 & +0.09 & -0.00 & 32.8 & 1.50 \\
+ & libaom cpu-used=2 & +0.53 & -0.01 & 46.3 & 1.89 \\
+ & libaom cpu-used=3 & +3.06 & -0.06 & 70.4 & 3.38 \\
+\midrule
+FoodMarket2 & ML balanced (P\_rect) & +0.63 & -0.03 & 12.4 & 1.14 \\
+ & ML aggressive (A3) & +1.38 & -0.06 & 26.2 & 1.36 \\
+ & libaom cpu-used=1 & +0.17 & -0.01 & 29.2 & 1.45 \\
+ & libaom cpu-used=2 & +0.18 & -0.01 & 38.8 & 1.69 \\
+ & libaom cpu-used=3 & +1.81 & -0.08 & 65.3 & 2.91 \\
+\midrule
+Neon1224 & ML balanced (P\_rect) & +0.64 & -0.03 & 21.9 & 1.28 \\
+ & ML aggressive (A3) & +1.41 & -0.06 & 33.1 & 1.51 \\
+ & libaom cpu-used=1 & +0.73 & -0.03 & 35.6 & 1.58 \\
+ & libaom cpu-used=2 & +0.77 & -0.04 & 43.9 & 1.83 \\
+ & libaom cpu-used=3 & +3.09 & -0.14 & 67.4 & 3.10 \\
+\midrule
+NocturneDance & ML balanced (P\_rect) & +0.15 & -0.01 & 12.6 & 1.14 \\
+ & ML aggressive (A3) & +1.19 & -0.05 & 30.7 & 1.45 \\
+ & libaom cpu-used=1 & +0.82 & -0.04 & 28.7 & 1.44 \\
+ & libaom cpu-used=2 & +0.89 & -0.04 & 39.4 & 1.72 \\
+ & libaom cpu-used=3 & +2.53 & -0.11 & 68.6 & 3.31 \\
+\midrule
+PierSeaSide & ML balanced (P\_rect) & +0.42 & -0.02 & 16.8 & 1.21 \\
+ & ML aggressive (A3) & +1.42 & -0.06 & 25.9 & 1.37 \\
+ & libaom cpu-used=1 & +0.48 & -0.02 & 35.9 & 1.56 \\
+ & libaom cpu-used=2 & +0.44 & -0.02 & 46.9 & 1.89 \\
+ & libaom cpu-used=3 & +2.84 & -0.11 & 68.3 & 3.17 \\
+\midrule
+Tango & ML balanced (P\_rect) & +1.15 & -0.02 & 21.3 & 1.28 \\
+ & ML aggressive (A3) & +2.21 & -0.04 & 39.0 & 1.72 \\
+ & libaom cpu-used=1 & +0.35 & -0.01 & 32.5 & 1.50 \\
+ & libaom cpu-used=2 & +0.44 & -0.01 & 42.5 & 1.78 \\
+ & libaom cpu-used=3 & +3.41 & -0.07 & 69.1 & 3.24 \\
+\midrule
+TimeLapse & ML balanced (P\_rect) & +0.41 & -0.02 & 17.3 & 1.21 \\
+ & ML aggressive (A3) & +0.96 & -0.04 & 30.6 & 1.45 \\
+ & libaom cpu-used=1 & +0.37 & -0.02 & 32.7 & 1.50 \\
+ & libaom cpu-used=2 & +0.44 & -0.02 & 41.7 & 1.74 \\
+ & libaom cpu-used=3 & +1.86 & -0.08 & 68.2 & 3.16 \\
+\midrule
+\multicolumn{6}{l}{\textbf{Average over sequences}} \\
+\midrule
+ & ML balanced (P\_rect) & +0.57 & -0.02 & 17.7 & 1.22 \\
+ & ML aggressive (A3) & +1.40 & -0.05 & 31.5 & 1.49 \\
+ & libaom cpu-used=1 & +0.45 & -0.02 & 32.6 & 1.51 \\
+ & libaom cpu-used=2 & +0.54 & -0.02 & 42.7 & 1.79 \\
+ & libaom cpu-used=3 & +2.72 & -0.09 & 67.9 & 3.16 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{BD-Rate$\times$time frontier (average over CTC A1). The ML pruner (\texttt{cpu-used=0}) versus the encoder's native speed knob.}
+\label{tab:fase6-frontier}
+\begin{tabular}{lrr}
+\toprule
+Configuration & BD-Rate (\%) & TS (\%) \\
+\midrule
+ML balanced (P\_rect) & +0.57 & 17.7 \\
+ML aggressive (A3) & +1.40 & 31.5 \\
+libaom cpu-used=1 & +0.45 & 32.6 \\
+libaom cpu-used=2 & +0.54 & 42.7 \\
+libaom cpu-used=3 & +2.72 & 67.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
