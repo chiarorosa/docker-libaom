@@ -1603,6 +1603,20 @@ static float student_env_tau(const char *name, float fallback) {
   return e ? (float)atof(e) : fallback;
 }
 
+// H9a swap experiment (Fase 6 extension): when AV1_DISABLE_NATIVE_CNN is set,
+// skip libaom's native intra CNN partition prune so the distilled student
+// replaces it as the partition pruner at cpu-used>=1 (the native CNN is a speed
+// feature that turns on from speed 1). The env is read once and cached. Default
+// (unset) leaves the native pruner exactly as upstream -> no-op, byte-identical.
+static int native_cnn_disabled(void) {
+  static int cached = -1;
+  if (cached < 0) {
+    const char *e = getenv("AV1_DISABLE_NATIVE_CNN");
+    cached = (e && e[0] && e[0] != '0') ? 1 : 0;
+  }
+  return cached;
+}
+
 static const StudentTaus *student_get_taus(int n) {
   static int inited = 0;
   static StudentTaus taus[3];  // index: 0 -> 16px, 1 -> 32px, 2 -> 64px
@@ -2169,12 +2183,17 @@ void av1_prune_partitions_before_search(AV1_COMP *const cpi,
 
   // A CNN-based speed feature pruning out either split or all non-split
   // partition in INTRA frame coding.
-  const int try_intra_cnn_based_part_prune =
+  int try_intra_cnn_based_part_prune =
       frame_is_intra_only(cm) &&
       cpi->sf.part_sf.intra_cnn_based_part_prune_level &&
       cm->seq_params->sb_size >= BLOCK_64X64 && bsize <= BLOCK_64X64 &&
       blk_params->bsize_at_least_8x8 &&
       av1_is_whole_blk_in_frame(blk_params, mi_params);
+#if PARTITION_ML_STUDENT
+  // Fase 6 swap experiment: optionally disable the native CNN so the student is
+  // the only intra partition pruner at this speed. No-op unless the env is set.
+  if (native_cnn_disabled()) try_intra_cnn_based_part_prune = 0;
+#endif
 
   if (try_intra_cnn_based_part_prune) {
     av1_intra_mode_cnn_partition(
