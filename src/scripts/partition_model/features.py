@@ -324,6 +324,23 @@ def node_features_h9a(sb_luma, dim, r, c, qindex, ctx):
     return node_features_h9(sb_luma, dim, r, c, qindex, c2)[:NUM_FEATURES_H9A]
 
 
+NUM_FEATURES_H9C = 39  # A(0..23) + B(24..31) + C(32..35) + E(36..38); D dropped
+                       # (Fase 3 decision: SATD does not add signal over H9a).
+
+
+def node_features_h9c(sb_luma, dim, r, c, qindex, ctx):
+    """H9c deploy vector (A+B+C+E = 39 features): the H9a vector plus the real
+    PARTITION_NONE rate/dist/rdcost, only available AFTER the encoder has
+    evaluated PARTITION_NONE for this node (post-NONE decision point, not
+    pre-search). Distinct from H9_SUBSETS['H9c'] (41-dim, includes D, offline
+    Gate-2 ablation only -- never deployed). Single source of truth; the C side
+    (student_h9c_prune_partition in partition_strategy.c) mirrors THIS."""
+    c2 = dict(ctx)
+    c2["bsize_enum"] = -1
+    full = node_features_h9(sb_luma, dim, r, c, qindex, c2)  # 41-dim
+    return np.concatenate([full[:36], full[38:41]]).astype(np.float32)
+
+
 if __name__ == "__main__":
     rng = np.random.default_rng(0)
     sb = rng.integers(0, 256, size=(64, 64), dtype=np.uint8)
