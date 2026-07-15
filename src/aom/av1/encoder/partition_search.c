@@ -5824,6 +5824,8 @@ BEGIN_PARTITION_SEARCH:
   }
 #endif  // LOG_PARTITION_DATA
 
+  av1_prune_after_none(cm, x, &part_search_state);
+
 #if CONFIG_COLLECT_COMPONENT_TIMING
   end_timing(cpi, none_partition_search_time);
 #endif

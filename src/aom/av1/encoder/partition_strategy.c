@@ -1554,6 +1554,7 @@ void av1_ml_predict_breakout(AV1_COMP *const cpi, const MACROBLOCK *const x,
 #include <stdlib.h>
 #include <string.h>
 #include "av1/encoder/partition_student_weights.h"
+#include "av1/encoder/partition_student_h9c_weights.h"
 
 // Attribution ablation. The end-to-end speedup must be shown to come from the
 // distilled ConvNeXt->student model's node SELECTION, not merely from the
@@ -1637,6 +1638,33 @@ static const StudentTaus *student_get_taus(int n) {
     inited = 1;
   }
   return &taus[n == 16 ? 0 : (n == 32 ? 1 : 2)];
+}
+
+// H9c (post-NONE): single tau per level; AV1_STUDENT_H9C_ENABLE gates the
+// whole feature (default off -> av1_prune_after_none is a no-op).
+static int student_h9c_enabled(void) {
+  static int cached = -1;
+  if (cached < 0) {
+    const char *e = getenv("AV1_STUDENT_H9C_ENABLE");
+    cached = (e && e[0] && e[0] != '0') ? 1 : 0;
+  }
+  return cached;
+}
+
+static float student_h9c_get_tau(int n) {
+  static int inited = 0;
+  static float tau[3];  // 0 -> 16px, 1 -> 32px, 2 -> 64px
+  if (!inited) {
+    static const char *suffix[3] = { "_16", "_32", "_64" };
+    const float g = student_env_tau("AV1_STUDENT_H9C_TAU", 0.9f);
+    for (int i = 0; i < 3; ++i) {
+      char name[40];
+      snprintf(name, sizeof(name), "AV1_STUDENT_H9C_TAU%s", suffix[i]);
+      tau[i] = student_env_tau(name, g);
+    }
+    inited = 1;
+  }
+  return tau[n == 16 ? 0 : (n == 32 ? 1 : 2)];
 }
 
 // Population variance of a region via exact integer sums, matching
@@ -2052,7 +2080,50 @@ static void student_prune_partition(const AV1_COMMON *cm, const MACROBLOCK *x,
     av1_disable_rect_partitions(part_state);
   }
 }
+
+// H9c: post-NONE decision. Called right after none_partition_search() has
+// filled part_state->this_rdc (real PARTITION_NONE rate/dist/rdcost) and
+// before split/rectangular/AB/4-way search runs. Mirrors the gate used by the
+// pre-search student (intra-only, sb_size>=64, bsize in {16,32,64}, whole
+// 64x64 unit in frame -- same parent-context requirement as block A).
+static void student_h9c_decide(const AV1_COMMON *cm, MACROBLOCK *x,
+                               PartitionSearchState *part_state) {
+  const PartitionBlkParams *blk = &part_state->part_blk_params;
+  if (part_state->none_rd <= 0 || part_state->this_rdc.rate == INT_MAX) return;
+  const NN_CONFIG *nnconfig = av1_partition_student_h9c_nnconfig(blk->bsize);
+  if (!nnconfig) return;
+  float feats[AV1_PARTITION_STUDENT_H9C_NUM_FEATURES];
+  student_node_features(cm, x, blk, feats);  // fills [0..35] (A+B+C)
+  const RD_STATS *none_rdc = &part_state->this_rdc;
+  feats[36] = (float)log1p((double)AOMMAX(none_rdc->rate, 0));
+  feats[37] = (float)log1p((double)AOMMAX(none_rdc->dist, 0));
+  feats[38] = (float)log1p((double)AOMMAX(none_rdc->rdcost, 0));
+  float logits[3], probs[3];
+  av1_nn_predict(feats, nnconfig, 1, logits);
+  av1_nn_softmax(logits, probs, 3);
+  const float tau = student_h9c_get_tau(block_size_wide[blk->bsize]);
+  if (probs[0] > tau) av1_disable_all_splits(part_state);
+}
 #endif  // PARTITION_ML_STUDENT
+
+void av1_prune_after_none(const AV1_COMMON *cm, MACROBLOCK *x,
+                          PartitionSearchState *part_state) {
+#if PARTITION_ML_STUDENT
+  if (!student_h9c_enabled()) return;
+  const PartitionBlkParams *blk = &part_state->part_blk_params;
+  const CommonModeInfoParams *const mi_params = &cm->mi_params;
+  const int try_h9c =
+      frame_is_intra_only(cm) && cm->seq_params->sb_size >= BLOCK_64X64 &&
+      blk->bsize <= BLOCK_64X64 && blk->bsize > BLOCK_8X8 &&
+      (blk->mi_row & ~15) + 16 <= mi_params->mi_rows &&
+      (blk->mi_col & ~15) + 16 <= mi_params->mi_cols;
+  if (try_h9c) student_h9c_decide(cm, x, part_state);
+#else
+  (void)cm;
+  (void)x;
+  (void)part_state;
+#endif  // PARTITION_ML_STUDENT
+}
 
 void av1_prune_partitions_before_search(AV1_COMP *const cpi,
                                         MACROBLOCK *const x,

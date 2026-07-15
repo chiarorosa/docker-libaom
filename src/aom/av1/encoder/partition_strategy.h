@@ -108,6 +108,13 @@ void av1_prune_partitions_before_search(AV1_COMP *const cpi,
                                         SIMPLE_MOTION_DATA_TREE *const sms_tree,
                                         PartitionSearchState *part_state);
 
+// H9c: post-NONE pruning decision (see partition_strategy.c). Always
+// declared/linked; a no-op unless PARTITION_ML_STUDENT and
+// AV1_STUDENT_H9C_ENABLE are both set, mirroring
+// av1_prune_partitions_before_search's pattern.
+void av1_prune_after_none(const AV1_COMMON *cm, MACROBLOCK *x,
+                          PartitionSearchState *part_state);
+
 // Prune out partitions that lead to coding block sizes outside the min and max
 // bsizes set by the encoder. Max and min square partition levels are defined as
 // the partition nodes that the recursive function rd_pick_partition() can
