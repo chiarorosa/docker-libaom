@@ -35,6 +35,9 @@ def main():
     p.add_argument("--ml-enc", default="/workspace/build/libaom_perf/aomenc")
     p.add_argument("--cqs", type=int, nargs="+", default=[20])
     p.add_argument("--frames", type=int, default=15)
+    p.add_argument("--seqs", nargs="+", default=None,
+                   help="only sequences whose filename contains one of these "
+                        "substrings (default: all .y4m in --seq-dir)")
     args = p.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -44,6 +47,8 @@ def main():
     done = base.load_done(csv_path)
 
     seqs = sorted(f for f in os.listdir(args.seq_dir) if f.endswith(".y4m"))
+    if args.seqs:
+        seqs = [f for f in seqs if any(s in f for s in args.seqs)]
     if not seqs:
         raise SystemExit("no .y4m sequences in " + args.seq_dir)
     cfgs = list(H9C_TAUS.items())
