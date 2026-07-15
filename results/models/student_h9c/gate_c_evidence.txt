@@ -1,0 +1,12 @@
+H9c Gate evidence (2026-07-15T15:21:15Z):
+
+Step 1 - No-op byte-identical check:
+  libaom_noop vs libaom_perf_anchor:
+b904f11c9fa02d5ea25460cb976ef29d  /tmp/h9c_noop_libaom_noop.ivf
+b904f11c9fa02d5ea25460cb976ef29d  /tmp/h9c_noop_libaom_perf_anchor.ivf
+
+Step 1 (Nota) - H9c-disabled (flag ON, env unset) vs H9a reference:
+56018055c2bc40309feefa6505be9ede  /tmp/h9c_off.ivf
+56018055c2bc40309feefa6505be9ede  /tmp/h9c_nota_check.ivf
+
+Step 2 - Unit tests: PASSED (3 tests)
