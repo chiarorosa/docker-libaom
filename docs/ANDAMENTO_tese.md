@@ -402,6 +402,17 @@ condições universais.
   vs variância/aleatório).
   Os τ exatos dos dois pontos serão fixados a partir das curvas de teste da Fase 5
   antes de rodar a CTC.
+- **Microbenchmark isolado do pruner (custo computacional, pendente).** A Fase 6
+  extensão (`RESULTADOS_fase6.md` §4.3a) defende que o H9a é ordens de grandeza
+  mais barato computacionalmente que a CNN nativa (MLP 36→64→32→3, ≈13,6 mil
+  parâmetros no total, forward denso único por nó, vs. CNN multi-resolução de 5
+  camadas + 4 ramos DNN aplicada convolucionalmente) — mas isso hoje é evidência
+  estrutural (contagem de parâmetros/arquitetura), não uma medição direta. O TS%
+  já reportado mede o encode completo (dominado pela busca de modo/transformada),
+  não a chamada do pruner isolada. Fica pendente: cronometrar em isolamento
+  apenas a chamada do pruner (N repetições, CNN nativa `av1_intra_mode_cnn_partition`
+  vs MLP H9a `av1_nn_predict`), pra transformar o argumento estrutural num número
+  medido (μs/bloco ou FLOPs).
 
 ---
 

@@ -1,0 +1,4 @@
+method,tau_none,bd_rate_pct,speedup_x
+variance,0.94,2.019,1.968
+variance,0.97,1.416,1.575
+variance,0.99,0.154,1.043

@@ -1,0 +1,243 @@
+===== FASE 6 SWAP START 2026-07-14T14:28:59Z =====
+Fase 6 SWAP: 8 seqs x 6 configs x 4 cqs = 192 encodes
+already done: 0/192
+
+########## BoxingPractice  (3840x2160, 59.940 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  468.5s   3378368 B  PSNR-Y=42.8090 dB
+  cq20 h9a_aggr_cpu1  time=  346.5s   3385430 B  PSNR-Y=42.8030 dB
+  cq20 h9a_bal_cpu2   time=  407.9s   3383886 B  PSNR-Y=42.8090 dB
+  cq20 h9a_aggr_cpu2  time=  293.5s   3392273 B  PSNR-Y=42.8030 dB
+  cq20 h9a_bal_cpu3   time=  203.3s   3395806 B  PSNR-Y=42.7570 dB
+  cq20 h9a_aggr_cpu3  time=  160.8s   3408063 B  PSNR-Y=42.7550 dB
+  cq32 h9a_bal_cpu1   time=  287.4s   1572268 B  PSNR-Y=40.9600 dB
+  cq32 h9a_aggr_cpu1  time=  232.1s   1576908 B  PSNR-Y=40.9510 dB
+  cq32 h9a_bal_cpu2   time=  249.7s   1572307 B  PSNR-Y=40.9600 dB
+  cq32 h9a_aggr_cpu2  time=  201.5s   1578004 B  PSNR-Y=40.9500 dB
+  cq32 h9a_bal_cpu3   time=  140.0s   1579183 B  PSNR-Y=40.8730 dB
+  cq32 h9a_aggr_cpu3  time=  118.1s   1586201 B  PSNR-Y=40.8690 dB
+  cq43 h9a_bal_cpu1   time=  211.2s    774298 B  PSNR-Y=38.5070 dB
+  cq43 h9a_aggr_cpu1  time=  182.2s    777385 B  PSNR-Y=38.4900 dB
+  cq43 h9a_bal_cpu2   time=  179.8s    774192 B  PSNR-Y=38.5060 dB
+  cq43 h9a_aggr_cpu2  time=  153.1s    776720 B  PSNR-Y=38.4870 dB
+  cq43 h9a_bal_cpu3   time=  106.7s    774631 B  PSNR-Y=38.3510 dB
+  cq43 h9a_aggr_cpu3  time=   95.1s    778628 B  PSNR-Y=38.3470 dB
+  cq55 h9a_bal_cpu1   time=  162.4s    330558 B  PSNR-Y=34.9210 dB
+  cq55 h9a_aggr_cpu1  time=  146.4s    332272 B  PSNR-Y=34.8970 dB
+  cq55 h9a_bal_cpu2   time=  131.1s    331118 B  PSNR-Y=34.9210 dB
+  cq55 h9a_aggr_cpu2  time=  115.0s    332853 B  PSNR-Y=34.8980 dB
+  cq55 h9a_bal_cpu3   time=   81.6s    327033 B  PSNR-Y=34.6700 dB
+  cq55 h9a_aggr_cpu3  time=   75.3s    329196 B  PSNR-Y=34.6760 dB
+
+########## Crosswalk  (3840x2160, 59.940 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  395.2s   1156255 B  PSNR-Y=43.0930 dB
+  cq20 h9a_aggr_cpu1  time=  255.1s   1158565 B  PSNR-Y=43.0900 dB
+  cq20 h9a_bal_cpu2   time=  324.3s   1160544 B  PSNR-Y=43.0940 dB
+  cq20 h9a_aggr_cpu2  time=  200.0s   1164272 B  PSNR-Y=43.0910 dB
+  cq20 h9a_bal_cpu3   time=  153.4s   1167160 B  PSNR-Y=43.0800 dB
+  cq20 h9a_aggr_cpu3  time=  114.2s   1171659 B  PSNR-Y=43.0800 dB
+  cq32 h9a_bal_cpu1   time=  220.8s    554455 B  PSNR-Y=42.3300 dB
+  cq32 h9a_aggr_cpu1  time=  164.9s    555148 B  PSNR-Y=42.3240 dB
+  cq32 h9a_bal_cpu2   time=  180.2s    555864 B  PSNR-Y=42.3290 dB
+  cq32 h9a_aggr_cpu2  time=  127.9s    556854 B  PSNR-Y=42.3230 dB
+  cq32 h9a_bal_cpu3   time=  100.9s    559572 B  PSNR-Y=42.3070 dB
+  cq32 h9a_aggr_cpu3  time=   81.8s    560788 B  PSNR-Y=42.3060 dB
+  cq43 h9a_bal_cpu1   time=  162.3s    276958 B  PSNR-Y=41.0220 dB
+  cq43 h9a_aggr_cpu1  time=  131.7s    276923 B  PSNR-Y=41.0060 dB
+  cq43 h9a_bal_cpu2   time=  126.3s    278173 B  PSNR-Y=41.0220 dB
+  cq43 h9a_aggr_cpu2  time=   97.5s    278415 B  PSNR-Y=41.0090 dB
+  cq43 h9a_bal_cpu3   time=   79.7s    279239 B  PSNR-Y=40.9740 dB
+  cq43 h9a_aggr_cpu3  time=   67.0s    280210 B  PSNR-Y=40.9780 dB
+  cq55 h9a_bal_cpu1   time=  129.3s    127473 B  PSNR-Y=38.6090 dB
+  cq55 h9a_aggr_cpu1  time=  117.6s    127458 B  PSNR-Y=38.5850 dB
+  cq55 h9a_bal_cpu2   time=   91.9s    128531 B  PSNR-Y=38.6090 dB
+  cq55 h9a_aggr_cpu2  time=   79.1s    128361 B  PSNR-Y=38.5840 dB
+  cq55 h9a_bal_cpu3   time=   59.6s    128850 B  PSNR-Y=38.5260 dB
+  cq55 h9a_aggr_cpu3  time=   54.5s    129663 B  PSNR-Y=38.5440 dB
+
+########## FoodMarket2  (3840x2160, 59.940 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  561.8s   3860986 B  PSNR-Y=44.0790 dB
+  cq20 h9a_aggr_cpu1  time=  448.4s   3867101 B  PSNR-Y=44.0710 dB
+  cq20 h9a_bal_cpu2   time=  491.5s   3869349 B  PSNR-Y=44.0830 dB
+  cq20 h9a_aggr_cpu2  time=  394.4s   3872383 B  PSNR-Y=44.0730 dB
+  cq20 h9a_bal_cpu3   time=  217.7s   3866407 B  PSNR-Y=43.9900 dB
+  cq20 h9a_aggr_cpu3  time=  178.5s   3872468 B  PSNR-Y=43.9870 dB
+  cq32 h9a_bal_cpu1   time=  378.7s   2000666 B  PSNR-Y=41.5400 dB
+  cq32 h9a_aggr_cpu1  time=  302.2s   2006165 B  PSNR-Y=41.5240 dB
+  cq32 h9a_bal_cpu2   time=  332.5s   2000434 B  PSNR-Y=41.5410 dB
+  cq32 h9a_aggr_cpu2  time=  261.5s   2006660 B  PSNR-Y=41.5240 dB
+  cq32 h9a_bal_cpu3   time=  161.2s   1999032 B  PSNR-Y=41.4430 dB
+  cq32 h9a_aggr_cpu3  time=  135.6s   2005396 B  PSNR-Y=41.4390 dB
+  cq43 h9a_bal_cpu1   time=  269.1s    993987 B  PSNR-Y=38.2670 dB
+  cq43 h9a_aggr_cpu1  time=  225.3s    995572 B  PSNR-Y=38.2330 dB
+  cq43 h9a_bal_cpu2   time=  236.0s    994213 B  PSNR-Y=38.2680 dB
+  cq43 h9a_aggr_cpu2  time=  192.4s    995982 B  PSNR-Y=38.2360 dB
+  cq43 h9a_bal_cpu3   time=  122.4s    986925 B  PSNR-Y=38.1330 dB
+  cq43 h9a_aggr_cpu3  time=  106.8s    989613 B  PSNR-Y=38.1210 dB
+  cq55 h9a_bal_cpu1   time=  204.0s    414274 B  PSNR-Y=34.1190 dB
+  cq55 h9a_aggr_cpu1  time=  174.6s    414274 B  PSNR-Y=34.0710 dB
+  cq55 h9a_bal_cpu2   time=  153.5s    414302 B  PSNR-Y=34.1160 dB
+  cq55 h9a_aggr_cpu2  time=  131.3s    415474 B  PSNR-Y=34.0870 dB
+  cq55 h9a_bal_cpu3   time=   88.2s    407693 B  PSNR-Y=33.9480 dB
+  cq55 h9a_aggr_cpu3  time=   80.9s    409630 B  PSNR-Y=33.9500 dB
+
+########## Neon1224  (3840x2160, 29.970 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  344.5s   3648798 B  PSNR-Y=46.0020 dB
+  cq20 h9a_aggr_cpu1  time=  255.6s   3650190 B  PSNR-Y=45.9740 dB
+  cq20 h9a_bal_cpu2   time=  305.7s   3657549 B  PSNR-Y=46.0030 dB
+  cq20 h9a_aggr_cpu2  time=  223.6s   3656686 B  PSNR-Y=45.9730 dB
+  cq20 h9a_bal_cpu3   time=  176.4s   3655386 B  PSNR-Y=45.9210 dB
+  cq20 h9a_aggr_cpu3  time=  138.6s   3660816 B  PSNR-Y=45.9080 dB
+  cq32 h9a_bal_cpu1   time=  246.4s   1686908 B  PSNR-Y=42.4270 dB
+  cq32 h9a_aggr_cpu1  time=  203.9s   1689649 B  PSNR-Y=42.4110 dB
+  cq32 h9a_bal_cpu2   time=  213.5s   1688389 B  PSNR-Y=42.4230 dB
+  cq32 h9a_aggr_cpu2  time=  174.0s   1693307 B  PSNR-Y=42.4100 dB
+  cq32 h9a_bal_cpu3   time=  125.9s   1695895 B  PSNR-Y=42.3250 dB
+  cq32 h9a_aggr_cpu3  time=  107.5s   1701993 B  PSNR-Y=42.3260 dB
+  cq43 h9a_bal_cpu1   time=  188.6s    817943 B  PSNR-Y=39.2580 dB
+  cq43 h9a_aggr_cpu1  time=  166.0s    820366 B  PSNR-Y=39.2360 dB
+  cq43 h9a_bal_cpu2   time=  157.2s    818466 B  PSNR-Y=39.2520 dB
+  cq43 h9a_aggr_cpu2  time=  134.4s    820430 B  PSNR-Y=39.2380 dB
+  cq43 h9a_bal_cpu3   time=   94.9s    819833 B  PSNR-Y=39.1130 dB
+  cq43 h9a_aggr_cpu3  time=   82.9s    823614 B  PSNR-Y=39.1090 dB
+  cq55 h9a_bal_cpu1   time=  151.0s    362422 B  PSNR-Y=35.4010 dB
+  cq55 h9a_aggr_cpu1  time=  134.7s    364364 B  PSNR-Y=35.3780 dB
+  cq55 h9a_bal_cpu2   time=  115.5s    363448 B  PSNR-Y=35.4110 dB
+  cq55 h9a_aggr_cpu2  time=  101.2s    365516 B  PSNR-Y=35.3890 dB
+  cq55 h9a_bal_cpu3   time=   71.1s    359575 B  PSNR-Y=35.1960 dB
+  cq55 h9a_aggr_cpu3  time=   64.2s    362720 B  PSNR-Y=35.2020 dB
+
+########## NocturneDance  (3840x2160, 60.000 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  545.2s   4168338 B  PSNR-Y=47.0870 dB
+  cq20 h9a_aggr_cpu1  time=  408.6s   4166004 B  PSNR-Y=47.0600 dB
+  cq20 h9a_bal_cpu2   time=  475.4s   4169537 B  PSNR-Y=47.0890 dB
+  cq20 h9a_aggr_cpu2  time=  353.0s   4167364 B  PSNR-Y=47.0630 dB
+  cq20 h9a_bal_cpu3   time=  226.7s   4163509 B  PSNR-Y=47.0250 dB
+  cq20 h9a_aggr_cpu3  time=  178.3s   4171683 B  PSNR-Y=47.0170 dB
+  cq32 h9a_bal_cpu1   time=  391.2s   1899263 B  PSNR-Y=42.9140 dB
+  cq32 h9a_aggr_cpu1  time=  285.4s   1896777 B  PSNR-Y=42.8700 dB
+  cq32 h9a_bal_cpu2   time=  357.7s   1898650 B  PSNR-Y=42.9080 dB
+  cq32 h9a_aggr_cpu2  time=  241.5s   1897129 B  PSNR-Y=42.8730 dB
+  cq32 h9a_bal_cpu3   time=  166.8s   1887380 B  PSNR-Y=42.8130 dB
+  cq32 h9a_aggr_cpu3  time=  130.2s   1890118 B  PSNR-Y=42.7910 dB
+  cq43 h9a_bal_cpu1   time=  261.9s    765379 B  PSNR-Y=38.7920 dB
+  cq43 h9a_aggr_cpu1  time=  209.6s    764238 B  PSNR-Y=38.7480 dB
+  cq43 h9a_bal_cpu2   time=  222.5s    764776 B  PSNR-Y=38.7890 dB
+  cq43 h9a_aggr_cpu2  time=  167.6s    762668 B  PSNR-Y=38.7400 dB
+  cq43 h9a_bal_cpu3   time=  105.5s    756240 B  PSNR-Y=38.6520 dB
+  cq43 h9a_aggr_cpu3  time=   86.1s    757515 B  PSNR-Y=38.6370 dB
+  cq55 h9a_bal_cpu1   time=  173.8s    226559 B  PSNR-Y=34.6030 dB
+  cq55 h9a_aggr_cpu1  time=  142.8s    223400 B  PSNR-Y=34.5110 dB
+  cq55 h9a_bal_cpu2   time=  129.3s    225973 B  PSNR-Y=34.5840 dB
+  cq55 h9a_aggr_cpu2  time=   98.8s    222553 B  PSNR-Y=34.4920 dB
+  cq55 h9a_bal_cpu3   time=   68.6s    219207 B  PSNR-Y=34.4320 dB
+  cq55 h9a_aggr_cpu3  time=   56.2s    218747 B  PSNR-Y=34.4060 dB
+
+########## PierSeaSide  (3840x2160, 29.970 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  325.4s   2178324 B  PSNR-Y=46.0600 dB
+  cq20 h9a_aggr_cpu1  time=  271.3s   2183513 B  PSNR-Y=46.0540 dB
+  cq20 h9a_bal_cpu2   time=  278.1s   2183103 B  PSNR-Y=46.0620 dB
+  cq20 h9a_aggr_cpu2  time=  227.4s   2186578 B  PSNR-Y=46.0560 dB
+  cq20 h9a_bal_cpu3   time=  149.0s   2199333 B  PSNR-Y=46.0060 dB
+  cq20 h9a_aggr_cpu3  time=  121.2s   2206381 B  PSNR-Y=46.0010 dB
+  cq32 h9a_bal_cpu1   time=  247.9s   1065996 B  PSNR-Y=43.8280 dB
+  cq32 h9a_aggr_cpu1  time=  203.8s   1069220 B  PSNR-Y=43.7920 dB
+  cq32 h9a_bal_cpu2   time=  205.6s   1065682 B  PSNR-Y=43.8280 dB
+  cq32 h9a_aggr_cpu2  time=  165.2s   1069344 B  PSNR-Y=43.7880 dB
+  cq32 h9a_bal_cpu3   time=  115.2s   1071124 B  PSNR-Y=43.7150 dB
+  cq32 h9a_aggr_cpu3  time=   94.6s   1074595 B  PSNR-Y=43.6840 dB
+  cq43 h9a_bal_cpu1   time=  191.5s    516278 B  PSNR-Y=40.8060 dB
+  cq43 h9a_aggr_cpu1  time=  170.1s    517200 B  PSNR-Y=40.7800 dB
+  cq43 h9a_bal_cpu2   time=  152.3s    516441 B  PSNR-Y=40.8050 dB
+  cq43 h9a_aggr_cpu2  time=  132.3s    517293 B  PSNR-Y=40.7840 dB
+  cq43 h9a_bal_cpu3   time=   85.0s    514688 B  PSNR-Y=40.6320 dB
+  cq43 h9a_aggr_cpu3  time=   75.3s    516606 B  PSNR-Y=40.6360 dB
+  cq55 h9a_bal_cpu1   time=  140.3s    219471 B  PSNR-Y=36.9230 dB
+  cq55 h9a_aggr_cpu1  time=  131.4s    219802 B  PSNR-Y=36.9040 dB
+  cq55 h9a_bal_cpu2   time=  109.0s    219180 B  PSNR-Y=36.9250 dB
+  cq55 h9a_aggr_cpu2  time=   98.9s    219626 B  PSNR-Y=36.8990 dB
+  cq55 h9a_bal_cpu3   time=   61.7s    216959 B  PSNR-Y=36.6760 dB
+  cq55 h9a_aggr_cpu3  time=   58.0s    217587 B  PSNR-Y=36.6770 dB
+
+########## Tango  (3840x2160, 59.940 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  563.2s   2581390 B  PSNR-Y=41.0050 dB
+  cq20 h9a_aggr_cpu1  time=  320.8s   2587553 B  PSNR-Y=40.9990 dB
+  cq20 h9a_bal_cpu2   time=  488.5s   2585147 B  PSNR-Y=41.0060 dB
+  cq20 h9a_aggr_cpu2  time=  265.6s   2592446 B  PSNR-Y=41.0000 dB
+  cq20 h9a_bal_cpu3   time=  214.9s   2580567 B  PSNR-Y=40.9800 dB
+  cq20 h9a_aggr_cpu3  time=  149.7s   2601200 B  PSNR-Y=40.9830 dB
+  cq32 h9a_bal_cpu1   time=  269.2s   1022429 B  PSNR-Y=39.8890 dB
+  cq32 h9a_aggr_cpu1  time=  193.8s   1026234 B  PSNR-Y=39.8800 dB
+  cq32 h9a_bal_cpu2   time=  229.3s   1022660 B  PSNR-Y=39.8880 dB
+  cq32 h9a_aggr_cpu2  time=  162.3s   1027471 B  PSNR-Y=39.8810 dB
+  cq32 h9a_bal_cpu3   time=  123.4s   1031547 B  PSNR-Y=39.8620 dB
+  cq32 h9a_aggr_cpu3  time=   99.6s   1036187 B  PSNR-Y=39.8610 dB
+  cq43 h9a_bal_cpu1   time=  190.3s    504941 B  PSNR-Y=38.4910 dB
+  cq43 h9a_aggr_cpu1  time=  151.9s    506202 B  PSNR-Y=38.4740 dB
+  cq43 h9a_bal_cpu2   time=  158.9s    505696 B  PSNR-Y=38.4940 dB
+  cq43 h9a_aggr_cpu2  time=  122.4s    506902 B  PSNR-Y=38.4720 dB
+  cq43 h9a_bal_cpu3   time=   93.5s    509881 B  PSNR-Y=38.4350 dB
+  cq43 h9a_aggr_cpu3  time=   80.1s    511925 B  PSNR-Y=38.4310 dB
+  cq55 h9a_bal_cpu1   time=  148.2s    226518 B  PSNR-Y=36.0160 dB
+  cq55 h9a_aggr_cpu1  time=  127.8s    227074 B  PSNR-Y=35.9820 dB
+  cq55 h9a_bal_cpu2   time=  114.8s    227628 B  PSNR-Y=36.0250 dB
+  cq55 h9a_aggr_cpu2  time=   95.4s    228562 B  PSNR-Y=35.9910 dB
+  cq55 h9a_bal_cpu3   time=   72.4s    228949 B  PSNR-Y=35.9100 dB
+  cq55 h9a_aggr_cpu3  time=   64.6s    230747 B  PSNR-Y=35.9160 dB
+
+########## TimeLapse  (3840x2160, 59.940 fps, 10-bit) ##########
+  cq20 h9a_bal_cpu1   time=  497.2s   5419042 B  PSNR-Y=43.3020 dB
+  cq20 h9a_aggr_cpu1  time=  403.7s   5428837 B  PSNR-Y=43.3000 dB
+  cq20 h9a_bal_cpu2   time=  440.8s   5428098 B  PSNR-Y=43.3020 dB
+  cq20 h9a_aggr_cpu2  time=  355.4s   5439447 B  PSNR-Y=43.2990 dB
+  cq20 h9a_bal_cpu3   time=  206.0s   5430591 B  PSNR-Y=43.2160 dB
+  cq20 h9a_aggr_cpu3  time=  175.4s   5445499 B  PSNR-Y=43.2190 dB
+  cq32 h9a_bal_cpu1   time=  371.5s   2589346 B  PSNR-Y=39.9960 dB
+  cq32 h9a_aggr_cpu1  time=  278.2s   2589374 B  PSNR-Y=39.9760 dB
+  cq32 h9a_bal_cpu2   time=  328.5s   2587209 B  PSNR-Y=39.9920 dB
+  cq32 h9a_aggr_cpu2  time=  240.4s   2590974 B  PSNR-Y=39.9800 dB
+  cq32 h9a_bal_cpu3   time=  163.9s   2587205 B  PSNR-Y=39.8890 dB
+  cq32 h9a_aggr_cpu3  time=  133.5s   2594199 B  PSNR-Y=39.8900 dB
+  cq43 h9a_bal_cpu1   time=  265.1s   1144787 B  PSNR-Y=36.4640 dB
+  cq43 h9a_aggr_cpu1  time=  225.9s   1147049 B  PSNR-Y=36.4540 dB
+  cq43 h9a_bal_cpu2   time=  222.5s   1145180 B  PSNR-Y=36.4660 dB
+  cq43 h9a_aggr_cpu2  time=  186.4s   1146771 B  PSNR-Y=36.4500 dB
+  cq43 h9a_bal_cpu3   time=  120.5s   1140585 B  PSNR-Y=36.3370 dB
+  cq43 h9a_aggr_cpu3  time=  107.3s   1143545 B  PSNR-Y=36.3370 dB
+  cq55 h9a_bal_cpu1   time=  177.0s    413975 B  PSNR-Y=32.6330 dB
+  cq55 h9a_aggr_cpu1  time=  159.5s    415584 B  PSNR-Y=32.6200 dB
+  cq55 h9a_bal_cpu2   time=  145.6s    414677 B  PSNR-Y=32.6390 dB
+  cq55 h9a_aggr_cpu2  time=  126.7s    416331 B  PSNR-Y=32.6220 dB
+  cq55 h9a_bal_cpu3   time=   84.0s    405739 B  PSNR-Y=32.4500 dB
+  cq55 h9a_aggr_cpu3  time=   76.5s    408970 B  PSNR-Y=32.4600 dB
+
+FASE6_SWAP_ENCODE_DONE (192 rows in /workspace/results/benchmark/fase6_swap/raw_results.csv)
+===== REPORT 2026-07-15T00:51:53Z =====
+
+=== Fase 6 SWAP -- native CNN vs H9a, by cpu-used (anchor = libaom original cpu0) ===
+
+-- cpu-used=1 --
+Config                      BD-Rate(%) BD-PSNR(dB)    TS(%)   Speedup
+libaom CNN (native SOTA)         +0.45       -0.02     32.6     1.51x
+H9a balanced (swap)              +0.91       -0.03     40.2     1.69x
+H9a aggressive (swap)            +1.68       -0.06     51.8     2.10x
+   -> h9a_bal vs native: dBD-Rate=+0.47%  dTS=+7.6pp
+   -> h9a_aggr vs native: dBD-Rate=+1.24%  dTS=+19.2pp
+
+-- cpu-used=2 --
+Config                      BD-Rate(%) BD-PSNR(dB)    TS(%)   Speedup
+libaom CNN (native SOTA)         +0.54       -0.02     42.7     1.79x
+H9a balanced (swap)              +1.03       -0.04     50.0     2.05x
+H9a aggressive (swap)            +1.80       -0.06     61.0     2.61x
+   -> h9a_bal vs native: dBD-Rate=+0.49%  dTS=+7.3pp
+   -> h9a_aggr vs native: dBD-Rate=+1.27%  dTS=+18.2pp
+
+-- cpu-used=3 --
+Config                      BD-Rate(%) BD-PSNR(dB)    TS(%)   Speedup
+libaom CNN (native SOTA)         +2.72       -0.09     67.9     3.16x
+H9a balanced (swap)              +3.87       -0.14     73.1     3.75x
+H9a aggressive (swap)            +4.35       -0.15     77.3     4.46x
+   -> h9a_bal vs native: dBD-Rate=+1.14%  dTS=+5.1pp
+   -> h9a_aggr vs native: dBD-Rate=+1.62%  dTS=+9.4pp
+
+Wrote swap_per_seq.csv, swap_average.csv, swap_tables.tex to /workspace/results/benchmark/fase6_swap
+===== FASE 6 SWAP DONE 2026-07-15T00:51:53Z =====

@@ -1,0 +1,5 @@
+point,bd_rate_pct,time_speedup_x
+P0_oldpolicy,6.44,4.1
+P_rect,6.44,4.133
+P_ref,6.367,4.206
+H8_surrogate,0.086,1.077

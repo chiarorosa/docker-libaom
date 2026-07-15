@@ -172,3 +172,111 @@ achado é "a poda-CNN embarcada é mais eficiente que o H9a" (caracteriza o SOTA
 o gap — ainda valioso). Se o H9a empatar/dominar em algum regime, é a vitória de
 categoria correta que a tese busca. De qualquer forma é a comparação metodológica
 apropriada, e complementa (não substitui) o resultado do praticante (§3).
+
+### 4.1 Resultados do swap (média sobre as 8 sequências A1)
+
+Âncora = `cpu-used=0` original (mesma referência do §3). BD-Rate/TS%/speedup por
+`cpu-used` e configuração (`results/benchmark/fase6_swap/swap_average.csv`):
+
+| cpu | config | BD-Rate | TS% | Speedup |
+|:--:|---|--:|--:|--:|
+| 1 | native (CNN nativa) | +0,45% | 32,59% | 1,51× |
+| 1 | h9a_bal | +0,91% | 40,20% | 1,69× |
+| 1 | h9a_aggr | +1,68% | 51,82% | 2,10× |
+| 2 | native | +0,54% | 42,72% | 1,79× |
+| 2 | h9a_bal | +1,03% | 50,05% | 2,05× |
+| 2 | h9a_aggr | +1,80% | 60,97% | 2,61× |
+| 3 | native | +2,72% | 67,94% | 3,16× |
+| 3 | h9a_bal | +3,87% | 73,09% | 3,75× |
+| 3 | h9a_aggr | +4,35% | 77,30% | 4,46× |
+
+Padrão consistente no mesmo `cpu-used`: a CNN nativa isolada tem sempre BD-Rate
+menor **e** TS/speedup menor que o H9a-swap — não há dominância direta no mesmo
+nível, é um compromisso genuíno (o H9a corta mais tempo, ao custo de mais
+BD-Rate).
+
+### 4.2 Fronteira Pareto (os 9 pontos) e eficiência marginal
+
+Minimizando BD-Rate e maximizando TS%, dos 9 pontos (3 níveis × 3
+configurações), **apenas 1 é estritamente dominado**:
+
+| # | config | BD-Rate | TS% | Pareto? | dominado por |
+|--:|---|--:|--:|:--:|---|
+| 1 | cpu1 native | 0,45% | 32,59% | sim | — |
+| 2 | cpu2 native | 0,54% | 42,72% | sim | — |
+| 3 | cpu1 h9a_bal | 0,91% | 40,20% | **não** | cpu2 native (BD-Rate menor **e** TS maior) |
+| 4 | cpu2 h9a_bal | 1,03% | 50,05% | sim | — |
+| 5 | cpu1 h9a_aggr | 1,68% | 51,82% | sim | — |
+| 6 | cpu2 h9a_aggr | 1,80% | 60,97% | sim | — |
+| 7 | cpu3 native | 2,72% | 67,94% | sim | — |
+| 8 | cpu3 h9a_bal | 3,87% | 73,09% | sim | — |
+| 9 | cpu3 h9a_aggr | 4,35% | 77,30% | sim | — |
+
+Um único ponto do H9a (`cpu1 h9a_bal`) é cravado por `cpu2 native`. Os demais 8
+pontos tecnicamente pertencem à fronteira — cada um oferece TS% maior que o
+anterior a um BD-Rate maior — mas isso não significa que sejam bons pontos
+operacionais: a métrica de retorno marginal (ΔTS / ΔBD entre pontos
+consecutivos da fronteira, ordenados por BD-Rate crescente) revela onde o custo
+compensa:
+
+| trecho da fronteira | ΔBD-Rate | ΔTS% | ΔTS/ΔBD (marginal) |
+|---|--:|--:|--:|
+| cpu1 native → cpu2 native | 0,09 | 10,13 | **116,4** |
+| cpu2 native → cpu2 h9a_bal | 0,49 | 7,33 | 14,8 |
+| cpu2 h9a_bal → cpu1 h9a_aggr | 0,66 | 1,77 | **2,7** (pior trecho) |
+| cpu1 h9a_aggr → cpu2 h9a_aggr | 0,12 | 9,15 | 76,9 |
+| cpu2 h9a_aggr → cpu3 native | 0,92 | 6,97 | 7,6 |
+| cpu3 native → cpu3 h9a_bal | 1,14 | 5,15 | 4,5 |
+| cpu3 h9a_bal → cpu3 h9a_aggr | 0,48 | 4,21 | 8,7 |
+
+Os dois trechos mais eficientes da fronteira inteira são puramente nativos
+(cpu1→cpu2, 116,4) ou do H9a subindo de nível fixo (cpu1→cpu2 h9a_aggr, 76,9); o
+trecho mais ineficiente é a transição entre configurações (`h9a_bal`→`h9a_aggr`
+cruzando de cpu2 para cpu1), onde se paga bastante BD-Rate por pouco TS
+adicional. Isto é, apesar de tecnicamente não-dominados, os pontos do H9a que
+entram na fronteira têm retorno marginal pior que os saltos nativos — a
+fronteira Pareto pura, sozinha, superestima o quão competitivo o H9a é.
+
+### 4.3 Enquadramento do resultado para a tese
+
+O H9a **não supera** a CNN nativa na fronteira taxa-BD × tempo, nem no cpu0
+comparado aos presets (§3) nem isolando o pruner por `cpu-used` fixo (§4.1–4.2).
+Isso não invalida a validação metodológica das Fases 2–5 (o escore RD do H9a
+domina variância/aleatório sob política casada — mantém-se inalterado); é uma
+resposta a uma pergunta mais dura: medir-se contra um produto industrial já
+otimizado. Dois ângulos honestos permanecem defensáveis:
+
+**(a) Custo computacional.** O H9a é uma MLP por tamanho de bloco
+(36→64→32→3, ≈4,5 mil parâmetros por tamanho, ≈13,6 mil no total), um único
+forward denso por nó (`av1_nn_predict`), cujos atributos de contexto RD (blocos
+B/C) reaproveitam dados já residentes — custo de inferência adicional
+~zero. A CNN nativa (`partition_cnn_weights.h`) é uma rede convolucional
+multi-resolução de 5 camadas + 4 ramos paralelos de DNN, aplicada
+convolucionalmente sobre patches de pixel — uma ordem de grandeza a mais em
+parâmetros pela simples contagem dos arrays de peso, antes mesmo de contar que
+a convolução é aplicada repetidamente sobre o espaço (custo de MACs bem maior
+que a razão de parâmetros sugere). Ou seja: o H9a captura uma fração
+substancial do ganho de tempo possível (§3: até ~1,4% BD @ TS~48%) a um custo
+computacional ordens de grandeza menor que o pruner de produção.
+**Ressalva:** esta é uma evidência estrutural (contagem de parâmetros/arquitetura),
+não uma medição direta do custo de inferência do pruner isolado — o TS%
+reportado mede o tempo de codificação completo, dominado pela busca de
+modo/transformada, não pela chamada do pruner em si. Um microbenchmark isolado
+(cronometrar somente a chamada do pruner, N repetições, CNN nativa vs MLP H9a)
+fica registrado como trabalho futuro em `docs/ANDAMENTO_tese.md` §5.
+
+**(b) Nicho de baixo speedup.** Como já registrado em §3, o degrau discreto dos
+presets nativos (`cpu0→cpu1` já salta para TS~33%) deixa uma lacuna em regime de
+baixíssimo speedup (TS ~12–22%) que o H9a cobre continuamente via calibração de
+τ — p.ex. NocturneDance, ML balanced +0,15% BD @ TS 12,6%, abaixo do que o
+nativo interpolado ofereceria nesse ponto. O H9a não precisa vencer a fronteira
+nativa inteira para ser útil: preenche uma granularidade de operação que o
+degrau grosseiro dos presets não alcança.
+
+**Síntese:** o H9a não desloca o botão de velocidade nativo como produto
+final, mas (i) entrega parte relevante do ganho de tempo a uma fração do custo
+computacional de uma CNN de produção, e (ii) cobre um regime operacional de
+baixo speedup que os presets nativos pulam. É a caracterização honesta do gap
+frente ao SOTA embarcado, mantendo intacta a validação metodológica (Fases
+2–5) de que o contexto RD é um sinal muito mais discriminativo que heurísticas
+triviais.
