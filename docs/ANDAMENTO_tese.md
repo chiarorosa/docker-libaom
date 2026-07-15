@@ -423,3 +423,54 @@ condições universais.
   contribuição recai na caracterização do teto informacional + o estudo H9c.
 - Custo de inferência das features B/C é ~zero (dados residentes), então não há
   risco de "a poda não se pagar" no regime H9a (grátis).
+
+---
+
+## 7. H9c — teto de contexto RD pós-NONE (2026-07-15): implementado, testado, não sobrevive ao piloto real
+
+Investigação completa do H9c como aposta de resultado adicional (plano
+`docs/superpowers/plans/2026-07-15-h9c-teto-rd-pos-none.md`, 8 de 9 tarefas
+executadas). Vetor de 39 features (A+B+C+E: o vetor H9a de 36 mais o
+rate/dist/rdcost real do `PARTITION_NONE`, disponível só depois que o encoder já
+avaliou essa partição). Estudante MLP separado, integrado em C como um segundo
+hook — `av1_prune_after_none`, dentro de `av1_rd_pick_partition`
+(`partition_search.c`), logo após `none_partition_search()` — decidindo se vale
+a pena continuar buscando SPLIT/retangular/AB/4-way, ou parar ali (reaproveita
+`av1_disable_all_splits`). Gate por `AV1_STUDENT_H9C_ENABLE` (default off).
+
+**Gate 3 (oráculo, HoneyBee/FlowerPan/Lips) — PASSOU, com folga:** H9c chega a
+61,2% de redução de custo a apenas 0,20% de split-lost — 5× menos risco que o
+teto de 1% permitido — já superando o H9a (~55-58% @ SL≤1%) nesse mesmo
+critério.
+
+**Gate C (paridade + no-op) — PASSOU:** features 0-35 bit-exatas contra
+`node_features_h9c` (features 36-38, o bloco E, são verificadas por construção,
+não reconstruídas independentemente — o C aplica `log1p` ao `RD_STATS` real que
+o próprio encoder acabou de calcular). Flag off byte-idêntico ao `aom_baseline`;
+H9c desabilitado (flag on, env unset) não perturba o H9a.
+
+**Piloto de tempo real (Jockey, 2 quadros, encoder de verdade) — NÃO PASSOU.**
+Comparando no TS% mais próximo entre os dois:
+
+| ponto | BD-Rate | TS% | Speedup |
+|---|--:|--:|--:|
+| H9c (τ=0,95) | 0,264% | 19,43% | 1,241× |
+| H9a (P0, já medido, mesma seq) | 0,194% | 21,58% | 1,275× |
+
+O H9a domina nos dois eixos ao mesmo tempo (TS maior **e** BD-Rate menor). O
+H9c não bate o H9a em tempo real, apesar de superá-lo no oráculo (61,2% vs.
+~55-58%) — o mesmo padrão já documentado neste projeto (H7/H8, Fase 5): a
+simulação oráculo superestima o ganho real (~5× historicamente) e essa margem
+não sobrevive ao encoder de verdade.
+
+**Decisão (regra de parada pré-registrada no próprio plano, seguida à risca):**
+não prosseguir para o benchmark CTC (Task 9). O H9c fica **implementado,
+testado, e desligado por padrão** (`AV1_STUDENT_H9C_ENABLE` unset) — inerte em
+produção, disponível como base para uma futura tentativa com outro ângulo de
+implantação (ex.: mais quadros/τ no piloto antes de descartar de vez, ou a
+extensão H9c mencionada no §5 como possível "poda pós-NONE aprendida"), mas não
+compõe os resultados finais da tese. **Leitura para a tese:** reforça a
+caracterização honesta do teto de contexto RD — mesmo o teto mais informativo
+testado (rdcost real do NONE) não se traduz em vantagem de tempo de parede
+sobre o já otimizado pruner nativo, fechando com evidência (não suposição) a
+pergunta que motivou o H9c.
