@@ -74,9 +74,10 @@ def main(argv):
     p.add_argument("--repeats", type=int, default=1)
     p.add_argument("--replay-dir", default="/workspace/results/benchmark/h8_probs",
                    help="dir holding surrogate replay files jockey_cq{cq}.bin")
-    p.add_argument("--preset", choices=["safe", "aggressive"], default="safe",
-                   help="operating-point set: 'safe' (H7/H8 headline) or "
-                        "'aggressive' (map the upper end of the speedup curve)")
+    p.add_argument("--preset", choices=["safe", "aggressive", "h9c"], default="safe",
+                   help="operating-point set: 'safe' (H7/H8 headline), "
+                        "'aggressive' (map the upper end of the speedup curve), or "
+                        "'h9c' (post-NONE learned pruner pilot: anchor + 2 tau points)")
     p.add_argument("--out-dir", default="/workspace/results/benchmark/h7h8")
     args = p.parse_args(argv)
 
@@ -103,7 +104,7 @@ def main(argv):
              {"AV1_STUDENT_TAU_NONE": "0.90", "AV1_STUDENT_TAU_SPLIT": "0.90",
               "AV1_STUDENT_TAU_REST": "0.20", "replay_tmpl": rep}),
         ]
-    else:  # aggressive: map the upper end of the speedup/BD-rate curve
+    elif args.preset == "aggressive":  # map the upper end of the speedup/BD-rate curve
         points = [
             ("A1_none80", args.test_enc,
              {"AV1_STUDENT_TAU_NONE": "0.80", "AV1_STUDENT_TAU_SPLIT": "0.90",
@@ -117,6 +118,14 @@ def main(argv):
             ("H8_surrogate_aggr", args.test_enc,
              {"AV1_STUDENT_TAU_NONE": "0.80", "AV1_STUDENT_TAU_SPLIT": "0.90",
               "AV1_STUDENT_TAU_REST": "0.30", "replay_tmpl": rep}),
+        ]
+    else:  # h9c: post-NONE learned pruner, anchor + 2 tau operating points
+        points = [
+            ("anchor", args.anchor_enc, {}),
+            ("H9c_tau90", args.test_enc,
+             {"AV1_STUDENT_H9C_ENABLE": "1", "AV1_STUDENT_H9C_TAU": "0.90"}),
+            ("H9c_tau95", args.test_enc,
+             {"AV1_STUDENT_H9C_ENABLE": "1", "AV1_STUDENT_H9C_TAU": "0.95"}),
         ]
     # Drop H8 if replay files are absent (H7-only run).
     if not all(os.path.exists(rep.format(cq=cq)) for cq in args.cqs):

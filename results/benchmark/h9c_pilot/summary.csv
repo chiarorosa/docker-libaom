@@ -1,0 +1,4 @@
+point,bd_rate_pct,time_speedup_x,ts_pct
+anchor,0.0,0.999,-0.09
+H9c_tau90,0.485,1.301,23.14
+H9c_tau95,0.264,1.241,19.43
