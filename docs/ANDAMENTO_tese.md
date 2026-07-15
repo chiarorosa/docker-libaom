@@ -463,6 +463,14 @@ H9c não bate o H9a em tempo real, apesar de superá-lo no oráculo (61,2% vs.
 simulação oráculo superestima o ganho real (~5× historicamente) e essa margem
 não sobrevive ao encoder de verdade.
 
+*Nota metodológica:* as duas linhas vêm de execuções diferentes (H9c: piloto
+novo de 2 quadros, âncora própria ~178s@cq20; H9a: `curve_safe` anterior, mais
+quadros, âncora própria ~894s@cq20) — BD-Rate/TS% são cada um normalizado à sua
+própria âncora, então a comparação é válida, mas não é o mesmo harness de
+execução. O viés dessa diferença é conservador a favor do H9c (2 quadros =
+maior fração intra, favorece o TS agregado do hook), e mesmo assim o H9c perde
+nos dois eixos — a decisão de parar é robusta a essa diferença.
+
 **Decisão (regra de parada pré-registrada no próprio plano, seguida à risca):**
 não prosseguir para o benchmark CTC (Task 9). O H9c fica **implementado,
 testado, e desligado por padrão** (`AV1_STUDENT_H9C_ENABLE` unset) — inerte em

@@ -334,7 +334,7 @@ def node_features_h9c(sb_luma, dim, r, c, qindex, ctx):
     evaluated PARTITION_NONE for this node (post-NONE decision point, not
     pre-search). Distinct from H9_SUBSETS['H9c'] (41-dim, includes D, offline
     Gate-2 ablation only -- never deployed). Single source of truth; the C side
-    (student_h9c_prune_partition in partition_strategy.c) mirrors THIS."""
+    (student_h9c_decide in partition_strategy.c) mirrors THIS."""
     c2 = dict(ctx)
     c2["bsize_enum"] = -1
     full = node_features_h9(sb_luma, dim, r, c, qindex, c2)  # 41-dim
