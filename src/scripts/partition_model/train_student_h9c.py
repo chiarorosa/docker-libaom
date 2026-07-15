@@ -32,7 +32,7 @@ VAL_SEQS = ["HoneyBee", "FlowerPan", "Lips"]
 
 
 def collect_by_dim(entries, per_pkl=None, limit=None):
-    """Per-block-size {'feat':(N,36), 'truth':(N,)} arrays over the
+    """Per-block-size {'feat':(N,39), 'truth':(N,)} arrays over the
     H9-instrumented dataset. per_pkl caps superblocks taken from each pkl
     (diverse sampling across seqs/QPs); limit is a global superblock cap."""
     acc = {dim: {"feat": [], "truth": []} for dim, _ in MODEL_LEVELS}
