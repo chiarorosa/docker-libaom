@@ -2101,6 +2101,31 @@ static void student_h9c_decide(const AV1_COMMON *cm, MACROBLOCK *x,
   float logits[3], probs[3];
   av1_nn_predict(feats, nnconfig, 1, logits);
   av1_nn_softmax(logits, probs, 3);
+  {
+    static FILE *fp = NULL;
+    static int checked = 0;
+    if (!checked) {
+      const char *path = getenv("AV1_STUDENT_H9C_DUMP");
+      if (path) fp = fopen(path, "ab");
+      checked = 1;
+    }
+    if (fp) {
+      const MACROBLOCKD *const xd = &x->e_mbd;
+      const int has_above = !!xd->above_mbmi;
+      const int has_left = !!xd->left_mbmi;
+      const int neigh_avail = has_above | (has_left << 1);
+      const int above_bsize = has_above ? xd->above_mbmi->bsize : blk->bsize;
+      const int left_bsize = has_left ? xd->left_mbmi->bsize : blk->bsize;
+      const int dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd) >> (xd->bd - 8);
+      const int32_t head[10] = { block_size_wide[blk->bsize], blk->mi_row,
+                                 blk->mi_col, x->qindex, neigh_avail,
+                                 above_bsize, left_bsize, dc_q, cm->width,
+                                 cm->height };
+      fwrite(head, sizeof(head), 1, fp);
+      fwrite(feats, sizeof(float), AV1_PARTITION_STUDENT_H9C_NUM_FEATURES, fp);
+      fwrite(probs, sizeof(float), 3, fp);
+    }
+  }
   const float tau = student_h9c_get_tau(block_size_wide[blk->bsize]);
   if (probs[0] > tau) av1_disable_all_splits(part_state);
 }
