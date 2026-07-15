@@ -66,17 +66,21 @@ def node_cost(dim):
 def collect_superblocks(entries, feature_set="pixels24", limit=None):
     """List of superblocks: {nodes:{(dim,r,c):{truth,feat}}, luma, qindex}.
     feature_set: 'pixels24' -> node_features (24); 'h9a' -> node_features_h9[:36]
-    with the per-node RD context (blocks B/C)."""
+    with the per-node RD context (blocks B/C); 'h9c' -> node_features_h9c (39,
+    A+B+C+E) with the post-NONE real RD context (block E)."""
     sbs = []
     for e in entries:
         for sb in datamod.iter_superblock_members(e["path"]):
-            if feature_set == "h9a" and not sb.get("has_rd"):
+            if feature_set in ("h9a", "h9c") and not sb.get("has_rd"):
                 raise SystemExit("{}: no RD context; re-extract with the H9 "
                                  "instrumentation.".format(e["path"]))
             nodes = {}
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 if feature_set == "h9a":
                     feat = featmod.node_features_h9a(sb["luma"], dim, r, c,
+                                                      sb["qindex"], sb["ctx"][k])
+                elif feature_set == "h9c":
+                    feat = featmod.node_features_h9c(sb["luma"], dim, r, c,
                                                       sb["qindex"], sb["ctx"][k])
                 else:
                     feat = featmod.node_features(sb["luma"], dim, r, c,
