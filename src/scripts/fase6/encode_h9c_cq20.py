@@ -22,6 +22,7 @@ if HERE not in sys.path:
 import encode_ctc as base  # noqa: E402
 
 H9C_TAUS = {
+    "h9c_tau30": {"AV1_STUDENT_H9C_ENABLE": "1", "AV1_STUDENT_H9C_TAU": "0.30"},
     "h9c_tau60": {"AV1_STUDENT_H9C_ENABLE": "1", "AV1_STUDENT_H9C_TAU": "0.60"},
     "h9c_tau70": {"AV1_STUDENT_H9C_ENABLE": "1", "AV1_STUDENT_H9C_TAU": "0.70"},
     "h9c_tau90": {"AV1_STUDENT_H9C_ENABLE": "1", "AV1_STUDENT_H9C_TAU": "0.90"},
