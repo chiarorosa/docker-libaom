@@ -482,3 +482,74 @@ caracterização honesta do teto de contexto RD — mesmo o teto mais informativ
 testado (rdcost real do NONE) não se traduz em vantagem de tempo de parede
 sobre o já otimizado pruner nativo, fechando com evidência (não suposição) a
 pergunta que motivou o H9c.
+
+---
+
+## 8. H9c revisitado na CTC (2026-07-16): confound do H9a e resultado limpo do swap
+
+Após o §7, testou-se o H9c em sequências CTC (cpu-used=0, 4 QP, varredura de τ)
+e, num segundo momento, como substituto direto da CNN nativa (swap, cpu 1/2/3).
+Duas descobertas, uma corretiva e uma positiva.
+
+### 8.1 CONFOUND: o H9a rodava por baixo dos testes pré-busca do H9c
+
+**Prova concreta.** O build `libaom_perf` roda o estudante **H9a sempre** em
+quadros intra: `student_prune_partition` é chamado por `av1_prune_partitions_
+before_search` sob o gate puramente geométrico `try_student_prune`
+(`partition_strategy.c:2306-2311`) — **sem** flag de habilitação (ao contrário do
+H9c, que tem `student_h9c_enabled()`/`AV1_STUDENT_H9C_ENABLE`,
+`partition_strategy.c:2137`). Os scripts de teste do H9c (`encode_h9c_cq20.py`)
+setaram **apenas** `AV1_STUDENT_H9C_ENABLE`/`_TAU`, sem neutralizar os τ do H9a,
+que rodou nos seus defaults compilados (`tau_none=tau_split=0.9`,
+`student_get_taus`). Logo, as linhas `h9c_tau*` mediram **H9a@0,9 + H9c
+empilhados**, não H9c isolado.
+
+**Quantificação (Neon1224 cpu0; re-execução `h9ciso_*` com H9a neutralizado via
+τ=2/2/−1, única variável alterada):**
+
+| config | BD-Rate | TS% | |
+|---|--:|--:|---|
+| h9c_tau95 (H9a@0,9 + H9c) | 0,267% | 17,15% | medido antes |
+| h9ciso_tau95 (H9c isolado) | 0,037% | **2,96%** | |
+| h9c_tau90 (H9a@0,9 + H9c) | 0,270% | 17,36% | |
+| h9ciso_tau90 (H9c isolado) | 0,037% | **4,23%** | |
+| h9c_tau60 (H9a@0,9 + H9c) | 0,386% | 20,53% | |
+| h9ciso_tau60 (H9c isolado) | 0,100% | **9,31%** | |
+
+O H9c **isolado poda muito pouco** (~3–9% TS); **82–96% do TS** que fora
+atribuído ao H9c vinha, na verdade, do H9a. **RETRATAÇÃO:** as afirmações de que
+"o H9c é 2–4× mais eficiente que o H9a" e "supera o nativo em eficiência" (leitura
+das tabelas pré-busca confundidas) **são artefato do confound e ficam retiradas**.
+
+### 8.2 SWAP (limpo): H9c ≈ CNN nativa como pruner intra a cpu1/2
+
+O experimento de swap (`encode_swap_h9c.py`) **sempre** neutralizou o H9a (τ=2/2/−1)
+e desligou a CNN nativa (`AV1_DISABLE_NATIVE_CNN=1`), medindo H9c como **único**
+pruner intra no lugar da CNN nativa, a cpu fixo. Média de 3 seqs (Boxing/
+FoodMarket2/Tango), vs âncora cpu0:
+
+| cpu | config | BD-Rate | TS% | speedup |
+|:--:|---|--:|--:|--:|
+| 1 | native (CNN) | 0,368% | 28,60% | 1,402× |
+| 1 | h9c_tau95 | 0,370% | 27,72% | 1,386× |
+| 1 | h9c_tau90 | 0,392% | 29,58% | 1,424× |
+| 1 | h9a_bal (swap) | 1,074% | 38,06% | 1,621× |
+| 2 | native (CNN) | 0,407% | 38,18% | 1,619× |
+| 2 | h9c_tau95 | 0,431% | 37,45% | 1,602× |
+| 2 | h9c_tau90 | 0,442% | 39,05% | 1,646× |
+| 3 | native (CNN) | 2,796% | 66,41% | 2,986× |
+| 3 | h9c_tau90 | 3,511% | 70,50% | 3,408× |
+
+**Leitura:** como substituto da CNN nativa, o H9c fica **praticamente empatado
+com ela em cpu1 e cpu2** (fronteira taxa-BD × tempo quase idêntica — a cpu1,
+native 0,368%/28,6% vs h9c_tau95 0,370%/27,7%), e é **muito mais competitivo que
+o H9a era no swap** (h9a_bal custava 1,07% BD @ cpu1, ~3× o BD do H9c ao mesmo
+regime). Só a **cpu3** (preset agressivo) o H9c perde para a nativa (3,5% vs 2,8%
+BD). Ou seja: o H9c não é o "super-eficiente" que o número confundido sugeria,
+mas é um **pruner de partição intra equivalente à CNN nativa nos presets
+práticos (cpu1/2)** — alternativa aprendida, de custo computacional muito menor,
+que iguala o SOTA embarcado nesse regime. Esta é a leitura defensável.
+
+Artefatos: `results/benchmark/fase6_swap_h9c/` (swap), linhas `h9ciso_*` em
+`results/benchmark/fase6/raw_results.csv` (isolação). Scripts:
+`src/scripts/fase6/{encode_swap_h9c.py, encode_h9c_iso.py, encode_h9c_cq20.py}`.
