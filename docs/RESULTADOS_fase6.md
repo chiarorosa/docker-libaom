@@ -246,24 +246,23 @@ domina variância/aleatório sob política casada — mantém-se inalterado); é
 resposta a uma pergunta mais dura: medir-se contra um produto industrial já
 otimizado. Dois ângulos honestos permanecem defensáveis:
 
-**(a) Custo computacional.** O H9a é uma MLP por tamanho de bloco
-(36→64→32→3, ≈4,5 mil parâmetros por tamanho, ≈13,6 mil no total), um único
-forward denso por nó (`av1_nn_predict`), cujos atributos de contexto RD (blocos
-B/C) reaproveitam dados já residentes — custo de inferência adicional
-~zero. A CNN nativa (`partition_cnn_weights.h`) é uma rede convolucional
-multi-resolução de 5 camadas + 4 ramos paralelos de DNN, aplicada
-convolucionalmente sobre patches de pixel — uma ordem de grandeza a mais em
-parâmetros pela simples contagem dos arrays de peso, antes mesmo de contar que
-a convolução é aplicada repetidamente sobre o espaço (custo de MACs bem maior
-que a razão de parâmetros sugere). Ou seja: o H9a captura uma fração
-substancial do ganho de tempo possível (§3: até ~1,4% BD @ TS~48%) a um custo
-computacional ordens de grandeza menor que o pruner de produção.
-**Ressalva:** esta é uma evidência estrutural (contagem de parâmetros/arquitetura),
-não uma medição direta do custo de inferência do pruner isolado — o TS%
-reportado mede o tempo de codificação completo, dominado pela busca de
-modo/transformada, não pela chamada do pruner em si. Um microbenchmark isolado
-(cronometrar somente a chamada do pruner, N repetições, CNN nativa vs MLP H9a)
-fica registrado como trabalho futuro em `docs/ANDAMENTO_tese.md` §5.
+**(a) Custo computacional — RETIFICADO (microbenchmark 2026-07-17).** A versão
+anterior desta seção alegava que o H9a tinha custo computacional "ordens de
+grandeza menor" que a CNN nativa, com base apenas na contagem de parâmetros (MLP
+36→64→32→3, ≈13,6 mil parâmetros vs CNN multi-resolução de 5 camadas + 4 ramos
+DNN). **A medição direta refuta essa alegação.** O microbenchmark isolado
+(`docs/RESULTADOS_microbench_pruner.md`, instrumentação `AV1_PRUNER_TIMING`,
+encode real cpu1) mostra: a **inferência** MLP é ~50× mais barata por chamada
+(~486 ns vs ~24.700 ns da CNN), MAS o custo **implantado** é dominado pela
+**extração de features** (`student_node_features`, ~8× a inferência) e pela
+invocação **por nó** (~10×/SB, contra 1×/SB da CNN, que decide toda a quad-tree
+numa passagem). Líquido: **por superbloco, o pruner MLP (~40 μs) é ~1,6× MAIS
+CARO que a CNN nativa (~24,7 μs)**. A vantagem de custo do modelo aprendido está
+**confinada à inferência** e não sobrevive ao pipeline como implementado (a
+extração de features é otimizável, mas hoje domina). Portanto o argumento de
+valor da tese **não é** custo computacional — é a **granularidade fina em baixo
+speedup** (§3) e a **paridade de qualidade** do H9c com a CNN nativa a cpu1/2
+(`docs/SINTESE_resultados_metodologia.md` §5–6).
 
 **(b) Nicho de baixo speedup.** Como já registrado em §3, o degrau discreto dos
 presets nativos (`cpu0→cpu1` já salta para TS~33%) deixa uma lacuna em regime de

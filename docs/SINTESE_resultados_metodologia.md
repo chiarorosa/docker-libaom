@@ -262,12 +262,13 @@ para isolar o *mérito do pruner*, a cpu fixo desliga-se a CNN nativa
 | 3 | H9a balanced | 3,866% | 72,96% | 3,702× |
 
 O H9a-swap **poda mais** (mais TS) mas a **custo de BD desproporcional** (~2–3× a
-BD da nativa no mesmo cpu) → a CNN nativa é mais eficiente. **Contraponto de valor:
-custo computacional.** O H9a é um MLP por tamanho (36→64→32→3, ≈13,6 mil
-parâmetros no total, forward denso único por nó, contexto B/C residente); a CNN
-nativa é convolucional multi-resolução (5 camadas + 4 ramos DNN), ordens de
-grandeza mais cara. O H9a **captura parte substancial do ganho a fração do custo
-computacional** do pruner de produção — a leitura defensável do swap.
+BD da nativa no mesmo cpu) → a CNN nativa é mais eficiente. **Sobre custo
+computacional (medido, ver §6 e `docs/RESULTADOS_microbench_pruner.md`):** a
+*inferência* do MLP é ~50× mais barata por chamada que a da CNN nativa, mas o
+custo *implantado* do pruner MLP é dominado pela extração de features (~8× a
+inferência) e roda por nó (~10×/SB) — de modo que **por superbloco o pruner MLP é
+comparável a, e de fato ~1,6× mais caro que, a CNN nativa**. A alegação de "custo
+ordens de grandeza menor" NÃO se sustenta como implementada.
 
 ---
 
@@ -353,12 +354,19 @@ correlacionado** — os "blocos fáceis". Prova direta: H9c sobre H9a = +0,26pp 
 TS. É a mesma história de saturação que a Solução 1 estabeleceu no domínio de
 pixels, agora confirmada no domínio RD.
 
-**Argumento transversal — custo computacional.** As três soluções ML são MLPs
-leves (≈13,6 mil parâmetros, forward denso por nó, contexto residente) frente à
-CNN nativa (convolucional multi-resolução, 5 camadas + 4 ramos DNN). Igualar o
-SOTA embarcado a fração do custo computacional é a contribuição de engenharia
-defensável. *(Pendente: microbenchmark isolado do pruner — μs/bloco ou FLOPs —
-para transformar o argumento estrutural em número medido; ver ANDAMENTO §5.)*
+**Argumento transversal — custo computacional (MEDIDO, retificado).** O
+microbenchmark isolado (`docs/RESULTADOS_microbench_pruner.md`, encode real
+cpu1) refuta a hipótese de "ordens de grandeza mais barato": a **inferência** do
+MLP é ~50× mais barata por chamada (~486 ns vs ~24.700 ns da CNN), mas o custo
+**implantado** é dominado pela **extração de features** (`student_node_features`,
+~8× a inferência) e pela invocação **por nó** (~10×/SB, vs 1×/SB da CNN). Líquido:
+**por superbloco o pruner MLP (~40 μs) é ~1,6× MAIS CARO que a CNN nativa
+(~24,7 μs).** A vantagem de custo do modelo aprendido está confinada à inferência
+e não sobrevive ao pipeline; o argumento de valor da tese é a **granularidade
+fina em baixo speedup** e a **paridade de qualidade** (Conclusões 1–2), não o
+custo. *(A extração de features é otimizável — recomputa contexto do pai e é
+duplicada quando H9a+H9c coexistem; o custo inerente favorece o MLP, o
+como-implementado não.)*
 
 ---
 
@@ -428,7 +436,7 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 | Swap H9c — 8 seqs completas | ✅ **concluído** (2026-07-17) | `results/benchmark/fase6_swap_h9c/` |
 | Isolação/confound (Neon1224) + H9a@default | ✅ concluído | `fase6/` (`h9ciso_*`, `h9adef`) |
 | **Frontier-check combinado** (H9a-conservador + H9c, swap, Tango) | ✅ **concluído** (2026-07-17) — não fura a fronteira | `results/benchmark/fase6_swap_combo/` |
-| Microbenchmark isolado do pruner (μs/FLOPs) | ⬜ pendente | — |
+| Microbenchmark isolado do pruner (μs/chamada) | ✅ **concluído** (2026-07-17) — **refuta** "custo ordens de grandeza menor" | `docs/RESULTADOS_microbench_pruner.md` |
 
 **Resultado do frontier-check combinado (Tango, vs âncora cpu0):** o combinado
 H9a-conservador + H9c posiciona-se **entre** o H9c-swap e o H9a-swap — mais TS

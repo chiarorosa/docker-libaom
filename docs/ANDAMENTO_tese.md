@@ -402,17 +402,19 @@ condições universais.
   vs variância/aleatório).
   Os τ exatos dos dois pontos serão fixados a partir das curvas de teste da Fase 5
   antes de rodar a CTC.
-- **Microbenchmark isolado do pruner (custo computacional, pendente).** A Fase 6
-  extensão (`RESULTADOS_fase6.md` §4.3a) defende que o H9a é ordens de grandeza
-  mais barato computacionalmente que a CNN nativa (MLP 36→64→32→3, ≈13,6 mil
-  parâmetros no total, forward denso único por nó, vs. CNN multi-resolução de 5
-  camadas + 4 ramos DNN aplicada convolucionalmente) — mas isso hoje é evidência
-  estrutural (contagem de parâmetros/arquitetura), não uma medição direta. O TS%
-  já reportado mede o encode completo (dominado pela busca de modo/transformada),
-  não a chamada do pruner isolada. Fica pendente: cronometrar em isolamento
-  apenas a chamada do pruner (N repetições, CNN nativa `av1_intra_mode_cnn_partition`
-  vs MLP H9a `av1_nn_predict`), pra transformar o argumento estrutural num número
-  medido (μs/bloco ou FLOPs).
+- **Microbenchmark isolado do pruner (custo computacional) — CONCLUÍDO
+  (2026-07-17), REFUTA o argumento anterior.** A Fase 6 extensão
+  (`RESULTADOS_fase6.md` §4.3a) defendia que o H9a era "ordens de grandeza mais
+  barato" que a CNN nativa — evidência apenas estrutural (parâmetros). A medição
+  direta (instrumentação `AV1_PRUNER_TIMING` em `partition_strategy.c`, encode
+  real cpu1; `docs/RESULTADOS_microbench_pruner.md`) mostra: a **inferência** MLP
+  é ~50× mais barata por chamada (~486 ns vs ~24.700 ns da CNN), MAS o custo
+  **implantado** é dominado pela **extração de features** (~8× a inferência) e
+  roda **por nó** (~10×/SB vs 1×/SB da CNN) → **por superbloco o pruner MLP
+  (~40 μs) é ~1,6× MAIS CARO que a CNN nativa (~24,7 μs)**. A alegação de custo
+  ordens-de-grandeza-menor está retirada; o valor da tese é granularidade fina +
+  paridade de qualidade, não custo. (`RESULTADOS_fase6.md` §4.3a a corrigir na
+  mesma linha.)
 
 ---
 

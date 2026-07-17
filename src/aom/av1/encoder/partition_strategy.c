@@ -9,6 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+// Needed for clock_gettime(CLOCK_MONOTONIC) in the AV1_PRUNER_TIMING
+// instrumentation below; must precede any system header.
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <float.h>
 
 #include "av1/encoder/encodeframe_utils.h"
@@ -129,6 +135,51 @@ static void write_features_to_file(const char *const path,
   fclose(pfile);
 }
 
+// -----------------------------------------------------------------------------
+// Pruner inference-cost instrumentation (opt-in via AV1_PRUNER_TIMING). Times
+// the real calls during an encode: native intra CNN vs the distilled MLP
+// students (H9a inference + feature prep, H9c inference). Zero overhead when
+// off. Totals + call counts are printed to stderr at process exit.
+// -----------------------------------------------------------------------------
+#include <time.h>
+static int av1_pruner_timing_on(void) {
+  static int cached = -1;
+  if (cached < 0) {
+    const char *e = getenv("AV1_PRUNER_TIMING");
+    cached = (e && e[0] && e[0] != '0') ? 1 : 0;
+  }
+  return cached;
+}
+typedef struct {
+  unsigned long long ns, calls;
+} AV1PrunerAcc;
+static AV1PrunerAcc g_pt_cnn, g_pt_h9a_inf, g_pt_h9a_feat, g_pt_h9c_inf;
+static int g_pt_atexit_registered = 0;
+static unsigned long long av1_pt_now_ns(void) {
+  struct timespec t;
+  clock_gettime(CLOCK_MONOTONIC, &t);
+  return (unsigned long long)t.tv_sec * 1000000000ull + (unsigned long long)t.tv_nsec;
+}
+static void av1_pt_report(void) {
+  const AV1PrunerAcc *a[4] = { &g_pt_cnn, &g_pt_h9a_inf, &g_pt_h9a_feat,
+                               &g_pt_h9c_inf };
+  const char *nm[4] = { "native_cnn        ", "h9a_infer (MLP)   ",
+                        "h9a_feature_prep  ", "h9c_infer (MLP)   " };
+  fprintf(stderr, "\n[PRUNER_TIMING] (isolated inference cost, real encode)\n");
+  for (int i = 0; i < 4; ++i) {
+    double perc = a[i]->calls ? (double)a[i]->ns / a[i]->calls : 0.0;
+    fprintf(stderr,
+            "  %s calls=%-9llu total_ms=%9.3f  ns/call=%9.1f\n",
+            nm[i], a[i]->calls, a[i]->ns / 1e6, perc);
+  }
+}
+static inline void av1_pt_arm(void) {
+  if (!g_pt_atexit_registered) {
+    atexit(av1_pt_report);
+    g_pt_atexit_registered = 1;
+  }
+}
+
 // TODO(chiyotsai@google.com): This is very much a work in progress. We still
 // need to the following:
 //   -- add support for hdres
@@ -196,6 +247,10 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
     const int width = 65, height = 65,
               stride = x->plane[AOM_PLANE_Y].src.stride;
 
+    const int pt_on = av1_pruner_timing_on();
+    unsigned long long pt_t0 = 0;
+    if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
+
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       uint16_t *image[1] = {
         CONVERT_TO_SHORTPTR(x->plane[AOM_PLANE_Y].src.buf) - stride - 1
@@ -218,6 +273,8 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
         return;
       }
     }
+
+    if (pt_on) { g_pt_cnn.ns += av1_pt_now_ns() - pt_t0; g_pt_cnn.calls++; }
 
     part_info->cnn_output_valid = 1;
   }
@@ -2065,9 +2122,19 @@ static void student_prune_partition(const AV1_COMMON *cm, const MACROBLOCK *x,
     probs[2] = 1.0f;
   } else {
     float feats[AV1_PARTITION_STUDENT_NUM_FEATURES];
+    const int pt_on = av1_pruner_timing_on();
+    unsigned long long pt_t0 = 0;
+    if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
     student_node_features(cm, x, blk, feats);
+    if (pt_on) {
+      const unsigned long long pt_t1 = av1_pt_now_ns();
+      g_pt_h9a_feat.ns += pt_t1 - pt_t0;
+      g_pt_h9a_feat.calls++;
+      pt_t0 = pt_t1;
+    }
     float logits[3];
     av1_nn_predict(feats, nnconfig, 1, logits);
+    if (pt_on) { g_pt_h9a_inf.ns += av1_pt_now_ns() - pt_t0; g_pt_h9a_inf.calls++; }
     av1_nn_softmax(logits, probs, 3);  // [P(NONE), P(SPLIT), P(REST)]
     student_dump_features(cm, x, blk, x->qindex, feats, probs);
   }
@@ -2099,7 +2166,11 @@ static void student_h9c_decide(const AV1_COMMON *cm, MACROBLOCK *x,
   feats[37] = (float)log1p((double)AOMMAX(none_rdc->dist, 0));
   feats[38] = (float)log1p((double)AOMMAX(none_rdc->rdcost, 0));
   float logits[3], probs[3];
+  const int pt_on = av1_pruner_timing_on();
+  unsigned long long pt_t0 = 0;
+  if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
   av1_nn_predict(feats, nnconfig, 1, logits);
+  if (pt_on) { g_pt_h9c_inf.ns += av1_pt_now_ns() - pt_t0; g_pt_h9c_inf.calls++; }
   av1_nn_softmax(logits, probs, 3);
   {
     static FILE *fp = NULL;
