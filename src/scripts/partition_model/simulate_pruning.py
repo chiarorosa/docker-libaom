@@ -132,6 +132,37 @@ def score_with_variance(sbs, v0=1000.0):
     return sbs
 
 
+def score_with_regret(sbs, bundle, device, r0=0.1):
+    """Solucao 4: P(NONE)=exp(-regret_pred/r0) from the regret regressor. reg is the
+    net output == log1p(regret_rel), the same scale the C pruner thresholds. Low
+    predicted regret -> high P(NONE) -> pruned as tau_none sweeps, reusing the exact
+    policy/metrics used for the variance baseline and the H9a student."""
+    import train_regret
+    nfeat = bundle.get("num_features", 36)
+    nets, norms = {}, {}
+    for dim, _ in MODEL_LEVELS:
+        if dim in bundle["students"]:
+            net = train_regret.build_regressor(nfeat, bundle["hidden"])
+            net.load_state_dict(bundle["students"][dim])
+            nets[dim] = net.to(device).eval()
+            norms[dim] = bundle["norm"][dim]
+    for dim in nets:
+        idx = [(si, key) for si, sb in enumerate(sbs) for key in sb["nodes"]
+               if key[0] == dim]
+        if not idx:
+            continue
+        feats = np.stack([sbs[si]["nodes"][key]["feat"] for si, key in idx])
+        mean, std = norms[dim]
+        xn = (feats - mean) / std
+        with torch.no_grad():
+            reg = nets[dim](torch.tensor(xn, dtype=torch.float32,
+                                         device=device)).cpu().numpy()
+        pnone = np.exp(-np.maximum(reg, 0.0) / r0)
+        for (si, key), pn in zip(idx, pnone):
+            sbs[si]["nodes"][key]["prob"] = np.array([pn, 1.0 - pn, 0.0])
+    return sbs
+
+
 def classification_report(sbs):
     """Per-size macro-F1 and SPLIT-recall from the scored probs (argmax) vs the
     3-class collapsed truth (Gate 3a). truth is the raw 10-class PARTITION_TYPE;
@@ -343,6 +374,12 @@ def main(argv):
                         "of a model (Gate 3 comparison)")
     p.add_argument("--v0", type=float, default=1000.0,
                    help="variance-baseline scale: P(NONE)=exp(-var/v0)")
+    p.add_argument("--regret-bundle", default=None,
+                   help="if set, score with this regret regressor bundle "
+                        "(head='regret') instead of the H9a student or the "
+                        "variance baseline (Solucao 4 comparison)")
+    p.add_argument("--r0", type=float, default=0.1,
+                   help="regret-score scale: P(NONE)=exp(-regret_pred/r0)")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -350,7 +387,11 @@ def main(argv):
     _, val_e = datamod.split_entries(entries, args.val_seqs, None)
     datamod.assert_real_luma(val_e)
 
-    if args.baseline == "variance":
+    if args.regret_bundle:
+        bundle = torch.load(args.regret_bundle, map_location=device)
+        assert bundle.get("head") == "regret", "bundle is not a regret regressor"
+        feature_set, mode = bundle.get("feature_set", "h9a"), "regret"
+    elif args.baseline == "variance":
         feature_set, mode = "pixels24", "variance"
     elif args.surrogate:
         feature_set, mode = "pixels24", "surrogate"
@@ -373,6 +414,9 @@ def main(argv):
     elif mode == "variance":
         sbs = score_with_variance(sbs, args.v0)
         model_tag = "VARIANCE-BASELINE v0={}".format(args.v0)
+    elif mode == "regret":
+        sbs = score_with_regret(sbs, bundle, device, args.r0)
+        model_tag = "REGRET {} r0={}".format(args.regret_bundle, args.r0)
     else:
         sbs = score_with_student(sbs, bundle, device)
         model_tag = "STUDENT {} (feature_set={})".format(args.students,
