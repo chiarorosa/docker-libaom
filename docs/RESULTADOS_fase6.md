@@ -246,23 +246,19 @@ domina variância/aleatório sob política casada — mantém-se inalterado); é
 resposta a uma pergunta mais dura: medir-se contra um produto industrial já
 otimizado. Dois ângulos honestos permanecem defensáveis:
 
-**(a) Custo computacional — RETIFICADO (microbenchmark 2026-07-17).** A versão
-anterior desta seção alegava que o H9a tinha custo computacional "ordens de
-grandeza menor" que a CNN nativa, com base apenas na contagem de parâmetros (MLP
-36→64→32→3, ≈13,6 mil parâmetros vs CNN multi-resolução de 5 camadas + 4 ramos
-DNN). **A medição direta refuta essa alegação.** O microbenchmark isolado
-(`docs/RESULTADOS_microbench_pruner.md`, instrumentação `AV1_PRUNER_TIMING`,
-encode real cpu1) mostra: a **inferência** MLP é ~50× mais barata por chamada
-(~486 ns vs ~24.700 ns da CNN), MAS o custo **implantado** é dominado pela
-**extração de features** (`student_node_features`, ~8× a inferência) e pela
-invocação **por nó** (~10×/SB, contra 1×/SB da CNN, que decide toda a quad-tree
-numa passagem). Líquido: **por superbloco, o pruner MLP (~40 μs) é ~1,6× MAIS
-CARO que a CNN nativa (~24,7 μs)**. A vantagem de custo do modelo aprendido está
-**confinada à inferência** e não sobrevive ao pipeline como implementado (a
-extração de features é otimizável, mas hoje domina). Portanto o argumento de
-valor da tese **não é** custo computacional — é a **granularidade fina em baixo
-speedup** (§3) e a **paridade de qualidade** do H9c com a CNN nativa a cpu1/2
-(`docs/SINTESE_resultados_metodologia.md` §5–6).
+**(a) Custo de inferência (microbenchmark 2026-07-17).** Medição direta do custo
+do **algoritmo de decisão isolado** de cada pruner (instrumentação
+`AV1_PRUNER_TIMING`, encode real cpu1; `docs/RESULTADOS_microbench_pruner.md`): a
+**inferência do MLP é ~50× mais barata por chamada** que a da CNN nativa
+(~486 ns vs ~24.700 ns) — cerca de uma ordem e meia de grandeza. O H9a é uma MLP
+por tamanho de bloco (36→64→32→3, ≈13,6 mil parâmetros no total); a CNN nativa é
+convolucional multi-resolução (5 camadas + 4 ramos DNN). **Escopo:** compara-se a
+inferência (passagem direta) dos modelos; a extração de features do MLP
+(preprocessamento, otimizável/cacheável) e a frequência de invocação (por nó vs
+1× por superbloco na CNN) são de integração, fora do escopo do algoritmo isolado.
+O modelo aprendido leve executa sua predição a fração do custo da CNN de
+produção — este é o ângulo de custo defensável, complementar à granularidade fina
+(§3) e à paridade de qualidade do H9c com a CNN nativa a cpu1/2.
 
 **(b) Nicho de baixo speedup.** Como já registrado em §3, o degrau discreto dos
 presets nativos (`cpu0→cpu1` já salta para TS~33%) deixa uma lacuna em regime de
