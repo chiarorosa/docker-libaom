@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Medir, offline e barato, se decidir o quadtree do superbloco **conjuntamente** (GNN com *message-passing*) extrai sinal de poda **além** dos nós independentes (H9a) — via a ablação controlada **K=0 (sem estrutura) vs K>0 (com estrutura)**, tudo o mais idêntico.
+**Goal:** Medir, offline e barato, se decidir o quadtree do superbloco **conjuntamente** (GNN com *message-passing*) extrai sinal de poda **além** dos nós independentes (H9a) — via a ablação controlada **`L=0` (MLP baseline) vs `L≥1` (GNN)**, tudo o mais idêntico.
 
-**Architecture:** Reconstrói o grafo do quadtree de cada superbloco (nós 64/32/16, arestas pai↔filho↔irmão) a partir dos pkls `dataset_h9`; nós carregam as **36 features H9a idênticas**. Um GNN de *message-passing* manual (sem `torch_geometric`) classifica cada nó em 3 classes (N/S/R). O **mesmo modelo com K=0** é, por construção, um MLP independente por nó — o baseline. Gate 1-B compara K=0 vs K>0 (SPLIT-recall + redução de custo no oráculo a SPLIT-lost casado). Stage 2 (implantável causal) é condicional e fica fora deste plano.
+**Architecture:** Reconstrói o grafo do quadtree de cada superbloco (nós 64/32/16, arestas pai↔filho↔irmão) a partir dos pkls `dataset_h9`; nós carregam as **36 features H9a idênticas**. Um GNN expressivo (PyTorch Geometric: SAGE/GAT/GIN) classifica cada nó em 3 classes (N/S/R). O **mesmo modelo com `n_layers=0`** é, por construção, um MLP independente por nó — o baseline. Gate 1-B compara `L=0` vs `L≥1` (SPLIT-recall + redução de custo no oráculo a SPLIT-lost casado). Stage 2 (implantável causal) é condicional e fica fora deste plano.
 
 **Tech Stack:** Python 3 (numpy, torch/GPU), pytest; scripts em `src/scripts/partition_model/`. Reusa `data`, `features`, `regret`, `student`, `partition_defs`, `simulate_pruning`.
 
@@ -14,11 +14,11 @@
 - **Interpretador Python** = `/workspace/build/venv-ml/bin/python3` (numpy+torch+CUDA; bare `python3` NÃO tem numpy). Referido como `PY`.
 - **Rodar pytest:** `MSYS_NO_PATHCONV=1 docker exec av1_bench bash -lc 'cd /workspace/src/scripts/partition_model && /workspace/build/venv-ml/bin/python3 -m pytest <args>'` (prefixe `true; ` se aparecer erro `C:/Program...: No such file`).
 - **Sem re-extração:** só `results/dataset_h9/*.pkl`.
-- **Sem dependências novas** — *message-passing* implementado à mão (grafos ≤21 nós/SB). NÃO instalar `torch_geometric`.
+- **Dependência `torch_geometric`** — instalada no `venv-ml` e **verificada compatível** (torch 2.5.1+cu121, CUDA intacto; SAGEConv/GATConv OK). Dá à estrutura o melhor tiro (camadas expressivas testadas). Fallback: message-passing à mão se algum executor achar o ambiente quebrado. A escolha PyG-vs-manual NÃO é metodológica — a ablação controlada (`L=0` vs `L≥1`) é.
 - **Partição de sequências CONGELADA:** treino = `["Beauty","Bosphorus","CityAlley","FlowerFocus","FlowerKids","ReadySetGo","ShakeNDry","SunBath","Twilight","YachtRide"]`; validação = `["HoneyBee","FlowerPan","Lips"]`; teste reservado = `["Jockey","RaceNight","RiverBank"]` (não usado no Stage 1).
 - **Fonte única das features** = `features.node_features_h9a` (36). **Rótulo 3-classes** = `student.collapse_label` (NONE=0, SPLIT=1, REST=2). Nunca reimplementar.
 - **Máscara de legalidade:** nos níveis de decisão 64/32/16 as 3 classes N/S/R são todas legais → máscara trivial (omitida). 8px é excluído (não é nó de decisão).
-- **Comparação controlada:** K=0 e K>0 partilham features, dados, split, hiperparâmetros e treino — só o número de rodadas de MP muda.
+- **Comparação controlada:** `L=0` (MLP baseline) e `L≥1` (GNN) partilham features, dados, split, hiperparâmetros e treino — só o número de camadas de grafo (`--n-layers`) muda.
 - **Todo código offline** — Stage 1 NÃO toca em C, não exporta header, não roda benchmark real.
 - **Commits:** sem menção a Claude/AI/Co-Authored-By. **Ao fim de cada tarefa: `git commit` + `git push`** (branch `ml-partition-dev`).
 - Docs/comentários em PT-BR; jargão técnico em inglês quando consagrado.
@@ -29,9 +29,9 @@
 
 **Criar** (em `src/scripts/partition_model/`):
 - `graph_data.py` — arestas do quadtree a partir das chaves de nó; monta o dataset de grafos (features 36 + rótulo colapsado + nível + arestas).
-- `gnn_model.py` — encoder + *message-passing* manual (K rodadas, toggle K) + head 3-classes; K=0 = MLP independente.
-- `train_gnn.py` — treina K=0 e K>0 com hiperparâmetros idênticos; salva bundles.
-- `gate1_gnn.py` — ablação K=0 vs K>0 (macro-F1, SPLIT-recall por tamanho) na validação.
+- `gnn_model.py` — encoder + camadas PyG (SAGE/GAT/GIN, `L` camadas + `--layer`) + head 3-classes; `L=0` (`n_layers=0`) = MLP independente.
+- `train_gnn.py` — treina `L=0` e `L≥1` com hiperparâmetros idênticos; salva bundles.
+- `gate1_gnn.py` — ablação `L=0` vs `L≥1` (macro-F1, SPLIT-recall por tamanho) na validação.
 - `tests/test_graph.py` — testes de `graph_data` e `gnn_model`.
 
 **Modificar:**
@@ -40,6 +40,25 @@
 **Reuso (não reimplementar):** `data.iter_superblock_members`, `features.node_features_h9a`, `student.collapse_label`, `regret._children`, `partition_defs.MODEL_LEVELS`, harness do `simulate_pruning`.
 
 **Nota:** o diretório `tests/` e `tests/conftest.py` já existem (Solução 4) — reusar.
+
+---
+
+## Task 0: Verificar `torch_geometric` no `venv-ml`
+
+**Files:** nenhum (verificação de ambiente).
+
+**Interfaces:**
+- Produces: garantia de que PyG está instalado e compatível; caso contrário, sinal para o fallback manual.
+
+- [ ] **Step 1: Verificar (idempotente — já instalado pelo controller)**
+
+Run:
+```bash
+MSYS_NO_PATHCONV=1 docker exec av1_bench bash -lc 'PY=/workspace/build/venv-ml/bin/python3; $PY -m pip install --quiet torch_geometric; $PY -c "import torch;from torch_geometric.nn import SAGEConv,GATConv,GINConv;import torch as t;x=t.randn(5,16);ei=t.tensor([[0,1],[1,0]]);print(\"torch\",torch.__version__,torch.cuda.is_available());print(\"sage\",tuple(SAGEConv(16,16)(x,ei).shape));print(\"PyG OK\")"'
+```
+Expected: `torch 2.5.1+cu121 True`, `sage (5, 16)`, `PyG OK`. **Se falhar** (ambiente quebrado): PARAR e escalar ao controller — usar o fallback de message-passing à mão (spec §4-3) em `gnn_model.py`, mantendo a MESMA ablação `L=0` vs `L≥1`.
+
+- [ ] **Step 2: Sem commit** (nada versionado nesta tarefa; é gate de ambiente).
 
 ---
 
@@ -228,50 +247,50 @@ git push
 
 ---
 
-## Task 2: `gnn_model.py` — GNN com toggle K (K=0 == MLP independente)
+## Task 2: `gnn_model.py` — TreeGNN com PyG (`n_layers=0` == MLP independente)
 
 **Files:**
 - Create: `src/scripts/partition_model/gnn_model.py`
 - Test: adicionar testes em `tests/test_graph.py`
 
 **Interfaces:**
-- Consumes: `torch`.
+- Consumes: `torch`, `torch_geometric.nn` (SAGEConv/GATConv/GINConv).
 - Produces:
-  - `class TreeGNN(nn.Module)` com `__init__(in_features=36, hidden=64, k_rounds=2, num_classes=3)` e `forward(x, edge_index) -> logits (N,3)`. Com `k_rounds=0`, NÃO faz message-passing (logits dependem só de cada nó → MLP independente).
-  - `build_gnn(in_features, hidden, k_rounds) -> TreeGNN`.
+  - `class TreeGNN(nn.Module)` com `__init__(in_features=36, hidden=64, layer="sage", n_layers=2, num_classes=3)` e `forward(x, edge_index) -> logits (N,3)`. Com `n_layers=0`, NÃO há camada de grafo → logits dependem só de cada nó → **MLP independente** (não consome arestas).
+  - `build_gnn(in_features=36, hidden=64, layer="sage", n_layers=2) -> TreeGNN`.
 
 - [ ] **Step 1: Escrever os testes que falham**
 
 Adicionar em `tests/test_graph.py`:
 ```python
-def test_gnn_k0_is_independent_of_edges():
+def test_gnn_l0_is_independent_of_edges():
     import torch
     import gnn_model
     torch.manual_seed(0)
-    net = gnn_model.build_gnn(36, 16, k_rounds=0).eval()
+    net = gnn_model.build_gnn(36, 16, layer="sage", n_layers=0).eval()
     x = torch.randn(5, 36)
     ei_a = torch.tensor([[0, 1], [1, 0]], dtype=torch.long)
     ei_b = torch.zeros((2, 0), dtype=torch.long)   # sem arestas
     with torch.no_grad():
         ya = net(x, ei_a)
         yb = net(x, ei_b)
-    # Com K=0 a saída NÃO pode depender das arestas.
+    # Com n_layers=0 a saída NÃO pode depender das arestas (baseline MLP).
     assert torch.allclose(ya, yb, atol=1e-6)
     assert ya.shape == (5, 3)
 
 
-def test_gnn_k1_uses_edges():
+def test_gnn_l1_uses_edges():
     import torch
     import gnn_model
     torch.manual_seed(0)
-    net = gnn_model.build_gnn(36, 16, k_rounds=1).eval()
+    net = gnn_model.build_gnn(36, 16, layer="sage", n_layers=1).eval()
     x = torch.randn(5, 36)
     ei_a = torch.tensor([[0, 1, 2, 3], [1, 0, 3, 2]], dtype=torch.long)
     ei_b = torch.zeros((2, 0), dtype=torch.long)
     with torch.no_grad():
         ya = net(x, ei_a)
         yb = net(x, ei_b)
-    # Com K>=1 e arestas presentes, a saída MUDA vs sem arestas.
+    # Com n_layers>=1 e arestas presentes, a saída MUDA vs sem arestas.
     assert not torch.allclose(ya, yb, atol=1e-4)
 ```
 
@@ -285,45 +304,46 @@ Expected: FAIL (`No module named 'gnn_model'`).
 `src/scripts/partition_model/gnn_model.py`:
 ```python
 #!/usr/bin/env python3
-"""Approach B (Stage 1): GNN de message-passing manual sobre o quadtree do
-superbloco. K rodadas de agregação por média (pai/filho/irmão). Com k_rounds=0 é,
-por construção, um MLP independente por nó -- o baseline da ablação estrutural.
-Sem torch_geometric (grafos minúsculos)."""
+"""Approach B (Stage 1): GNN sobre o quadtree do superbloco, com camadas expressivas
+do PyTorch Geometric (SAGE/GAT/GIN). Com n_layers=0 NÃO há camada de grafo -> por
+construção um MLP independente por nó (o baseline da ablação estrutural). Adota-se
+PyG para dar à estrutura o melhor tiro; a escolha da lib não é metodológica -- a
+ablação n_layers=0 vs n_layers>=1 é."""
 
 import torch
 import torch.nn as nn
+from torch_geometric.nn import GATConv, GINConv, SAGEConv
+
+
+def _make_conv(layer, hidden):
+    if layer == "sage":
+        return SAGEConv(hidden, hidden)
+    if layer == "gat":
+        return GATConv(hidden, hidden)
+    if layer == "gin":
+        return GINConv(nn.Sequential(nn.Linear(hidden, hidden), nn.ReLU(),
+                                     nn.Linear(hidden, hidden)))
+    raise ValueError("layer desconhecido: {}".format(layer))
 
 
 class TreeGNN(nn.Module):
-    def __init__(self, in_features=36, hidden=64, k_rounds=2, num_classes=3):
+    def __init__(self, in_features=36, hidden=64, layer="sage", n_layers=2,
+                 num_classes=3):
         super().__init__()
-        self.k_rounds = k_rounds
         self.encoder = nn.Sequential(nn.Linear(in_features, hidden), nn.ReLU())
-        self.self_lin = nn.ModuleList(
-            [nn.Linear(hidden, hidden) for _ in range(k_rounds)])
-        self.msg_lin = nn.ModuleList(
-            [nn.Linear(hidden, hidden) for _ in range(k_rounds)])
+        self.convs = nn.ModuleList([_make_conv(layer, hidden)
+                                    for _ in range(n_layers)])
         self.head = nn.Linear(hidden, num_classes)
 
     def forward(self, x, edge_index):
         h = self.encoder(x)
-        n = h.shape[0]
-        for r in range(self.k_rounds):
-            if edge_index.shape[1] > 0:
-                src, dst = edge_index[0], edge_index[1]
-                m = self.msg_lin[r](h)[src]                 # mensagem do vizinho src
-                agg = torch.zeros_like(h).index_add_(0, dst, m)
-                deg = torch.zeros(n, device=h.device).index_add_(
-                    0, dst, torch.ones(dst.shape[0], device=h.device))
-                agg = agg / deg.clamp(min=1.0).unsqueeze(-1)
-            else:
-                agg = torch.zeros_like(h)
-            h = torch.relu(self.self_lin[r](h) + agg)
+        for conv in self.convs:                 # vazio se n_layers=0 -> MLP puro
+            h = torch.relu(conv(h, edge_index))
         return self.head(h)
 
 
-def build_gnn(in_features=36, hidden=64, k_rounds=2):
-    return TreeGNN(in_features, hidden, k_rounds)
+def build_gnn(in_features=36, hidden=64, layer="sage", n_layers=2):
+    return TreeGNN(in_features, hidden, layer, n_layers)
 ```
 
 - [ ] **Step 4: Rodar e ver passar**
@@ -335,13 +355,13 @@ Expected: PASS (6 passed).
 
 ```bash
 git add src/scripts/partition_model/gnn_model.py src/scripts/partition_model/tests/test_graph.py
-git commit -m "approachB: gnn_model.py (TreeGNN, message-passing manual, K=0==MLP) + testes"
+git commit -m "approachB: gnn_model.py (TreeGNN via PyG SAGE/GAT/GIN, n_layers=0==MLP) + testes"
 git push
 ```
 
 ---
 
-## Task 3: `train_gnn.py` — treina K=0 e K>0 (idênticos exceto K)
+## Task 3: `train_gnn.py` — treina `L=0` e `L≥1` (idênticos exceto `--n-layers`)
 
 **Files:**
 - Create: `src/scripts/partition_model/train_gnn.py`
@@ -349,7 +369,7 @@ git push
 
 **Interfaces:**
 - Consumes: `graph_data.build_graph_dataset/collate`, `gnn_model.build_gnn`, `data.discover_pkls/split_entries/assert_real_luma`, `torch`.
-- Produces: bundle salvo em `results/models/gnn_k{K}/gnn.pt` = `{"hidden":H, "k_rounds":K, "state_dict":..., "num_features":36, "feature_set":"h9a", "head":"gnn3"}`. Função `train_gnn(graphs, hidden, k_rounds, device, epochs, lr, batch_sbs) -> (state_dict, final_loss)`.
+- Produces: bundle salvo em `results/models/gnn_L{n_layers}/gnn.pt` = `{"hidden":H, "layer":str, "n_layers":int, "state_dict":..., "num_features":36, "feature_set":"h9a", "head":"gnn3"}`. Função `train_gnn(graphs, hidden, layer, n_layers, device, epochs, lr, batch_sbs) -> (state_dict, final_loss)`.
 
 - [ ] **Step 1: Escrever o teste de forma (sintético, rápido)**
 
@@ -368,7 +388,7 @@ def test_gnn_train_shapes():
         ei = np.array([[0, 1, 2, 3, 4], [1, 0, 0, 0, 0]], np.int64)
         graphs.append({"x": x, "y": y, "level": level, "edge_index": ei})
     import torch
-    sd, loss = tg.train_gnn(graphs, hidden=16, k_rounds=1,
+    sd, loss = tg.train_gnn(graphs, hidden=16, layer="sage", n_layers=1,
                             device=torch.device("cpu"), epochs=3, lr=1e-3,
                             batch_sbs=4)
     assert np.isfinite(loss)
@@ -386,7 +406,7 @@ Expected: FAIL (`No module named 'train_gnn'`).
 ```python
 #!/usr/bin/env python3
 """Approach B (Stage 1): treina o TreeGNN. Roda-se duas vezes com hiperparâmetros
-IDÊNTICOS, mudando só k_rounds (0 = baseline independente, K>0 = com estrutura),
+IDÊNTICOS, mudando só n_layers (0 = baseline MLP independente, >=1 = com estrutura),
 para a ablação controlada do Gate 1-B."""
 
 import argparse
@@ -411,8 +431,8 @@ TRAIN_SEQS = ["Beauty", "Bosphorus", "CityAlley", "FlowerFocus", "FlowerKids",
 VAL_SEQS = ["HoneyBee", "FlowerPan", "Lips"]
 
 
-def train_gnn(graphs, hidden, k_rounds, device, epochs, lr, batch_sbs):
-    net = gm.build_gnn(36, hidden, k_rounds).to(device)
+def train_gnn(graphs, hidden, layer, n_layers, device, epochs, lr, batch_sbs):
+    net = gm.build_gnn(36, hidden, layer, n_layers).to(device)
     opt = torch.optim.Adam(net.parameters(), lr=lr)
     loss_fn = nn.CrossEntropyLoss()
     net.train()
@@ -436,7 +456,9 @@ def train_gnn(graphs, hidden, k_rounds, device, epochs, lr, batch_sbs):
 def main(argv):
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--dataset-dir", default="/workspace/results/dataset_h9")
-    p.add_argument("--k-rounds", type=int, required=True)
+    p.add_argument("--n-layers", type=int, required=True,
+                   help="0 = baseline MLP independente; >=1 = GNN com estrutura")
+    p.add_argument("--layer", default="sage", choices=["sage", "gat", "gin"])
     p.add_argument("--hidden", type=int, default=64)
     p.add_argument("--epochs", type=int, default=15)
     p.add_argument("--lr", type=float, default=1e-3)
@@ -451,16 +473,17 @@ def main(argv):
     datamod.assert_real_luma(train_e)
     graphs = gd.build_graph_dataset(train_e, per_pkl=args.per_pkl or None)
     print("grafos de treino:", len(graphs), flush=True)
-    sd, loss = train_gnn(graphs, args.hidden, args.k_rounds, device,
+    sd, loss = train_gnn(graphs, args.hidden, args.layer, args.n_layers, device,
                          args.epochs, args.lr, args.batch_sbs)
-    out_dir = args.out_dir or "/workspace/results/models/gnn_k{}".format(args.k_rounds)
+    out_dir = args.out_dir or "/workspace/results/models/gnn_L{}".format(args.n_layers)
     os.makedirs(out_dir, exist_ok=True)
-    torch.save({"hidden": args.hidden, "k_rounds": args.k_rounds,
-                "state_dict": sd, "num_features": 36,
+    torch.save({"hidden": args.hidden, "layer": args.layer,
+                "n_layers": args.n_layers, "state_dict": sd, "num_features": 36,
                 "feature_set": "h9a", "head": "gnn3"},
                os.path.join(out_dir, "gnn.pt"))
-    print("[K={}] loss final={:.5f} -> {}".format(
-        args.k_rounds, loss, os.path.join(out_dir, "gnn.pt")), flush=True)
+    print("[layer={} L={}] loss final={:.5f} -> {}".format(
+        args.layer, args.n_layers, loss, os.path.join(out_dir, "gnn.pt")),
+        flush=True)
 
 
 if __name__ == "__main__":
@@ -476,14 +499,17 @@ Expected: PASS.
 
 ```bash
 git add src/scripts/partition_model/train_gnn.py src/scripts/partition_model/tests/test_graph.py
-git commit -m "approachB: train_gnn.py (treino do TreeGNN, ablacao por --k-rounds) + smoke"
+git commit -m "approachB: train_gnn.py (treino do TreeGNN, ablacao por --n-layers) + smoke"
 git push
 ```
 
 **Nota ao controller:** após o merge desta tarefa, treinar os DOIS modelos com
-hiperparâmetros idênticos e guardar os logs:
-`train_gnn.py --k-rounds 0 --out-dir .../gnn_k0` e `--k-rounds 2 --out-dir .../gnn_k2`.
-Commitar os dois `gnn.pt` (force-add; `results/models` é gitignored).
+hiperparâmetros idênticos (mesmo `--hidden/--epochs/--lr/--per-pkl/--batch-sbs`),
+mudando só a estrutura, e guardar os logs:
+`train_gnn.py --n-layers 0 --out-dir .../gnn_L0` (baseline MLP) e
+`train_gnn.py --n-layers 2 --layer sage --out-dir .../gnn_L2` (GNN forte).
+Commitar os dois `gnn.pt` (force-add; `results/models` é gitignored). Em caso de
+nulo no Gate 1-B, varrer `--layer {sage,gat,gin}` e `--n-layers {1,2,3}` (Stage 1b).
 
 ---
 
@@ -513,7 +539,7 @@ def score_with_gnn(sbs, bundle, device):
     import gnn_model
     import graph_data
     net = gnn_model.build_gnn(bundle["num_features"], bundle["hidden"],
-                              bundle["k_rounds"])
+                              bundle["layer"], bundle["n_layers"])
     net.load_state_dict(bundle["state_dict"])
     net = net.to(device).eval()
     modeled = {d for d, _ in MODEL_LEVELS}
@@ -532,12 +558,12 @@ def score_with_gnn(sbs, bundle, device):
             sb["nodes"][k]["prob"] = p
     return sbs
 ```
-Wiring no `main`: adicionar `--gnn-bundle` (default None); quando setado, carregar o bundle, `assert bundle.get("head")=="gnn3"`, `feature_set = bundle.get("feature_set","h9a")`, `mode="gnn"`; no despacho de scoring, `elif mode=="gnn": sbs = score_with_gnn(sbs, bundle, device); model_tag = "GNN {} k={}".format(args.gnn_bundle, bundle["k_rounds"])`. Espelhar exatamente a estrutura if/elif do `--regret-bundle` (precedência mutuamente exclusiva); não quebrar os caminhos existentes.
+Wiring no `main`: adicionar `--gnn-bundle` (default None); quando setado, carregar o bundle, `assert bundle.get("head")=="gnn3"`, `feature_set = bundle.get("feature_set","h9a")`, `mode="gnn"`; no despacho de scoring, `elif mode=="gnn": sbs = score_with_gnn(sbs, bundle, device); model_tag = "GNN {} layer={} L={}".format(args.gnn_bundle, bundle["layer"], bundle["n_layers"])`. Espelhar exatamente a estrutura if/elif do `--regret-bundle` (precedência mutuamente exclusiva); não quebrar os caminhos existentes.
 
 - [ ] **Step 3: Smoke (não é o gate; o gate é do controller)**
 
-Run (após o controller ter treinado um `gnn_k2/gnn.pt`; se ainda não existir, PULAR este step e deixar o controller validar no Gate):
-`MSYS_NO_PATHCONV=1 docker exec av1_bench bash -lc 'cd /workspace/src/scripts/partition_model && /workspace/build/venv-ml/bin/python3 simulate_pruning.py --dataset-dir /workspace/results/dataset_h9 --gnn-bundle /workspace/results/models/gnn_k2/gnn.pt --val-seqs HoneyBee --tau-none 0.9 0.99 --limit 150 --out-csv /workspace/results/models/gnn_k2/smoke.csv'`
+Run (após o controller ter treinado um `gnn_L2/gnn.pt`; se ainda não existir, PULAR este step e deixar o controller validar no Gate):
+`MSYS_NO_PATHCONV=1 docker exec av1_bench bash -lc 'cd /workspace/src/scripts/partition_model && /workspace/build/venv-ml/bin/python3 simulate_pruning.py --dataset-dir /workspace/results/dataset_h9 --gnn-bundle /workspace/results/models/gnn_L2/gnn.pt --val-seqs HoneyBee --tau-none 0.9 0.99 --limit 150 --out-csv /workspace/results/models/gnn_L2/smoke.csv'`
 Expected: imprime a tabela de métricas sem traceback. Não commitar o smoke.csv.
 
 - [ ] **Step 4: Commit + push**
@@ -550,7 +576,7 @@ git push
 
 ---
 
-## Task 5: `gate1_gnn.py` — ablação K=0 vs K>0 por nó (macro-F1, SPLIT-recall)
+## Task 5: `gate1_gnn.py` — ablação `L=0` vs `L≥1` por nó (macro-F1, SPLIT-recall)
 
 **Files:**
 - Create: `src/scripts/partition_model/gate1_gnn.py`
@@ -564,10 +590,10 @@ git push
 `src/scripts/partition_model/gate1_gnn.py`:
 ```python
 #!/usr/bin/env python3
-"""Gate 1-B (Approach B): ablação controlada K=0 vs K>0 na validação. Para cada
-bundle, prediz as classes por nó no conjunto de validação e reporta, por tamanho,
-acurácia, macro-F1 e SPLIT-recall. Se K>0 não superar K=0 (nem no oráculo, ver
-simulate_pruning --gnn-bundle), a estrutura não agrega -> teto informacional."""
+"""Gate 1-B (Approach B): ablação controlada L=0 (MLP) vs L>=1 (GNN) na validação.
+Para cada bundle, prediz as classes por nó no conjunto de validação e reporta, por
+tamanho, acurácia, macro-F1 e SPLIT-recall. Se L>=1 não superar L=0 (nem no oráculo,
+ver simulate_pruning --gnn-bundle), a estrutura não agrega -> teto informacional."""
 
 import argparse
 import os
@@ -607,7 +633,7 @@ def _macro_f1_and_split_recall(y_true, y_pred, n_classes=3):
 
 def _predict(bundle, graphs, device):
     net = gm.build_gnn(bundle["num_features"], bundle["hidden"],
-                       bundle["k_rounds"])
+                       bundle["layer"], bundle["n_layers"])
     net.load_state_dict(bundle["state_dict"])
     net = net.to(device).eval()
     yt, yp, lv = [], [], []
@@ -672,17 +698,19 @@ Expected: help + `ok`, sem erro.
 
 ```bash
 git add src/scripts/partition_model/gate1_gnn.py
-git commit -m "approachB: gate1_gnn.py (ablacao K=0 vs K>0 por no: macro-F1, SPLIT-recall)"
+git commit -m "approachB: gate1_gnn.py (ablacao L=0 vs L>=1 por no: macro-F1, SPLIT-recall)"
 git push
 ```
 
 **Nota ao controller (Gate 1-B — milestone):** com os dois bundles treinados,
-rodar (1) `gate1_gnn.py --bundles k0=.../gnn_k0/gnn.pt k2=.../gnn_k2/gnn.pt` para
+rodar (1) `gate1_gnn.py --bundles L0=.../gnn_L0/gnn.pt L2=.../gnn_L2/gnn.pt` para
 macro-F1/SPLIT-recall; e (2) o oráculo a SPLIT-lost casado para AMBOS via
-`simulate_pruning.py --gnn-bundle .../gnn_k0/gnn.pt` e `--gnn-bundle .../gnn_k2/gnn.pt`
-(mesmo grid de τ), comparando a redução de custo. **PASSA** se K>0 supera K=0 por
-margem relevante e consistente em SPLIT-recall E no oráculo; senão **FALHA** → teto
-informacional confirmado. Adjudicar e registrar; decidir com o usuário sobre Stage 2.
+`simulate_pruning.py --gnn-bundle .../gnn_L0/gnn.pt` e `--gnn-bundle .../gnn_L2/gnn.pt`
+(mesmo grid de τ), comparando a redução de custo. **PASSA** se `L≥1` supera `L=0`
+por margem relevante e consistente em SPLIT-recall E no oráculo; senão, antes de
+declarar teto, **Stage 1b (varredura de robustez):** treinar `--layer {sage,gat,gin}`
+× `--n-layers {1,2,3}` e re-rodar o gate — só um nulo consistente na melhor variante
+confirma **teto informacional**. Adjudicar e registrar; decidir com o usuário sobre Stage 2.
 
 ---
 
@@ -694,7 +722,7 @@ informacional confirmado. Adjudicar e registrar; decidir com o usuário sobre St
 
 - [ ] **Step 1: Escrever `docs/RESULTADOS_approachB.md`**
 
-Documentar: pergunta (teto informacional vs artefato de independência), método (grafo do quadtree, TreeGNN, ablação K=0 vs K>0), Gate 1-B (macro-F1/SPLIT-recall + oráculo), o resultado obtido e a leitura (se FALHA: teto informacional confirmado; se PASSA: abre Stage 2). Padrão de `docs/RESULTADOS_solucao4.md`.
+Documentar: pergunta (teto informacional vs artefato de independência), método (grafo do quadtree, TreeGNN via PyG, ablação `L=0` vs `L≥1` + varredura de robustez), Gate 1-B (macro-F1/SPLIT-recall + oráculo), o resultado obtido e a leitura (se FALHA: teto informacional confirmado; se PASSA: abre Stage 2). Padrão de `docs/RESULTADOS_solucao4.md`.
 
 - [ ] **Step 2: Atualizar SINTESE (§5-ter Approach B) e ANDAMENTO**
 
@@ -712,9 +740,10 @@ git push
 
 ## Notas de execução / ameaças à validade
 
-- **Comparação justa:** K=0 e K>0 DEVEM usar os mesmos `--hidden/--epochs/--lr/--per-pkl/--batch-sbs` e o mesmo split. Qualquer divergência invalida a atribuição à estrutura. O controller usa a MESMA linha de comando trocando só `--k-rounds`.
-- **Oráculo superestima o tempo (~5×):** aceitável no Stage 1 porque a comparação é RELATIVA (K>0 vs K=0 sob o MESMO oráculo) — o viés cancela.
-- **K=0 compartilhado vs H9a por-tamanho:** o baseline primário é o gêmeo K=0 (mesma arquitetura). O cross-check externo vs `student_h9a` é secundário (validade externa), não a atribuição.
+- **Comparação justa:** `L=0` e `L≥1` DEVEM usar os mesmos `--hidden/--epochs/--lr/--per-pkl/--batch-sbs` e o mesmo split. Qualquer divergência invalida a atribuição à estrutura. O controller usa a MESMA linha de comando trocando só `--n-layers` (e `--layer` na varredura de robustez).
+- **Não subdimensionar (risco metodológico real):** dar à estrutura o melhor tiro (PyG SAGE/GAT/GIN); um nulo só vira "teto informacional" após a varredura Stage 1b. A escolha PyG-vs-manual NÃO é metodológica.
+- **Oráculo superestima o tempo (~5×):** aceitável no Stage 1 porque a comparação é RELATIVA (`L≥1` vs `L=0` sob o MESMO oráculo) — o viés cancela.
+- **`L=0` compartilhado vs H9a por-tamanho:** o baseline primário é o gêmeo `L=0` (mesma arquitetura). O cross-check externo vs `student_h9a` é secundário (validade externa), não a atribuição.
 - **Carga de dados:** `build_graph_dataset` sobre treino/val carrega os pkls (lento) → o controller roda treino e Gate 1-B em background, como nas fases anteriores.
 - **Stage 2 é condicional** e fora deste plano: só se o Gate 1-B passar, com spec/plano próprios.
 ```
