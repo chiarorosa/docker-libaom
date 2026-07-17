@@ -607,6 +607,15 @@ todos os níveis cpu):** pontos não-dominados, do menor BD ao maior:
   combinação não explorada (motivada pela dica de eficiência do §8.3-ii). PRIOR:
   não fura a fronteira (levers correlacionados). ENFILEIRADO (dispara ao fim do
   swap das 5 seqs). Se confirmar o prior, fecha a caracterização do H9c.
+  **CONCLUÍDO (2026-07-17): NÃO fura a fronteira.** Tango, vs âncora cpu0 — o
+  combinado fica entre H9c-swap e H9a-swap, com eficiência decrescente (TS/BD @
+  cpu1: nativa 81,9 > H9c 77,2 > comb0,98 67,9 > comb0,95 65,2 > H9a_bal 29,9); a
+  nativa permanece no topo, o combinado não a domina. Confirma a Conclusão 3
+  (levers correlacionados / teto informacional). Artefato:
+  `results/benchmark/fase6_swap_combo/`.
+
+Swap H9c COMPLETO nas 8 seqs (2026-07-17): H9c ≈ CNN nativa a cpu1/2 confirmado
+em 8 seqs (não só 3). Síntese consolidada em `docs/SINTESE_resultados_metodologia.md`.
 
 Scripts adicionais desta rodada: `src/scripts/fase6/{encode_h9adef.py,
 encode_swap_combo.py}`.

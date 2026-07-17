@@ -427,15 +427,19 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 |---|---|---|
 | Swap H9c — 8 seqs completas | ✅ **concluído** (2026-07-17) | `results/benchmark/fase6_swap_h9c/` |
 | Isolação/confound (Neon1224) + H9a@default | ✅ concluído | `fase6/` (`h9ciso_*`, `h9adef`) |
-| **Frontier-check combinado** (H9a-conservador + H9c, swap, Tango) | 🔄 **em andamento** | `results/benchmark/fase6_swap_combo/` |
+| **Frontier-check combinado** (H9a-conservador + H9c, swap, Tango) | ✅ **concluído** (2026-07-17) — não fura a fronteira | `results/benchmark/fase6_swap_combo/` |
 | Microbenchmark isolado do pruner (μs/FLOPs) | ⬜ pendente | — |
-| H9c swap: análise de 8 seqs e §5 fechado com todas | ◐ tabelas a consolidar | este doc |
 
-**Próxima atualização deste documento:** ao fechar o *frontier-check* combinado
-(§6, Conclusão 3 — testa se H9a-conservador + H9c fura a fronteira da nativa;
-prior: não fura, por sinal correlacionado). Cobertura por sequência/config está
-inventariada em `docs/ANDAMENTO_tese.md §8.4` e no histórico de commits
-`ml-partition-dev`.
+**Resultado do frontier-check combinado (Tango, vs âncora cpu0):** o combinado
+H9a-conservador + H9c posiciona-se **entre** o H9c-swap e o H9a-swap — mais TS
+que o H9c sozinho, mas com **eficiência decrescente** (TS/BD a cpu1: nativa 81,9 >
+H9c 77,2 > comb(0,98) 67,9 > comb(0,95) 65,2 > H9a_bal 29,9). **A CNN nativa
+permanece no topo da eficiência; o combinado não a domina em nenhum ponto.**
+Confirma empiricamente a **Conclusão 3** (§6): empilhar levers correlacionados dá
+poda absoluta maior a eficiência marginal pior, sempre dentro da fronteira da
+nativa. A porta está fechada — nenhuma combinação de H9a/H9c/τ testada supera a
+CNN nativa. Cobertura por sequência/config inventariada em
+`docs/ANDAMENTO_tese.md §8.4`.
 
 ---
 
