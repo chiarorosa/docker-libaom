@@ -329,6 +329,40 @@ próprio. Como camada extra sobre o H9a a cpu0, não muda a foto.
 
 ---
 
+## 5-bis. Solução 4 — regressão de *regret* (resultado negativo)
+
+Testou-se uma **reformulação**: em vez de classificar o rótulo, **regredir o custo
+RD de podar** (*regret*) e podar por custo predito. Alvo reconstruído da árvore
+comprometida dos pkls `dataset_h9` (sem re-extração); NN regressora (MLP por
+tamanho, cabeça única) sobre as mesmas 36 features H9a. Detalhe completo em
+`docs/RESULTADOS_solucao4.md`.
+
+**Resultado — a hipótese é refutada.** No Gate 3 (val, oráculo, SPLIT-lost
+casado), o regressor **não alcança a faixa de risco baixo** onde o classificador
+opera:
+
+| método (val) | redução de custo @0,5% SPLIT-lost | menor SPLIT-lost |
+|---|--:|--:|
+| regret naïve | 0,00% | 12,4% (degenerado por zero-inflação) |
+| regret balanceado (Huber ponderado) | 0,00% | 11,4% |
+| **H9a-classificador** (mesmas features) | **51,73%** | **0,01%** |
+| variância | 4,46% | 0,01% |
+
+Mesmo corrigida a zero-inflação (peso 8–46× nos nós de *regret* não-nulo), a
+regressão **ranqueia a segurança de poda pior** que o classificador: há ~11% de
+nós *true-SPLIT* mapeados a *regret* ≈ 0, indistinguíveis dos seguros.
+
+**Leitura (valor metodológico).** A decisão de poda é fundamentalmente uma
+**classificação** (seguro/inseguro); a **magnitude** do *regret*, dominada pelo
+conteúdo, não é ranqueável a partir de features pré-busca baratas melhor que a
+própria probabilidade da decisão. Isto **afia** a metodologia — dá base empírica a
+*por que* a formulação de classificação (Solução 2/H9a) é a correta, em vez de
+deixar "prever custo" como alternativa não testada. Não se pagou o Gate 5
+(benchmark real): o oráculo, que **superestima** o mérito, já rejeita o método a
+risco casado, então o benchmark só confirmaria pior.
+
+---
+
 ## 6. Análise integrada — fronteira Pareto e as três conclusões
 
 **Fronteira Pareto global (BD × TS, todos os níveis cpu, média 3 seqs
@@ -437,6 +471,7 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 | Isolação/confound (Neon1224) + H9a@default | ✅ concluído | `fase6/` (`h9ciso_*`, `h9adef`) |
 | **Frontier-check combinado** (H9a-conservador + H9c, swap, Tango) | ✅ **concluído** (2026-07-17) — não fura a fronteira | `results/benchmark/fase6_swap_combo/` |
 | Microbenchmark de inferência isolada do pruner | ✅ **concluído** (2026-07-17) — MLP ~50× mais barato/inferência que a CNN | `docs/RESULTADOS_microbench_pruner.md` |
+| **Solução 4 — regressão de *regret*** | ✅ **concluído** (2026-07-17) — **resultado negativo**: regressão ranqueia poda pior que o classificador (Gate 3, mesmas features); Gate 5 pulado por regra de gate | `docs/RESULTADOS_solucao4.md`, `results/models/regret{,_balanced}/` |
 
 **Resultado do frontier-check combinado (Tango, vs âncora cpu0):** o combinado
 H9a-conservador + H9c posiciona-se **entre** o H9c-swap e o H9a-swap — mais TS

@@ -617,3 +617,33 @@ em 8 seqs (não só 3). Síntese consolidada em `docs/SINTESE_resultados_metodol
 
 Scripts adicionais desta rodada: `src/scripts/fase6/{encode_h9adef.py,
 encode_swap_combo.py}`.
+
+---
+
+## Solução 4 — regressão de *regret* (2026-07-17): RESULTADO NEGATIVO
+
+Explorou-se uma proposta extra sobre os dados já coletados (`dataset_h9`, sem
+re-extração): reformular a poda de **classificação do rótulo** para **regressão do
+custo RD de podar** (*regret*), com NN regressora (MLP por tamanho, cabeça única)
+sobre as mesmas 36 features H9a. Design/plano em
+`docs/superpowers/{specs,plans}/2026-07-17-solucao4-regret-regression*`.
+
+- **Gate 0 PASSOU** (viabilidade), com ressalva: *regret* fortemente zero-inflado
+  (dim16 98% de zeros).
+- **Regret naïve → degenerado** (Gate 3 val: 0% de redução a risco casado; piso de
+  SPLIT-lost 12,4%; colapso no preditor trivial ≈0, previsto pela zero-inflação).
+- **Correção anti-zero-inflação** (Huber ponderado, `--balance`, peso 8–46× nos
+  nós não-nulos) → aprende a cauda mas **continua sem alcançar risco baixo**
+  (Gate 3 val: 0% a risco casado, piso ~11,4% em r0 ∈ {0,05;0,1;0,2}).
+- **Conclusão:** a regressão de *regret* **ranqueia a poda pior** que o
+  classificador H9a sobre entradas idênticas → a decisão de poda é uma
+  **classificação**, não uma regressão de custo; a magnitude do *regret* não é
+  ranqueável a partir de features pré-busca baratas. Gate 5 (benchmark real)
+  **pulado por regra de parada de gate** (oráculo já rejeita; ele superestima o
+  mérito). Resultado detalhado em `docs/RESULTADOS_solucao4.md`; entra no Capítulo
+  de Resultados como **resultado negativo de valor metodológico** (reforça por que
+  a formulação de classificação da Solução 2 é a correta).
+
+Artefatos: `results/models/regret/` (naïve + gates), `results/models/regret_balanced/`.
+Scripts: `src/scripts/partition_model/{regret.py,build_regret_targets.py,
+gate0_regret.py,train_regret.py}` + modo `--regret-bundle` em `simulate_pruning.py`.
