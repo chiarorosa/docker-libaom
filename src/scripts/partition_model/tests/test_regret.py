@@ -124,3 +124,21 @@ def test_nested_split_deep_rectangular_grandchild_propagates_censorship():
     out = {(n["dim"], n["r"], n["c"]): n for n in regret.node_regrets(members, ctx)}
     assert abs(out[(64, 0, 0)]["regret_rel"] - 0.5) < 1e-9
     assert out[(64, 0, 0)]["exact"] is False
+
+
+def test_build_regret_targets_smoke():
+    import os
+    import build_regret_targets as brt
+    import data as datamod
+    ds = "/workspace/results/dataset_h9"
+    entries = datamod.discover_pkls(ds)
+    assert entries, "dataset_h9 não encontrado"
+    one = [entries[0]]
+    out = brt.collect_regret_by_dim(one, per_pkl=20, exact_only=True)
+    # Há nós de decisão nos três tamanhos, features com largura 36, regret >= 0.
+    for dim in (64, 32, 16):
+        assert dim in out
+    feats = out[32]["feat"]
+    assert feats.shape[1] == 36
+    assert (out[32]["regret"] >= 0).all()
+    assert out[32]["exact"].all()   # exact_only=True filtra censurados
