@@ -41,19 +41,28 @@ def build_regressor(in_features, hidden):
     return Reg(net)
 
 
-def _fit_dim(feat, target, hidden, device, epochs, lr):
+def weighted_huber(pred, target, weight, delta=1.0):
+    """Per-sample Huber (reduction='none') scaled by `weight`, normalized by the
+    total weight. `weight` is a 1-D tensor broadcast over samples."""
+    import torch.nn as nn
+    per = nn.HuberLoss(delta=delta, reduction="none")(pred, target)
+    return (per * weight).sum() / weight.sum().clamp(min=1e-8)
+
+
+def _fit_dim(feat, target, hidden, device, epochs, lr, nonzero_weight=1.0):
     mean = feat.mean(0)
     std = feat.std(0) + 1e-6
     xn = (feat - mean) / std
     x = torch.tensor(xn, dtype=torch.float32, device=device)
     y = torch.tensor(np.log1p(target), dtype=torch.float32, device=device)
+    w = torch.where(y > 0, torch.full_like(y, float(nonzero_weight)),
+                     torch.ones_like(y)).to(device=device, dtype=torch.float32)
     net = build_regressor(feat.shape[1], hidden).to(device)
     opt = torch.optim.Adam(net.parameters(), lr=lr)
-    loss_fn = nn.HuberLoss(delta=1.0)
     net.train()
     for _ in range(epochs):
         opt.zero_grad()
-        loss = loss_fn(net(x), y)
+        loss = weighted_huber(net(x), y, w)
         loss.backward()
         opt.step()
     return net, (mean.astype(np.float32), std.astype(np.float32)), float(loss.item())
@@ -67,6 +76,10 @@ def main(argv):
     p.add_argument("--epochs", type=int, default=200)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--per-pkl", type=int, default=3000)
+    p.add_argument("--balance", action="store_true", default=False,
+                   help="upweight nonzero-regret samples (class-balanced Huber)")
+    p.add_argument("--balance-cap", type=float, default=100.0,
+                   help="max nonzero_weight when --balance is set")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -84,8 +97,17 @@ def main(argv):
         if len(rec["regret"]) == 0:
             print("[dim {}] sem amostras".format(dim))
             continue
+        nonzero_weight = 1.0
+        if args.balance:
+            n_total = len(rec["regret"])
+            n_zero = int((rec["regret"] == 0).sum())
+            n_nonzero = n_total - n_zero
+            nonzero_weight = min(n_zero / max(n_nonzero, 1), args.balance_cap)
+            print("[dim {:>2}] n={} zero_frac={:.2f} nonzero_weight={:.2f}".format(
+                dim, n_total, n_zero / max(n_total, 1), nonzero_weight), flush=True)
         net, norm, loss = _fit_dim(rec["feat"], rec["regret"], args.hidden,
-                                   device, args.epochs, args.lr)
+                                   device, args.epochs, args.lr,
+                                   nonzero_weight=nonzero_weight)
         print("[dim {:>2}] n={} huber={:.5f}".format(
             dim, len(rec["regret"]), loss), flush=True)
         bundle["students"][dim] = net.state_dict()

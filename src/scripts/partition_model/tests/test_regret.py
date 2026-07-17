@@ -151,3 +151,18 @@ def test_regret_head_shapes():
     x = torch.zeros((5, 36), dtype=torch.float32)
     y = net(x)
     assert y.shape == (5,)   # saída escalar por amostra (regressão)
+
+
+def test_weighted_huber_upweights_nonzero():
+    import torch
+    import train_regret as tr
+    # Two samples: one zero-target, one nonzero-target, both with equal error.
+    pred = torch.tensor([0.0, 0.0])
+    target = torch.tensor([0.0, 1.0])   # sample 1 has error 1.0
+    # Unit weights -> loss dominated equally; upweighting the nonzero sample
+    # must strictly increase the aggregate loss.
+    w_flat = torch.tensor([1.0, 1.0])
+    w_up = torch.tensor([1.0, 10.0])
+    l_flat = tr.weighted_huber(pred, target, w_flat)
+    l_up = tr.weighted_huber(pred, target, w_up)
+    assert float(l_up) > float(l_flat)
