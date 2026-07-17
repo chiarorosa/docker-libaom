@@ -553,3 +553,60 @@ que iguala o SOTA embarcado nesse regime. Esta é a leitura defensável.
 Artefatos: `results/benchmark/fase6_swap_h9c/` (swap), linhas `h9ciso_*` em
 `results/benchmark/fase6/raw_results.csv` (isolação). Scripts:
 `src/scripts/fase6/{encode_swap_h9c.py, encode_h9c_iso.py, encode_h9c_cq20.py}`.
+
+### 8.3 Decomposição completa (Neon1224) e análise de fronteira
+
+**Decomposição aditiva (Neon1224 cpu0 vs âncora), com o baseline que faltava
+(`h9adef` = H9a@0,9 sozinho, H9c off — via `encode_h9adef.py`):**
+
+| config | BD-Rate | TS% | TS/BD |
+|---|--:|--:|--:|
+| âncora libaom | 0,000% | 0,00% | — |
+| H9a@0,9 sozinho (`h9adef`) | 0,312% | 17,10% | 54,8 |
+| H9a@0,9 + H9c (`h9c_tau90`) | 0,270% | 17,36% | 64,3 |
+| H9c sozinho (`h9ciso_tau90`) | 0,037% | 4,23% | 114,7 |
+| H9a bal (implantado) | 0,639% | 22,58% | 35,3 |
+| H9a aggr (implantado) | 1,412% | 34,49% | 24,4 |
+
+Leitura: (i) **o H9a carrega o peso** em qualquer variante; (ii) **o H9c sozinho
+quase não sai da âncora** (4% TS); (iii) empilhar H9c sobre o H9a **não adiciona
+TS** (+0,26pp) mas **baixa o BD** ao mesmo TS (0,312→0,270; TS/BD 54,8→64,3) — o
+H9c parece corrigir levemente decisões do H9a via rdcost real pós-NONE.
+RESSALVA: 1 seq, deltas pequenos (0,04pp BD), pode ser ruído — precisa
+confirmação (ver §8.4).
+
+**Fronteira Pareto global (BD × TS, média de 3 seqs Boxing/FoodMarket2/Tango,
+todos os níveis cpu):** pontos não-dominados, do menor BD ao maior:
+`h9c_tau95`(0,213%/13,9%) → `h9c_tau90`(0,227%/15,0%) → `native_cpu1`(0,368%/
+28,6%) → `h9c_tau90_cpu1`(0,392%/29,6%) → `native_cpu2`(0,407%/38,2%, TS/BD 94 =
+**pico de eficiência**) → `h9c_tau90_cpu2`(0,442%/39,1%) → `h9a_bal_cpu2`(1,125%/
+47,1%) → `h9a_aggr_cpu1/2`(1,9-2,0%/52-60%) → `native_cpu3`(2,796%/66,4%) →
+`h9c_*_cpu3`(3,5%/70%) → `h9a_*_cpu3`(4,2-4,8%/73-78%).
+
+**Três conclusões:**
+1. **Ninguém DOMINA a CNN nativa** — nenhum ponto ML é estritamente melhor (mais
+   TS a ≤ BD). A cpu1/2 o H9c-swap fica colado (empate técnico); a nativa mantém
+   o pico de eficiência (TS/BD 78-94).
+2. **O H9c É dono do extremo de baixo BD** que a nativa NÃO alcança: 0,21-0,23%
+   BD / 14-15% TS. A escada discreta da nativa pula de cpu0 (0% TS) para cpu1
+   (~28% TS), deixando todo o regime 0-28% TS descoberto — o ML preenche
+   continuamente. **Valor real = granularidade fina em baixo speedup**, não
+   superar o pico.
+3. **Levers não se somam** (teto informacional): H9a (pixels+contexto), H9c
+   (rdcost pós-NONE) e a CNN nativa exploram o mesmo sinal correlacionado
+   ("blocos fáceis"). Prova: H9c sobre H9a = +0,26pp TS.
+
+### 8.4 Experimentos em andamento (2026-07-16)
+
+- **Completar swap H9c nas 5 seqs faltantes** (Crosswalk, Neon1224,
+  NocturneDance, PierSeaSide, TimeLapse) → `results/benchmark/fase6_swap_h9c/`,
+  para média de 8 seqs comparável ao swap H9a. RODANDO.
+- **Frontier-check combinado** (`encode_swap_combo.py`): H9a **conservador**
+  (τ_none 0,98/0,95, sem rect-off) + H9c, como substituto da CNN nativa a
+  cpu1/2/3, em Tango → `results/benchmark/fase6_swap_combo/`. Testa a única
+  combinação não explorada (motivada pela dica de eficiência do §8.3-ii). PRIOR:
+  não fura a fronteira (levers correlacionados). ENFILEIRADO (dispara ao fim do
+  swap das 5 seqs). Se confirmar o prior, fecha a caracterização do H9c.
+
+Scripts adicionais desta rodada: `src/scripts/fase6/{encode_h9adef.py,
+encode_swap_combo.py}`.
