@@ -142,3 +142,12 @@ def test_build_regret_targets_smoke():
     assert feats.shape[1] == 36
     assert (out[32]["regret"] >= 0).all()
     assert out[32]["exact"].all()   # exact_only=True filtra censurados
+
+
+def test_regret_head_shapes():
+    import torch
+    import train_regret as tr
+    net = tr.build_regressor(in_features=36, hidden=[64, 32])
+    x = torch.zeros((5, 36), dtype=torch.float32)
+    y = net(x)
+    assert y.shape == (5,)   # saída escalar por amostra (regressão)
