@@ -163,6 +163,34 @@ def score_with_regret(sbs, bundle, device, r0=0.1):
     return sbs
 
 
+def score_with_gnn(sbs, bundle, device):
+    """Approach B: probs conjuntas por nó de um TreeGNN. Monta o grafo de cada
+    superbloco a partir das chaves de nós e anexa prob=softmax(logits)."""
+    import torch
+    import torch.nn.functional as F
+    import gnn_model
+    import graph_data
+    net = gnn_model.build_gnn(bundle["num_features"], bundle["hidden"],
+                              bundle["layer"], bundle["n_layers"])
+    net.load_state_dict(bundle["state_dict"])
+    net = net.to(device).eval()
+    modeled = {d for d, _ in MODEL_LEVELS}
+    for sb in sbs:
+        keys = [k for k in sb["nodes"] if k[0] in modeled]
+        if not keys:
+            continue
+        feats = np.stack([sb["nodes"][k]["feat"] for k in keys])
+        e_list = graph_data.sb_edges(keys)
+        ei = (torch.tensor(np.asarray(e_list).T, dtype=torch.long, device=device)
+              if e_list else torch.zeros((2, 0), dtype=torch.long, device=device))
+        with torch.no_grad():
+            logits = net(torch.tensor(feats, dtype=torch.float32, device=device), ei)
+            probs = F.softmax(logits, dim=-1).cpu().numpy()
+        for k, p in zip(keys, probs):
+            sb["nodes"][k]["prob"] = p
+    return sbs
+
+
 def classification_report(sbs):
     """Per-size macro-F1 and SPLIT-recall from the scored probs (argmax) vs the
     3-class collapsed truth (Gate 3a). truth is the raw 10-class PARTITION_TYPE;
@@ -380,6 +408,10 @@ def main(argv):
                         "variance baseline (Solucao 4 comparison)")
     p.add_argument("--r0", type=float, default=0.1,
                    help="regret-score scale: P(NONE)=exp(-regret_pred/r0)")
+    p.add_argument("--gnn-bundle", default=None,
+                   help="if set, score with this TreeGNN bundle (head='gnn3') "
+                        "instead of the H9a student or the regret regressor "
+                        "(Approach B joint-prediction comparison)")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -387,7 +419,11 @@ def main(argv):
     _, val_e = datamod.split_entries(entries, args.val_seqs, None)
     datamod.assert_real_luma(val_e)
 
-    if args.regret_bundle:
+    if args.gnn_bundle:
+        bundle = torch.load(args.gnn_bundle, map_location=device)
+        assert bundle.get("head") == "gnn3", "bundle is not a TreeGNN (gnn3)"
+        feature_set, mode = bundle.get("feature_set", "h9a"), "gnn"
+    elif args.regret_bundle:
         bundle = torch.load(args.regret_bundle, map_location=device)
         assert bundle.get("head") == "regret", "bundle is not a regret regressor"
         feature_set, mode = bundle.get("feature_set", "h9a"), "regret"
@@ -417,6 +453,10 @@ def main(argv):
     elif mode == "regret":
         sbs = score_with_regret(sbs, bundle, device, args.r0)
         model_tag = "REGRET {} r0={}".format(args.regret_bundle, args.r0)
+    elif mode == "gnn":
+        sbs = score_with_gnn(sbs, bundle, device)
+        model_tag = "GNN {} layer={} L={}".format(
+            args.gnn_bundle, bundle["layer"], bundle["n_layers"])
     else:
         sbs = score_with_student(sbs, bundle, device)
         model_tag = "STUDENT {} (feature_set={})".format(args.students,
