@@ -53,6 +53,9 @@ def main(argv):
     p.add_argument("--n-layers", type=int, required=True,
                    help="0 = baseline MLP independente; >=1 = GNN com estrutura")
     p.add_argument("--layer", default="sage", choices=["sage", "gat", "gin"])
+    p.add_argument("--causal", action="store_true",
+                   help="arestas causais (pai->filho, irmao-anterior->posterior) "
+                        "em vez do grafo nao-causal pai<->filho, irmao<->irmao")
     p.add_argument("--hidden", type=int, default=64)
     p.add_argument("--epochs", type=int, default=15)
     p.add_argument("--lr", type=float, default=1e-3)
@@ -65,7 +68,8 @@ def main(argv):
     entries = datamod.discover_pkls(args.dataset_dir)
     train_e, _ = datamod.split_entries(entries, VAL_SEQS, TRAIN_SEQS)
     datamod.assert_real_luma(train_e)
-    graphs = gd.build_graph_dataset(train_e, per_pkl=args.per_pkl or None)
+    graphs = gd.build_graph_dataset(train_e, per_pkl=args.per_pkl or None,
+                                    causal=args.causal)
     print("grafos de treino:", len(graphs), flush=True)
     sd, loss = train_gnn(graphs, args.hidden, args.layer, args.n_layers, device,
                          args.epochs, args.lr, args.batch_sbs)
@@ -73,7 +77,7 @@ def main(argv):
     os.makedirs(out_dir, exist_ok=True)
     torch.save({"hidden": args.hidden, "layer": args.layer,
                 "n_layers": args.n_layers, "state_dict": sd, "num_features": 36,
-                "feature_set": "h9a", "head": "gnn3"},
+                "feature_set": "h9a", "head": "gnn3", "causal": args.causal},
                os.path.join(out_dir, "gnn.pt"))
     print("[layer={} L={}] loss final={:.5f} -> {}".format(
         args.layer, args.n_layers, loss, os.path.join(out_dir, "gnn.pt")),

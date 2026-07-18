@@ -175,12 +175,13 @@ def score_with_gnn(sbs, bundle, device):
     net.load_state_dict(bundle["state_dict"])
     net = net.to(device).eval()
     modeled = {d for d, _ in MODEL_LEVELS}
+    edge_fn = graph_data.sb_edges_causal if bundle.get("causal") else graph_data.sb_edges
     for sb in sbs:
         keys = [k for k in sb["nodes"] if k[0] in modeled]
         if not keys:
             continue
         feats = np.stack([sb["nodes"][k]["feat"] for k in keys])
-        e_list = graph_data.sb_edges(keys)
+        e_list = edge_fn(keys)
         ei = (torch.tensor(np.asarray(e_list).T, dtype=torch.long, device=device)
               if e_list else torch.zeros((2, 0), dtype=torch.long, device=device))
         with torch.no_grad():

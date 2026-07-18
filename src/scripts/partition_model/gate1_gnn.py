@@ -62,13 +62,18 @@ def main(argv):
                    help="pares tag=caminho, ex.: k0=.../gnn_k0/gnn.pt k2=.../gnn_k2/gnn.pt")
     p.add_argument("--per-pkl", type=int, default=2000)
     p.add_argument("--out", default="/workspace/results/models/gnn_gate1.csv")
+    p.add_argument("--causal", action="store_true",
+                   help="avalia sobre grafos de validacao com arestas causais "
+                        "(pai->filho, irmao-anterior->posterior), para bundles "
+                        "treinados com --causal")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     entries = datamod.discover_pkls(args.dataset_dir)
     _, val_e = datamod.split_entries(entries, VAL_SEQS, None)
     datamod.assert_real_luma(val_e)
-    graphs = gd.build_graph_dataset(val_e, per_pkl=args.per_pkl or None)
+    graphs = gd.build_graph_dataset(val_e, per_pkl=args.per_pkl or None,
+                                    causal=args.causal)
     print("grafos de validação:", len(graphs), flush=True)
 
     rows = ["tag,dim,n,acc,macroF1,split_recall"]

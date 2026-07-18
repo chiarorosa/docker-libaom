@@ -23,6 +23,39 @@ def test_sb_edges_tolerates_missing_child():
     assert max(max(a, b) for a, b in edges) == 1
 
 
+def test_sb_edges_causal_only_from_decided():
+    import graph_data
+    # raiz 64 + quatro filhos 32 (raster TL=0,TR=1,BL=2,BR=3).
+    keys = [(64, 0, 0), (32, 0, 0), (32, 0, 1), (32, 1, 0), (32, 1, 1)]
+    E = set(graph_data.sb_edges_causal(keys))
+    # todas as arestas sao dirigidas para o no; pai->filho presente:
+    for j in (1, 2, 3, 4):
+        assert (0, j) in E            # 64 -> cada 32
+        assert (j, 0) not in E        # NUNCA filho -> pai (nao-causal)
+    # irmao anterior (raster menor) -> posterior; nao o contrario:
+    # (32,0,0)=raster0, (32,0,1)=raster1, (32,1,0)=raster2, (32,1,1)=raster3
+    assert (1, 2) in E and (2, 1) not in E   # TL->TR sim, TR->TL nao
+    assert (1, 4) in E and (4, 1) not in E   # TL->BR sim, BR->TL nao
+    assert (3, 2) not in E                   # BL(raster2) nao recebe de (1,0)? check: (3)=(32,1,0) raster2, (2)=(32,0,1) raster1 -> (2,3) in E
+    assert (2, 3) in E                       # TR(raster1) -> BL(raster2)
+    # raiz nao tem arestas de entrada:
+    assert not any(dst == 0 for _src, dst in E)
+    # sem auto-aresta:
+    assert not any(a == b for a, b in E)
+
+
+def test_build_graph_dataset_causal_flag_smoke():
+    import numpy as np
+    import data as datamod, graph_data
+    entries = datamod.discover_pkls("/workspace/results/dataset_h9")
+    assert entries
+    g_nc = graph_data.build_graph_dataset([entries[0]], per_pkl=10, causal=False)[0]
+    g_c = graph_data.build_graph_dataset([entries[0]], per_pkl=10, causal=True)[0]
+    # mesmas features/rotulos; arestas causais sao um subconjunto dirigido (<= nao-causal).
+    assert g_c["x"].shape == g_nc["x"].shape
+    assert g_c["edge_index"].shape[1] <= g_nc["edge_index"].shape[1]
+
+
 def test_build_graph_dataset_smoke():
     import data as datamod
     entries = datamod.discover_pkls("/workspace/results/dataset_h9")

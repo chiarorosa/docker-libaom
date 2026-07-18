@@ -41,8 +41,35 @@ def sb_edges(node_keys):
     return sorted(edges)
 
 
-def build_graph_dataset(entries, per_pkl=None, limit=None):
+def sb_edges_causal(node_keys):
+    """Arestas DIRIGIDAS (src, dst), só para dentro de nós já 'decididos' na ordem
+    top-down + raster do codificador: pai->filho e irmão-anterior->irmão-posterior
+    (raster local no bloco 2x2 do pai: TL=0, TR=1, BL=2, BR=3). Sem aresta
+    filho->pai nem irmão-futuro->irmão-passado. A raiz (dim=64) não recebe
+    arestas. Só entre keys presentes em node_keys."""
+    idx = {k: i for i, k in enumerate(node_keys)}
+    edges = set()
+    for k in node_keys:
+        dim, r, c = k
+        for ch in _children(dim, r, c):
+            if ch in idx:
+                edges.add((idx[k], idx[ch]))          # pai -> filho
+        if dim < 64:
+            parent = (2 * dim, r // 2, c // 2)
+            raster_k = (r % 2) * 2 + (c % 2)
+            for sib in _children(*parent):
+                if sib == k or sib not in idx:
+                    continue
+                sr, sc = sib[1], sib[2]
+                raster_sib = (sr % 2) * 2 + (sc % 2)
+                if raster_sib < raster_k:
+                    edges.add((idx[sib], idx[k]))      # irmão-anterior -> k
+    return sorted(edges)
+
+
+def build_graph_dataset(entries, per_pkl=None, limit=None, causal=False):
     """Lista de grafos por superbloco: {x:(n,36), y:(n,), level:(n,), edge_index:(2,E)}."""
+    edge_fn = sb_edges_causal if causal else sb_edges
     graphs = []
     for e in entries:
         took = 0
@@ -60,7 +87,7 @@ def build_graph_dataset(entries, per_pkl=None, limit=None):
                 levels.append(dim)
             if not keys:
                 continue
-            e_list = sb_edges(keys)
+            e_list = edge_fn(keys)
             ei = (np.asarray(e_list, dtype=np.int64).T
                   if e_list else np.zeros((2, 0), np.int64))
             graphs.append({"x": np.asarray(feats, np.float32),
