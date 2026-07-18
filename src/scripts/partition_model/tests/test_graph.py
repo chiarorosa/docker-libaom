@@ -79,3 +79,23 @@ def test_gnn_l1_uses_edges():
         yb = net(x, ei_b)
     # Com n_layers>=1 e arestas presentes, a saída MUDA vs sem arestas.
     assert not torch.allclose(ya, yb, atol=1e-4)
+
+
+def test_gnn_train_shapes():
+    import numpy as np
+    import train_gnn as tg
+    rng = np.random.default_rng(0)
+    # 8 grafos sintéticos de 5 nós (raiz 64 + quatro 32), rótulos aleatórios.
+    graphs = []
+    for _ in range(8):
+        x = rng.standard_normal((5, 36)).astype("float32")
+        y = rng.integers(0, 3, size=5).astype("int64")
+        level = np.array([64, 32, 32, 32, 32], np.int64)
+        ei = np.array([[0, 1, 2, 3, 4], [1, 0, 0, 0, 0]], np.int64)
+        graphs.append({"x": x, "y": y, "level": level, "edge_index": ei})
+    import torch
+    sd, loss = tg.train_gnn(graphs, hidden=16, layer="sage", n_layers=1,
+                            device=torch.device("cpu"), epochs=3, lr=1e-3,
+                            batch_sbs=4)
+    assert np.isfinite(loss)
+    assert isinstance(sd, dict)
