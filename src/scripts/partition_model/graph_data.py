@@ -2,7 +2,9 @@
 """Approach B (Stage 1): monta o grafo do quadtree de cada superbloco a partir dos
 pkls dataset_h9. Nós = nós de decisão (64/32/16) com as 36 features H9a; arestas =
 pai<->filho e irmão<->irmão (não-causal, para o diagnóstico). Rótulo 3-classes
-(NONE/SPLIT/REST). Ver docs/superpowers/specs/2026-07-17-approachB-gnn-estrutural-design.md."""
+(NONE/SPLIT/REST). Também define a variante causal (sb_edges_causal): arestas
+dirigidas apenas a partir de nós já decididos -- pai e irmãos de raster anterior --
+para a ablação causal. Ver docs/superpowers/specs/2026-07-17-approachB-gnn-estrutural-design.md."""
 
 import os
 import sys

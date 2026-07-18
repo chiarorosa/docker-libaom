@@ -36,8 +36,8 @@ def test_sb_edges_causal_only_from_decided():
     # (32,0,0)=raster0, (32,0,1)=raster1, (32,1,0)=raster2, (32,1,1)=raster3
     assert (1, 2) in E and (2, 1) not in E   # TL->TR sim, TR->TL nao
     assert (1, 4) in E and (4, 1) not in E   # TL->BR sim, BR->TL nao
-    assert (3, 2) not in E                   # BL(raster2) nao recebe de (1,0)? check: (3)=(32,1,0) raster2, (2)=(32,0,1) raster1 -> (2,3) in E
-    assert (2, 3) in E                       # TR(raster1) -> BL(raster2)
+    assert (3, 2) not in E                   # BL(raster2) nao envia para TR(raster1)
+    assert (2, 3) in E                       # TR(raster1) -> BL(raster2), mas nao o contrario
     # raiz nao tem arestas de entrada:
     assert not any(dst == 0 for _src, dst in E)
     # sem auto-aresta:

@@ -81,6 +81,10 @@ def main(argv):
         tag, path = spec.split("=", 1)
         bundle = torch.load(path, map_location=device)
         assert bundle.get("head") == "gnn3"
+        if bundle.get("n_layers", 0) > 0:
+            assert bundle.get("causal", False) == args.causal, (
+                "{}: bundle causal={} but --causal={} (edge topology mismatch)".format(
+                    tag, bundle.get("causal", False), args.causal))
         yt, yp, lv = _predict(bundle, graphs, device)
         for dim in (64, 32, 16):
             m = lv == dim
