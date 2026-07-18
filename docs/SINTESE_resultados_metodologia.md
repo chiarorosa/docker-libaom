@@ -363,6 +363,31 @@ risco casado, então o benchmark só confirmaria pior.
 
 ---
 
+## 5-ter. Approach B — decisão estruturada (GNN) do quadtree (resultado negativo)
+
+Testou-se se a decisão **conjunta/estruturada** (GNN de *message-passing* sobre a
+árvore do superbloco) extrai sinal **além** dos nós independentes (H9a) — a última
+alavanca não testada. Ablação controlada `n_layers=0` (MLP) vs `n_layers≥1` (GNN),
+mesmas features/dados. Detalhe em `docs/RESULTADOS_approachB.md`.
+
+**Arco e veredito:** no **oráculo**, a estrutura fura o teto (GNN não-causal +28pp;
+versão **deployable pixel-only** recupera ~93–100% e supera o H9a em **+20–25pp**).
+Mas o **benchmark real** (replay pelo gancho H8, fiel às decisões) refuta: na
+fronteira real (Jockey, cada modelo no seu melhor τ), o **H9a domina o GNN por ~2×**
+em BD em todo o *sweep* de τ (GNN ~1,5% vs H9a ~0,75–0,94% a TS casado). **O oráculo
+inverteu o ranking.** A fronteira do GNN é plana → é a **qualidade das decisões**,
+não a calibração; e como o replay é fiel, **C faria as mesmas decisões** (não salva).
+
+**Leitura (contribuição):** a acurácia por-nó e a métrica de custo do oráculo são
+**maus proxies** do BD×tempo real — um modelo que **vence** o oráculo pode **perder**
+no encoder real (alerta mais forte que "o oráculo superestima"). Confirma que o sinal
+**satura no nível do H9a em BD×tempo real** e que nenhuma sofisticação (regressão de
+custo §5-bis; estrutura conjunta) o supera. Reordenar candidatos/early-term não foi
+perseguido (exige RD por-candidato não instrumentado + novo gancho C, sem gate
+offline, contra heurísticas nativas dominantes).
+
+---
+
 ## 6. Análise integrada — fronteira Pareto e as três conclusões
 
 **Fronteira Pareto global (BD × TS, todos os níveis cpu, média 3 seqs

@@ -647,3 +647,35 @@ sobre as mesmas 36 features H9a. Design/plano em
 Artefatos: `results/models/regret/` (naïve + gates), `results/models/regret_balanced/`.
 Scripts: `src/scripts/partition_model/{regret.py,build_regret_targets.py,
 gate0_regret.py,train_regret.py}` + modo `--regret-bundle` em `simulate_pruning.py`.
+
+---
+
+## Approach B — decisão estruturada por GNN (2026-07-18): RESULTADO NEGATIVO
+
+Última alavanca não testada: decisão CONJUNTA do quadtree (GNN de message-passing,
+PyTorch Geometric) vs nós independentes (H9a). Ablação controlada `n_layers=0` (MLP)
+vs `n_layers≥1` (GNN), mesmas features/dados/split. Specs/plano em
+`docs/superpowers/{specs,plans}/2026-07-17-approachB-gnn-estrutural*`. Detalhe em
+`docs/RESULTADOS_approachB.md`.
+
+- **Oráculo:** estrutura fura o teto — GNN não-causal +28pp; versão **deployable
+  pixel-only** (bloco A+C, pré-passe por superbloco como a CNN nativa) recupera
+  ~93–100% e supera o H9a em +20–25pp. Parecia o salvamento.
+- **Ablação causal:** o ganho evaporava sob restrição estrita — mas era estrita
+  demais (baniu a agregação bottom-up de PIXELS, que é deployable). A versão
+  pixel-only corrigiu isso e recuperou o ganho no oráculo.
+- **Benchmark REAL (replay H8, fiel às decisões):** NÃO sobrevive. Fronteira real
+  (Jockey 5fr, cada modelo no seu melhor τ): H9a domina o GNN por **~2×** em BD em
+  todo o sweep (GNN ~1,5% vs H9a ~0,75–0,94% a TS casado). **O oráculo inverteu o
+  ranking.** Fronteira do GNN plana → qualidade das decisões (não o τ) é o limite;
+  C faria as mesmas decisões (replay fiel) → não salva; longe do nativo (~0,45%@32,6%).
+- **Raiz:** acurácia por-nó + custo do oráculo são maus proxies do BD×tempo real
+  (custo dominado por poucas podas erradas caras). Um modelo que vence o oráculo
+  perde no real — alerta metodológico mais forte que "o oráculo superestima".
+- **Não perseguido:** reordenar candidatos + early-term (exige RD por-candidato
+  declinado + re-extração + novo hook C, sem gate offline, contra heurísticas
+  nativas dominantes; EV baixo). Trabalho futuro condicional.
+
+Pipeline (offline, revisado, commitado): `src/scripts/partition_model/{graph_data,
+gnn_model,train_gnn,gate1_gnn,gnn_replay}.py` + `src/scripts/benchmark/{gnn_replay_bench,
+gnn_frontier_bench}.py`. Sem mudanças em C (tudo via replay). Approach B ENCERRADA.
