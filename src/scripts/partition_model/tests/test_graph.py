@@ -48,3 +48,34 @@ def test_collate_offsets_edges():
     # As arestas do 2º grafo devem ser deslocadas por +2.
     assert [2, 3] in b["edge_index"].T.tolist()
     assert [3, 2] in b["edge_index"].T.tolist()
+
+
+def test_gnn_l0_is_independent_of_edges():
+    import torch
+    import gnn_model
+    torch.manual_seed(0)
+    net = gnn_model.build_gnn(36, 16, layer="sage", n_layers=0).eval()
+    x = torch.randn(5, 36)
+    ei_a = torch.tensor([[0, 1], [1, 0]], dtype=torch.long)
+    ei_b = torch.zeros((2, 0), dtype=torch.long)   # sem arestas
+    with torch.no_grad():
+        ya = net(x, ei_a)
+        yb = net(x, ei_b)
+    # Com n_layers=0 a saída NÃO pode depender das arestas (baseline MLP).
+    assert torch.allclose(ya, yb, atol=1e-6)
+    assert ya.shape == (5, 3)
+
+
+def test_gnn_l1_uses_edges():
+    import torch
+    import gnn_model
+    torch.manual_seed(0)
+    net = gnn_model.build_gnn(36, 16, layer="sage", n_layers=1).eval()
+    x = torch.randn(5, 36)
+    ei_a = torch.tensor([[0, 1, 2, 3], [1, 0, 3, 2]], dtype=torch.long)
+    ei_b = torch.zeros((2, 0), dtype=torch.long)
+    with torch.no_grad():
+        ya = net(x, ei_a)
+        yb = net(x, ei_b)
+    # Com n_layers>=1 e arestas presentes, a saída MUDA vs sem arestas.
+    assert not torch.allclose(ya, yb, atol=1e-4)
