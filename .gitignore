@@ -38,3 +38,4 @@ results/benchmark/h8_probs/
 # Transient build/training logs
 logs/
 results/benchmark/gnn_replay/_work/
+results/benchmark/gnn_frontier/_work/
