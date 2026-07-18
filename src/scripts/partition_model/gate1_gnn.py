@@ -66,6 +66,9 @@ def main(argv):
                    help="avalia sobre grafos de validacao com arestas causais "
                         "(pai->filho, irmao-anterior->posterior), para bundles "
                         "treinados com --causal")
+    p.add_argument("--feat-mode", default="h9a", choices=["h9a", "pixelquant"],
+                   help="largura de features dos grafos de validacao; deve "
+                        "casar com o feat_mode usado no treino do(s) bundle(s)")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -73,7 +76,7 @@ def main(argv):
     _, val_e = datamod.split_entries(entries, VAL_SEQS, None)
     datamod.assert_real_luma(val_e)
     graphs = gd.build_graph_dataset(val_e, per_pkl=args.per_pkl or None,
-                                    causal=args.causal)
+                                    causal=args.causal, feat_mode=args.feat_mode)
     print("grafos de validação:", len(graphs), flush=True)
 
     rows = ["tag,dim,n,acc,macroF1,split_recall"]

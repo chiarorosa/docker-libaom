@@ -22,6 +22,19 @@ from regret import _children  # noqa: E402
 
 DECISION_DIMS = (64, 32, 16)
 
+FEAT_DIMS = {"h9a": 36, "pixelquant": 28}
+
+
+def slice_feat(feat36, feat_mode):
+    """h9a = full 36; pixelquant = block A (pixels 0:24) + C (quant/pos 32:36) = 28,
+    dropping block B (neighbor partition sizes) -- the only decision-dependent input.
+    So pixelquant features are computable from pixels alone -> deployable pre-pass."""
+    if feat_mode == "pixelquant":
+        return np.concatenate([feat36[:24], feat36[32:36]]).astype(np.float32)
+    if feat_mode == "h9a":
+        return np.asarray(feat36, dtype=np.float32)
+    raise ValueError("feat_mode desconhecido: {}".format(feat_mode))
+
 
 def sb_edges(node_keys):
     """Arestas não-direcionadas (ambos os sentidos) entre índices de node_keys:
@@ -69,8 +82,10 @@ def sb_edges_causal(node_keys):
     return sorted(edges)
 
 
-def build_graph_dataset(entries, per_pkl=None, limit=None, causal=False):
-    """Lista de grafos por superbloco: {x:(n,36), y:(n,), level:(n,), edge_index:(2,E)}."""
+def build_graph_dataset(entries, per_pkl=None, limit=None, causal=False,
+                        feat_mode="h9a"):
+    """Lista de grafos por superbloco: {x:(n,D), y:(n,), level:(n,), edge_index:(2,E)}.
+    D = FEAT_DIMS[feat_mode] (36 para h9a, 28 para pixelquant)."""
     edge_fn = sb_edges_causal if causal else sb_edges
     graphs = []
     for e in entries:
@@ -83,8 +98,9 @@ def build_graph_dataset(entries, per_pkl=None, limit=None, causal=False):
                 if dim not in DECISION_DIMS:
                     continue
                 keys.append((dim, r, c))
-                feats.append(featmod.node_features_h9a(
-                    sb["luma"], dim, r, c, sb["qindex"], sb["ctx"][k]))
+                f = featmod.node_features_h9a(
+                    sb["luma"], dim, r, c, sb["qindex"], sb["ctx"][k])
+                feats.append(slice_feat(f, feat_mode))
                 ys.append(studentmod.collapse_label(int(label)))
                 levels.append(dim)
             if not keys:

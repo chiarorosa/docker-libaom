@@ -25,8 +25,9 @@ TRAIN_SEQS = ["Beauty", "Bosphorus", "CityAlley", "FlowerFocus", "FlowerKids",
 VAL_SEQS = ["HoneyBee", "FlowerPan", "Lips"]
 
 
-def train_gnn(graphs, hidden, layer, n_layers, device, epochs, lr, batch_sbs):
-    net = gm.build_gnn(36, hidden, layer, n_layers).to(device)
+def train_gnn(graphs, hidden, layer, n_layers, device, epochs, lr, batch_sbs,
+              in_features=36):
+    net = gm.build_gnn(in_features, hidden, layer, n_layers).to(device)
     opt = torch.optim.Adam(net.parameters(), lr=lr)
     loss_fn = nn.CrossEntropyLoss()
     net.train()
@@ -56,6 +57,9 @@ def main(argv):
     p.add_argument("--causal", action="store_true",
                    help="arestas causais (pai->filho, irmao-anterior->posterior) "
                         "em vez do grafo nao-causal pai<->filho, irmao<->irmao")
+    p.add_argument("--feat-mode", default="h9a", choices=["h9a", "pixelquant"],
+                   help="h9a = 36 features (A+B+C); pixelquant = 28 features "
+                        "(A+C, sem o bloco B decision-dependent -- deployable)")
     p.add_argument("--hidden", type=int, default=64)
     p.add_argument("--epochs", type=int, default=15)
     p.add_argument("--lr", type=float, default=1e-3)
@@ -68,16 +72,20 @@ def main(argv):
     entries = datamod.discover_pkls(args.dataset_dir)
     train_e, _ = datamod.split_entries(entries, VAL_SEQS, TRAIN_SEQS)
     datamod.assert_real_luma(train_e)
+    in_features = gd.FEAT_DIMS[args.feat_mode]
     graphs = gd.build_graph_dataset(train_e, per_pkl=args.per_pkl or None,
-                                    causal=args.causal)
+                                    causal=args.causal, feat_mode=args.feat_mode)
     print("grafos de treino:", len(graphs), flush=True)
     sd, loss = train_gnn(graphs, args.hidden, args.layer, args.n_layers, device,
-                         args.epochs, args.lr, args.batch_sbs)
+                         args.epochs, args.lr, args.batch_sbs,
+                         in_features=in_features)
     out_dir = args.out_dir or "/workspace/results/models/gnn_L{}".format(args.n_layers)
     os.makedirs(out_dir, exist_ok=True)
     torch.save({"hidden": args.hidden, "layer": args.layer,
-                "n_layers": args.n_layers, "state_dict": sd, "num_features": 36,
-                "feature_set": "h9a", "head": "gnn3", "causal": args.causal},
+                "n_layers": args.n_layers, "state_dict": sd,
+                "num_features": in_features, "feature_set": "h9a",
+                "feat_mode": args.feat_mode, "head": "gnn3",
+                "causal": args.causal},
                os.path.join(out_dir, "gnn.pt"))
     print("[layer={} L={}] loss final={:.5f} -> {}".format(
         args.layer, args.n_layers, loss, os.path.join(out_dir, "gnn.pt")),

@@ -114,6 +114,26 @@ def test_gnn_l1_uses_edges():
     assert not torch.allclose(ya, yb, atol=1e-4)
 
 
+def test_slice_feat_pixelquant():
+    import numpy as np
+    import graph_data
+    f = np.arange(36, dtype=np.float32)
+    s = graph_data.slice_feat(f, "pixelquant")
+    assert s.shape == (28,)
+    # mantem A (0..23) e C (32..35); dropa B (24..31)
+    assert list(s[:24]) == list(range(24))
+    assert list(s[24:28]) == [32, 33, 34, 35]
+    assert list(graph_data.slice_feat(f, "h9a")) == list(range(36))
+
+
+def test_build_graph_dataset_pixelquant_width():
+    import data as datamod, graph_data
+    entries = datamod.discover_pkls("/workspace/results/dataset_h9")
+    assert entries
+    g = graph_data.build_graph_dataset([entries[0]], per_pkl=8, feat_mode="pixelquant")[0]
+    assert g["x"].shape[1] == 28
+
+
 def test_gnn_train_shapes():
     import numpy as np
     import train_gnn as tg

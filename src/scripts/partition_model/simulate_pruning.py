@@ -176,11 +176,13 @@ def score_with_gnn(sbs, bundle, device):
     net = net.to(device).eval()
     modeled = {d for d, _ in MODEL_LEVELS}
     edge_fn = graph_data.sb_edges_causal if bundle.get("causal") else graph_data.sb_edges
+    fm = bundle.get("feat_mode", "h9a")
     for sb in sbs:
         keys = [k for k in sb["nodes"] if k[0] in modeled]
         if not keys:
             continue
-        feats = np.stack([sb["nodes"][k]["feat"] for k in keys])
+        feats = np.stack([graph_data.slice_feat(sb["nodes"][k]["feat"], fm)
+                          for k in keys])
         e_list = edge_fn(keys)
         ei = (torch.tensor(np.asarray(e_list).T, dtype=torch.long, device=device)
               if e_list else torch.zeros((2, 0), dtype=torch.long, device=device))
