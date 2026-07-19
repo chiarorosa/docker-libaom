@@ -66,6 +66,7 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `surrogate_replay.py` | Pré-computa probs do substituto para o replay H8 | surrogate+YUV | `h8_probs/*.bin` |
 | `check_feature_parity.py` | Harness de paridade C↔Python (atributos **e** probabilidades) | build+YUV | (verde/vermelho) |
 | `gate2_signal.py` | **Gate 2** offline: MLP por subconjunto (variância/pixels/H9a/b/c), custo em risco casado | dataset | `gate2_*.csv` |
+| `calibration.py` | Calibração da softmax do estudante **implantado** no split de teste: ECE, precisão no limiar por τ, diagrama de confiabilidade. Ver `RESULTADOS_calibracao.md` | `students.pt` + dataset | `calibration/*.csv` |
 
 ### 2.2 Dataset — `src/scripts/partition_dataset/`
 | Script | Papel |
