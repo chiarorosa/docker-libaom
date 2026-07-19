@@ -175,14 +175,18 @@ inteiro dispensam qualquer hipótese sobre nós por superbloco.
 | | Tango cq32 | BoxingPractice cq43 |
 |---|--:|--:|
 | CNN nativa — chamadas | 5.940 | 5.937 |
-| CNN nativa — ns/chamada | 24.800 | 24.494 |
 | CNN nativa — total | 147,3 ms | 145,4 ms |
 | H9a inferência — chamadas | 58.535 | 52.410 |
 | H9a inferência — ns/chamada | 497 | 496 |
 | H9a inferência — total | 29,1 ms | 26,0 ms |
 | **H9a extração — ns/chamada** | **3.596** | **3.883** |
 | **H9a extração — total** | **210,5 ms** | **203,5 ms** |
-| H9c inferência — ns/chamada | 756 | 720 |
+
+> Os `ns/chamada` da CNN (≈24.700) e do H9c inferência (≈740) — que sustentavam a
+> razão "~50×" — ficam na §2; aqui o que importa é o **total por encode**. Mantém-se
+> o `ns/chamada` do H9a porque é onde está o achado: a extração (3.596 ns) domina a
+> inferência (497 ns) por chamada, 7,2–7,8× — o alvo de otimização, se algum dia
+> importar (§6.4).
 
 ### 6.2b Peso absoluto — a única leitura que sobrevive a qualquer enquadramento
 
