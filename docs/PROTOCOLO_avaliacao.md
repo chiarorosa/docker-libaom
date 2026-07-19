@@ -83,3 +83,20 @@ speed feature, medido no mesmo protocolo.
 Números-alvo de referência (não são o critério, apenas expectativa): speedup na
 faixa de 10–30 % a taxa BD < 1,5 %, com H9 estritamente abaixo da variância na
 mesma faixa de speedup.
+
+---
+
+## Adendo pós-congelamento (2026-07-19) — não altera nada acima
+
+> Este documento é **congelado**; o corpo fica intocado por construção (é a defesa
+> anti-*cherry-picking*). O adendo apenas registra fatos posteriores.
+
+- **§5, item 6 — "H9c (+none_rdcost, teto, não-implantável)".** A qualificação
+  "não-implantável" foi **superada pelos fatos**: o H9c *foi* implantado em C, com
+  gancho `av1_prune_after_none` em `av1_rd_pick_partition`, e passou o Gate C de
+  paridade e no-op (`ANDAMENTO_tese.md §8`; `SINTESE_resultados_metodologia.md §4`;
+  `RESULTADOS_fase6_swap_h9c.md`). Como substituto drop-in da CNN nativa intra ele
+  empata na grade CTC e supera em alta taxa. A rotulagem original refletia a
+  expectativa de 2026-07-09 (o `none_rdcost` só existe **após** a busca do NONE, o
+  que se supunha inviável como gancho); a implementação pós-NONE resolveu isso. O
+  item permanece escrito como estava, por congelamento; esta é a correção factual.

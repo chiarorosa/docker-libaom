@@ -3,6 +3,14 @@
 **Versão:** 2026-07-09. Sucede e integra `PLANO_hipoteses_experimentos.md`,
 `PREH7_analise_alavancas.md` e `METODOLOGIA_pipeline_ML.md`.
 
+> **⚠ DOCUMENTO HISTÓRICO (contribuição planejada) — superado pela Fase 6 (2026-07-19).**
+> A "tese em uma frase" abaixo diz que o contexto RD barato é "**necessária e
+> suficiente** para superar esse teto". Isso não sobreviveu à medição: é suficiente
+> para superar o **teto de pixels** sob política casada, **não** para bater o pruner
+> nativo na fronteira BD×tempo média (`RESULTADOS_fase6.md`). A forma condicional
+> defensável (vitória em alta taxa via H9c) está em `RESULTADOS_fase6_swap_h9c.md` e
+> na frase revista de `ANDAMENTO_tese.md §1`. Mantido como registro do planejamento.
+
 ---
 
 ## 0. Tese em uma frase

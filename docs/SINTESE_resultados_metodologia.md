@@ -27,8 +27,12 @@ compara sob diferentes cenários e óticas:
 1. **Heurística baseada em CNN (domínio de pixels)** — um modelo convolucional
    (ConvNeXt) desenhado para espelhar a estrutura da árvore de particionamento do
    AV1, treinado sobre a luminância (Y). Serviu de **instrumento de diagnóstico e
-   de referência de limite superior**; sua versão implantável foi obtida por
-   **destilação** de conhecimento (modelo substituto → modelo estudante MLP).
+   de referência de limite superior**; sua versão implantável **da era pixels (H7)**
+   foi obtida por **destilação** de conhecimento (modelo substituto → modelo
+   estudante MLP). **Ressalva (2026-07-19):** o pruner **de fato implantado** é o
+   H9a do item 2, que **não** é destilado — é treinado diretamente (ver item 2 e
+   `ARQUITETURA_pruner_implantado.md`). A destilação vale só para o estudante de
+   pixels H7.
 2. **Heurística baseada em NN pré-busca (H9a)** — um MLP por tamanho de bloco que
    consome **contexto taxa-distorção barato** (vizinhança de particionamento +
    quantização/posição, além dos pixels) e decide, **antes** da busca, se poda o
@@ -166,11 +170,16 @@ substituto são gravadas por nó e **re-injetadas** no codificador
 gancho de poda* com o teto de qualidade do substituto — sem inferência
 convolucional em C. É a **referência de limite superior** do domínio de pixels.
 
-**Destilação.** A versão implantável foi obtida por **destilação de conhecimento**
-do substituto (ConvNeXt) para um **modelo estudante MLP** que reusa o
-`av1_nn_predict`. A destilação **reduziu o custo computacional** (de convoluções
-multi-resolução para um MLP denso por nó), mas também **reduziu os ganhos** — o
-estudante herda uma fração do teto do substituto.
+**Destilação (era pixels, H7).** A versão implantável **de pixels** foi obtida por
+**destilação de conhecimento** do substituto (ConvNeXt) para um **modelo estudante
+MLP** que reusa o `av1_nn_predict`. A destilação **reduziu o custo computacional**
+(de convoluções multi-resolução para um MLP denso por nó), mas também **reduziu os
+ganhos** — o estudante de pixels herda uma fração do teto do substituto.
+
+> **Ressalva (2026-07-19).** Isto descreve o H7. O pruner **implantado** (H9a) **não
+> é destilado**: treina-se diretamente sobre os 36 atributos com CE de rótulo duro,
+> sem o ConvNeXt no laço. A destilação foi um passo da era pixels, superado; o
+> ConvNeXt permanece só como referência de teto (replay H8).
 
 **Resultado negativo decisivo (ablação de atribuição).** Sob política casada
 (NONE-commit), variando apenas a *fonte do escore* — ML vs variância vs aleatório

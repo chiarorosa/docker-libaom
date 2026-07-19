@@ -9,8 +9,16 @@ solução embarcada — distinta da metodologia (validação) e dos resultados. 
 ## 1. O artefato implantado (não é o ConvNeXt)
 
 A solução em runtime é uma **MLP pequena por tamanho de bloco** (o "estudante"),
-**não** o ConvNeXt (esse foi apenas o professor da destilação e a análise de teto —
+**não** o ConvNeXt (esse serviu como modelo de referência para a análise de teto —
 pesado demais para inferência por nó, nunca embarcado).
+
+> **Nota (2026-07-19).** O estudante H9a implantado **não é destilado**: é treinado
+> **diretamente** sobre o vetor de 36 atributos com entropia cruzada de rótulo duro,
+> sem modelo de referência no laço (`train_student_h9.py:112`, `use_class_weight=False`,
+> `alpha=1.0` ⇒ peso zero no termo KD; o "teacher" passado é uniforme 1/3, inerte). O
+> ConvNeXt-surrogate não participa do treino do artefato implantado. Só a versão de
+> pixels anterior (H7) foi destilada; ver `RESULTADOS_calibracao.md` e a correção D6
+> no plano de ações.
 
 - **Topologia:** `36 → 64 → 32 → 3` (uma por tamanho de bloco: 64/32/16px), executada
   pela função nativa `av1_nn_predict`.

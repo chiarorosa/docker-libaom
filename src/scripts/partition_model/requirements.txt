@@ -12,3 +12,7 @@ torchvision==0.20.1
 numpy>=1.26,<2.3
 scipy>=1.11
 pandas>=2.1
+# GNN experiments (Approach B): graph_data.py / gnn_model.py import
+# torch_geometric. Install the matching wheel for torch 2.5.1 + cu121; without
+# it the entire Approach B is irreproducible from the declared manifest.
+torch_geometric>=2.5

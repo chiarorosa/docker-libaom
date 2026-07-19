@@ -1,5 +1,11 @@
 # Plano de Hipóteses e Experimentos — Poda de Particionamento AV1 guiada por ML
 
+> **⚠ DOCUMENTO HISTÓRICO (planejamento) — superado por `SINTESE_resultados_
+> metodologia.md §4` (2026-07-19).** Em particular, a frase abaixo "estudante...
+> obtido por destilação de conhecimento" descreve a era pixels (H7); o pruner
+> implantado é o H9a, treinado **diretamente**, sem destilação. Mantido como
+> registro do planejamento original.
+
 **Objetivo.** Reduzir o custo da busca recursiva de particionamento do codificador
 AV1 (modo All-Intra, conteúdo 4K) por meio de uma heurística de poda aprendida,
 mantendo a perda de qualidade (taxa BD) desprezível. A poda deve ser barata o

@@ -1,5 +1,19 @@
 # Metodologia — Poda de particionamento AV1 guiada por ML
 
+> ### ⚠ REGISTRO HISTÓRICO (era pixels, H7) — superado para o artefato implantado
+>
+> **Data da nota: 2026-07-19.** Este documento descreve a cadeia da **era pixels**:
+> um estudante de **24 atributos** *derivado do ConvNeXt por destilação*. **O pruner
+> hoje implantado é outro:** o **H9a**, MLP de **36 atributos** (A pixels + B
+> vizinhança + C quant/posição), treinado **diretamente** com entropia cruzada de
+> rótulo duro — **sem destilação e sem o ConvNeXt no laço** (`train_student_h9.py`;
+> `ANDAMENTO_tese.md §1.2/3`; `ARQUITETURA_pruner_implantado.md`). Toda frase abaixo
+> que atribua o estudante implantado a "destilação do ConvNeXt" é **erro factual**
+> se transportada para a tese como descrição do H9a — vale apenas para o H7. O
+> ConvNeXt permanece válido como **modelo de referência de teto** (replay H8), não
+> como mestre do artefato final. Fonte canônica atual: `SINTESE_resultados_
+> metodologia.md §4`.
+
 Documento de referência para a redação da metodologia da tese. Fixa, sem
 ambiguidade, **o que executa dentro do codificador**, **o que é apenas
 ferramenta de treino/análise**, e **a que componente cada número medido é
@@ -183,7 +197,12 @@ saturado.
 
 ## 7. Redação sugerida (frase de atribuição para a tese)
 
-> "A heurística implantada é um perceptron multicamadas leve, **destilado de um
+> **⚠ NÃO USAR como está (2026-07-19).** A frase abaixo descreve o estudante da era
+> pixels (H7, destilado). O artefato implantado é o H9a, treinado diretamente sem
+> destilação — usar "destilado de um modelo substituto ConvNeXt" na tese seria erro
+> factual. Redação corrigida logo em seguida.
+
+> ~~"A heurística implantada é um perceptron multicamadas leve, **destilado de um
 > modelo substituto ConvNeXt** e executado pela rotina `av1_nn_predict` do
 > próprio libaom a cada nó de particionamento. O substituto convolucional não é
 > embarcado — seu custo de inferência é incompatível com a busca em tempo real —
@@ -191,4 +210,18 @@ saturado.
 > estabelece o limite superior de desempenho (H8). A ablação de atribuição (§5)
 > confirma que o ganho de tempo decorre da seleção de nós aprendida, e não da
 > política de poda isoladamente, uma vez que o modelo domina no sentido de
-> Pareto as baselines de variância e de poda aleatória à mesma taxa."
+> Pareto as baselines de variância e de poda aleatória à mesma taxa."~~
+
+**Redação corrigida (H9a, artefato realmente implantado):**
+
+> "A heurística implantada é um perceptron multicamadas leve por tamanho de bloco,
+> treinado **diretamente** sobre 36 atributos manuais (pixels do bloco e do pai,
+> contexto de particionamento dos vizinhos, e quantização/posição) com entropia
+> cruzada de rótulo duro, e executado pela rotina `av1_nn_predict` do próprio
+> libaom a cada nó de particionamento. Um modelo de referência convolucional
+> (ConvNeXt), não embarcado por custo de inferência incompatível com a busca em
+> tempo real, estabelece por *replay* o limite superior de desempenho a partir dos
+> pixels (H8) — que o estudante de atributos manuais supera sob política casada,
+> evidenciando que o sinal decisivo está no contexto de taxa-distorção barato, não
+> apenas nos pixels. A ablação de atribuição (§5) confirma que o ganho de tempo
+> decorre da seleção de nós aprendida, não da política de poda isolada."

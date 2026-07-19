@@ -2,7 +2,7 @@
 
 **Documento-mestre.** Amarra, num só lugar, **scripts ↔ dataset ↔ modelos ↔
 resultados ↔ commits**, para que qualquer artefato seja auditável e reproduzível.
-Atualizado em 2026-07-10 (branch `ml-partition-dev`).
+Atualizado em 2026-07-19 (branch `ml-partition-dev`).
 
 Convenções: caminhos relativos à raiz do repositório `C:\dev\av1-docker`.
 Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
@@ -67,6 +67,16 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `check_feature_parity.py` | Harness de paridade C↔Python (atributos **e** probabilidades) | build+YUV | (verde/vermelho) |
 | `gate2_signal.py` | **Gate 2** offline: MLP por subconjunto (variância/pixels/H9a/b/c), custo em risco casado | dataset | `gate2_*.csv` |
 | `calibration.py` | Calibração da softmax do estudante **implantado** no split de teste: ECE, precisão no limiar por τ, diagrama de confiabilidade. Ver `RESULTADOS_calibracao.md` | `students.pt` + dataset | `calibration/*.csv` |
+| `train_student_h9.py` | Treina o estudante **implantado** (H9a, 36 atributos) **diretamente**, CE de rótulo duro, **sem destilação** (`use_class_weight=False`) | dataset | `student_h9a/students.pt` |
+| `train_student_h9c.py` | Treina o estudante H9c (39 atributos, +none_rate/dist/rdcost) | dataset | `student_h9c/students.pt` |
+| `graph_data.py` | Monta grafos causais por superbloco (arestas pai→filho, irmão→irmão) para o GNN. **Alimentado só com o vetor h9a de 36 dims** — cego ao custo RD (`FEAT_DIMS`, `:25`) | pkls | grafos |
+| `gnn_model.py` | GraphSAGE/GAT/GIN (Approach B). **Importa `torch_geometric`** (ver `requirements.txt`) | — | (arquitetura) |
+| `train_gnn.py` | Treino do GNN estrutural | grafos | `gnn_*/gnn.pt` |
+| `gate1_gnn.py` | Gate 1 do GNN: recall/precisão de SPLIT por nível | grafos+modelo | `gnn_gate1*.csv` |
+| `gnn_replay.py` | Pré-computa probs do GNN para replay real | modelo+YUV | `gnn_probs/*.bin` |
+| `regret.py`, `build_regret_targets.py` | Alvo de `regret` por nó (Solução 4): reconstrói `RD_subtree` somando `none_rdcost` dos filhos | dataset | alvos de regret |
+| `train_regret.py`, `gate0_regret.py` | Treino e gate da regressão de *regret* (falhou por zero-inflação) | dataset | `regret*/` |
+| `check_feature_parity_h9c.py` | Paridade C↔Python dos atributos H9c | build+YUV | (verde/vermelho) |
 
 ### 2.2 Dataset — `src/scripts/partition_dataset/`
 | Script | Papel |
@@ -155,13 +165,23 @@ Compilação padrão (flags 0) verificada **byte-a-byte idêntica** ao
 
 | Modelo | Arquivo | Origem | O que entregou | Estado |
 |---|---|---|---|---|
-| **surrogate_real** | `surrogate_best.pt` (107 MB) | `train.py` sobre `dataset_h9` (luma real) | Professor da destilação; teto H8 (−0,11 % BD via replay); **macro-F1 0,203**, SPLIT-recall 0,67/0,62/0,53 (64/32/16) | **canônico** |
-| **student_real** | `students.pt` (51 KB) + header C | `distill.py` do surrogate_real | Estudante implantado (`av1_nn_predict`); curva de speedup 7–29 % @ 0,4–1,6 % BD | **canônico + versionado** |
+| **student_h9a** | `student_h9a/students.pt` + header C | `train_student_h9.py` (**direto**, CE de rótulo duro, **sem destilação**) | **O pruner de fato implantado** (36 atributos); swap ≈ CNN nativa a cpu1/2, vence em alta taxa (`RESULTADOS_fase6_swap_h9c.md`); bem calibrado (ECE 0,011, `RESULTADOS_calibracao.md`) | **canônico implantado** |
+| **student_h9c** | `student_h9c/students.pt` | `train_student_h9c.py` (39 atributos, +none_rd) | Estudante pós-NONE; gancho `av1_prune_after_none`, desligado por padrão | testado, off por padrão |
+| **surrogate_real** | `surrogate_best.pt` (107 MB) | `train.py` sobre `dataset_h9` (luma real) | Modelo de referência (teto de pixels) da era H7; replay H8 −0,11 % BD; **macro-F1 0,203**, SPLIT-recall 0,67/0,62/0,53 (64/32/16) | **referência de teto** |
+| **student_real** | `students.pt` (51 KB) + header C | `distill.py` do surrogate_real | Estudante da **era pixels (H7)**, destilado; 24 atributos; **não** é o pruner atual | histórico + versionado |
+| **gnn_L0 / L2 / L2_causal / *_pixel** | `gnn_*/gnn.pt` + `gate_oracle.csv` | `train_gnn.py` (Approach B) | GNN estrutural; fura o oráculo mas **não** o BD×tempo real (`RESULTADOS_approachB.md`) | fechado, negativo |
+| **regret / regret_balanced** | `regret*/` | `train_regret.py` (Solução 4) | Regressão de *regret*; falhou por zero-inflação (`RESULTADOS_solucao4.md`) | fechado, negativo |
 
 `surrogate_real/metrics.csv` (última época) e `*/oracle_sim_v2.csv` guardam as
-métricas de treino/simulação. O **student_real está versionado** no git
-(`results/models/student_real/`); o surrogate_real (>100 MB) fica fora do git,
-reproduzível por `train.py`.
+métricas de treino/simulação. `student_real` e `student_h9a` estão **versionados**
+no git; o surrogate_real (>100 MB) e os `.pt` grandes ficam fora, reproduzíveis
+pelos scripts.
+
+> **Correção de nomenclatura (2026-07-19):** a versão anterior desta tabela chamava
+> `surrogate_real` de "Professor da destilação" e `student_real` de "Estudante
+> implantado". Ambos são termos superados: o pruner implantado é o `student_h9a`
+> (não destilado); `surrogate_real` é **modelo de referência de teto**, não
+> "professor" do artefato final. Ver D6 no plano de ações.
 
 > Modelos anteriores (`surrogate_fs/pre/v2/v5/…`, `student_ctx/v2/v3/v4/fs/final`,
 > `smoke_*`, `cache/`) eram da era luma-em-branco e foram **removidos** (§8).

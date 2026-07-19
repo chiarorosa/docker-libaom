@@ -31,12 +31,21 @@ artefatos: `RASTREABILIDADE.md`. Planos: `PLANO_hipoteses_experimentos.md`,
    **Gate 2 offline PASSOU** (Fase 2): o contexto RD grátis (H9a) supera pixels
    ~50% relativo no lever NONE-commit em risco casado.
 
-**Tese, em uma frase (estado atual):** demonstra-se que o particionamento
-All-Intra satura, no domínio de pixels, numa estatística trivial (variância) — por
-ablação rigorosa — e que **contexto de taxa-distorção barato (vizinhança + quant +
-posição) é necessário e suficiente para superar esse teto**, produzindo uma poda
-aprendida com ganho de tempo atribuível ao ML. Falta confirmar no encoder real
-(Gate 5).
+**Tese, em uma frase (estado atual, revisto em 2026-07-19):** demonstra-se que o
+particionamento All-Intra satura, no domínio de pixels, numa estatística trivial
+(variância) — por ablação rigorosa — e que **contexto de taxa-distorção barato
+(vizinhança + quant + posição) é suficiente para superar esse teto de pixels sob
+política casada**. Isso **não** se estende a "suficiente para bater o pruner nativo
+na fronteira BD×tempo" na média da grade CTC (Fase 6): ali o H9a compete de frente
+com a CNN intra e perde. A afirmação forte se **recupera em forma condicional** no
+regime de alta taxa via o H9c (`RESULTADOS_fase6_swap_h9c.md`): como substituto da
+CNN nativa, empata na grade e vence em CQ 20/32. O ganho de tempo é atribuível ao
+ML por ablação.
+
+> **Correção (2026-07-19).** A redação anterior dizia "necessário **e suficiente**
+> para superar esse teto". "Suficiente" não sobreviveu à Fase 6 na média da grade
+> (`RESULTADOS_fase6.md:242-246`); vale sob política casada contra o teto de pixels,
+> não contra o pruner nativo. "Necessário" não foi testado como tal. Ver D9 no plano.
 
 ### 1.1 Por que o `dataset_h9` existe — de um resultado negativo forte a uma direção positiva
 
