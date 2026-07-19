@@ -1,0 +1,11 @@
+run,pruner,calls,total_ms,ns_per_call,nodes_per_sb,ratio_inference_only,ratio_with_features,ratio_aggregate,feat_over_infer,encode_wall_s,cnn_pct_of_encode,h9a_pct_of_encode
+Tango_cq32,native_cnn,5940,147.31,24799.6,,,,,,,,
+Tango_cq32,h9a_infer (MLP),58535,29.089,496.9,,,,,,,,
+Tango_cq32,h9a_feature_prep,58535,210.509,3596.3,,,,,,,,
+Tango_cq32,h9c_infer (MLP),51751,39.142,756.4,,,,,,,,
+Tango_cq32,_derived,0,0.0,0.0,9.854,49.91,6.06,0.615,7.24,92.27,0.1597,0.2597
+BoxingPractice_cq43,native_cnn,5937,145.422,24494.2,,,,,,,,
+BoxingPractice_cq43,h9a_infer (MLP),52410,25.997,496.0,,,,,,,,
+BoxingPractice_cq43,h9a_feature_prep,52410,203.481,3882.5,,,,,,,,
+BoxingPractice_cq43,h9c_infer (MLP),47024,33.867,720.2,,,,,,,,
+BoxingPractice_cq43,_derived,0,0.0,0.0,8.828,49.38,5.59,0.634,7.83,70.77,0.2055,0.3242

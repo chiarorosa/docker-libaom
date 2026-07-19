@@ -260,6 +260,14 @@ O modelo aprendido leve executa sua predição a fração do custo da CNN de
 produção — este é o ângulo de custo defensável, complementar à granularidade fina
 (§3) e à paridade de qualidade do H9c com a CNN nativa a cpu1/2.
 
+> **Correção (2026-07-19).** O agregado foi medido e **inverte o sinal** da
+> comparação: incluindo extração (7,2–7,8× a inferência) e frequência real
+> (8,8–9,9 nós/SB contra 1 chamada de CNN), o caminho do MLP custa **1,6× mais**
+> que o da CNN por encode. Como ambos são ≤0,32% do tempo de encode, **nenhum
+> número de BD×tempo desta fase muda** — mas a última frase acima ("ângulo de
+> custo defensável") não se sustenta: o ganho vem das decisões de poda, não da
+> leveza do modelo. Ver `RESULTADOS_microbench_pruner.md` §6.
+
 **(b) Nicho de baixo speedup.** Como já registrado em §3, o degrau discreto dos
 presets nativos (`cpu0→cpu1` já salta para TS~33%) deixa uma lacuna em regime de
 baixíssimo speedup (TS ~12–22%) que o H9a cobre continuamente via calibração de

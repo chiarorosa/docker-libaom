@@ -85,6 +85,7 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `h7h8_bench.py` | Driver combinado H7+H8 (um âncora, vários pontos operacionais; presets safe/aggressive) |
 | `ablation_attrib.py` | Ablação de atribuição: mesma política, fonte do escore = ml / variance / random |
 | `analyze_ablation.py` | Comparação em **speedup casado** (interpolação); veredito de Pareto |
+| `microbench_pruner.py` | Custo do pruner sob `AV1_PRUNER_TIMING`: ns/chamada **e** agregado por encode (extração + frequência de invocação), com o peso relativo ao tempo de parede. Ver `RESULTADOS_microbench_pruner.md` §6 |
 
 ### 2.3b CTC / Fase 6 — `src/scripts/fase6/`
 | Script | Papel |

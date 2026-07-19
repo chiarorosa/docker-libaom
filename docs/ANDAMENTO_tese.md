@@ -411,6 +411,15 @@ condições universais.
   a inferência (passagem direta); a extração de features do MLP (preprocessamento,
   otimizável) e a frequência de invocação são de integração, fora do escopo do
   algoritmo isolado.
+- **Custo agregado do pruner — MEDIDO (2026-07-19), inverte o sinal.** O que
+  estava "fora de escopo" acima foi medido: a extração custa **7,2–7,8×** a
+  inferência, e há **8,8–9,9 nós modelados por superbloco** contra 1 chamada de
+  CNN. Agregado no encode, o caminho do MLP custa **1,6× mais** que o da CNN
+  (razão 0,61–0,63×). Ambos são ≤0,32% do tempo de encode, então **nenhum
+  resultado de BD×tempo muda**; o que cai é a alegação de leveza como vantagem —
+  o speedup vem das decisões de poda. Alvo de otimização correto é a extração
+  (210 ms contra 29 ms de inferência), não o modelo.
+  Ver `RESULTADOS_microbench_pruner.md` §6.
 
 ---
 
