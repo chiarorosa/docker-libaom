@@ -9,16 +9,18 @@
 > ### ⚠ Correção de leitura (2026-07-19) — ler a §6 antes de citar a razão "~50×"
 >
 > A medição das §§1–5 está correta **para o que mede**: a passagem direta isolada.
-> Ela foi reproduzida em 2026-07-19 (49,4–49,9×). O que **não** se sustenta é a
-> extrapolação dessa razão para o custo do *pruner implantado*.
+> Ela foi reproduzida em 2026-07-19 (49,4–49,9×).
 >
-> Incluindo a extração de atributos e a frequência real de invocação — ambas
-> medidas, não estimadas — o caminho do MLP custa **1,6× mais** que o da CNN
-> nativa, não 50× menos. A razão agregada é **0,61–0,63×**.
+> **A conclusão que importa, independente de enquadramento:** no codificador
+> implantado, o custo próprio do pruner — inferência **e** extração de atributos
+> incluídas — é **≤0,32% do tempo de encode** (§6.3). Não é uma alavanca em
+> direção nenhuma: não se alega economia de inferência, nem se sofre custo de
+> inferência. Todo o speedup vem das **decisões de poda**, não da leveza do modelo.
 >
-> Nenhuma conclusão de implantação muda com isso, porque os dois caminhos são
-> ≤0,32% do tempo de encode (§6.3). O que muda é a **narrativa**: "inferência mais
-> barata" deixa de ser vantagem alegável da proposta.
+> Por isso a razão "~50× mais barata por chamada" **não deve ser citada como
+> vantagem do pruner** — ela mede o algoritmo isolado, não o custo implantado, e
+> convida a banca a fazer a agregação sozinha (CB-4). O número honesto é o
+> absoluto acima.
 
 ## 1. Método — como a inferência isolada foi medida
 
@@ -153,18 +155,16 @@ fina em baixo speedup + paridade de qualidade do H9c com a CNN nativa a cpu1/2).
 
 ## 6. Adendo (2026-07-19) — custo agregado do pruner implantado
 
-### 6.1 Por que a §2 não responde à pergunta de implantação
+### 6.1 A pergunta certa é o custo de parede no codificador, não o ns/chamada
 
-As §§1–5 medem a passagem direta isolada e **declaram** (§4) que excluem a
-extração de atributos e a frequência de invocação. A dificuldade é que a razão
-resultante passou a ser citada como propriedade do *pruner*, e não do *modelo*.
-São coisas diferentes: o que o codificador paga por superbloco é
+Tudo aqui é a **implementação em C dentro do codificador** — é o único lugar onde
+o custo do pruner é real e o único enquadramento com significado. A grandeza que
+importa não é o ns por chamada nem a razão entre modelos, e sim **quanto tempo de
+parede o pruner acrescenta ao encode**. A §2 mede a passagem direta isolada
+(útil para caracterizar o algoritmo), mas essa razão foi sendo citada como se
+fosse o custo do pruner implantado — e não é.
 
-    custo_pruner = (chamadas por SB) × (extração + inferência)
-
-e nenhum dos dois fatores excluídos é pequeno.
-
-A medição abaixo não extrapola: a instrumentação em C já acumulava
+A medição abaixo é direta, não extrapola: a instrumentação em C já acumulava
 `total_ns` e contagem de chamadas por pruner, **incluindo um acumulador separado
 para a extração do H9a** (`g_pt_h9a_feat`, `partition_strategy.c:156`,
 alimentado em `:2128-2134`) que nunca havia sido lido. Totais sobre o encode
@@ -184,58 +184,65 @@ inteiro dispensam qualquer hipótese sobre nós por superbloco.
 | **H9a extração — total** | **210,5 ms** | **203,5 ms** |
 | H9c inferência — ns/chamada | 756 | 720 |
 
-Derivados:
+### 6.2b Peso absoluto — a única leitura que sobrevive a qualquer enquadramento
 
-| Métrica | Tango | Boxing |
-|---|--:|--:|
-| Chamadas de MLP por chamada de CNN (nós/SB) | 9,85 | 8,83 |
-| Razão **só inferência**, por chamada | 49,9× | 49,4× |
-| Razão **com extração**, por chamada | 6,1× | 5,6× |
-| **Razão agregada no encode** | **0,61×** | **0,63×** |
-| Extração / inferência | 7,2× | 7,8× |
-
-**Três correções factuais.**
-
-1. **A razão "~50×" reproduz-se** (49,4–49,9×) — a medição original é sólida no
-   seu escopo.
-2. **A extração custa 7,2–7,8× a inferência.** É o termo dominante do MLP, e era
-   exatamente o que estava fora de escopo. Com ela, a vantagem por chamada cai de
-   ~50× para ~6×.
-3. **A frequência inverte o sinal.** Com 8,83–9,85 nós modelados por superbloco
-   contra 1 chamada de CNN, o caminho do MLP custa **1,6× mais** que o da CNN no
-   encode inteiro. (Nota: 9,85 nós/SB, não os 21 do pior caso `1+4+16` — o portão
-   exige unidade 64×64 inteira no quadro e `bsize ∈ {16,32,64}`, e a própria poda
-   remove filhos da busca.)
-
-### 6.3 Calibração de magnitude — a ressalva que impede o exagero
-
-Uma razão dramática entre dois termos que são ambos desprezíveis não muda
-conclusão nenhuma. Medindo contra o tempo de parede do mesmo encode:
+Medindo os acumuladores contra o tempo de parede do **mesmo** encode:
 
 | | Tango cq32 | BoxingPractice cq43 |
 |---|--:|--:|
 | Tempo de encode | 92,3 s | 70,8 s |
 | Caminho da CNN | **0,16%** | **0,21%** |
-| Caminho do H9a (extração+inferência) | **0,26%** | **0,32%** |
+| Caminho do H9a (extração + inferência) | **0,26%** | **0,32%** |
 
-A diferença absoluta entre os dois é de ~0,1 ponto percentual do encode. Portanto:
+O custo próprio do pruner, **com a extração inteira cobrada**, é ~um terço de um
+por cento do encode. Disto seguem as únicas conclusões que a tese deve fazer:
 
-- **Nenhum resultado de BD×tempo deste projeto precisa ser revisto.** Os speedups
-  medidos vêm das **decisões de poda**, não do custo de inferência — o custo do
-  pruner é ruído frente ao que ele economiza (ou desperdiça) em busca RD.
-- **Mas "inferência mais barata" deixa de ser vantagem alegável.** O custo próprio
-  do pruner é um pequeno **lastro líquido**, não uma fonte de ganho. Qualquer
-  frase da tese que atribua parte do speedup à leveza do MLP está errada.
+- **Nenhum resultado de BD×tempo precisa ser revisto.** Os speedups vêm das
+  **decisões de poda**; o custo de inferência é ruído frente ao que a poda
+  economiza (ou desperdiça) em busca RD.
+- **O custo de inferência não é alavanca em direção nenhuma.** Não se alega
+  economia de inferência, nem se sofre custo de inferência. "Inferência mais
+  barata" sai da lista de vantagens da proposta — mas não vira desvantagem: é
+  desprezível.
+
+Isto **é** a resposta a CB-4 (a banca somar o que a §2 excluiu): a soma cai num
+número desprezível dos dois lados.
+
+### 6.3 A extração NÃO é custo intrínseco da solução (atribuição)
+
+Uma tentação seria dizer "o caminho do MLP custa 1,6× o da CNN no agregado"
+(razão 0,61–0,63× nos dados acima, a partir de 8,8–9,9 nós modelados por
+superbloco). **Essa leitura é enganosa e não deve ser usada**, por duas razões
+verificadas no código.
+
+1. **Parte da extração é leitura grátis de estado do codificador.** Os atributos
+   24–35 de `student_node_features` — tamanhos dos vizinhos
+   (`partition_strategy.c:1925`), quantização (`:1950`), posição (`:1953`) — são
+   lidos direto de estruturas que o codificador já mantém. Custo desprezível.
+2. **O resto é uma extração *standalone* não otimizada, não o método.** Os
+   atributos 0–23 (os ~3.600 ns) vêm de uma **cópia** da região-pai do luma-fonte
+   para um buffer privado (`:1873-1886`, recopiada por nó, inclusive por irmão) e
+   de re-varreduras para variância e 18 estatísticas. Os **pixels** o codificador
+   já toca na busca RD; essas **estatísticas** ele não materializa — mas nada
+   disso é intrínseco à decisão. Uma integração que reaproveitasse as passagens
+   existentes reduziria a extração a quase zero. Diferente da CNN, cujas
+   convoluções **são** irredutíveis (a convolução é a extração e a decisão ao
+   mesmo tempo).
+
+Ou seja: cobrar a extração inteira como custo "da solução" mistura um artefato de
+implementação com o algoritmo. Como o total já é ≤0,32% do encode (§6.2b), a
+questão é, além de tudo, imaterial. O ns/chamada e a contagem de nós por
+superbloco caracterizam o algoritmo isolado; **não** medem o custo implantado, que
+é o da §6.2b.
 
 ### 6.4 Consequências acionáveis
 
-- **A extração é o alvo de otimização óbvio**, não a inferência: 210,5 ms contra
-  29,1 ms. A região-pai 64×64 é recopiada para cada nó do superbloco
-  (`student_node_features`, `partition_strategy.c:2059-2090`); um cache por
-  superbloco — espelhando `part_info->cnn_output_valid` (`:207`/`:279`) —
-  eliminaria a maior parte disso. Poderia levar a razão agregada de 0,61× para
-  perto de 4×, mas com efeito de ~0,2 pp no tempo de encode: vale como argumento
-  de engenharia, não como ganho de desempenho.
+- **Se algum dia a extração importar, o alvo é ela, não a inferência:** 210,5 ms
+  contra 29,1 ms. A região-pai é recopiada para cada nó do superbloco
+  (`student_node_features`, `:1873-1886`); um cache por superbloco — espelhando
+  `part_info->cnn_output_valid` (`:207`/`:279`) — eliminaria a maior parte. Mas o
+  efeito no tempo de encode é de ~0,2 pp: é argumento de engenharia (a extração
+  atual é ingênua), não ganho de desempenho relevante.
 - **O custo do H9c está subestimado nos números publicados.** `student_h9c_decide`
   chama `student_node_features` em `partition_strategy.c:2163` **fora de qualquer
   cronômetro**; só `av1_nn_predict` é medido (`:2171-2173`). Os 720–756 ns

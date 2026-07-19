@@ -260,13 +260,13 @@ O modelo aprendido leve executa sua predição a fração do custo da CNN de
 produção — este é o ângulo de custo defensável, complementar à granularidade fina
 (§3) e à paridade de qualidade do H9c com a CNN nativa a cpu1/2.
 
-> **Correção (2026-07-19).** O agregado foi medido e **inverte o sinal** da
-> comparação: incluindo extração (7,2–7,8× a inferência) e frequência real
-> (8,8–9,9 nós/SB contra 1 chamada de CNN), o caminho do MLP custa **1,6× mais**
-> que o da CNN por encode. Como ambos são ≤0,32% do tempo de encode, **nenhum
-> número de BD×tempo desta fase muda** — mas a última frase acima ("ângulo de
-> custo defensável") não se sustenta: o ganho vem das decisões de poda, não da
-> leveza do modelo. Ver `RESULTADOS_microbench_pruner.md` §6.
+> **Correção (2026-07-19).** O custo implantado foi medido: no codificador, o
+> pruner inteiro — extração **e** inferência — é **≤0,32% do tempo de encode**
+> (CNN 0,16–0,21%; H9a 0,26–0,32%). **Nenhum número de BD×tempo desta fase muda**,
+> mas a frase acima ("ângulo de custo defensável") não se sustenta: o custo de
+> inferência não é alavanca em direção nenhuma — o ganho vem das decisões de poda.
+> A razão "~50×/chamada" mede o algoritmo isolado, não o pruner implantado, e não
+> deve ser citada como vantagem. Ver `RESULTADOS_microbench_pruner.md` §6.
 
 **(b) Nicho de baixo speedup.** Como já registrado em §3, o degrau discreto dos
 presets nativos (`cpu0→cpu1` já salta para TS~33%) deixa uma lacuna em regime de

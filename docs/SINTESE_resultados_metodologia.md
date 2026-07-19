@@ -270,13 +270,15 @@ executa sua predição a fração do custo da rede convolucional de produção. 
 extração de features (preprocessamento) e a frequência de invocação são de
 integração, fora do escopo da comparação de algoritmo isolado.
 
-> **Agregado (medido em 2026-07-19, `RESULTADOS_microbench_pruner.md` §6).**
-> Incluindo extração (7,2–7,8× a inferência) e frequência real (8,8–9,9 nós
-> modelados por superbloco contra 1 chamada de CNN), o caminho do MLP custa
-> **1,6× mais** que o da CNN no encode inteiro (razão agregada 0,61–0,63×).
-> Ambos, porém, são ≤0,32% do tempo de encode, de modo que **nenhum resultado de
-> BD×tempo muda**. A consequência é de narrativa: o speedup vem das **decisões de
-> poda**, nunca da leveza da inferência.
+> **Custo implantado (medido em 2026-07-19, `RESULTADOS_microbench_pruner.md` §6).**
+> No codificador, o custo próprio do pruner — inferência **e** extração incluídas —
+> é **≤0,32% do tempo de encode** (CNN 0,16–0,21%; H9a 0,26–0,32%). Não é alavanca
+> em direção nenhuma: **nenhum resultado de BD×tempo muda**, e o speedup vem das
+> **decisões de poda**, não da leveza da inferência. A razão "~50×/chamada"
+> caracteriza o algoritmo isolado e **não** deve ser citada como vantagem do
+> pruner — a extração não é custo intrínseco da solução (parte é leitura grátis de
+> estado do codificador, parte é cópia otimizável), e a soma é imaterial de
+> qualquer modo.
 
 ---
 
@@ -432,12 +434,12 @@ inferência (passagem direta) dos modelos; a extração de features do MLP
 por superbloco) são de integração, deliberadamente fora do escopo do algoritmo
 isolado. Nota de fidelidade: a passagem direta da CNN funde leitura de pixels e
 convolução (não há inferência separável numa conv), então seus ~24.700 ns são a
-predição completa pixels→decisão. **O agregado, porém, inverte o sinal:** com
-extração e frequência incluídas (ambas medidas em 2026-07-19), o caminho do MLP
-custa **1,6× mais** que o da CNN por encode — ver `RESULTADOS_microbench_pruner.md`
-§6. Como os dois caminhos somam ≤0,32% do tempo de encode, nada em BD×tempo se
-altera; o que se perde é o direito de alegar leveza de inferência como vantagem.
-Este resultado complementa as Conclusões 1–2
+predição completa pixels→decisão. **Custo implantado (medido em 2026-07-19):** no
+codificador, o pruner inteiro — extração e inferência — é **≤0,32% do tempo de
+encode**, então nada em BD×tempo se altera e o custo de inferência não é alavanca
+em direção nenhuma; perde-se apenas o direito de alegar leveza de inferência como
+vantagem. A razão "~50×/chamada" mede o algoritmo isolado, não o pruner implantado
+(`RESULTADOS_microbench_pruner.md` §6). Este resultado complementa as Conclusões 1–2
 (granularidade fina + paridade de qualidade).
 
 ---
@@ -508,7 +510,7 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 | Swap H9c — 8 seqs completas | ✅ **concluído** (2026-07-17) | `results/benchmark/fase6_swap_h9c/` |
 | Isolação/confound (Neon1224) + H9a@default | ✅ concluído | `fase6/` (`h9ciso_*`, `h9adef`) |
 | **Frontier-check combinado** (H9a-conservador + H9c, swap, Tango) | ✅ **concluído** (2026-07-17) — não fura a fronteira | `results/benchmark/fase6_swap_combo/` |
-| Microbenchmark de inferência isolada do pruner | ✅ **concluído** (2026-07-17) — MLP ~50× mais barato/inferência que a CNN; **agregado medido em 2026-07-19 inverte: 1,6× mais caro por encode** (≤0,32% do tempo, sem efeito em BD×tempo) | `docs/RESULTADOS_microbench_pruner.md` §6 |
+| Microbenchmark de inferência isolada do pruner | ✅ **concluído** (2026-07-17) — MLP ~50× mais barato/inferência que a CNN; **custo implantado medido em 2026-07-19: pruner inteiro (extração+inferência) ≤0,32% do encode**, sem efeito em BD×tempo, não é alavanca | `docs/RESULTADOS_microbench_pruner.md` §6 |
 | **Solução 4 — regressão de *regret*** | ✅ **concluído** (2026-07-17) — **resultado negativo**: regressão ranqueia poda pior que o classificador (Gate 3, mesmas features); Gate 5 pulado por regra de gate | `docs/RESULTADOS_solucao4.md`, `results/models/regret{,_balanced}/` |
 
 **Resultado do frontier-check combinado (Tango, vs âncora cpu0):** o combinado
