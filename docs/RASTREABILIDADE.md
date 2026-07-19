@@ -86,6 +86,14 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `ablation_attrib.py` | Ablação de atribuição: mesma política, fonte do escore = ml / variance / random |
 | `analyze_ablation.py` | Comparação em **speedup casado** (interpolação); veredito de Pareto |
 
+### 2.3b CTC / Fase 6 — `src/scripts/fase6/`
+| Script | Papel |
+|---|---|
+| `encode_ctc.py`, `encode_swap.py`, `encode_swap_h9c.py`, `encode_swap_combo.py`, `encode_h9adef.py`, `encode_h9c_cq20.py`, `encode_h9c_iso.py` | Drivers de encode das campanhas CTC; escrevem `raw_results.csv` por lote |
+| `report_ctc.py` | Agregado da Fase 6 contra a âncora cpu0: `bdrate_per_seq.csv`, `bdrate_average.csv`, `tables.tex`. **`CONFIG_ORDER:42` é lista fixa** — configurações fora dela são ignoradas |
+| `report_swap.py` | Agregado dos lotes de troca por `cpu-used` casado; descobre as configurações no CSV (antes ignorava H9c). `swap_per_seq.csv`, `swap_average.csv`, `swap_tables.tex` |
+| `analyze_frontier.py` | Análise cruzada dos três lotes: decomposição por regime de CQ, TS por CQ individual, testes t pareados por sequência, fronteira de Pareto em 8 seqs, comparação das duas definições de TS. Ver `RESULTADOS_fase6_swap_h9c.md` |
+
 ### 2.4 Instrumentação C — `src/aom/av1/encoder/`
 | Arquivo | Guarda | Papel |
 |---|---|---|
@@ -188,7 +196,20 @@ No lever NONE-commit isolado (relevante para tempo): pixels24 10–19 %, **H9a
 16–25 %** — contexto RD grátis supera pixels ~50 % relativo. Veredito: **Gate 2
 PASSOU**, cenário (a).
 
-### 5.4 Outros diretórios em `results/benchmark/`
+### 5.4 CTC Fase 6 e trocas — `benchmark/fase6*/`
+| Diretório | Conteúdo | Sumário versionado |
+|---|---|---|
+| `fase6/` | âncora cpu0 + ml_balanced/ml_aggr + native_cpu1/2/3 (8 seqs) e pilotos H9c em cpu0 (3–6 seqs) | `bdrate_average.csv`, `bdrate_per_seq.csv`, `tables.tex` |
+| `fase6_swap/` | troca H9a em cpu1/2/3, 8 seqs × 4 CQ (192 encodes) | `swap_average.csv`, `swap_per_seq.csv` |
+| `fase6_swap_h9c/` | troca H9c τ=0,90/0,95 em cpu1/2/3, 8 seqs × 4 CQ (192 encodes) | `swap_average.csv`, `swap_per_seq.csv`, `swap_tables.tex` — **agregados só em 2026-07-19** |
+| `fase6_swap_combo/` | piloto H9a+H9c empilhados, 1 seq | — (pilotagem) |
+| `fase6_analysis/` | análise cruzada dos três lotes | `cq_decomposition.csv`, `ts_per_cq.csv`, `paired_tests.csv`, `pareto_frontier.csv`, `ts_definitions.csv` |
+
+Resultado principal: **`RESULTADOS_fase6_swap_h9c.md`** — o H9c é substituto drop-in da CNN nativa
+intra, com vantagem de BD-rate significativa em CQ 20+32 (cpu1 p=0,043, 6/8 seqs; cpu2 p=0,015,
+7/8 seqs), empate na grade CTC completa e desvantagem em cpu-used=3.
+
+### 5.5 Outros diretórios em `results/benchmark/`
 `ablation_attrib/`, `ablation_fill_{ml,var,rnd}/` (curvas da ablação de
 atribuição), `h7h8/`, `h7h8_aggr/`, `h7h8_real/` (runs por ponto operacional),
 `h8_probs/` (arquivos de replay do substituto). CSVs `ablation_matched.csv` e
@@ -223,6 +244,12 @@ venv-ml/bin/python src/scripts/partition_model/distill.py \
   --out-dir results/models/student_real --no-class-weight --temp 1.0
 venv-ml/bin/python src/scripts/partition_model/export_weights.py \
   --students results/models/student_real/students.pt
+
+# 3b. Agregados CTC (só análise, ~1 min; nenhum encode)
+venv-ml/bin/python src/scripts/fase6/report_swap.py \
+  --out-dir results/benchmark/fase6_swap_h9c
+venv-ml/bin/python src/scripts/fase6/analyze_frontier.py \
+  --out-dir results/benchmark/fase6_analysis
 
 # 3. Gates offline
 venv-ml/bin/python src/scripts/partition_model/gate2_signal.py \

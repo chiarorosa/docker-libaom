@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
-"""Fase 6 extension report -- native CNN vs H9a swap at matched cpu-used.
+"""Fase 6 extension report -- native CNN vs a swapped-in pruner at matched cpu-used.
 
-Reads the swap batch (native_cpuN + h9a_bal/aggr_cpuN, from encode_swap.py) and
+Handles any swap batch (H9a from encode_swap.py, H9c from encode_swap_h9c.py):
+the configurations are discovered from the CSV rather than hard-coded, because
+the previous fixed list silently discarded every H9c row -- 192 encodes sat
+unaggregated for that reason. See docs/RESULTADOS_fase6_swap_h9c.md.
+
+Reads the swap batch (native_cpuN + <kind>_cpuN) and
 references BD-Rate/BD-PSNR/TS/speedup to the SAME cpu-used=0 anchor as Fase 6
 (results/benchmark/fase6/raw_results.csv). Groups the output by cpu-used level so
 each block shows, on one common axis, the native CNN pruner against the two H9a
@@ -33,9 +38,24 @@ LABEL = {
     "native": "libaom CNN (native SOTA)",
     "h9a_bal": "H9a balanced (swap)",
     "h9a_aggr": "H9a aggressive (swap)",
+    "h9c_tau90": "H9c tau=0.90 (swap)",
+    "h9c_tau95": "H9c tau=0.95 (swap)",
 }
-# presentation order within each cpu-used level
-KINDS = ["native", "h9a_bal", "h9a_aggr"]
+# Presentation order within each cpu-used level. Kinds present in the swap CSV
+# but absent here are appended (sorted) rather than dropped: the previous
+# hard-coded list silently discarded every H9c row, which is why 192 encodes
+# sat unaggregated. `native` always leads -- it is the reference of each block.
+KIND_ORDER = ["native", "h9a_bal", "h9a_aggr", "h9c_tau90", "h9c_tau95"]
+
+
+def label_of(kind):
+    return LABEL.get(kind, kind)
+
+
+def order_kinds(kinds):
+    """Canonical order first, then any unknown kind, alphabetically."""
+    known = [k for k in KIND_ORDER if k in kinds]
+    return known + sorted(k for k in kinds if k not in KIND_ORDER)
 
 
 def _kbps(row):
@@ -98,18 +118,19 @@ def per_seq_rows(h9a, fase6, levels):
             else:
                 print("[warn] {}: {} missing in Fase 6 CSV".format(seq, ncfg),
                       file=sys.stderr)
-        # H9a swaps (this experiment)
+        # swapped pruners (this experiment) -- every kind found in the CSV
         for cfg, pts in h9a[seq].items():
             kind, lvl = parse_cfg(cfg)
-            if lvl in levels and kind in ("h9a_bal", "h9a_aggr"):
+            if lvl in levels and kind != "native":
                 rows.append(_eval(seq, lvl, kind, pts, ra, qa, atime))
     return rows
 
 
 def averages(rows, levels):
     out = []
+    kinds = order_kinds({r["kind"] for r in rows})
     for lvl in levels:
-        for kind in KINDS:
+        for kind in kinds:
             sub = [r for r in rows if r["level"] == lvl and r["kind"] == kind]
             if not sub:
                 continue
@@ -144,19 +165,22 @@ def console(avg, levels):
           "(anchor = libaom original cpu0) ===")
     hdr = "{:<26}{:>12}{:>12}{:>9}{:>10}".format(
         "Config", "BD-Rate(%)", "BD-PSNR(dB)", "TS(%)", "Speedup")
+    kinds = order_kinds({a["kind"] for a in avg})
     for lvl in levels:
         print("\n-- cpu-used={} --".format(lvl))
         print(hdr)
-        for kind in KINDS:
+        for kind in kinds:
             a = _get(avg, lvl, kind)
             if not a:
                 continue
             print("{:<26}{:>12}{:>12}{:>9.1f}{:>9.2f}x".format(
-                LABEL[kind], _f(a["bd_rate"]), _f(a["bd_psnr"]),
+                label_of(kind), _f(a["bd_rate"]), _f(a["bd_psnr"]),
                 a["ts_pct"], a["speedup"]))
         nat = _get(avg, lvl, "native")
         if nat:
-            for kind in ("h9a_bal", "h9a_aggr"):
+            for kind in kinds:
+                if kind == "native":
+                    continue
                 s = _get(avg, lvl, kind)
                 if s:
                     print("   -> {} vs native: dBD-Rate={:+.2f}%  dTS={:+.1f}pp"
@@ -180,14 +204,15 @@ def write_tex(path, avg, levels):
     a(r"\toprule")
     a(r"cpu-used & Pruner & BD-Rate (\%) & BD-PSNR (dB) & TS (\%) & Speedup$\times$ \\")
     a(r"\midrule")
+    kinds = order_kinds({x["kind"] for x in avg})
     for lvl in levels:
         first = True
-        for kind in KINDS:
+        for kind in kinds:
             av = _get(avg, lvl, kind)
             if not av:
                 continue
             a(r"{} & {} & {} & {} & {:.1f} & {:.2f} \\".format(
-                lvl if first else "", LABEL[kind], _f(av["bd_rate"]),
+                lvl if first else "", label_of(kind), _f(av["bd_rate"]),
                 _f(av["bd_psnr"]), av["ts_pct"], av["speedup"]))
             first = False
         a(r"\midrule")

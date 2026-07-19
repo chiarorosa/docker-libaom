@@ -1,0 +1,24 @@
+% Fase 6 extension -- native CNN vs H9a swap at matched cpu-used.
+% Anchor = libaom original cpu-used=0. Within a level only the partition
+% pruner differs, so gaps are attributable to the pruner.
+\begin{table}[t]\centering
+\caption{H9a student as a drop-in replacement for libaom's native intra CNN partition pruner (AOM-CTC All Intra, Class~A1, 4K, 10-bit; anchor: libaom \texttt{cpu-used=0}). Within each \texttt{cpu-used} level every speed feature is identical except the pruner.}
+\label{tab:fase6-swap}
+\begin{tabular}{llrrrr}
+\toprule
+cpu-used & Pruner & BD-Rate (\%) & BD-PSNR (dB) & TS (\%) & Speedup$\times$ \\
+\midrule
+1 & libaom CNN (native SOTA) & +0.45 & -0.02 & 32.6 & 1.51 \\
+ & H9c tau=0.90 (swap) & +0.45 & -0.02 & 31.6 & 1.50 \\
+ & H9c tau=0.95 (swap) & +0.41 & -0.02 & 30.3 & 1.47 \\
+\midrule
+2 & libaom CNN (native SOTA) & +0.54 & -0.02 & 42.7 & 1.79 \\
+ & H9c tau=0.90 (swap) & +0.54 & -0.02 & 42.1 & 1.79 \\
+ & H9c tau=0.95 (swap) & +0.52 & -0.02 & 40.7 & 1.75 \\
+\midrule
+3 & libaom CNN (native SOTA) & +2.72 & -0.09 & 67.9 & 3.16 \\
+ & H9c tau=0.90 (swap) & +3.40 & -0.12 & 70.7 & 3.47 \\
+ & H9c tau=0.95 (swap) & +3.38 & -0.12 & 70.2 & 3.42 \\
+\midrule
+\bottomrule
+\end{tabular}\end{table}

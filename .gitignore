@@ -38,6 +38,9 @@ results/dataset_new/
 results/benchmark/_work/
 results/benchmark/**/_work/
 results/benchmark/h8_probs/
+# Same class as h8_probs: per-node probability dumps for replay/calibration,
+# regenerable from the model + YUV.
+results/benchmark/gnn_probs/
 # Encoded bitstreams from benchmark runs are large and deterministically
 # reproducible from the source y4m + scripts; only the measured CSV/tex/log
 # summaries are kept in git.
