@@ -121,6 +121,11 @@ sem re-encodar.
 
 Ou seja: manter o `.bin` é uma decisão de **disco × custo de recompute**, não uma exigência do ML.
 
+**Consequência para o manifesto.** Com `--no-keep-bin`, as estatísticas de rótulo do
+`manifest.csv` deixam de ser refazíveis pela via original (`count_bin`, que lê o `.bin`). A única
+rota de reconstrução passa a ser `rebuild_manifest_stats.py`, que as recalcula a partir do `.pkl`.
+Foi exatamente o caso do dataset `dataset_h9` no reparo de 2026-07-19 — ver `RASTREABILIDADE.md` §3.
+
 ## 6. Conversão avulsa (opcional, `convert_partition_data.py`)
 
 Se já tiver um `.bin` (ex.: gerado manualmente com o `aomenc` e `AV1_PARTITION_LOG`):

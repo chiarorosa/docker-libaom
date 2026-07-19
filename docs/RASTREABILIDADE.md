@@ -21,8 +21,10 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
         │  av1/encoder/partition_search.c (PartitionSample, 4144 B)
         ▼
  build_dataset.py ── convert_partition_data.py ──►  results/dataset_h9/
-   (orquestra 16×4 QP,                                *.bin (bruto) + *.pkl
-    amostragem temporal, manifest)                    + manifest.csv   [DATASET]
+   (orquestra 16×4 QP,                                *.pkl (o *.bin bruto
+    amostragem temporal, manifest)                     é descartado)
+                                                      + manifest.csv   [DATASET]
+                                                      + label_histogram.csv
         │
         │  data.py (regroup em superblocos, _denorm_uint8, contexto RD por nó)
         │  features.py (node_features_h9 = 41 atributos)
@@ -72,6 +74,8 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `convert_partition_data.py` | `.bin` → `.pkl`; parseia `PartitionSample` (4144 B); expõe luma + rótulo + **contexto RD** (above/left_bsize, neigh_avail, dc_q, none_rate/dist/rdcost) |
 | `validate_partition_data.py` | Integridade + acurácia de pixels vs YUV-fonte + exportação PNG |
 | `pkl_to_npz.py` | Converte `.pkl` (float32) → `.npz` uint8 para arquivamento/DOI (Zenodo); ver `ZENODO_datasheet.md`. Não executado por padrão. |
+| `rebuild_manifest_stats.py` | Reconstrói as colunas estatísticas do `manifest.csv` a partir dos `.pkl` (os `.bin` são apagados na geração) e emite o histograma conjunto. Usado no reparo 4116→4144 de 2026-07-19; ver §3. | 
+| `analyze_label_histogram.py` | Relatório de distribuição de rótulos a partir de `label_histogram.csv`: balanço de 3 classes por nível, dependência de CQ, orientação dentro de REST, dispersão por sequência. |
 
 ### 2.3 Avaliação — `src/scripts/benchmark/`
 | Script | Papel |
@@ -200,6 +204,14 @@ venv-ml/bin/python src/scripts/partition_dataset/build_dataset.py \
   --out-dir results/dataset_h9 --qps 20 32 43 55 --frames 5 --cpu-used 0 \
   --aomenc build/libaom_logpart/aomenc
 # (libaom_logpart = src/aom configurado com -DLOG_PARTITION_DATA=1)
+
+# 0b. Estatísticas do manifesto + histograma de rótulos (~7 min, só leitura)
+venv-ml/bin/python src/scripts/partition_dataset/rebuild_manifest_stats.py \
+  --dataset-dir results/dataset_h9
+venv-ml/bin/python src/scripts/partition_dataset/analyze_label_histogram.py \
+  --hist results/dataset_h9/label_histogram.csv \
+  --out results/dataset_h9/label_distribution.md
+# Verificação: em cada linha do manifesto, Σdim* = Σpart_* = num_samples.
 
 # 1. Substituto (professor)
 venv-ml/bin/python src/scripts/partition_model/train.py \
