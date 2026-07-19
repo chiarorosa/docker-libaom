@@ -19,7 +19,7 @@ passo operacional, ver [`GUIA_partition_dataset.md`](GUIA_partition_dataset.md).
                  (Docker, cpu-used=0, --threads=1)
  .yuv UVG 4K ──► aomenc (libaom + LOG_PARTITION_DATA) ──► av1_partition_data.bin
                           │                                      │
-                 hook em av1_rd_pick_partition          registros fixos de 4116 B
+                 hook em av1_rd_pick_partition          registros fixos de 4144 B
                                                                  │
                                         convert_partition_data.py ├──► dataset .pkl (numpy)
                                         validate_partition_data.py├──► integridade + acurácia
@@ -58,26 +58,37 @@ Funções auxiliares adicionadas: `av1_partition_target_dim`, `av1_partition_cap
 
 ---
 
-## 3. Formato binário (`PartitionSample`, 4116 bytes)
+## 3. Formato binário (`PartitionSample`, 4144 bytes)
 
 Little-endian, campos escalares ordenados do maior para o menor, buffer de pixels por último com
 padding explícito → **sem padding implícito**; parsing em Python com um único `struct` format
-`"<I4H5B3x4096s"`.
+`"<qqII5H8B6x4096s"`. Fonte canônica: `av1/encoder/partition_search.c:80-100`.
 
 | Campo | Tipo | Bytes | Origem |
 |-------|------|------:|--------|
+| `none_dist` | i64 | 8 | distorção do candidato `PARTITION_NONE` (bloco `[E]`) |
+| `none_rdcost` | i64 | 8 | custo RD do candidato `PARTITION_NONE` (bloco `[E]`) |
 | `sample_id` | u32 | 4 | contador determinístico (reinicia por processo) |
+| `none_rate` | u32 | 4 | taxa do candidato `PARTITION_NONE` (bloco `[E]`) |
 | `frame_width` | u16 | 2 | `cm->width` |
 | `frame_height` | u16 | 2 | `cm->height` |
 | `mi_row` | u16 | 2 | posição (unidades MI = 4 px) |
 | `mi_col` | u16 | 2 | posição (unidades MI = 4 px) |
+| `dc_q` | u16 | 2 | passo de quantização DC |
 | `qindex` | u8 | 1 | `cm->quant_params.base_qindex` (0..255) |
 | `bit_depth` | u8 | 1 | 8/10/12 |
 | `bsize` | u8 | 1 | `BLOCK_SIZE` |
 | `block_dim` | u8 | 1 | lado válido: 8/16/32/64 |
 | `partition` | u8 | 1 | `PARTITION_TYPE` do RDO (0..9) |
-| `pad[3]` | u8×3 | 3 | alinhamento |
+| `above_bsize` | u8 | 1 | vizinhança causal (bloco `[B]`) |
+| `left_bsize` | u8 | 1 | vizinhança causal (bloco `[B]`) |
+| `neigh_avail` | u8 | 1 | disponibilidade dos vizinhos |
+| `pad[6]` | u8×6 | 6 | alinhamento |
 | `luma[64*64]` | u8×4096 | 4096 | Y da fonte; região válida = `block_dim²`, resto zerado |
+
+> **Nota (2026-07-19).** A versão original deste layout tinha 4116 B, antes da inclusão do contexto
+> RD (`[E]`) e da vizinhança (`[B]`). O conversor acompanhou a mudança; as *estatísticas* do
+> `manifest.csv` não, e foram reparadas em 2026-07-19 (`rebuild_manifest_stats.py`).
 
 Buffer fixo de 64×64 cobre os 4 tamanhos (blocos menores usam o canto superior-esquerdo). O
 rótulo é o `PARTITION_TYPE` **completo (10 classes)** — pode ser reformulado como binário
@@ -92,7 +103,7 @@ container — repo-root não é visível dentro do Docker.
 
 | Script | Papel |
 |--------|-------|
-| `convert_partition_data.py` | `.bin` → `.pkl`. Valida alinhamento (4116), recorta a região válida, normaliza (`/255` float32 ou `uint8` cru), empilha em ndarray denso quando uniforme, grava metadados + contagens por classe/tamanho. Filtros `--block-dim`, `--qindex`. |
+| `convert_partition_data.py` | `.bin` → `.pkl`. Valida alinhamento (4144), recorta a região válida, normaliza (`/255` float32 ou `uint8` cru), empilha em ndarray denso quando uniforme, grava metadados + contagens por classe/tamanho. Filtros `--block-dim`, `--qindex`. |
 | `validate_partition_data.py` | Integridade + **acurácia de pixel** contra o YUV fonte + export de PNGs distribuídos por (tamanho × classe). **Frame-aware** via `--frame-offsets`: detecta limites de frame pelo reset do `sample_id` e compara cada segmento contra o frame-fonte correto. |
 | `build_dataset.py` | Orquestrador N sequências × N QPs. Lê dims do nome do arquivo e nº de frames do tamanho; amostra frames espaçados no tempo; **pré-extrai** cada frame-alvo uma vez com `dd` (seek) reusando entre QPs; encoda, converte e escreve `manifest.csv`. Flags: `--qps`, `--frames`, `--cpu-used`, `--keep-bin/--no-keep-bin`, `--dry-run`. |
 
@@ -146,7 +157,7 @@ container — repo-root não é visível dentro do Docker.
 ## 7. Validação
 
 **Metodologia.** Três níveis:
-- **Integridade estrutural:** `tamanho % 4116 == 0`, `partition ∈ [0,9]`, `block_dim ∈ {8,16,32,64}`.
+- **Integridade estrutural:** `tamanho % 4144 == 0`, `partition ∈ [0,9]`, `block_dim ∈ {8,16,32,64}`.
 - **Acurácia de pixel (crítico para ML):** para blocos totalmente internos ao quadro, os bytes
   `luma[]` gravados devem ser **idênticos** aos pixels do plano Y da **fonte** em
   `(mi_row·4, mi_col·4)`. Prova que cada bloco carrega a região certa, alinhada ao seu rótulo.
@@ -187,7 +198,7 @@ threads=1. Um `.bin` + um `.pkl` por sequência + `manifest.csv`.
   planejado é 4 QP (20/32/43/55) × 5 frames (`--frames 5`).
 - **Sem índice de frame na struct:** a proveniência de frame é inferida pelo reset do `sample_id`
   (validador via `--frame-offsets`). Se for necessário rastrear frame por amostra, adicionar um
-  campo exigiria mudar o layout de 4116 bytes.
+  campo exigiria mudar o layout de 4144 bytes.
 - **Thread-safety:** logging só com `--threads=1`.
 - **`.pkl` (pickle)** é específico de Python — adequado ao pipeline de treino, não como formato
   de intercâmbio.

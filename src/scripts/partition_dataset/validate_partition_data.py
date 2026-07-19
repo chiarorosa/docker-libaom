@@ -2,7 +2,7 @@
 """Validate an av1_partition_data.bin against its source YUV.
 
 Checks:
-  1. Structural integrity: fixed 4116-byte records, contiguous sample_id,
+  1. Structural integrity: fixed 4144-byte records, contiguous sample_id,
      partition in [0,9], block_dim in {8,16,32,64}.
   2. Pixel accuracy (the ML-critical check): for blocks fully inside the frame,
      the recorded luma bytes must equal the source Y-plane pixels at
@@ -27,7 +27,10 @@ from PIL import Image
 
 LUMA_DIM = 64
 LUMA_SIZE = LUMA_DIM * LUMA_DIM
-SAMPLE = struct.Struct("<I4H5B3x{}s".format(LUMA_SIZE))
+# Must match PartitionSample in av1/encoder/partition_search.c:80-100 and the
+# converter (convert_partition_data.py:43-45): 4144 bytes, little-endian.
+SAMPLE = struct.Struct("<qqII5H8B6x{}s".format(LUMA_SIZE))
+RECORD_SIZE = 4144
 MI_SIZE = 4  # pixels per mode-info unit
 PART_NAMES = ["NONE", "HORZ", "VERT", "SPLIT", "HORZ_A", "HORZ_B",
               "VERT_A", "VERT_B", "HORZ_4", "VERT_4"]
@@ -54,11 +57,11 @@ def main(argv):
     args = parse_args(argv)
     W, H = args.width, args.height
 
-    if SAMPLE.size != 4116:
-        raise SystemExit("Struct size {} != 4116".format(SAMPLE.size))
+    if SAMPLE.size != RECORD_SIZE:
+        raise SystemExit("Struct size {} != {}".format(SAMPLE.size, RECORD_SIZE))
     fsz = os.path.getsize(args.bin)
     if fsz % SAMPLE.size:
-        raise SystemExit("Not 4116-aligned: {} bytes".format(fsz))
+        raise SystemExit("Not {}-aligned: {} bytes".format(RECORD_SIZE, fsz))
     n = fsz // SAMPLE.size
 
     # Lazy loader for the luma plane of any source frame (8-bit 4:2:0).
@@ -86,7 +89,8 @@ def main(argv):
 
     with open(args.bin, "rb") as f:
         for _ in range(n):
-            (sid, fw, fh, mr, mc, q, bd, bs, bdim, part,
+            (none_dist, none_rdcost, sid, none_rate, fw, fh, mr, mc, dc_q,
+             q, bd, bs, bdim, part, above_bsize, left_bsize, neigh_avail,
              luma) = SAMPLE.unpack(f.read(SAMPLE.size))
             # sample_id resets to 0 at each new frame (fresh aomenc process).
             if sid == 0:
@@ -133,7 +137,8 @@ def main(argv):
 
     segments = seg_idx + 1
 
-    print("samples: {}  (file 4116-aligned, no leftover bytes)".format(n))
+    print("samples: {}  (file {}-aligned, no leftover bytes)".format(
+        n, RECORD_SIZE))
     print("frame segments detected: {} (declared offsets: {})".format(
         segments, args.frame_offsets))
     if unknown_seg:

@@ -17,12 +17,19 @@ decisões de particionamento (para treinar o surrogate **ConvNeXt-AV1**) e conve
 Os scripts ficam sob `src/` porque o container monta só `./src`, `./logs`, `./results`.
 Sem a flag `LOG_PARTITION_DATA=1`, o encoder é idêntico ao de produção (nenhuma amostra).
 
-## Formato do registro (`PartitionSample`, 4116 bytes, little-endian)
+## Formato do registro (`PartitionSample`, 4144 bytes, little-endian)
 
-`sample_id`(u32), `frame_width`/`frame_height`/`mi_row`/`mi_col`(u16), `qindex`/`bit_depth`/
-`bsize`/`block_dim`/`partition`(u8), `pad[3]`, `luma[64*64]`(u8). Parsing Python:
-`struct.Struct("<I4H5B3x4096s")`. Rótulo = `PARTITION_TYPE` completo (0..9). Pixels em 8-bit;
+`none_dist`/`none_rdcost`(i64), `sample_id`/`none_rate`(u32), `frame_width`/`frame_height`/
+`mi_row`/`mi_col`/`dc_q`(u16), `qindex`/`bit_depth`/`bsize`/`block_dim`/`partition`/
+`above_bsize`/`left_bsize`/`neigh_avail`(u8), `pad[6]`, `luma[64*64]`(u8). Parsing Python:
+`struct.Struct("<qqII5H8B6x4096s")`. Rótulo = `PARTITION_TYPE` completo (0..9). Pixels em 8-bit;
 região válida = `block_dim²` no canto superior-esquerdo do buffer 64×64.
+
+> **Nota (2026-07-19).** O layout de 4116 B descrito aqui até esta data era o da versão original,
+> anterior à inclusão do contexto RD (bloco `[E]`). A instrumentação em C
+> (`partition_search.c:80-100`) e o conversor (`convert_partition_data.py:43-45`) sempre usaram
+> 4144 B; apenas as *estatísticas* do `manifest.csv` foram geradas com o layout antigo. Ver a nota
+> de reparo em [`RASTREABILIDADE.md`](RASTREABILIDADE.md).
 
 ---
 
@@ -99,7 +106,7 @@ surrogate. O `.bin` é opcional e serve apenas a etapas *anteriores* ao ML:
 |---------|-------|--------------------|
 | `.pkl` | dataset convertido (entrada de treino) | **Sim** — sempre |
 | `manifest.csv` | metadados (`cpu_used`, `base_qindex`, frames, contagem por classe) | **Sim, sempre** — sem ele o `.pkl` perde rastreabilidade e datasets com cpu-used diferente não são comparáveis |
-| `.bin` | registros brutos `PartitionSample` (4116 B) | **Não** — o treino nunca lê o `.bin` |
+| `.bin` | registros brutos `PartitionSample` (4144 B) | **Não** — o treino nunca lê o `.bin` |
 
 O `.bin` só é necessário para: (1) **validar** (`validate_partition_data.py` lê o `.bin`) e
 (2) **reconverter** o `.pkl` com outras opções (`--dtype`, `--block-dim`, `--qindex`, filtros)
@@ -140,7 +147,9 @@ export AV1_PARTITION_LOG=/workspace/results/av1_partition_data.bin; rm -f "$AV1_
 ## 7. Checklist de verificação
 
 - Build **sem** `-DLOG_PARTITION_DATA=1` não gera `.bin`.
-- `tamanho_do_bin % 4116 == 0`; validador lê tudo sem sobra; `partition ∈ [0,9]`.
+- `tamanho_do_bin % 4144 == 0`; validador lê tudo sem sobra; `partition ∈ [0,9]`.
+- `manifest.csv`: para cada linha, Σ`dim*` = Σ`part_*` = `num_samples` e `base_qindex > 0`.
+  (Reparado em 2026-07-19 por `rebuild_manifest_stats.py`; antes disso as três somas divergiam.)
 - Acurácia de pixel: `0 mismatched` nos blocos internos.
 - Determinismo: `--threads=1` + cpu-used/QP fixos → `.bin` reprodutível.
 - `frame segments detected` == nº de frames amostrados.

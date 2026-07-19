@@ -6,19 +6,27 @@ The binary is a flat sequence of fixed-size C structs (PartitionSample, see
 av1/encoder/partition_search.c). Each record holds the source luma of a square
 block, the RDO partition decision (ground truth), the QP and the frame size.
 
-C struct layout (little-endian, no implicit padding -> 4116 bytes):
+C struct layout (little-endian, no implicit padding -> 4144 bytes), matching
+PartitionSample in av1/encoder/partition_search.c:80-100:
 
+    int64  none_dist        # [E] RD context of the PARTITION_NONE candidate
+    int64  none_rdcost
     uint32 sample_id
+    uint32 none_rate
     uint16 frame_width
     uint16 frame_height
     uint16 mi_row
     uint16 mi_col
+    uint16 dc_q
     uint8  qindex
     uint8  bit_depth
     uint8  bsize
     uint8  block_dim        # valid side in pixels: 8/16/32/64
     uint8  partition        # PARTITION_TYPE, 0..9
-    uint8  pad[3]
+    uint8  above_bsize
+    uint8  left_bsize
+    uint8  neigh_avail
+    uint8  pad[6]
     uint8  luma[64*64]      # top-left block_dim x block_dim region is valid
 
 Usage:

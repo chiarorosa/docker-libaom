@@ -28,7 +28,8 @@ contexto de particionamento dos vizinhos (tamanhos dos blocos acima/esquerda),
 força de quantização (passo de dequantização DC), e o custo RD real do
 PARTITION_NONE (taxa, distorção, rdcost). O dataset foi construído para estudar
 heurísticas de poda de particionamento aprendidas (aceleração do codificador com
-perda de taxa BD desprezível). ~27,5 milhões de nós, 16 sequências × 4 QPs
+perda de taxa BD desprezível). 26,98 milhões de nós (dos quais 10,07 milhões são
+nós de decisão, `block_dim ∈ {16,32,64}`), 16 sequências × 4 QPs
 (cq 20/32/43/55) × 5 quadros amostrados temporalmente. Partição
 treino/validação/teste **por sequência** (sem vazamento) fixada a priori.
 
@@ -57,8 +58,12 @@ rastreabilidade completa estão no repositório
 
 ### Arquivos
 - `<Sequencia>_..._cq{20,32,43,55}.npz` — 64 arquivos, um por (sequência, QP).
-- `manifest.csv` — ledger autoritativo: por (sequência, QP), quadros usados,
+- `manifest.csv` — proveniência e estatísticas por (sequência, QP): quadros usados,
   base_qindex, cpu-used, nº de amostras, histograma por tamanho e por classe.
+  Estatísticas reparadas em 2026-07-19 (ver nota em `RASTREABILIDADE.md` §3); em
+  cada linha vale Σ`dim*` = Σ`part_*` = `num_samples`.
+- `label_histogram.csv` — histograma conjunto (sequência, QP, block_dim,
+  partition), 1.830 linhas; `label_distribution.md` é o resumo legível.
 - `ZENODO_datasheet.md` — este documento.
 
 ### Partição (congelada, sem vazamento — `PROTOCOLO_avaliacao.md`)

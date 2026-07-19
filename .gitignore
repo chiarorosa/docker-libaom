@@ -19,14 +19,22 @@ results/models/
 !results/models/student_real/*.pt
 .venv-ml/
 
-# Dataset payloads are huge (dataset_h9 ~135 GB) and reproducible from the
+# Dataset payloads are huge (dataset_h9 ~31 GB of .pkl) and reproducible from the
 # instrumented encoder + scripts + source YUV. Never commit them to git.
 # Only manifests / metadata are tracked.
 results/dataset/*.bin
 results/dataset/*.pkl
 results/dataset/blocks/
-results/dataset_h9/
+# Note: the pattern must exclude the *contents* (trailing /*), not the directory
+# itself -- git never descends into an excluded directory, so a `!` negation
+# under `results/dataset_h9/` would be unreachable.
+results/dataset_h9/*
 results/dataset_new/
+# ...except the small derived metadata: the provenance ledger and the label
+# histogram (~145 KB total) are the reproducibility record of the dataset.
+!results/dataset_h9/manifest.csv
+!results/dataset_h9/label_histogram.csv
+!results/dataset_h9/label_distribution.md
 results/benchmark/_work/
 results/benchmark/**/_work/
 results/benchmark/h8_probs/

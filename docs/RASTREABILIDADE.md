@@ -96,20 +96,38 @@ Compilação padrão (flags 0) verificada **byte-a-byte idêntica** ao
 
 ## 3. Dataset — `results/dataset_h9/` (canônico)
 
-- **Formato:** 64 `.pkl` + 64 `.bin` (16 sequências × 4 QP), 135 GB. Luma
-  `float32` [0,1] (= uint8/255, sem perdas; de-normalizada no carregador).
-  Contexto RD por amostra (blocos B/C/E). `manifest.csv` é o ledger autoritativo.
+- **Formato:** 64 `.pkl` (16 sequências × 4 QP), 31 GB. Os `.bin` intermediários
+  foram apagados na geração (`--no-keep-bin`); o `.pkl` é o payload autoritativo.
+  Luma `float32` [0,1] (= uint8/255, sem perdas; de-normalizada no carregador).
+  Contexto RD por amostra (blocos B/C/E). `manifest.csv` registra a proveniência
+  (caminhos, quadros, cpu-used) e as estatísticas de rótulo.
 - **Geração:** `cpu-used=0` (ground truth por busca RD completa), 5 quadros com
   **amostragem temporal** por sequência, QPs cq 20/32/43/55 (base_qindex=4·cq).
 - **Partição congelada** (`PROTOCOLO_avaliacao.md`), sem vazamento:
 
-| Conjunto | Sequências | Amostras (Σ 4 QP) |
-|---|---|---|
-| **Teste** | Jockey (1,50 M), RaceNight (1,84 M), RiverBank (2,03 M) | 5,36 M |
-| **Validação** | HoneyBee (1,74 M), FlowerPan (2,33 M), Lips (1,86 M) | 5,93 M |
-| **Treino** | Beauty, Bosphorus, CityAlley, FlowerFocus, FlowerKids, ReadySetGo, ShakeNDry, SunBath, Twilight, YachtRide | ≈16,3 M |
+| Conjunto | Sequências | Amostras (Σ 4 QP) | das quais nós de decisão |
+|---|---|---|---|
+| **Teste** | Jockey (1,49 M), RaceNight (1,83 M), RiverBank (2,01 M) | 5,32 M | 1,91 M |
+| **Validação** | HoneyBee (1,72 M), FlowerPan (2,32 M), Lips (1,85 M) | 5,89 M | 2,07 M |
+| **Treino** | Beauty, Bosphorus, CityAlley, FlowerFocus, FlowerKids, ReadySetGo, ShakeNDry, SunBath, Twilight, YachtRide | 15,76 M | 6,09 M |
 
-- **Total:** ≈27,5 M amostras (nós de particionamento).
+- **Total:** **26,98 M** amostras (nós da árvore de particionamento), das quais
+  **10,07 M são nós de decisão** (`block_dim ∈ {16,32,64}`). Os 16,91 M restantes
+  (62,7%) são blocos 8×8, folhas terminais de rótulo constante NONE — medido:
+  zero não-NONE em 16,91 M — excluídos do modelo (`partition_defs.py:41-54`),
+  mas mantidos na árvore porque podar um 16×16 economiza exatamente seus quatro
+  filhos.
+
+> **Nota (2026-07-19).** Os totais acima eram ≈27,5 M até esta data. As colunas
+> estatísticas do `manifest.csv` (`num_samples`, `base_qindex`, `dim*`, `part_*`)
+> haviam sido geradas com o layout de registro antigo (4116 B) sobre registros de
+> 4144 B, o que inflava `num_samples` em exatamente 4144/4116 = +0,68% e
+> invalidava os histogramas. Reparado a partir dos `.pkl` por
+> `src/scripts/partition_dataset/rebuild_manifest_stats.py`; original preservado em
+> `manifest.csv.bak-4116`. Nenhum modelo, BD-rate ou resultado de Gate dependia
+> dessas colunas — o carregador de treino lê apenas `pkl_path`, `sequence` e
+> `cq_level` (`data.py:49-62`). Distribuição completa de rótulos em
+> `results/dataset_h9/label_distribution.md`.
 - **Reprodução:** determinística; ver §6. **Não versionado no git** (tamanho);
   vive no disco do host + volume do container.
 

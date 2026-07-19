@@ -43,7 +43,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 CONVERTER = os.path.join(HERE, "convert_partition_data.py")
 
 LUMA_SIZE = 64 * 64
-SAMPLE = struct.Struct("<I4H5B3x{}s".format(LUMA_SIZE))
+# Must match PartitionSample in av1/encoder/partition_search.c:80-100 and the
+# converter (convert_partition_data.py:43-45): 4144 bytes, little-endian.
+# Layout: none_dist,none_rdcost (2q); sample_id,none_rate (2I); frame_w,frame_h,
+# mi_row,mi_col,dc_q (5H); qindex,bit_depth,bsize,block_dim,partition,
+# above_bsize,left_bsize,neigh_avail (8B); 6 pad; luma (4096s).
+SAMPLE = struct.Struct("<qqII5H8B6x{}s".format(LUMA_SIZE))
 PART_NAMES = ["NONE", "HORZ", "VERT", "SPLIT", "HORZ_A", "HORZ_B",
               "VERT_A", "VERT_B", "HORZ_4", "VERT_4"]
 DIMS = [8, 16, 32, 64]
@@ -120,7 +125,7 @@ def count_bin(path):
             if len(buf) < SAMPLE.size:
                 break
             rec = SAMPLE.unpack(buf)
-            q, bdim, part = rec[5], rec[8], rec[9]
+            q, bdim, part = rec[9], rec[12], rec[13]
             if base_q is None:
                 base_q = q
             dim_c[bdim] += 1
