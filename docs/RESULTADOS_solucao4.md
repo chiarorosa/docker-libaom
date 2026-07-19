@@ -154,6 +154,28 @@ casado, um benchmark real (integração C + horas de encode) só confirmaria um
 resultado pior — não se justifica pagá-lo. As Tasks 6–9 do plano (export C, Gate
 5, Gate 6) foram, portanto, **puladas por regra de parada de gate**.
 
+> **⚠ Correção (2026-07-19) — a justificativa acima tem dois defeitos.**
+>
+> 1. **O precedente H9c invocado está contaminado.** "Venceu o oráculo e foi
+>    refutado no benchmark real" descreve o piloto Jockey de 2 quadros, que a
+>    §8.1 de `ANDAMENTO_tese.md` prova ser H9a+H9c empilhados, não H9c isolado. O
+>    swap limpo (`RESULTADOS_fase6_swap_h9c.md`) mostra o oposto: o H9c **empata**
+>    com a CNN nativa na grade CTC e a **supera** em alta taxa. O precedente,
+>    portanto, não sustenta "oráculo rejeita ⇒ real rejeita".
+> 2. **A implicação lógica não vale.** O argumento pressupõe que rejeição
+>    *offline* implica rejeição real. Mas o próprio Approach B estabeleceu que a
+>    ordenação offline↔real **pode inverter** (`RESULTADOS_approachB.md:106,149`).
+>    Se inverte, **rejeição no oráculo não implica rejeição no encoder** — a regra
+>    de parada perde o fundamento lógico.
+>
+> **Enquadramento correto (não muda a decisão, muda a razão):** pular o Gate 5 foi
+> uma decisão sob **assimetria de custo experimental** — o custo de integrar em C
+> e rodar horas de encode contra o valor esperado da informação, dado que o sinal
+> offline era fraco. É uma escolha de alocação de esforço, defensável como tal, e
+> **não** uma implicação de que o real confirmaria a rejeição. A regressão de
+> *regret* falhou no oráculo por zero-inflação (§ acima); esse é o motivo
+> substantivo de não priorizá-la, independente do argumento do oráculo.
+
 ---
 
 ## 8. Ameaças à validade

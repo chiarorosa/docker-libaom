@@ -436,6 +436,25 @@ condições universais.
 
 ## 7. H9c — teto de contexto RD pós-NONE (2026-07-15): implementado, testado, não sobrevive ao piloto real
 
+> ### ⚠ RETRATAÇÃO (2026-07-19) — este §7 está superado; ler §8 antes de citá-lo
+>
+> O veredito abaixo ("não sobrevive ao piloto real") apoia-se **inteiramente** no
+> piloto Jockey de 2 quadros da tabela `:465`. A **§8.1 deste mesmo documento
+> prova esse piloto contaminado**: o H9a rodava por baixo nos seus defaults
+> compilados, e os ~19% de TS atribuídos ao H9c eram, na verdade, H9a+H9c
+> empilhados (H9c isolado poda só 2,96–4,23%). A comparação da tabela `:465-466`
+> mede, portanto, coisas diferentes em cada linha.
+>
+> O resultado limpo está na §8.2 (swap com H9a neutralizado) e foi consolidado
+> sobre as **8 sequências CTC** em `docs/RESULTADOS_fase6_swap_h9c.md`: como
+> substituto drop-in da CNN nativa intra, o H9c **empata na grade completa** e
+> **vence no regime de alta taxa** (CQ 20+32: p=0,043 em cpu1, p=0,015 em cpu2).
+> A conclusão de `:488-492` ("mesmo o teto mais informativo não se traduz em
+> vantagem") é **falsa como enunciada** — vale para o piloto contaminado, não para
+> o swap limpo. Mantém-se o texto original abaixo como registro histórico da
+> decisão de parada tomada em 2026-07-15, que era correta **com a informação
+> daquele momento**.
+
 Investigação completa do H9c como aposta de resultado adicional (plano
 `docs/superpowers/plans/2026-07-15-h9c-teto-rd-pos-none.md`, 8 de 9 tarefas
 executadas). Vetor de 39 features (A+B+C+E: o vetor H9a de 36 mais o
@@ -459,6 +478,11 @@ H9c desabilitado (flag on, env unset) não perturba o H9a.
 
 **Piloto de tempo real (Jockey, 2 quadros, encoder de verdade) — NÃO PASSOU.**
 Comparando no TS% mais próximo entre os dois:
+
+> **⚠ Tabela contaminada (ver retração no topo da §7 e a prova na §8.1).** A linha
+> "H9c (τ=0,95)" mede **H9a@0,9 + H9c empilhados**, não H9c isolado — os 19,43% de
+> TS vêm majoritariamente do H9a. A comparação com a linha H9a não é válida. O
+> resultado limpo está em §8.2 e `RESULTADOS_fase6_swap_h9c.md`.
 
 | ponto | BD-Rate | TS% | Speedup |
 |---|--:|--:|--:|
