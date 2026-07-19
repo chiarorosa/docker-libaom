@@ -153,7 +153,7 @@ fina em baixo speedup + paridade de qualidade do H9c com a CNN nativa a cpu1/2).
 
 ---
 
-## 6. Adendo (2026-07-19) — custo agregado do pruner implantado
+## 6. Adendo (2026-07-19) — custo implantado do pruner no codificador
 
 ### 6.1 A pergunta certa é o custo de parede no codificador, não o ns/chamada
 
