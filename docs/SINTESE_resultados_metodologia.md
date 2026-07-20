@@ -499,6 +499,15 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 - **Oráculo superestima o tempo real (~5×):** os gates *offline* (Gate 2/3) usam
   redução de custo de oráculo; a decisão final é sempre tempo de parede
   (Gate 5/benchmark). As margens *relativas* é que valem *offline*.
+- **Oráculo pode INVERTER a ordenação (ameaça mais forte, 2026-07-19):** não se
+  trata só de superestimar a magnitude — o Approach B estabeleceu que a *ordem
+  relativa* entre pruners no oráculo pode se inverter no encoder real (GNN ≫ H9a
+  offline; H9a ≫ GNN no tempo de parede; `RESULTADOS_approachB.md:106,149`).
+  Consequência metodológica: **rejeição no oráculo não implica rejeição no real**,
+  logo as margens relativas offline são um indício, não uma prova de ordenação. É
+  o motivo pelo qual todo veredito final passa pelo encoder (e pelo qual a decisão
+  de pular o Gate 5 da Solução 4 foi reenquadrada como assimetria de custo, não
+  implicação lógica — `RESULTADOS_solucao4.md`, correção D2).
 - **Ruído de poucos quadros:** Fase 6 usa 15 quadros; deltas de BD < ~0,1% podem
   estar na margem de ruído de conteúdo. Diferenças pequenas (ex.: o indício de
   §5) precisam de confirmação multi-sequência.
