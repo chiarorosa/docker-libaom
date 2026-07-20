@@ -58,8 +58,8 @@ import simulate_pruning as sp  # noqa: E402
 import regret as regretmod  # noqa: E402
 
 # Ordem de apresentação (piso -> teto), família implantável primeiro.
-DISPLAY_ORDER = ["random", "variance", "pixels24", "H9a", "H9a_cw", "H9c",
-                 "regret", "GNN", "GNN_causal"]
+DISPLAY_ORDER = ["random", "variance", "pixels24", "H9a", "H9a_b1", "H9a_cw",
+                 "H9c", "regret", "GNN", "GNN_causal"]
 
 # Chão-de-verdade real medido no encoder (menor BD = vencedor), com fonte e
 # uma flag de confiabilidade do próprio chão.
@@ -121,17 +121,23 @@ def collect(entries, per_pkl=None):
             if not sb.get("has_rd"):
                 raise SystemExit("{}: sem contexto RD".format(e["path"]))
             reg = node_regret_full(sb["members"], sb["ctx"])
+            node_ctx = {(dim, r, c): ctx for (dim, r, c, _luma, _label), ctx
+                       in zip(sb["members"], sb["ctx"])}
             nodes = {}
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 fa = featmod.node_features_h9a(sb["luma"], dim, r, c,
                                                sb["qindex"], sb["ctx"][k])
+                fb1 = featmod.node_features_h9a_b1(sb["luma"], dim, r, c,
+                                                   sb["qindex"], sb["ctx"][k],
+                                                   node_ctx)
                 fc = featmod.node_features_h9c(sb["luma"], dim, r, c,
                                                sb["qindex"], sb["ctx"][k])
                 rr = reg.get((dim, r, c))
                 if rr:
                     total_none_rd += rr["none_rd"]
                 nodes[(dim, r, c)] = {
-                    "truth": label, "feat": fa, "feat_h9c": fc,
+                    "truth": label, "feat": fa, "feat_h9a_b1": fb1,
+                    "feat_h9c": fc,
                     "reg_abs": rr["abs"] if rr else None,
                     "reg_rel": rr["rel"] if rr else None}
             sbs.append({"nodes": nodes, "luma": sb["luma"],
@@ -313,6 +319,11 @@ def main(argv):
         sbs, load("student_real/students.pt"), device, "feat", 24))
     run("H9a", lambda: score_student(
         sbs, load("student_h9a/students.pt"), device, "feat", 36))
+    if os.path.exists(os.path.join(args.models_dir,
+                                   "student_h9a_b1/students.pt")):
+        run("H9a_b1", lambda: score_student(
+            sbs, load("student_h9a_b1/students.pt"), device, "feat_h9a_b1",
+            42))
     if os.path.exists(os.path.join(args.models_dir,
                                    "student_h9a_cw/students.pt")):
         run("H9a_cw", lambda: score_student(

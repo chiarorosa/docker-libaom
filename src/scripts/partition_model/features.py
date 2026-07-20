@@ -324,6 +324,61 @@ def node_features_h9a(sb_luma, dim, r, c, qindex, ctx):
     return node_features_h9(sb_luma, dim, r, c, qindex, c2)[:NUM_FEATURES_H9A]
 
 
+# --------------------------------------------------------------------------
+# B1: hereditary RD context (parent + earlier siblings). Causally available in
+# the pre-search pruner -- the parent evaluates its own PARTITION_NONE before
+# recursing into children, and earlier siblings in z-order are searched before
+# the current node -- so this only uses RD magnitudes already computed by the
+# time the current node is scored, never labels/decisions. Layout (indices
+# 36..41, appended to the 36 H9a features):
+#   36  has_parent                          1.0 if dim<64 else 0.0
+#   37  log1p(parent none_rdcost)           0 if no parent / parent missing
+#   38  log1p(parent none_rate)             "
+#   39  log1p(parent none_dist)             "
+#   40  log1p(mean none_rdcost of earlier siblings present) 0 if none present
+#   41  (# earlier siblings present) / 3.0
+# --------------------------------------------------------------------------
+NUM_FEATURES_H9A_B1 = 42
+_Z_OFFSETS = [(0, 0), (0, 1), (1, 0), (1, 1)]  # index i == that offset's z-index
+
+
+def node_features_h9a_b1(sb_luma, dim, r, c, qindex, ctx, node_ctx):
+    """H9a + 6 hereditary RD-context features (42-dim). `node_ctx` is the
+    {(dim,r,c): ctx_dict} map for the WHOLE superblock (built by the caller
+    from zip(members, ctx)), needed to look up the parent's and earlier
+    siblings' own RD context."""
+    f = np.empty(NUM_FEATURES_H9A_B1, dtype=np.float32)
+    f[:NUM_FEATURES_H9A] = node_features_h9a(sb_luma, dim, r, c, qindex, ctx)
+
+    has_parent = dim < 64
+    f[36] = 1.0 if has_parent else 0.0
+
+    p = node_ctx.get((dim * 2, r // 2, c // 2)) if has_parent else None
+    if p is not None:
+        f[37] = np.log1p(max(p.get("none_rdcost", 0), 0))
+        f[38] = np.log1p(max(p.get("none_rate", 0), 0))
+        f[39] = np.log1p(max(p.get("none_dist", 0), 0))
+    else:
+        f[37] = f[38] = f[39] = 0.0
+
+    if has_parent:
+        pr, pc = r // 2, c // 2
+        z = (r % 2) * 2 + (c % 2)
+        rdcosts = []
+        for i, (dr, dc) in enumerate(_Z_OFFSETS):
+            if i >= z:
+                continue
+            sib = node_ctx.get((dim, 2 * pr + dr, 2 * pc + dc))
+            if sib is not None:
+                rdcosts.append(max(sib.get("none_rdcost", 0), 0))
+        f[40] = np.log1p(float(np.mean(rdcosts))) if rdcosts else 0.0
+        f[41] = len(rdcosts) / 3.0
+    else:
+        f[40] = 0.0
+        f[41] = 0.0
+    return f
+
+
 NUM_FEATURES_H9C = 39  # A(0..23) + B(24..31) + C(32..35) + E(36..38); D dropped
                        # (Fase 3 decision: SATD does not add signal over H9a).
 

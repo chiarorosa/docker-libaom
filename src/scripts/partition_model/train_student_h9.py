@@ -34,10 +34,11 @@ TRAIN_SEQS = ["Beauty", "Bosphorus", "CityAlley", "FlowerFocus", "FlowerKids",
 VAL_SEQS = ["HoneyBee", "FlowerPan", "Lips"]
 
 
-def collect_by_dim(entries, per_pkl=None, limit=None):
-    """Per-block-size {'feat':(N,36), 'truth':(N,)} arrays over the
+def collect_by_dim(entries, per_pkl=None, limit=None, feature_set="h9a"):
+    """Per-block-size {'feat':(N,36 or 42), 'truth':(N,)} arrays over the
     H9-instrumented dataset. per_pkl caps superblocks taken from each pkl
-    (diverse sampling across seqs/QPs); limit is a global superblock cap."""
+    (diverse sampling across seqs/QPs); limit is a global superblock cap.
+    feature_set='h9a_b1' adds the 6 hereditary RD-context features (B1)."""
     acc = {dim: {"feat": [], "truth": []} for dim, _ in MODEL_LEVELS}
     n_sb = 0
     for e in entries:
@@ -46,11 +47,19 @@ def collect_by_dim(entries, per_pkl=None, limit=None):
             if not sb.get("has_rd"):
                 raise SystemExit("{}: no RD context; re-extract with the H9 "
                                  "instrumentation.".format(e["path"]))
+            if feature_set == "h9a_b1":
+                node_ctx = {(dim, r, c): ctx for (dim, r, c, _luma, _label), ctx
+                           in zip(sb["members"], sb["ctx"])}
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 if dim not in acc:
                     continue
-                f = featmod.node_features_h9a(sb["luma"], dim, r, c,
-                                              sb["qindex"], sb["ctx"][k])
+                if feature_set == "h9a_b1":
+                    f = featmod.node_features_h9a_b1(
+                        sb["luma"], dim, r, c, sb["qindex"], sb["ctx"][k],
+                        node_ctx)
+                else:
+                    f = featmod.node_features_h9a(sb["luma"], dim, r, c,
+                                                  sb["qindex"], sb["ctx"][k])
                 acc[dim]["feat"].append(f)
                 acc[dim]["truth"].append(studentmod.collapse_label(label))
             n_sb += 1
@@ -88,6 +97,10 @@ def main(argv):
                         "Default off reproduces the deployed student_h9a; on "
                         "trains the class-weighted variant student_h9a_cw (see "
                         "docs/RESULTADOS_modelagem_B4_ponderacao_classe.md).")
+    p.add_argument("--feature-set", choices=["h9a", "h9a_b1"], default="h9a",
+                   help="'h9a' (default, 36 feats, deployed behavior) or "
+                        "'h9a_b1' (42 feats: h9a + 6 hereditary RD-context "
+                        "features from the parent and earlier siblings, B1).")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -97,13 +110,15 @@ def main(argv):
     print("train pkls: {} (train seqs {})".format(
         len(train_e), args.train_seqs), flush=True)
     per_pkl = args.per_pkl or None
-    data, n_sb = collect_by_dim(train_e, per_pkl=per_pkl, limit=args.limit)
+    data, n_sb = collect_by_dim(train_e, per_pkl=per_pkl, limit=args.limit,
+                               feature_set=args.feature_set)
     print("collected {} superblocks".format(n_sb), flush=True)
 
     os.makedirs(args.out_dir, exist_ok=True)
-    nfa = featmod.NUM_FEATURES_H9A
+    nfa = (featmod.NUM_FEATURES_H9A_B1 if args.feature_set == "h9a_b1"
+          else featmod.NUM_FEATURES_H9A)
     bundle = {"hidden": args.hidden, "students": {}, "norm": {},
-              "num_features": nfa, "feature_set": "h9a",
+              "num_features": nfa, "feature_set": args.feature_set,
               "class_weight": bool(args.class_weight)}
     for dim, _ in MODEL_LEVELS:
         rec = data[dim]
