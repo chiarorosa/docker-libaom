@@ -121,7 +121,7 @@ distinto por atacar um refinamento do NONE:
 |---|---|---|---|
 | **H9a** | primário | NONE-commit / SPLIT-force | implantado |
 | **H9c** | refinamento do NONE (39 feats, +`none_rdcost`) | pós-NONE | medido e rejeitado (real) |
-| **H9d** (proposto) | **estendido (AB/4-way)** | podar a busca de partição estendida — o pool de **34% do tempo local** | **proposto (justificado por este C1)** |
+| **H9d** | **estendido (AB/4-way)** | podar a busca de partição estendida — o pool de **34% do tempo local** | **medido e rejeitado** — teto dominado pelo H9a (`RESULTADOS_H9d_cota_superior.md`) |
 | **H9e / H9-rect** (proposto) | orientação retangular | desligar só a direção errada (B3, 69% direcional) | trabalho futuro (`RESULTADOS_modelagem_B3_horz_vert.md §6`) |
 
 **H9d** é o casamento direto do achado C1 com a alavanca C3: um preditor que decide, por nó
@@ -129,9 +129,12 @@ distinto por atacar um refinamento do NONE:
 não-explorado. **H9e/H9-rect** (o B3) é um eixo relacionado mas distinto — orientação, não
 "buscar ou não o estendido"; fica como trabalho futuro separado.
 
-> **Nota de escopo:** este C1 **justifica** H9d (o pool existe e é grande e consistente); não
-> o implementa nem prova ganho de BD×tempo. A confirmação exige (a) estender o crivo do A5 à
-> ação estendida OU medir a cota superior via `ext_partition_eval_thresh`, e (b) política em C.
+> **Nota de escopo:** este C1 mostra que o pool AB/4-way existe e é grande e consistente — mas
+> **não** basta para justificar o H9d. A cota superior foi medida em seguida
+> (`RESULTADOS_H9d_cota_superior.md`) e o veredito **inverteu**: o teto do H9d (blanket AB/4-way
+> off, 1,43×/0,89% BD) é **dominado nos dois eixos pelo H9a já implantado** nas mesmas 3 seqs
+> (cpu0), porque o NONE-commit do H9a já pula AB/4-way ao cortar a subárvore inteira. **H9d fica
+> como lever medido-e-rejeitado** — o custo existe, mas o modelo em produção já o colhe melhor.
 
 ## 5. Limitações
 

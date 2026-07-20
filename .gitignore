@@ -45,6 +45,9 @@ results/benchmark/gnn_probs/
 # instrumented build (CONFIG_COLLECT_PARTITION_STATS) + YUV; only the analysis
 # doc keeps the numbers.
 results/benchmark/partstats*/
+# H9d upper-bound probe: .obu bitstreams + raw.csv, regenerable from libaom_extoff.
+results/benchmark/h9d_ub/
+results/benchmark/h9d_probe/
 # Encoded bitstreams from benchmark runs are large and deterministically
 # reproducible from the source y4m + scripts; only the measured CSV/tex/log
 # summaries are kept in git.
