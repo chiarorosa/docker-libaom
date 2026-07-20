@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
-"""C1 — decompoe o custo de busca por CANDIDATO de particao a partir do
-part_timing.csv emitido por um build com CONFIG_COLLECT_PARTITION_STATS=1.
+"""C1/C3 — decompoe o custo de busca por CANDIDATO de particao a partir de um ou
+mais part_timing.csv (build com CONFIG_COLLECT_PARTITION_STATS=1).
+
+Uso:
+    analyze_partstats.py file1.csv [file2.csv ...] [--label seq1,seq2,...]
+
+Com varios arquivos: imprime um resumo por-sequencia (share AB+4-way por pool) e
+o AGREGADO global detalhado sobre o conjunto congelado de teste.
 
 Pergunta (falsificacao da alavanca C3): AB (HORZ_A/B, VERT_A/B) + 4-way
-(HORZ_4, VERT_4) somam >=10% do tempo de busca LOCAL do no? Se <10%, podar
-so AB/4-way nao vale o esforco de engenharia (C3 morre sem experimento).
+(HORZ_4, VERT_4) somam >=10% do tempo de busca LOCAL do no? Se <10%, podar so
+AB/4-way nao vale o esforco de engenharia (C3 morre sem experimento).
 
 CUIDADO METODOLOGICO: o timer de PARTITION_SPLIT engloba a recursao
 (partition_search.c:4552-4610), logo times[SPLIT] inclui todos os descendentes.
@@ -34,79 +40,113 @@ FOURWAY = [8, 9]
 RECT = [1, 2]
 LOCAL = [0, 1, 2, 4, 5, 6, 7, 8, 9]  # tudo menos SPLIT (3)
 
-# libaom BLOCK_SIZE -> label (subset relevante a All-Intra)
 BSIZE = {0: "4x4", 1: "4x8", 2: "8x4", 3: "8x8", 4: "8x16", 5: "16x8",
          6: "16x16", 7: "16x32", 8: "32x16", 9: "32x32", 10: "32x64",
          11: "64x32", 12: "64x64", 13: "64x128", 14: "128x64", 15: "128x128"}
 
 
-def main(path):
-    times_by_type = defaultdict(int)      # type -> soma times (todos os nos)
-    attempts_by_type = defaultdict(int)   # type -> soma attempts
-    local_by_bsize = defaultdict(lambda: defaultdict(int))  # bsize -> type -> times
-    n_nodes = 0
-
+def scan(path):
+    """Retorna (n_nodes, times[type], attempts[type], skipped, local_by_bsize)."""
+    times = defaultdict(int)
+    attempts = defaultdict(int)
+    local_by_bsize = defaultdict(lambda: defaultdict(int))
+    n = skipped = 0
     with open(path) as f:
         for line in f:
             p = line.rstrip(",\n").split(",")
             if len(p) < 48:
+                skipped += 1
                 continue
             try:
                 bsize = int(p[0])
-                times = [int(p[T0 + i]) for i in range(10)]
-                attempts = [int(p[18 + i]) for i in range(10)]
+                t = [int(p[T0 + i]) for i in range(10)]
+                a = [int(p[18 + i]) for i in range(10)]
             except ValueError:
+                skipped += 1
                 continue
-            n_nodes += 1
+            n += 1
             for i in range(10):
-                times_by_type[i] += times[i]
-                attempts_by_type[i] += attempts[i]
-                local_by_bsize[bsize][i] += times[i]
+                times[i] += t[i]
+                attempts[i] += a[i]
+                local_by_bsize[bsize][i] += t[i]
+    return n, times, attempts, skipped, local_by_bsize
 
-    local_total = sum(times_by_type[i] for i in LOCAL)
-    ab = sum(times_by_type[i] for i in AB)
-    fw = sum(times_by_type[i] for i in FOURWAY)
-    rect = sum(times_by_type[i] for i in RECT)
-    none = times_by_type[0]
 
-    print(f"nos processados: {n_nodes:,}")
-    print(f"tempo LOCAL total (exclui SPLIT recursivo): {local_total/1e6:.3f} s\n")
+def pools(times):
+    local = sum(times[i] for i in LOCAL)
+    return {
+        "local": local,
+        "NONE": times[0],
+        "RECT": sum(times[i] for i in RECT),
+        "AB": sum(times[i] for i in AB),
+        "4WAY": sum(times[i] for i in FOURWAY),
+        "ABFW": sum(times[i] for i in AB + FOURWAY),
+    }
 
-    print("=== share do tempo de busca LOCAL por candidato (global) ===")
+
+def pct(x, tot):
+    return 100.0 * x / tot if tot else 0.0
+
+
+def main(argv):
+    paths = [a for a in argv if not a.startswith("--")]
+    labels = None
+    for a in argv:
+        if a.startswith("--label"):
+            labels = a.split("=", 1)[1].split(",") if "=" in a else None
+    if labels is None:
+        labels = [p.split("/")[-2] if "/" in p else p for p in paths]
+
+    grand_t = defaultdict(int)
+    grand_a = defaultdict(int)
+    grand_bs = defaultdict(lambda: defaultdict(int))
+    grand_n = 0
+
+    print("=== por sequencia (share do tempo de busca LOCAL) ===")
+    hdr = f"{'seq':16s} {'nos':>10s} {'NONE':>7s} {'RECT':>7s} {'AB':>7s} {'4WAY':>7s} {'AB+4W':>8s}"
+    print(hdr)
+    for path, lab in zip(paths, labels):
+        n, times, att, skip, lbs = scan(path)
+        P = pools(times)
+        print(f"{lab:16s} {n:>10,} "
+              f"{pct(P['NONE'],P['local']):6.1f}% {pct(P['RECT'],P['local']):6.1f}% "
+              f"{pct(P['AB'],P['local']):6.1f}% {pct(P['4WAY'],P['local']):6.1f}% "
+              f"{pct(P['ABFW'],P['local']):7.2f}%")
+        grand_n += n
+        for i in range(10):
+            grand_t[i] += times[i]
+            grand_a[i] += att[i]
+        for bs in lbs:
+            for i in range(10):
+                grand_bs[bs][i] += lbs[bs][i]
+
+    G = pools(grand_t)
+    lt = G["local"]
+    print(f"\n=== AGREGADO ({len(paths)} seqs, {grand_n:,} nos) ===")
+    print(f"tempo LOCAL total (exclui SPLIT recursivo): {lt/1e6:.1f} s\n")
+    print("candidato   tempo(s)   share    attempts")
     for i in LOCAL:
-        pct = 100.0 * times_by_type[i] / local_total if local_total else 0
-        print(f"  {NAMES[i]:8s} {times_by_type[i]/1e6:8.3f} s  {pct:6.2f}%   "
-              f"(attempts {attempts_by_type[i]:,})")
-    print()
-    print("=== agregados-chave (share do tempo LOCAL) ===")
-    print(f"  NONE            : {100.0*none/local_total:6.2f}%")
-    print(f"  RECT (H+V)      : {100.0*rect/local_total:6.2f}%")
-    print(f"  AB (H/V_A/B)    : {100.0*ab/local_total:6.2f}%")
-    print(f"  4-way (H/V_4)   : {100.0*fw/local_total:6.2f}%")
-    print(f"  AB + 4-way      : {100.0*(ab+fw)/local_total:6.2f}%   "
-          f"<-- alavanca C3")
-    print(f"  RECT+AB+4way    : {100.0*(rect+ab+fw)/local_total:6.2f}%   "
-          f"(cota superior: disable_rect derruba os 3)")
-    print()
-    verdict = "MORTA (<10%)" if 100.0*(ab+fw)/local_total < 10 else "VIVA (>=10%)"
-    print(f">>> C3 (podar so AB/4-way): {verdict}")
-    print()
+        print(f"  {NAMES[i]:8s} {grand_t[i]/1e6:8.1f}  {pct(grand_t[i],lt):6.2f}%  {grand_a[i]:>10,}")
+    print(f"\n  NONE          : {pct(G['NONE'],lt):6.2f}%")
+    print(f"  RECT (H+V)    : {pct(G['RECT'],lt):6.2f}%")
+    print(f"  AB            : {pct(G['AB'],lt):6.2f}%")
+    print(f"  4-way         : {pct(G['4WAY'],lt):6.2f}%")
+    print(f"  AB + 4-way    : {pct(G['ABFW'],lt):6.2f}%   <-- alavanca C3")
+    print(f"  RECT+AB+4way  : {pct(G['RECT']+G['ABFW'],lt):6.2f}%   (disable_rect derruba os 3)")
+    verdict = "MORTA (<10%)" if pct(G['ABFW'], lt) < 10 else "VIVA (>=10%)"
+    print(f"\n>>> C3 (podar so AB/4-way): {verdict}\n")
 
-    print("=== attempts por tipo (AB/4-way foram buscados?) ===")
-    for i in AB + FOURWAY:
-        print(f"  {NAMES[i]:8s} attempts={attempts_by_type[i]:,}")
-    print()
-
-    print("=== share AB+4way por bsize (onde se concentra) ===")
-    for bs in sorted(local_by_bsize):
-        d = local_by_bsize[bs]
-        lt = sum(d[i] for i in LOCAL)
-        if lt == 0:
+    print("=== share AB+4way por bsize (agregado) ===")
+    for bs in sorted(grand_bs):
+        d = grand_bs[bs]
+        blt = sum(d[i] for i in LOCAL)
+        if blt == 0:
             continue
         abfw = sum(d[i] for i in AB + FOURWAY)
-        label = BSIZE.get(bs, f"bs{bs}")
-        print(f"  {label:9s} local={lt/1e6:7.3f}s  AB+4way={100.0*abfw/lt:6.2f}%")
+        print(f"  {BSIZE.get(bs,'bs'+str(bs)):9s} local={blt/1e6:7.1f}s  AB+4way={pct(abfw,blt):6.2f}%")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else "part_timing.csv")
+    if len(sys.argv) < 2:
+        sys.exit("uso: analyze_partstats.py file1.csv [file2.csv ...]")
+    main(sys.argv[1:])
