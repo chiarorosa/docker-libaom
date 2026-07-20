@@ -83,6 +83,11 @@ def main(argv):
                    help="cap superblocks per pkl (diverse sampling); 0 = all")
     p.add_argument("--limit", type=int, default=None,
                    help="global superblock cap (smoke)")
+    p.add_argument("--class-weight", action="store_true",
+                   help="per-level inverse-frequency class weighting (B4). "
+                        "Default off reproduces the deployed student_h9a; on "
+                        "trains the H9a_otimo variant (see "
+                        "docs/RESULTADOS_h9a_otimo.md).")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -98,7 +103,8 @@ def main(argv):
     os.makedirs(args.out_dir, exist_ok=True)
     nfa = featmod.NUM_FEATURES_H9A
     bundle = {"hidden": args.hidden, "students": {}, "norm": {},
-              "num_features": nfa, "feature_set": "h9a"}
+              "num_features": nfa, "feature_set": "h9a",
+              "class_weight": bool(args.class_weight)}
     for dim, _ in MODEL_LEVELS:
         rec = data[dim]
         if len(rec["truth"]) == 0:
@@ -109,7 +115,8 @@ def main(argv):
                                   dtype=np.float32)}
         net, norm = train_student(rec, args.hidden, device, args.epochs,
                                   args.lr, alpha=1.0, temp=1.0,
-                                  use_class_weight=False, in_features=nfa)
+                                  use_class_weight=args.class_weight,
+                                  in_features=nfa)
         with torch.no_grad():
             fb = torch.tensor(rec["feat"], dtype=torch.float32, device=device)
             pred = net(fb).argmax(-1).cpu().numpy()
