@@ -116,10 +116,20 @@ levemente pior pela inferência). C **não** salva, e não chega perto do nativo
 ## 6. Raiz do fenômeno e conclusão
 
 **Por que o oráculo (e a acurácia por-nó) mentiram:** a GNN otimiza **acurácia de
-classificação por-nó** (CE) e vence no oráculo — mas o custo RD **real** é dominado
-por **poucas podas erradas caras**, não pela contagem de acertos. **Acurácia por-nó
-e a métrica de custo do oráculo são maus proxies do BD×tempo real de um pruner.**
-É por isso que uma GNN claramente superior offline fica ~2× pior no encoder real.
+classificação por-nó** (CE) e vence no oráculo — mas isso **não** se traduz no
+BD×tempo real. **Acurácia por-nó e a métrica de custo do oráculo são maus proxies
+do BD×tempo real de um pruner.** É por isso que uma GNN claramente superior offline
+fica ~2× pior no encoder real.
+
+> **Correção (2026-07-20).** A versão original desta seção atribuía a derrota real
+> do GNN a "poucas podas erradas **caras em RD**". A medição do A5
+> (`RESULTADOS_oraculo_regret.md §5`) **não sustenta** essa causa: as podas NONE do
+> GNN são baratas por contagem (`split_lost` 0,25%) **e** por *regret* ponderado
+> (`reg_frac`≈0, o menor de todos). Logo a falha real do GNN **não está na ação
+> NONE-commit**. A causa fica como pergunta aberta (vazamento de vizinhança;
+> descasamento cpu0↔cpu1; outra ação da política), não como raiz provada. A
+> conclusão de que o oráculo é mau proxy **permanece** — só a explicação do
+> mecanismo foi suavizada.
 
 **Conclusão da Approach B.** Um modelo estruturado de **alta capacidade**, dado o
 **melhor tiro** (GNN expressiva de biblioteca; versão deployable pixel-only;

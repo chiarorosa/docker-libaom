@@ -67,6 +67,7 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `check_feature_parity.py` | Harness de paridade C↔Python (atributos **e** probabilidades) | build+YUV | (verde/vermelho) |
 | `gate2_signal.py` | **Gate 2** offline: MLP por subconjunto (variância/pixels/H9a/b/c), custo em risco casado | dataset | `gate2_*.csv` |
 | `calibration.py` | Calibração da softmax do estudante **implantado** no split de teste: ECE, precisão no limiar por τ, diagrama de confiabilidade. Ver `RESULTADOS_calibracao.md` | `students.pt` + dataset | `calibration/*.csv` |
+| `oracle_regret.py` | Crivo offline ponderado por *regret* (não contagem): fronteira `reg_frac × cost_red` de **todas** as soluções propostas na mesma vara held-out. Triagem defensável; expõe o limite do offline. Ver `RESULTADOS_oraculo_regret.md` | todos os bundles + dataset | `oracle_regret/*.csv` |
 | `train_student_h9.py` | Treina o estudante **implantado** (H9a, 36 atributos) **diretamente**, CE de rótulo duro, **sem destilação** (`use_class_weight=False`) | dataset | `student_h9a/students.pt` |
 | `train_student_h9c.py` | Treina o estudante H9c (39 atributos, +none_rate/dist/rdcost) | dataset | `student_h9c/students.pt` |
 | `graph_data.py` | Monta grafos causais por superbloco (arestas pai→filho, irmão→irmão) para o GNN. **Alimentado só com o vetor h9a de 36 dims** — cego ao custo RD (`FEAT_DIMS`, `:25`) | pkls | grafos |
