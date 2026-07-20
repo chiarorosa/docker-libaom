@@ -89,3 +89,62 @@ para ganhos futuros, não um resultado fechado.
 - O benefício assume que preservar a direção certa no rect-off melhora BD×tempo —
   plausível mas não medido (o rect-off é uma fração do tempo de busca do nó; ver
   a alavanca C3/C1 do plano de ações).
+
+---
+
+## 6. Vale ir em frente? Onde a tese ganha (análise de valor — trabalho futuro)
+
+**Decisão registrada (2026-07-20):** o B3 fica como **trabalho futuro**, possivelmente
+reavaliado após os blocos em aberto (engenharia C, encodes, contra-argumentos de
+banca). Esta seção documenta *onde* a tese ganharia se for perseguido, para não
+reabrir a análise depois.
+
+### 6.1 O mecanismo do ganho
+
+Hoje a decisão sobre retangulares é binária: buscar **todas** (sem economia) ou
+desligar **todas** (`av1_disable_rect_partitions` — economia, mas perde a direção
+certa se ela era a ótima). O B3 abre um **terceiro eixo de decisão** que nenhuma
+solução da tese tocou (todas mexem em NONE-commit e SPLIT-force): desligar **só a
+direção errada**, preservando a certa — podando retangulares mais agressivamente
+com menos perda de qualidade. O custo de busca retangular não é pequeno: rect+AB+
+4-way são ~8/9 do trabalho *dentro* de um nó.
+
+### 6.2 Onde a tese ganha, em ordem de solidez
+
+1. **Completude da caracterização do espaço de ações (ganho quase certo, barato).**
+   A tese cobre hoje 2 dos 3 eixos de decisão e **mediu que existe sinal no terceiro
+   (69%) sem usá-lo** — lacuna que a banca aponta. Ir em frente (ou mesmo só
+   documentar a medição) permite escrever que a tese examina e **ou explora ou
+   descarta com medição** todos os três eixos. Vale independentemente da magnitude
+   do speedup.
+2. **Tradeoff rect mais granular (plausível, modesto).** Se funcionar em encodes,
+   adiciona um ponto de operação que a fronteira não tem. Real, mas modesto — REST
+   é minoria (22% dos nós em 16×16, 23% em 32×32, 7% em 64×64).
+3. **Se falhar no encoder, ainda é ganho metodológico.** Vira mais uma instância
+   medida do vão offline↔real, reforçando a espinha que o A5/Approach B construíram.
+   B3-adiante é ganha-ganha: ou adiciona um lever, ou adiciona evidência.
+
+### 6.3 Onde a tese NÃO ganha (honestidade)
+
+- **O speedup-título não vem daqui** — vem do NONE-commit (corta subárvores) e do
+  SPLIT-force. O B3 opera numa minoria de nós.
+- **69% é modesto** — erraria a direção ~31% incondicionalmente; para ser seguro só
+  age a alta confiança, o que limita a frequência de disparo.
+- **Não está medido em BD×tempo** — o crivo do A5 cobre NONE-commit, não rect-off;
+  ir em frente exige estender o avaliador offline para a ação rect **antes** dos
+  encodes.
+
+### 6.4 Custo e recomendação
+
+Cash-in exige: (a) medir precisão-vs-confiança da direção (como o A4 para NONE);
+(b) estudante de 4 saídas + política direcional em C; (c) encodes. Trabalho
+substancial para um lever sobre a minoria retangular.
+
+**Recomendação:** o ganho **mais forte e mais barato** é o (1) — completude. Mesmo
+sem chegar aos encodes, a tese já pode registrar: *"o terceiro eixo de decisão
+(orientação retangular) carrega sinal aprendível (69%, medido), cuja exploração
+exige política direcional em C — deixada como trabalho futuro por operar sobre a
+minoria retangular e depender de validação no encoder."* Isso captura a maior parte
+do valor de banca a uma fração do custo. Ir até os encodes só se justifica se a
+tese quiser **um número de speedup positivo adicional**, e o retorno esperado é
+modesto — priorizar os blocos em aberto (CB-1/2/3, Bloco 6 C1) antes.
