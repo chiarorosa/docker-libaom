@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Compara dois bundles de estudante H9a no mesmo conjunto held-out: recall por
-classe e macro-F1 por tamanho de bloco. Usado para avaliar o B4 (H9a_otimo =
+classe e macro-F1 por tamanho de bloco. Usado para avaliar o B4 (student_h9a_cw =
 H9a + ponderação de classe por nível) contra o H9a implantado.
 
 O alvo do B4 é o split_recall em 16x16 (0,0259 medido, A8/gate1). O risco é
 suprimir P(NONE) confiante (distill.py:114-116) e degradar a calibração (A4).
 Este script mede o primeiro; a calibração roda por calibration.py.
 
-Uso: python compare_students.py --a student_h9a --b student_h9a_otimo
+Uso: python compare_students.py --a student_h9a --b student_h9a_cw
 """
 import argparse
 import os
@@ -58,7 +58,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--models-dir", default="/workspace/results/models")
     ap.add_argument("--a", default="student_h9a")
-    ap.add_argument("--b", default="student_h9a_otimo")
+    ap.add_argument("--b", default="student_h9a_cw")
     ap.add_argument("--dataset-dir", default="/workspace/results/dataset_h9")
     ap.add_argument("--seqs", nargs="+",
                     default=["HoneyBee", "FlowerPan", "Lips",

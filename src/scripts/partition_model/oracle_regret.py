@@ -58,7 +58,7 @@ import simulate_pruning as sp  # noqa: E402
 import regret as regretmod  # noqa: E402
 
 # Ordem de apresentação (piso -> teto), família implantável primeiro.
-DISPLAY_ORDER = ["random", "variance", "pixels24", "H9a", "H9a_otimo", "H9c",
+DISPLAY_ORDER = ["random", "variance", "pixels24", "H9a", "H9a_cw", "H9c",
                  "regret", "GNN", "GNN_causal"]
 
 # Chão-de-verdade real medido no encoder (menor BD = vencedor), com fonte e
@@ -314,9 +314,9 @@ def main(argv):
     run("H9a", lambda: score_student(
         sbs, load("student_h9a/students.pt"), device, "feat", 36))
     if os.path.exists(os.path.join(args.models_dir,
-                                   "student_h9a_otimo/students.pt")):
-        run("H9a_otimo", lambda: score_student(
-            sbs, load("student_h9a_otimo/students.pt"), device, "feat", 36))
+                                   "student_h9a_cw/students.pt")):
+        run("H9a_cw", lambda: score_student(
+            sbs, load("student_h9a_cw/students.pt"), device, "feat", 36))
     run("H9c", lambda: score_student(
         sbs, load("student_h9c/students.pt"), device, "feat_h9c", 39))
     run("regret", lambda: sp.score_with_regret(

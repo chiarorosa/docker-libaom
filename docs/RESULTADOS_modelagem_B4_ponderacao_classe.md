@@ -1,8 +1,10 @@
 # Modelagem B4 — ponderação de classe por nível (ablação, resultado negativo)
 
 **Data:** 2026-07-20
-**Artefato:** `results/models/student_h9a_otimo/` (nome aspiracional do pedido; a
-ablação mostra que **não** é ótimo — ver veredito).
+**Artefato:** `results/models/student_h9a_cw/` (cw = *class-weighted*). Nomeava-se
+`student_h9a_otimo` no pedido inicial; renomeado após a ablação, porque o nome
+"ótimo" afirmava o que o resultado refuta — o artefato nomeia o **experimento**
+(ponderação de classe), não um desfecho.
 **Baseline:** `student_h9a` (implantado, treino sem ponderação).
 **Split:** validação + teste held-out; modelos treinados nas 10 restantes.
 
@@ -24,11 +26,11 @@ podia **piorar**. Esta ablação mede, em vez de assumir.
 **Reprodução:**
 ```bash
 venv-ml/bin/python src/scripts/partition_model/train_student_h9.py \
-  --out-dir results/models/student_h9a_otimo --class-weight
+  --out-dir results/models/student_h9a_cw --class-weight
 venv-ml/bin/python src/scripts/partition_model/compare_students.py     # classificação
 venv-ml/bin/python src/scripts/partition_model/calibration.py \
-  --students results/models/student_h9a_otimo/students.pt ...           # calibração
-venv-ml/bin/python src/scripts/partition_model/oracle_regret.py ...     # crivo (inclui otimo)
+  --students results/models/student_h9a_cw/students.pt ...              # calibração
+venv-ml/bin/python src/scripts/partition_model/oracle_regret.py ...     # crivo (inclui H9a_cw)
 ```
 
 ## 2. O que melhorou — classificação (o alvo declarado do B4)
@@ -39,11 +41,11 @@ para os dois modelos):
 | dim | modelo | rec NONE | rec SPLIT | rec REST | macro-F1 |
 |--:|---|--:|--:|--:|--:|
 | 16 | H9a | 0,832 | **0,022** | 0,722 | 0,524 |
-| 16 | H9a_otimo | 0,585 | **0,361** | 0,829 | 0,556 |
+| 16 | H9a_cw | 0,585 | **0,361** | 0,829 | 0,556 |
 | 32 | H9a | 0,547 | 0,827 | 0,548 | 0,639 |
-| 32 | H9a_otimo | 0,333 | 0,835 | 0,667 | 0,629 |
+| 32 | H9a_cw | 0,333 | 0,835 | 0,667 | 0,629 |
 | 64 | H9a | 0,560 | 0,992 | **0,000** | 0,515 |
-| 64 | H9a_otimo | 0,681 | 0,925 | **0,497** | 0,556 |
+| 64 | H9a_cw | 0,681 | 0,925 | **0,497** | 0,556 |
 
 O SPLIT-recall em 16×16 saltou **16×** (0,022 → 0,361) e o modelo passou a prever
 REST (era 0 em 64×64). **Como classificador, a ponderação funciona.**
@@ -56,9 +58,9 @@ da softmax é (é sobre ela que τ opera). Comparado ao baseline do A4:
 | | ECE top | ECE NONE | τ=0,90 P(SPLIT) precisão |
 |---|--:|--:|--:|
 | H9a (A4) | **0,011** | 0,021 | 0,965 |
-| H9a_otimo | 0,040 (3,6×) | **0,174** (8×) | 0,880 |
+| H9a_cw | 0,040 (3,6×) | **0,174** (8×) | 0,880 |
 
-O diagrama de confiabilidade do otimo expõe o mecanismo: em P(NONE)=0,5 a
+O diagrama de confiabilidade do H9a_cw expõe o mecanismo: em P(NONE)=0,5 a
 frequência real de NONE é **0,82** — o modelo ficou **sistematicamente
 sub-confiante em NONE**, exatamente o que `distill.py:114-116` previa. Consequência
 para o pruner: sub-comprometimento de NONE → poda menos.
@@ -72,11 +74,11 @@ casado:
 | # | solução | reg_frac % ↓ | reg_rel ↓ | split_lost % | cost_red atingível |
 |--:|---|--:|--:|--:|---|
 | 4 | **H9a (implantado)** | **0,006** | 24,81 | 2,16 | 5–42% |
-| 5 | **H9a_otimo (B4)** | 0,009 | 24,72 | 1,99 | 2–**35%** |
+| 5 | **H9a_cw (B4)** | 0,009 | 24,72 | 1,99 | 2–**35%** |
 
 Empate técnico na qualidade de decisão (H9a marginalmente melhor em `reg_frac`,
-otimo marginalmente melhor em `reg_rel` e `split_lost` — tudo dentro do ruído).
-Mas o otimo **poda menos**: alcança no máximo 35% de `cost_red` contra 42% do H9a
+H9a_cw marginalmente melhor em `reg_rel` e `split_lost` — tudo dentro do ruído).
+Mas o H9a_cw **poda menos**: alcança no máximo 35% de `cost_red` contra 42% do H9a
 (o P(NONE) deflacionado limita o teto de poda).
 
 ## 5. Conclusão
@@ -107,6 +109,6 @@ medida, não retórica.
 - O **B1** (contexto RD hereditário: `none_rdcost` do pai e irmãos já decididos)
   é a alavanca de modelagem de maior evidência e **não** foi coberta aqui — muda o
   vetor de atributos (e o lado C), então é experimento separado, não um drop-in.
-- Nome do artefato: `student_h9a_otimo` é aspiracional (do pedido). A ablação o
-  torna um **registro negativo**; considerar renomear para `student_h9a_cw` se for
-  mantido no inventário.
+- Nome do artefato: renomeado de `student_h9a_otimo` (aspiracional, do pedido)
+  para `student_h9a_cw` — o nome passou a descrever o experimento (ponderação de
+  classe), não o desfecho. É um **registro negativo** no inventário.

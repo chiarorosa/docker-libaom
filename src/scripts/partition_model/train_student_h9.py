@@ -86,8 +86,8 @@ def main(argv):
     p.add_argument("--class-weight", action="store_true",
                    help="per-level inverse-frequency class weighting (B4). "
                         "Default off reproduces the deployed student_h9a; on "
-                        "trains the H9a_otimo variant (see "
-                        "docs/RESULTADOS_h9a_otimo.md).")
+                        "trains the class-weighted variant student_h9a_cw (see "
+                        "docs/RESULTADOS_modelagem_B4_ponderacao_classe.md).")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
