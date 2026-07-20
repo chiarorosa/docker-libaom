@@ -195,6 +195,20 @@ casado (ex.: a 1,3×, ML 1,39% BD vs variância 0,76%). Como a variância é **u
 > contexto RD (H9a). As convoluções são o **instrumento de diagnóstico e a
 > referência de limite superior**, não o mecanismo implantado.
 
+> **⚠ Refino (2026-07-20) — a afirmação de "saturação" NÃO está estabelecida; usar a
+> hierarquia medida.** A ablação acima é 2 quadros / 1 sequência, e o "ml" testado
+> era o estudante **destilado** (macro-F1 0,20), não o ConvNeXt de alta capacidade —
+> a defesa "o modelo não era fraco" não se sustenta. O crivo do A5
+> (`RESULTADOS_oraculo_regret.md`, 6 seqs, 792 mil nós) mostra o **mesmo** estudante
+> de pixels **vencendo** a variância no custo ponderado por *regret* (variância
+> 0,060 vs pixels24 0,015 a cost_red 30%). Logo "pixels saturam na variância / o
+> sinal não está nos pixels" **é contestável** (a favor: piloto fino de 2 quadros;
+> contra: crivo largo offline; e o GNN pixel-only fura o oráculo, `approachB §4`).
+> A afirmação **defensável e mais forte** é a hierarquia medida: **variância <
+> pixels24 < H9a** no crivo — o contexto RD agrega sinal *além* dos pixels, e os
+> pixels *além* da variância. Ver `RESPOSTAS_contra_argumentos_banca.md` (CB-1/2/3).
+> A confirmação da ordenação no encoder real (≥10 quadros, ≥2 seqs) é o item E5.
+
 **Ressalvas (para o Capítulo de Resultados):** (i) alto custo computacional da
 CNN; (ii) limitação informacional inerente às amostras Y; (iii) a destilação
 troca ganho por custo.
