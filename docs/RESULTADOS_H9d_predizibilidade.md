@@ -61,6 +61,24 @@ fração**. Isto é uma melhoria de Pareto: recupera a maior parte do custo de B
 pagava (0,8–2,2%), preservando quase todo o speedup marginal (~1,29×). Projeta um ponto de
 operação **muito mais eficiente** que o blanket — a confirmar no encoder (Etapa 3).
 
+## 2.1 Refinamento — 39 features (com contexto RD pós-NONE) elevam o AUC
+
+O H9d decide **pós-NONE**, logo o `none_rate/dist/rdcost` (o bloco E, a 39ª–37ª features do
+H9c) **está** disponível no ponto de enxerto. Reexecutando com `node_features_h9c` (39):
+
+| métrica (held-out) | h9a (36 feats) | **h9c (39 feats)** |
+|---|--:|--:|
+| ROC-AUC agregado | 0,890 | **0,902** |
+| ROC-AUC 16px / 32px / 64px | 0,906 / 0,817 / 0,864 | **0,919 / 0,829** / 0,865 |
+| PR-AUC agregado | 0,425 | **0,445** |
+| winners_lost 10% → search_avoided | 67,1% | **69,7%** |
+| search_avoided 50% → winners_lost | 2,6% | **1,1%** |
+
+Ganho **consistente** (16/32 sobem ~+0,012 AUC; 64 estável), como esperado — o custo/RD do
+NONE ajuda a distinguir onde o estendido importa. **O modelo de 39 features é o que segue
+para o C (Etapa 2)** — encaixe natural, ganho grátis. Reproduzir: acrescentar
+`--feature-set h9c`.
+
 ## 3. Veredito — GO para as Etapas 2–3
 
 **A Etapa 1 passa com folga.** As features do H9a carregam sinal forte para a decisão EXT
@@ -93,9 +111,8 @@ mesma tese do H9a, num eixo novo.
   BD; perder um grande custa muito. Uma versão ponderada por ganho-RD (à la crivo A5) tende a
   ser **ainda melhor** (protege os grandes, descarta os marginais) — refinamento para a
   Etapa 3.
-- **Só as 36 features H9a (pré-busca).** O H9d é pós-NONE, logo `none_rdcost` (a 39ª feature
-  do H9c) está disponível e provavelmente **eleva** o AUC. Deixado para a Etapa 2 (ganho
-  provável e barato).
+- **~~Só as 36 features H9a~~ — RESOLVIDO (§2.1):** a variante de 39 features (com
+  `none_rdcost` pós-NONE) foi medida e eleva o AUC (0,890→0,902); é a que segue para o C.
 - **Offline ≠ encoder.** Classificação offline forte é sinal verde, não prova de BD×tempo. O
   árbitro é o encode (Etapa 3).
 

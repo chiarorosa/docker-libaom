@@ -81,6 +81,8 @@ CLASS_NAMES = ["NAO_EXT", "EXT"]
 # AB (HORZ_A/HORZ_B/VERT_A/VERT_B) + 4-way (HORZ_4/VERT_4).
 _EXT_SET = {4, 5, 6, 7, 8, 9}
 
+DEFAULT_OUT_DIR = "/workspace/results/models/h9d_predictability"
+
 
 def label_ext(part10):
     """PARTITION_TYPE (0..9) -> rotulo binario EXT (1) / NAO_EXT (0)."""
@@ -90,9 +92,14 @@ def label_ext(part10):
 # --------------------------------------------------------------------------
 # Coleta de features/rotulos por nivel (mesmo padrao de b3_horz_vert.py)
 # --------------------------------------------------------------------------
-def collect_by_dim(entries, per_pkl=None, limit=None, verbose_tag=""):
-    """Per-block-size {'feat':(N,36), 'truth':(N,)} sobre o dataset H9a,
-    usando o rotulo binario EXT deste experimento."""
+def collect_by_dim(entries, per_pkl=None, limit=None, verbose_tag="",
+                    feature_set="h9a"):
+    """Per-block-size {'feat':(N,36 ou 39), 'truth':(N,)} sobre o dataset H9a,
+    usando o rotulo binario EXT deste experimento. feature_set escolhe o
+    extrator: "h9a" (36 features, H9a) ou "h9c" (39 features, H9a + contexto
+    RD pos-NONE)."""
+    extractor = (featmod.node_features_h9c if feature_set == "h9c"
+                 else featmod.node_features_h9a)
     acc = {dim: {"feat": [], "truth": []} for dim, _ in MODEL_LEVELS}
     n_sb = 0
     for e in entries:
@@ -104,8 +111,8 @@ def collect_by_dim(entries, per_pkl=None, limit=None, verbose_tag=""):
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 if dim not in acc:
                     continue
-                f = featmod.node_features_h9a(sb["luma"], dim, r, c,
-                                              sb["qindex"], sb["ctx"][k])
+                f = extractor(sb["luma"], dim, r, c,
+                              sb["qindex"], sb["ctx"][k])
                 acc[dim]["feat"].append(f)
                 acc[dim]["truth"].append(label_ext(label))
             n_sb += 1
@@ -350,8 +357,10 @@ def main(argv):
     p.add_argument("--dataset-dir", default="/workspace/results/dataset_h9")
     p.add_argument("--train-seqs", nargs="+", default=TRAIN_SEQS)
     p.add_argument("--held-out-seqs", nargs="+", default=HELD_OUT_SEQS)
-    p.add_argument("--out-dir",
-                   default="/workspace/results/models/h9d_predictability")
+    p.add_argument("--out-dir", default=DEFAULT_OUT_DIR)
+    p.add_argument("--feature-set", choices=["h9a", "h9c"], default="h9a",
+                   help="h9a: 36 features (default); h9c: 39 features "
+                        "(H9a + contexto RD pos-NONE)")
     p.add_argument("--hidden", type=int, nargs="+", default=[64, 32])
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--lr", type=float, default=1e-3)
@@ -359,6 +368,11 @@ def main(argv):
     p.add_argument("--per-pkl-train", type=int, default=3000)
     p.add_argument("--per-pkl-eval", type=int, default=2000)
     args = p.parse_args(argv)
+
+    # h9a e h9c nao devem se sobrescrever: se o usuario nao customizou
+    # --out-dir, deriva um subdir proprio para h9c.
+    if args.feature_set == "h9c" and args.out_dir == DEFAULT_OUT_DIR:
+        args.out_dir = args.out_dir + "_h9c"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("device:", device, flush=True)
@@ -385,17 +399,21 @@ def main(argv):
 
     print("\n=== coleta (treino) ===", flush=True)
     train_data, n_sb_train = collect_by_dim(
-        train_e, per_pkl=args.per_pkl_train, verbose_tag="train")
+        train_e, per_pkl=args.per_pkl_train, verbose_tag="train",
+        feature_set=args.feature_set)
     print("total superblocos (treino): {}".format(n_sb_train), flush=True)
 
     print("\n=== coleta (held-out) ===", flush=True)
     eval_data, n_sb_eval = collect_by_dim(
-        heldout_e, per_pkl=args.per_pkl_eval, verbose_tag="eval")
+        heldout_e, per_pkl=args.per_pkl_eval, verbose_tag="eval",
+        feature_set=args.feature_set)
     print("total superblocos (held-out): {}".format(n_sb_eval), flush=True)
 
     os.makedirs(args.out_dir, exist_ok=True)
+    num_features = (featmod.NUM_FEATURES_H9C if args.feature_set == "h9c"
+                    else featmod.NUM_FEATURES_H9A)
     bundle = {"hidden": args.hidden, "students": {}, "norm": {},
-              "num_features": featmod.NUM_FEATURES_H9A, "feature_set": "h9a",
+              "num_features": num_features, "feature_set": args.feature_set,
               "classes": NUM_EXT_CLASSES}
 
     per_dim_eval = {}
