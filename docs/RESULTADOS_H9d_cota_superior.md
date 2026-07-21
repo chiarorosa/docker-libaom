@@ -158,10 +158,11 @@ marginal pós-NONE), o H9d **não é dominado** — é um ponto novo na fronteir
 1. **H9d pós-NONE vale investigar** — mesmo o blanket é Pareto-competitivo com o knob de τ, e a
    seleção só melhora. É o molde do H9c (podador aprendido pós-NONE), agora sobre o eixo
    estendido em vez do NONE.
-2. **Próximo passo, offline e barato (antes de qualquer C):** medir a **predizibilidade** de
-   "AB/4-way vai vencer" com as features do nó já disponíveis (à la A4 para NONE, B3 para
-   direção). Precisão a alta confiança decide se o H9d seletivo supera o blanket o bastante
-   para dominar a curva de τ.
+2. **Predizibilidade offline — FEITO, PASSOU** (`RESULTADOS_H9d_predizibilidade.md`): as
+   features do H9a separam "AB/4-way vence" com **ROC-AUC 0,890** (6 seqs held-out, 792.840
+   nós). Dá para evitar ~67% das buscas perdendo só 10% dos vencedores (ou 50% perdendo 2,6%)
+   → o seletivo é uma melhoria de Pareto clara sobre o blanket. **Sinal verde para as Etapas
+   2–3.**
 3. **Se render offline:** política em C (`ab_bsize_thresh`/`part4_bsize_thresh` como função da
    predição por nó, não env global — o gate já existe) + confirmação BD×tempo (A5). O gate
    `AV1_EXT_PART_OFF` já provou o mecanismo; falta torná-lo seletivo.
