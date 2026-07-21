@@ -49,6 +49,7 @@ results/benchmark/partstats*/
 # regenerable dos binarios libaom_extoff / libaom_extoff_ml.
 results/benchmark/h9d_*/
 results/benchmark/c2_levels/
+results/benchmark/c5_finetau/
 # Encoded bitstreams from benchmark runs are large and deterministically
 # reproducible from the source y4m + scripts; only the measured CSV/tex/log
 # summaries are kept in git.
