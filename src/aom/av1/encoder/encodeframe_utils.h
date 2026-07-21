@@ -238,6 +238,11 @@ typedef struct {
   // This flag will be set if best partition is found from the search.
   bool found_best_partition;
 
+  // H9d selective extended-partition pruner: set post-NONE when the model
+  // predicts AB/4-way are unlikely to win at this node -> skip their search.
+  // 0 by default (no-op; gated behind AV1_STUDENT_H9D_ENABLE).
+  int h9d_skip_ext;
+
 #if CONFIG_COLLECT_PARTITION_STATS
   PartitionTimingStats part_timing_stats;
 #endif  // CONFIG_COLLECT_PARTITION_STATS

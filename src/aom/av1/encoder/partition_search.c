@@ -3474,6 +3474,7 @@ static void init_partition_search_state_params(
 
   // Initialize partition search flags to defaults.
   part_search_state->terminate_partition_search = 0;
+  part_search_state->h9d_skip_ext = 0;
   part_search_state->do_square_split = blk_params->bsize_at_least_8x8;
   part_search_state->do_rectangular_split =
       cpi->oxcf.part_cfg.enable_rect_partitions &&
@@ -4102,12 +4103,15 @@ static int allow_ab_partition_search(PartitionSearchState *part_search_state,
   if (part_sf->ext_part_eval_based_on_cur_best && !must_find_valid_partition &&
       !(curr_best_part == PARTITION_HORZ || curr_best_part == PARTITION_VERT))
     ab_bsize_thresh = BLOCK_128X128;
-  // H9d upper-bound probe (C3): AV1_EXT_PART_OFF blanket-disables AB partitions
-  // at every bsize (bsize > BLOCK_128X128 is never true). Env unset => native.
+  // Disable AB partitions at every bsize (bsize > BLOCK_128X128 is never true)
+  // when either the blanket env probe (AV1_EXT_PART_OFF, C3 upper bound) or the
+  // per-node H9d selective pruner marked this node to skip the extended search.
+  // Both default off -> native behavior.
   {
     static int ext_off = -1;
     if (ext_off < 0) ext_off = getenv("AV1_EXT_PART_OFF") ? 1 : 0;
-    if (ext_off) ab_bsize_thresh = BLOCK_128X128;
+    if (ext_off || part_search_state->h9d_skip_ext)
+      ab_bsize_thresh = BLOCK_128X128;
   }
 
   // ab partitions are only allowed for square block sizes BLOCK_16X16 or
@@ -4168,12 +4172,14 @@ static void prune_4_way_partition_search(
   if (cpi->sf.part_sf.ext_part_eval_based_on_cur_best &&
       !x->must_find_valid_partition && pc_tree->partitioning == PARTITION_NONE)
     part4_bsize_thresh = BLOCK_128X128;
-  // H9d upper-bound probe (C3): AV1_EXT_PART_OFF blanket-disables 4-way
-  // partitions at every bsize. Env unset => native behavior.
+  // Disable 4-way partitions at every bsize when either the blanket env probe
+  // (AV1_EXT_PART_OFF, C3 upper bound) or the per-node H9d selective pruner
+  // marked this node to skip the extended search. Both default off -> native.
   {
     static int ext_off = -1;
     if (ext_off < 0) ext_off = getenv("AV1_EXT_PART_OFF") ? 1 : 0;
-    if (ext_off) part4_bsize_thresh = BLOCK_128X128;
+    if (ext_off || part_search_state->h9d_skip_ext)
+      part4_bsize_thresh = BLOCK_128X128;
   }
 
   // 4-way partitions are only allowed for BLOCK_16X16, BLOCK_32X32, and

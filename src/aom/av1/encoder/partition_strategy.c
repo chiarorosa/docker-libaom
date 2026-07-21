@@ -1612,6 +1612,7 @@ void av1_ml_predict_breakout(AV1_COMP *const cpi, const MACROBLOCK *const x,
 #include <string.h>
 #include "av1/encoder/partition_student_weights.h"
 #include "av1/encoder/partition_student_h9c_weights.h"
+#include "av1/encoder/partition_student_h9d_weights.h"
 
 // Attribution ablation. The end-to-end speedup must be shown to come from the
 // distilled ConvNeXt->student model's node SELECTION, not merely from the
@@ -1717,6 +1718,36 @@ static float student_h9c_get_tau(int n) {
     for (int i = 0; i < 3; ++i) {
       char name[40];
       snprintf(name, sizeof(name), "AV1_STUDENT_H9C_TAU%s", suffix[i]);
+      tau[i] = student_env_tau(name, g);
+    }
+    inited = 1;
+  }
+  return tau[n == 16 ? 0 : (n == 32 ? 1 : 2)];
+}
+
+// H9d (post-NONE, selective extended-partition pruner): AV1_STUDENT_H9D_ENABLE
+// gates the whole feature (default off -> av1_prune_after_none does not run it).
+static int student_h9d_enabled(void) {
+  static int cached = -1;
+  if (cached < 0) {
+    const char *e = getenv("AV1_STUDENT_H9D_ENABLE");
+    cached = (e && e[0] && e[0] != '0') ? 1 : 0;
+  }
+  return cached;
+}
+
+// Threshold on P(EXT): skip AB/4-way search at a node when P(EXT) < tau.
+// Per-size AV1_STUDENT_H9D_TAU_16/_32/_64 override the global
+// AV1_STUDENT_H9D_TAU (default 0.10, ~10% winners-lost operating point).
+static float student_h9d_get_tau(int n) {
+  static int inited = 0;
+  static float tau[3];  // 0 -> 16px, 1 -> 32px, 2 -> 64px
+  if (!inited) {
+    static const char *suffix[3] = { "_16", "_32", "_64" };
+    const float g = student_env_tau("AV1_STUDENT_H9D_TAU", 0.10f);
+    for (int i = 0; i < 3; ++i) {
+      char name[40];
+      snprintf(name, sizeof(name), "AV1_STUDENT_H9D_TAU%s", suffix[i]);
       tau[i] = student_env_tau(name, g);
     }
     inited = 1;
@@ -2200,20 +2231,53 @@ static void student_h9c_decide(const AV1_COMMON *cm, MACROBLOCK *x,
   const float tau = student_h9c_get_tau(block_size_wide[blk->bsize]);
   if (probs[0] > tau) av1_disable_all_splits(part_state);
 }
+
+// H9d: post-NONE decision on the EXTENDED (AB/4-way) partitions. Same 39-feature
+// vector as H9c (A+B+C + post-NONE RD context) and same gate/context; the action
+// differs -- it marks the node to skip the AB/4-way search (consumed at the
+// ab/4-way gates in partition_search.c), leaving NONE/rect/split untouched.
+static void student_h9d_decide(const AV1_COMMON *cm, MACROBLOCK *x,
+                               PartitionSearchState *part_state) {
+  const PartitionBlkParams *blk = &part_state->part_blk_params;
+  if (part_state->none_rd <= 0 || part_state->this_rdc.rate == INT_MAX) return;
+  const NN_CONFIG *nnconfig = av1_partition_student_h9d_nnconfig(blk->bsize);
+  if (!nnconfig) return;
+  float feats[AV1_PARTITION_STUDENT_H9D_NUM_FEATURES];
+  student_node_features(cm, x, blk, feats);  // fills [0..35] (A+B+C)
+  const RD_STATS *none_rdc = &part_state->this_rdc;
+  feats[36] = (float)log1p((double)AOMMAX(none_rdc->rate, 0));
+  feats[37] = (float)log1p((double)AOMMAX(none_rdc->dist, 0));
+  feats[38] = (float)log1p((double)AOMMAX(none_rdc->rdcost, 0));
+  float logits[2], probs[2];
+  const int pt_on = av1_pruner_timing_on();
+  unsigned long long pt_t0 = 0;
+  if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
+  av1_nn_predict(feats, nnconfig, 1, logits);
+  if (pt_on) { g_pt_h9c_inf.ns += av1_pt_now_ns() - pt_t0; g_pt_h9c_inf.calls++; }
+  av1_nn_softmax(logits, probs, 2);
+  // probs = [P(NAO_EXT), P(EXT)]; skip AB/4-way when P(EXT) is low.
+  const float tau = student_h9d_get_tau(block_size_wide[blk->bsize]);
+  if (probs[1] < tau) part_state->h9d_skip_ext = 1;
+}
 #endif  // PARTITION_ML_STUDENT
 
 void av1_prune_after_none(const AV1_COMMON *cm, MACROBLOCK *x,
                           PartitionSearchState *part_state) {
 #if PARTITION_ML_STUDENT
-  if (!student_h9c_enabled()) return;
+  const int h9c_on = student_h9c_enabled();
+  const int h9d_on = student_h9d_enabled();
+  if (!h9c_on && !h9d_on) return;
   const PartitionBlkParams *blk = &part_state->part_blk_params;
   const CommonModeInfoParams *const mi_params = &cm->mi_params;
-  const int try_h9c =
+  // Same intra / whole-64x64-unit gate as the pre-search student (block A/B/C
+  // parent context requires the containing superblock unit to be in-frame).
+  const int try_post_none =
       frame_is_intra_only(cm) && cm->seq_params->sb_size >= BLOCK_64X64 &&
       blk->bsize <= BLOCK_64X64 && blk->bsize > BLOCK_8X8 &&
       (blk->mi_row & ~15) + 16 <= mi_params->mi_rows &&
       (blk->mi_col & ~15) + 16 <= mi_params->mi_cols;
-  if (try_h9c) student_h9c_decide(cm, x, part_state);
+  if (try_post_none && h9c_on) student_h9c_decide(cm, x, part_state);
+  if (try_post_none && h9d_on) student_h9d_decide(cm, x, part_state);
 #else
   (void)cm;
   (void)x;
