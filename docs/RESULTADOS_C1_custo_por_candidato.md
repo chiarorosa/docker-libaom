@@ -121,7 +121,7 @@ distinto por atacar um refinamento do NONE:
 |---|---|---|---|
 | **H9a** | primário | NONE-commit / SPLIT-force | implantado |
 | **H9c** | refinamento do NONE (39 feats, +`none_rdcost`) | pós-NONE | medido e rejeitado (real) |
-| **H9d** | **estendido (AB/4-way)** | podar a busca de partição estendida — o pool de **34% do tempo local** | **medido e rejeitado** — teto dominado pelo H9a (`RESULTADOS_H9d_cota_superior.md`) |
+| **H9d** | **estendido (AB/4-way)** | podar a busca de partição estendida **pós-NONE** — o pool de **34% do tempo local** | **aberto/promissor** — marginal pós-NONE Pareto-não-dominado (`RESULTADOS_H9d_cota_superior.md §3.7`) |
 | **H9e / H9-rect** (proposto) | orientação retangular | desligar só a direção errada (B3, 69% direcional) | trabalho futuro (`RESULTADOS_modelagem_B3_horz_vert.md §6`) |
 
 **H9d** é o casamento direto do achado C1 com a alavanca C3: um preditor que decide, por nó
@@ -129,12 +129,13 @@ distinto por atacar um refinamento do NONE:
 não-explorado. **H9e/H9-rect** (o B3) é um eixo relacionado mas distinto — orientação, não
 "buscar ou não o estendido"; fica como trabalho futuro separado.
 
-> **Nota de escopo:** este C1 mostra que o pool AB/4-way existe e é grande e consistente — mas
-> **não** basta para justificar o H9d. A cota superior foi medida em seguida
-> (`RESULTADOS_H9d_cota_superior.md`) e o veredito **inverteu**: o teto do H9d (blanket AB/4-way
-> off, 1,43×/0,89% BD) é **dominado nos dois eixos pelo H9a já implantado** nas mesmas 3 seqs
-> (cpu0), porque o NONE-commit do H9a já pula AB/4-way ao cortar a subárvore inteira. **H9d fica
-> como lever medido-e-rejeitado** — o custo existe, mas o modelo em produção já o colhe melhor.
+> **Nota de escopo:** este C1 mostra que o pool AB/4-way existe e é grande e consistente. A
+> medição seguinte (`RESULTADOS_H9d_cota_superior.md`) qualificou o H9d como **estágio
+> pós-NONE** (complemento do H9a, à la H9c — não substituto): o gate só age no resíduo que o
+> H9a não NONE-commita (`partition_search.c:5753` decide antes de AB/4-way em `:5903+`). Nessa
+> moldura o ponto empilhado H9a+extoff é **Pareto-não-dominado** vs a curva de τ do H9a nas 3
+> seqs → **H9d é um lever aberto e promissor**. Pendente: medir offline a predizibilidade de
+> AB/4-way (barato) antes de política seletiva em C.
 
 ## 5. Limitações
 

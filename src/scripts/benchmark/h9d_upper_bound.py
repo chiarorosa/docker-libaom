@@ -37,8 +37,18 @@ SEQS = {
 PSNR_RE = re.compile(r"PSNR \(Overall/Avg/Y/U/V\)\s+"
                      r"([\d.]+)\s+([\d.]+)\s+([\d.]+)")
 
+# Ponto de operacao de referencia do H9a implantado (P_ref em h7h8_bench.py).
+# Aplicado a AMBOS os bracos quando --stack h9a, para medir o ganho MARGINAL
+# de desligar AB/4-way EM CIMA do H9a operante (H9d como estagio pos-NONE).
+H9A_PREF = {
+    "AV1_STUDENT_TAU_NONE_16": "0.85", "AV1_STUDENT_TAU_NONE_32": "0.80",
+    "AV1_STUDENT_TAU_NONE_64": "0.80", "AV1_STUDENT_TAU_SPLIT": "0.90",
+    "AV1_STUDENT_TAU_REST_16": "0.20", "AV1_STUDENT_TAU_REST_32": "0.20",
+    "AV1_STUDENT_TAU_REST_64": "0.20",
+}
 
-def encode(enc, seq_file, fps, cq, frames, out, ext_off):
+
+def encode(enc, seq_file, fps, cq, frames, out, ext_off, base_env=None):
     cmd = [
         enc, "-w", "3840", "-h", "2160", "--fps=" + fps, "--input-bit-depth=8",
         "--cpu-used=0", "--passes=1", "--end-usage=q", "--cq-level=%d" % cq,
@@ -49,6 +59,8 @@ def encode(enc, seq_file, fps, cq, frames, out, ext_off):
         "-o", out, os.path.join(SAMPLES, seq_file),
     ]
     env = dict(os.environ)
+    if base_env:
+        env.update(base_env)
     if ext_off:
         env["AV1_EXT_PART_OFF"] = "1"
     else:
@@ -76,9 +88,16 @@ def main():
     ap.add_argument("--seqs", nargs="+", default=list(SEQS))
     ap.add_argument("--work", default="/workspace/results/benchmark/h9d_ub")
     ap.add_argument("--csv", default=None)
+    ap.add_argument("--stack", choices=["none", "h9a"], default="none",
+                    help="none: nativo vs extoff (teto isolado). "
+                         "h9a: H9a(P_ref) vs H9a+extoff (marginal pos-NONE).")
     args = ap.parse_args()
     os.makedirs(args.work, exist_ok=True)
     csv_path = args.csv or os.path.join(args.work, "raw.csv")
+
+    base_env = H9A_PREF if args.stack == "h9a" else {}
+    base_name = "h9a" if args.stack == "h9a" else "native"
+    off_name = "h9a_extoff" if args.stack == "h9a" else "extoff"
 
     rows = []
     with open(csv_path, "w") as cf:
@@ -87,11 +106,12 @@ def main():
             seq_file, fps = SEQS[seq]
             for cq in args.cqs:
                 for ext_off in (0, 1):
-                    arm = "extoff" if ext_off else "native"
+                    arm = off_name if ext_off else base_name
                     out = os.path.join(args.work, "%s_cq%d_%s.obu" %
                                        (seq, cq, arm))
                     bits, psnr_y, dt = encode(args.enc, seq_file, fps, cq,
-                                              args.frames, out, ext_off)
+                                              args.frames, out, ext_off,
+                                              base_env)
                     cf.write("%s,%d,%s,%d,%.4f,%.2f\n" %
                              (seq, cq, arm, bits, psnr_y, dt))
                     cf.flush()
@@ -101,37 +121,45 @@ def main():
                           flush=True)
 
     # --- agregacao ---
-    print("\n=== cota superior H9d (blanket AB/4-way off vs nativo) ===")
-    print("%-11s %10s %10s %10s" % ("seq", "BD-rate%", "speedup", "t_nat/t_off"))
-    tot_nat = tot_off = 0.0
+    title = ("marginal H9d pos-NONE (H9a+extoff vs H9a)" if args.stack == "h9a"
+             else "cota superior H9d (blanket AB/4-way off vs nativo)")
+    print("\n=== %s ===" % title)
+    print("%-11s %10s %10s %12s" % ("seq", "BD-rate%", "speedup",
+                                    "t_base/t_off"))
+    tot_b = tot_o = 0.0
     bdrates = []
     for seq in args.seqs:
-        pts = {arm: ([], []) for arm in ("native", "extoff")}
-        tn = to = 0.0
+        pts = {arm: ([], []) for arm in (base_name, off_name)}
+        tb = to = 0.0
         for (s, cq, arm, bits, psnr_y, dt) in rows:
             if s != seq:
                 continue
             pts[arm][0].append(bits)
             pts[arm][1].append(psnr_y)
-            if arm == "native":
-                tn += dt
+            if arm == base_name:
+                tb += dt
             else:
                 to += dt
-        bd = bd_rate(pts["native"][0], pts["native"][1],
-                     pts["extoff"][0], pts["extoff"][1])
+        bd = bd_rate(pts[base_name][0], pts[base_name][1],
+                     pts[off_name][0], pts[off_name][1])
         bdrates.append(bd)
-        tot_nat += tn
-        tot_off += to
-        print("%-11s %+10.3f %9.3fx %10s" %
-              (seq, bd, tn / to if to else float("nan"),
-               "%.1f/%.1f" % (tn, to)))
+        tot_b += tb
+        tot_o += to
+        print("%-11s %+10.3f %9.3fx %12s" %
+              (seq, bd, tb / to if to else float("nan"),
+               "%.1f/%.1f" % (tb, to)))
     import statistics
-    print("-" * 44)
+    print("-" * 46)
     print("%-11s %+10.3f %9.3fx" %
           ("MEDIA", statistics.mean(bdrates),
-           tot_nat / tot_off if tot_off else float("nan")))
-    print("\nLeitura: BD-rate>0 = custo de qualidade de remover AB/4-way; "
-          "speedup = teto (blanket). H9d seletivo fica dentro do envelope.")
+           tot_b / tot_o if tot_o else float("nan")))
+    if args.stack == "h9a":
+        print("\nLeitura: BD-rate/speedup MARGINAL de desligar AB/4-way em cima "
+              "do H9a operante (P_ref). Se marginal ~ ruido, H9d pos-NONE morre; "
+              "se material a baixo BD, um H9d seletivo estilo H9c vale construir.")
+    else:
+        print("\nLeitura: BD-rate>0 = custo de qualidade de remover AB/4-way; "
+              "speedup = teto (blanket). H9d seletivo fica dentro do envelope.")
 
 
 if __name__ == "__main__":
