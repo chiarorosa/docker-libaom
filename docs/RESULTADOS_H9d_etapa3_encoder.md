@@ -63,8 +63,31 @@ melhoria de Pareto genuína sobre o blanket e uma extensão útil da fronteira d
 quadros — dentro do ruído possível em Jockey/RiverBank. A **Fase 2** (≥10 quadros, no melhor
 τ, ~0,30) confirma que a vantagem no RaceNight/Jockey é sinal, não ruído.
 
+## 4.1 Fase 2 (10 quadros) — CONFIRMA a Fase 1
+
+Confirmação a **10 quadros** (rigor de resultado E), 3 seqs, 4 CQ, vs nativo: H9a(P_ref),
+`H9a A2_none70` (o competidor "subir o τ") e `H9a+H9d(τ=0,30)`.
+
+| seq | H9a A2 (subir τ) | **H9a+H9d(0,30)** | ao mesmo speedup |
+|---|--:|--:|---|
+| **RaceNight** | 1,282% / 1,757× | **0,981% / 1,771×** | **H9d domina Pareto** (+speedup E −0,30 pp) |
+| **Jockey** | 2,038% / 1,798× | **1,783% / 1,775×** | H9d **melhor** (~−0,22 pp @1,775×) |
+| RiverBank | 0,282% / 1,416× | 0,443% / 1,458× | H9d ~+0,12 pp pior |
+
+**A 10 quadros o veredito da Fase 1 confirma-se — as margens eram sinal, não ruído:**
+- **RaceNight:** H9d **Pareto-domina** subir o τ (mais rápido **e** menos BD-rate).
+- **Jockey:** H9d ~0,22 pp abaixo da curva de τ ao mesmo speedup.
+- **RiverBank:** H9d ~0,12 pp acima (o conteúdo onde AB/4-way não carregam decisão).
+
+**Contribuição fechada:** o H9d é uma **segunda solução positiva confirmada no encoder** —
+um podador aprendido pós-NONE do eixo estendido que melhora a fronteira BD×tempo do H9a em
+2 de 3 sequências de teste held-out (uma delas por dominância de Pareto estrita), e domina
+seu próprio blanket em todas. Não é universal (RiverBank, onde o estendido é irrelevante,
+tem leve perda), mas é um ganho real e medido no árbitro final.
+
 ## 5. Limitações
-- **5 quadros (Fase 1).** Decisão de forma/dominância, não número final. Fase 2 = ≥10 quadros.
+- **5 quadros (Fase 1) / 10 quadros (Fase 2).** A F2 confirma a F1; a tese usa ≥10-15 para
+  números finais de tabela — os 10 quadros da F2 estão no piso do rigor E.
 - **Base P_ref única.** Empilhar H9d sobre bases de τ variadas geraria uma família 2D;
   P_ref (implantado) é o natural para a decisão.
 - **PSNR-Y apenas.** Padrão da tese.
