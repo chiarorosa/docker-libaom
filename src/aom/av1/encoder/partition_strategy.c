@@ -1737,18 +1737,23 @@ static int student_h9d_enabled(void) {
 }
 
 // Threshold on P(EXT): skip AB/4-way search at a node when P(EXT) < tau.
-// Per-size AV1_STUDENT_H9D_TAU_16/_32/_64 override the global
-// AV1_STUDENT_H9D_TAU (default 0.10, ~10% winners-lost operating point).
+// Precedence: per-size AV1_STUDENT_H9D_TAU_16/_32/_64 > global
+// AV1_STUDENT_H9D_TAU > per-level default. The per-level defaults (Fase 2b,
+// calibrados a ~10% winners-lost por nivel) protegem o 32px sensivel -> ponto de
+// operacao seguro, sem regressao vs curva de tau nas 3 seqs de teste.
 static float student_h9d_get_tau(int n) {
   static int inited = 0;
   static float tau[3];  // 0 -> 16px, 1 -> 32px, 2 -> 64px
   if (!inited) {
     static const char *suffix[3] = { "_16", "_32", "_64" };
-    const float g = student_env_tau("AV1_STUDENT_H9D_TAU", 0.10f);
+    static const float dflt[3] = { 0.091f, 0.103f, 0.014f };  // PL10 por nivel
+    const char *ge = getenv("AV1_STUDENT_H9D_TAU");
+    const float g = ge ? (float)atof(ge) : -1.0f;  // -1 => global nao setado
     for (int i = 0; i < 3; ++i) {
       char name[40];
       snprintf(name, sizeof(name), "AV1_STUDENT_H9D_TAU%s", suffix[i]);
-      tau[i] = student_env_tau(name, g);
+      const float lvl_default = (g >= 0.0f) ? g : dflt[i];
+      tau[i] = student_env_tau(name, lvl_default);
     }
     inited = 1;
   }

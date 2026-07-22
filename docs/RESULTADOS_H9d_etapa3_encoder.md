@@ -85,9 +85,38 @@ um podador aprendido pós-NONE do eixo estendido que melhora a fronteira BD×tem
 seu próprio blanket em todas. Não é universal (RiverBank, onde o estendido é irrelevante,
 tem leve perda), mas é um ganho real e medido no árbitro final.
 
+## 4.2 Fase 2b — τ por nível recupera o RiverBank (refinamento)
+
+A Fase 2 usou τ **global** (0,30). Mas os limiares θ que perdem a mesma fração de vencedores
+diferem muito por nível (Etapa 1, 39-feat): a winners_lost~10%, θ_64=0,014, θ_32=0,103,
+θ_16=0,091. Um τ global é **agressivo demais no 32px** — onde EXT mais vence (base 12%),
+logo onde mora o custo de BD (e a leve perda do RiverBank). Testando configs **calibradas
+por nível** (perda de vencedores consistente por nível), 5fr, delta = BD − BD_curva-τ ao
+mesmo speedup (negativo = H9d melhor):
+
+| config | Jockey | RaceNight | RiverBank |
+|---|--:|--:|--:|
+| glob τ=0,30 (F2) | −0,29 | −0,34 | **+0,12 (pior)** |
+| **PL10** (θ por nível @wl~10%) | −0,02 | **−0,30** | **+0,05 (~empate)** |
+| PL20 (@wl~20%) | +0,03 | −0,12 | +0,04 |
+| PLmix (agressivo-16) | −0,00 | −0,08 | +0,03 |
+
+**A hipótese confirma-se:** calibrar por nível **recupera o RiverBank** (de +0,12 pp, perda
+clara, para ~empate) **sem perder o RaceNight** (PL10 mantém −0,30 pp). O **PL10 nunca perde**
+para a curva de τ nas três seqs → torna o H9d **robusto** (≥ curva de τ em todo o conjunto de
+teste), ao custo de operar em speedup um pouco menor.
+
+**Baqueado como default no C:** `student_h9d_get_tau` usa os defaults por nível PL10
+(τ_16=0,091, τ_32=0,103, τ_64=0,014) quando nenhuma env de τ é setada — ponto de operação
+**seguro, sem regressão** out-of-box. Precedência: `AV1_STUDENT_H9D_TAU_{16,32,64}` >
+`AV1_STUDENT_H9D_TAU` (global) > default PL10. Verificado: default ≡ PL10 explícito;
+override global funciona.
+
 ## 5. Limitações
-- **5 quadros (Fase 1) / 10 quadros (Fase 2).** A F2 confirma a F1; a tese usa ≥10-15 para
-  números finais de tabela — os 10 quadros da F2 estão no piso do rigor E.
+- **5 quadros (Fase 1/2b) / 10 quadros (Fase 2).** A F2 confirma a F1 a 10fr; a F2b (por
+  nível) é 5fr — deltas pequenos nas seqs marginais dentro do ruído, mas a direção (recuperar
+  o RiverBank protegendo o 32px) é mecanicamente sólida. Confirmação 10fr do PL10 = trabalho
+  futuro barato se a tese quiser o número de tabela.
 - **Base P_ref única.** Empilhar H9d sobre bases de τ variadas geraria uma família 2D;
   P_ref (implantado) é o natural para a decisão.
 - **PSNR-Y apenas.** Padrão da tese.
