@@ -39,10 +39,11 @@ if BENCH not in sys.path:
 from bd_rate import bd_rate  # noqa: E402  (reused Bjontegaard math, Fase 5)
 
 # Order configs are presented in tables (anchor is the reference, not a row).
-CONFIG_ORDER = ["ml_balanced", "ml_aggr", "native_cpu1", "native_cpu2",
-                "native_cpu3"]
+CONFIG_ORDER = ["ml_balanced", "ml_bal_h9d", "ml_aggr", "native_cpu1",
+                "native_cpu2", "native_cpu3"]
 CONFIG_LABEL = {
     "ml_balanced": "ML balanced (P_rect)",
+    "ml_bal_h9d": "ML balanced + H9d",
     "ml_aggr": "ML aggressive (A3)",
     "native_cpu1": "libaom cpu-used=1",
     "native_cpu2": "libaom cpu-used=2",
