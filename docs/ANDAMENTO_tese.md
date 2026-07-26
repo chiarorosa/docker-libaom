@@ -99,11 +99,18 @@ trabalho de GPU, não de re-codificação da UVG.
    **Gate 2 offline PASSOU** (Fase 2): o contexto RD grátis (H9a) supera pixels
    ~50% relativo no lever NONE-commit em risco casado.
 
-**Tese, em uma frase (estado atual, revisto em 2026-07-19):** demonstra-se que o
-particionamento All-Intra satura, no domínio de pixels, numa estatística trivial
-(variância) — por ablação rigorosa — e que **contexto de taxa-distorção barato
-(vizinhança + quant + posição) é suficiente para superar esse teto de pixels sob
-política casada**. Isso **não** se estende a "suficiente para bater o pruner nativo
+**Tese, em uma frase (estado atual, revisto em 2026-07-26):** demonstra-se, por
+uma hierarquia medida sobre a mesma vara held-out — **variância < ConvNeXt <
+`pixels24` < H9a** —, que **nenhuma via baseada em pixels compete com contexto de
+taxa-distorção barato** (vizinhança + quant + posição) na decisão de
+particionamento All-Intra, e que esse contexto é **suficiente para superar todas
+elas sob política casada**.
+
+> *A redação anterior (2026-07-19) afirmava que o particionamento "satura, no
+> domínio de pixels, numa estatística trivial (variância)". Isso foi **retirado**:
+> a ablação que o sustentava é de 2 quadros numa sequência e o crivo A5 a
+> contradiz. A hierarquia acima é o que está de fato medido. Ver
+> `SINTESE §2` (refinos de 20/07 e 26/07) e `RESULTADOS_convnext_regret.md`.* Isso **não** se estende a "suficiente para bater o pruner nativo
 na fronteira BD×tempo" na média da grade CTC (Fase 6): ali o H9a compete de frente
 com a CNN intra e perde. A afirmação forte se **recupera em forma condicional** no
 regime de alta taxa via o H9c (`RESULTADOS_fase6_swap_h9c.md`): como substituto da
@@ -125,10 +132,13 @@ negativo numa contribuição positiva. A sequência:
    ML em todo ponto de speedup comparável. Ou seja, o ganho **não era atribuível
    ao aprendizado**: nenhum dos 24 atributos de pixel fazia o modelo bater a
    variância isolada.
-2. **Por que esse negativo tem valor.** Ele caracteriza, com rigor, que a
-   informação de particionamento **presente nos pixels satura numa estatística
-   trivial**. É um resultado negativo forte: mostra, com evidência, que aumentar a
-   capacidade do modelo no domínio de pixels não leva a lugar nenhum.
+2. **Por que esse negativo tem valor** *(reenquadrado 2026-07-26)*. A leitura
+   original — "a informação presente nos pixels satura numa estatística trivial" —
+   **não se sustenta** e foi substituída pela **hierarquia medida** no crivo A5:
+   **variância < convnext_regret < convnext_ce < pixels24 < H9a**. O negativo que
+   a tese de fato sustenta é mais estreito e mais seguro: **nenhuma via de pixels
+   compete com contexto RD**, em quatro tentativas independentes. Ver
+   `RESULTADOS_convnext_regret.md §5` e `SINTESE §2` (refinos de 20/07 e 26/07).
 3. **A virada positiva (hipótese H9).** O particionamento do AV1 é, por definição,
    uma decisão de **taxa-distorção (RD)**. Logo, o sinal capaz de elevar o limite é
    o **contexto RD** que a própria decisão usa — e boa parte dele é **barata e já
@@ -182,14 +192,23 @@ metodológica, mesmo não estando no pruner embarcado.
   refeitos), a curva operacional H7/H8, e a ablação de atribuição — o **resultado
   negativo** (a variância trivial empata/supera o ML em speedup comparável).
 
-**Por que o ConvNeXt é indispensável, não opcional:** ele é o que dá
-**credibilidade ao resultado negativo**. A afirmação "os pixels saturam na
-variância" só é rigorosa porque o modelo de pixels testado **não era fraco**. Se
-houvesse apenas uma MLP pequena falhando em superar a variância, caberia a objeção
-"o modelo tinha capacidade insuficiente". Ter um modelo convolucional de alta
-capacidade, com o experimento de limite superior (H8), e ainda assim **não separar
-da variância** em speedup comparável, fecha essa objeção — transforma "o modelo não
-conseguiu" em "**o domínio de pixels não contém o sinal**".
+**Qual é o papel do ConvNeXt** *(reescrito 2026-07-26 — a versão anterior o
+apresentava como "referência de limite superior", o que a medição refutou).* A
+intenção original era usá-lo como **cota superior** do domínio de pixels: alta
+capacidade, acesso à luma bruta, replay exato no encoder sem custo de inferência.
+Medido no crivo A5, porém, ele **perde para o `pixels24`** — um MLP sobre 24
+atributos manuais extraídos da *mesma* luma, que ele poderia em princípio
+representar. Um modelo batido por outro com acesso estritamente menor à informação
+**não estabelece cota superior alguma**; o resultado enuncia algo sobre o nosso
+treino, não sobre os pixels. Some-se que treiná-lo com o alvo de *regret*
+**piorou-o** (1,06× a 3,80×) e que dobrar a largura de fusão muda a validação em
+0,16% — capacidade não é a restrição.
+
+O ConvNeXt permanece no arcabouço como **instrumento de diagnóstico** e como a
+tentativa documentada de estabelecer o teto; **não** como o teto. A tese tem uma
+**cota inferior** do domínio de pixels (o `pixels24`) e um teto genuíno apenas no
+**oráculo** — a decisão RD-ótima de regret zero, que limita qualquer podador.
+Ver `RESULTADOS_convnext_regret.md`.
 
 **Elo com a solução final:** é esse aprendizado que **motiva e justifica** a virada
 para o contexto RD (H9a). Sem o ConvNeXt, a virada seria um palpite; com ele, é uma

@@ -209,9 +209,36 @@ casado (ex.: a 1,3×, ML 1,39% BD vs variância 0,76%). Como a variância é **u
 > pixels *além* da variância. Ver `RESPOSTAS_contra_argumentos_banca.md` (CB-1/2/3).
 > A confirmação da ordenação no encoder real (≥10 quadros, ≥2 seqs) é o item E5.
 
+> **⚠⚠ Refino final (2026-07-26) — o ConvNeXt foi medido no crivo e NÃO é teto.**
+> O refino acima notava que o "ml" da ablação era o estudante destilado, deixando
+> em aberto se o ConvNeXt de alta capacidade se separaria da variância. Agora ele
+> foi medido na mesma vara (`RESULTADOS_convnext_regret.md`), e o resultado
+> **fecha a questão pelo lado oposto ao esperado**:
+> - a hierarquia estende-se para **variância < convnext_regret < convnext_ce <
+>   pixels24 < H9a** — o ConvNeXt de 28,1 M de parâmetros sobre pixels crus
+>   **perde para o `pixels24`**, um MLP sobre 24 atributos manuais derivados da
+>   *mesma* luma (0,0207 contra 0,0121 em `cost_red` 25%, ~1,7×);
+> - treiná-lo com o alvo de **regret** (o objetivo correto, nunca antes aplicado a
+>   pixels) **piorou-o** em toda a faixa, 1,06× a 3,80×;
+> - e **capacidade não é a restrição**: dobrar `fusion_dim` muda a perda de
+>   validação em 0,16%.
+>
+> **Consequência conceitual:** o ConvNeXt **não pode ser reportado como
+> "referência de limite superior" do domínio de pixels.** Um modelo que é batido
+> por outro com acesso estritamente menor à informação (24 atributos manuais
+> extraídos da mesma luma, que ele poderia em princípio representar) não
+> estabelece cota superior alguma — o seu desempenho é enunciado sobre o **nosso
+> treino**, não sobre os pixels. O que a tese tem é uma **cota inferior**: o
+> melhor desempenho observado no domínio de pixels é o do `pixels24`. O teto do
+> domínio de pixels permanece **não medido**. O único teto genuíno do arcabouço é
+> o **oráculo** (decisão RD-ótima, regret zero), que limita qualquer podador e não
+> só os de pixels.
+
 **Ressalvas (para o Capítulo de Resultados):** (i) alto custo computacional da
 CNN; (ii) limitação informacional inerente às amostras Y; (iii) a destilação
-troca ganho por custo.
+troca ganho por custo; (iv) **nenhuma via de pixels foi implantada** — quatro
+tentativas independentes (substituto por CE, substituto por *regret*, `pixels24`,
+GNN estrutural) e nenhuma se aproxima do H9a, que usa contexto RD.
 
 ---
 
