@@ -148,3 +148,81 @@ minoria retangular e depender de validação no encoder."* Isso captura a maior 
 do valor de banca a uma fração do custo. Ir até os encodes só se justifica se a
 tese quiser **um número de speedup positivo adicional**, e o retorno esperado é
 modesto — priorizar os blocos em aberto (CB-1/2/3, Bloco 6 C1) antes.
+
+---
+
+## 7. Etapa 1 pós-NONE (2026-07-26) — hipótese testada e **REFUTADA**; B3 encerrado
+
+**A hipótese.** A §3 identificou que o 69% de acurácia direcional é **condicional a
+saber que o nó é retangular**, e que o modelo é ruim exatamente nisso (recall ~42%,
+~35% dos HORZ/VERT verdadeiros preditos como NONE). O ponto de enganche natural do
+B3 em C seria `av1_prune_after_none`, onde a taxa/distorção/rdcost reais do
+`PARTITION_NONE` já foram computados. Hipótese: **esses atributos informam
+justamente a distinção que falta** — foi o mecanismo que levou o H9d de ROC-AUC
+0,890 (36 atributos) para 0,902 (39).
+
+**Método.** `b3_horz_vert.py --feature-set h9c` (39 atributos) contra um **controle
+pareado** `--feature-set h9a` (36) — mesmo código, mesma sessão, mesmos dados, mesmo
+split. 1,86 M nós de treino, 191.909 nós retangulares held-out.
+
+| nível | métrica | 36 (controle) | 39 (pós-NONE) | Δ |
+|---|---|--:|--:|--:|
+| **agregado** | **acurácia direcional** | **69,2%** | **69,5%** | **+0,3 pp** |
+| 64px | dir_acc | 72,8% | 71,9% | −0,9 pp |
+| 32px | dir_acc | 68,1% | 68,8% | +0,7 pp |
+| 16px | dir_acc | 69,4% | 69,7% | +0,3 pp |
+| 16px | recall HORZ / VERT | 45,4% / 38,9% | 47,9% / 46,9% | +2,5 / +8,0 pp |
+| 32px | recall HORZ / VERT | 26,6% / 19,1% | 30,8% / 25,8% | +4,2 / +6,7 pp |
+| 64px | recall HORZ / VERT | 6,1% / 2,3% | 5,5% / 2,5% | ~0 |
+| — | macro-F1 @64/32/16 | 0,453 / 0,546 / 0,535 | 0,482 / 0,594 / 0,624 | +0,03 / +0,05 / +0,09 |
+
+### 7.1 O que os números dizem
+
+**A acurácia direcional é plana** (+0,3 pp, mesma baseline de maioria de 52,4%). O
+contexto RD pós-NONE **não acrescenta nada** à decisão de *direção*.
+
+**Os atributos pós-NONE ajudam, mas no problema errado.** O macro-F1 sobe de forma
+consistente nos três níveis e o recall médio em 16px vai de ~42% para ~47%. É ganho
+real — só que o gargalo permanece: **mais da metade dos nós retangulares segue não
+identificada**, e em 64px o recall é praticamente nulo (2–6%).
+
+### 7.2 Achado colateral: variância entre execuções
+
+O controle pareado **não reproduz** os números da execução de 20/07 (§2–3): recall
+HORZ@16 42,9% → 45,4%; VERT@16 41,5% → 38,9%. Há **±2–3 pp de variância entre
+execuções** nesses recalls por direção, vinda de inicialização e embaralhamento.
+Consequência: o Δ de +2,5 pp no HORZ está **dentro** do ruído; o de +8,0 pp no VERT
+está acima; e o **macro-F1 é o sinal confiável**. Os recalls por direção da §3 não
+devem ser lidos com precisão de décimo de ponto.
+
+### 7.3 Veredito — encerrado no portão
+
+O critério primário estabelecido antes da execução (a acurácia condicional subir
+materialmente acima dos 69%) **não foi atingido**. O secundário (recall sair de
+~42%) melhorou para ~47%, insuficiente para sustentar a política: a ação do B3 é
+**desligar uma direção**, e com metade dos nós daquela direção não reconhecidos, ou
+se poda pouco — sem speedup — ou se paga RD demais. As duas pontas do compromisso
+são ruins simultaneamente.
+
+Some-se o que a §6.3 já registrava: o retangular é minoria do custo do nó, motivo
+pelo qual o H9d foi para o eixo **estendido** e não para o retangular.
+
+**O B3 é encerrado como negativo medido**, no mesmo padrão do H9c e do Approach B.
+O portão custou ~1h de GPU em vez das ~8h de C + encodes que a Etapa 2 exigiria —
+que é exatamente para isso que ele existia.
+
+**Nota de nomenclatura.** O B3 **não** recebe rótulo da família H9. `H9b` já designa
+o proxy de resíduo intra (`PLANO_H9_contribuicao_tese.md:68`,
+`PROTOCOLO_avaliacao.md:68`, com números medidos em `RASTREABILIDADE.md:220`), e as
+letras do H9 estão associadas a levers que entraram na cadeia de contribuição.
+Registre-se, porém, que a família usa **dois esquemas de nomeação**: H9a/H9b/H9c
+nomeiam *conjuntos de atributos*, enquanto H9d nomeia uma *ação* (o podador de
+partição estendida, que usa o conjunto do H9c).
+
+**Reprodução:**
+```bash
+/workspace/build/venv-ml/bin/python src/scripts/partition_model/b3_horz_vert.py \
+    --feature-set h9c --out-dir /workspace/results/models/b3_postnone
+/workspace/build/venv-ml/bin/python src/scripts/partition_model/b3_horz_vert.py \
+    --feature-set h9a --out-dir /workspace/results/models/b3_control36
+```

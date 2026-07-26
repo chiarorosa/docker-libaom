@@ -36,7 +36,7 @@ parede: Crosswalk, 5 repetições × 3 configurações × 4 CQ, intercaladas, 60
 
 | ordem | trabalho | tipo | portão |
 |---|---|---|---|
-| 1 | **B3 Etapa 1** — direção HORZ/VERT com atributos pós-NONE | offline/GPU | morre se a acurácia condicional não subir acima dos 69% ou o recall do condicionamento seguir em ~42% |
+| ~~1~~ | ~~**B3 Etapa 1**~~ — **ENCERRADO 2026-07-26, portão não atingido** | offline/GPU | acurácia direcional plana (+0,3 pp em controle pareado); recall subiu de ~42% para ~47%, insuficiente. Negativo medido em `RESULTADOS_modelagem_B3_horz_vert.md §7` |
 | 2 | **ConvNeXt** — retreino com alvo de *regret*, seleção corrigida | offline/GPU | morre se não superar a variância no crivo do A5 |
 | 3 | **Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC | encodes | — (confirmatório) |
 | 4 | ramos que passarem nos portões (B3 Etapas 2–4; replay H8) | ambos | — |
