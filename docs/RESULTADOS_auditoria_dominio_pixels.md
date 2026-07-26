@@ -5,7 +5,17 @@
 (2)") foram submetidos à avaliação: *cabem na tese? há ainda, no domínio de pixels, proposta
 válida — implementável no codificador e competidora do H9?* A resposta aos documentos é
 **não** (§5). Mas a auditoria feita para respondê-los produziu três achados sobre a própria
-tese (§2–§4), um dos quais reabre uma via nunca testada (§6).
+tese (§2–§4), um dos quais expôs uma hipótese **especificada e nunca testada**. Ela foi
+testada aqui (§6) e **também não se sustenta** — o domínio de pixels fecha por uma via a
+mais, em vez de reabrir.
+
+**Resumo dos achados.**
+
+| # | achado | consequência |
+|--:|---|---|
+| 1 | O H9a é majoritariamente um modelo de pixels: 24 dos 36 atributos são descritores de luma, e nenhum é grandeza de custo RD | três afirmações corrigidas (§7); hierarquia relida (§2.1) |
+| 2 | O bloco D implementado (SATD da fonte) **não** é o especificado (SATD do resíduo de predição a partir dos vizinhos) | o "H9b" reprovado no Gate 2 testou outra coisa; hipótese original testada em §6 |
+| 3 | O custo de inferência do ConvNeXt nunca foi pago (`no convolutional inference in C`) | todo resultado H8 é limite superior que ignora custo — ressalva a declarar |
 
 **Natureza deste documento.** Auditoria de código e de registro. Não gera medição nova de
 codificação; confronta afirmações já publicadas nos documentos da tese contra a
@@ -198,9 +208,71 @@ sequência, mesmo MLP por nível, mesma política NONE-commit + rect-off, mesma 
 mesmos limites de risco casado. A única diferença entre os braços é o conjunto de colunas —
 o veredito é sobre **informação**, não sobre capacidade.
 
-### 6.1 Resultado
+### 6.1 Resultado — o portão **NÃO passa**
 
-*(a preencher quando a execução terminar)*
+Execução: 13 000 superblocos de treino / 3 000 de validação (250 por `.pkl`, 52+12 `.pkl`),
+3 sementes por braço. Artefatos: `results/models/gate_intra_pred.csv` e `_sweep.csv`.
+
+**Disponibilidade do atributo (leitura 1).**
+
+| nível | nós | com vizinho | % |
+|--:|--:|--:|--:|
+| 64 | 3 000 | 0 | **0,0 %** |
+| 32 | 10 598 | 1 869 | 17,6 % |
+| 16 | 34 524 | 15 855 | 45,9 % |
+
+**Sinal por nível, restrito aos nós onde o atributo pode agir (leitura 2).**
+
+| nível | nós | H9a | H9b | **H9a+D'** |
+|--:|--:|---|---|---|
+| 32 | 1 869 | CE 0,7657 / AUC 0,851 | CE 0,7611 / AUC 0,854 | **CE 0,7422 / AUC 0,868** |
+| 16 | **15 855** | CE 0,5149 / AUC 0,847 | CE 0,5132 / AUC 0,848 | **CE 0,5144 / AUC 0,846** |
+
+**O critério pré-registrado exigia CE menor e AUC maior em 16 *e* 32 px. Falha em 16 px** —
+justamente o nível com **8,5× mais dados**, onde o efeito é nulo (CE −0,1 %, AUC −0,001, isto
+é, marginalmente pior). Em 32 px há um positivo consistente (CE −3,1 %, AUC +0,017), mas com
+um oitavo dos nós e sem corroboração na leitura 3.
+
+**cost_red em risco casado (leitura 3).** `H9a+D'` fica **igual ou pior** que `H9a` em todos
+os limites (6,83 / 6,83 / 14,74 / 21,30 contra 7,36 / 7,36 / 15,37 / 21,48). O 47,80 do H9b
+em SL3,0 é **artefato de grade**, não vantagem: vem de um único ponto (τ_none=0,85,
+τ_rest=0,1) cujo `rect_off_wrong` é 4,963 contra o teto de 5,0 — some com qualquer
+perturbação da grade de τ. Esta leitura tem baixo poder, como antecipado, e não sustenta
+conclusão em nenhuma direção.
+
+**Contraprova da diluição.** A objeção óbvia ao nulo de 16 px seria que o treino inclui os
+nós sem vizinho (colunas D' zeradas), diluindo o sinal. **O padrão observado é o inverso do
+que essa hipótese prevê:** a disponibilidade é *menor* em 32 px (17,6 %) que em 16 px
+(45,9 %), e é em 32 px que o efeito aparece. A diluição não explica o resultado.
+
+### 6.2 Veredito e o que fica em aberto
+
+**A via fecha no nível desta evidência.** A predizibilidade intra a partir dos vizinhos, medida
+como limite superior (vizinho-fonte, mais limpo que o reconstruído), **não agrega sinal sobre
+o bloco A** no nível de 16 px. Como o atributo custaria uma predição intra + um Hadamard por
+nó no codificador, um ganho nulo a 16 px — o nível mais numeroso — já o desqualifica.
+
+Fica registrado um **resíduo delimitado, não perseguido**: o positivo de 32 px. Três razões
+para não persegui-lo agora, e uma para eventualmente fazê-lo:
+
+- Contra: n oito vezes menor; a leitura 3 não corrobora; e o próprio H9b (SATD da fonte, já
+  descartado) também melhora em 32 px (AUC 0,854), o que sugere que parte do movimento não é
+  específica do D'.
+- A favor: `D' > H9b > H9a` em 32 px é a ordenação que a hipótese prediz, e 64 px — onde um
+  acerto vale mais, porque poda a subárvore inteira — é **invisível a este portão**.
+
+Se algum dia se quiser fechar isso, o caminho barato **não** é re-extrair o dataset: é
+costurar superblocos adjacentes do mesmo quadro (`mi_row`/`mi_col` estão no `ctx`) para obter
+vizinhos-fonte nas bordas, o que elevaria a disponibilidade em 32 px e tornaria 64 px
+mensurável. Só depois disso, e só se o sinal sobreviver, se justificaria instrumentar o
+codificador para ler vizinhos **reconstruídos**.
+
+**Consequência para o capítulo.** O achado §3 (especificação ≠ implementação) permanece
+válido e deve ser registrado: a tese testou uma coisa e relatou outra. Mas a hipótese
+original, agora testada, **também não se sustenta** — o que fecha o domínio de pixels por
+uma via a mais, em vez de reabri-lo. A família de pixels encerra com cinco tentativas
+independentes negativas: ConvNeXt-CE, ConvNeXt-regret, GNN/Approach B, bloco D (fonte) e
+bloco D' (vizinhos).
 
 ---
 

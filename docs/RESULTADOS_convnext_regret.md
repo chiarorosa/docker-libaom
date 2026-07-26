@@ -129,6 +129,8 @@ família baseada em pixels encerra assim:
 | ConvNeXt com alvo de *regret* | **refutado** — pior que a CE em toda a faixa |
 | `pixels24` (estudante de 24 atributos) | melhor modelo de pixels medido; ainda **muito atrás do H9a** |
 | Approach B / GNN (estrutural) | negativo no encoder (~2× pior), apesar de vencer offline |
+| Bloco D — SATD do bloco-**fonte** | nulo no Gate 2; e **não era o atributo especificado** (ver auditoria de 26/07) |
+| Bloco D' — predizibilidade intra a partir dos **vizinhos** | **portão não passa** (26/07): nulo em 16 px, com 15 855 nós |
 
 Nenhuma via de pixels **aprendida de ponta a ponta** foi implantada.
 
