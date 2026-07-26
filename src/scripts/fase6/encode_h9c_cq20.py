@@ -41,6 +41,10 @@ def main():
     p.add_argument("--seqs", nargs="+", default=None,
                    help="only sequences whose filename contains one of these "
                         "substrings (default: all .y4m in --seq-dir)")
+    p.add_argument("--taus", nargs="+", default=None,
+                   help="only these H9c thresholds, by tag (e.g. 90 95); "
+                        "default: all of " + " ".join(
+                            k[len("h9c_tau"):] for k in H9C_TAUS))
     args = p.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -55,6 +59,11 @@ def main():
     if not seqs:
         raise SystemExit("no .y4m sequences in " + args.seq_dir)
     cfgs = list(H9C_TAUS.items())
+    if args.taus:
+        want = {"h9c_tau" + t for t in args.taus}
+        cfgs = [c for c in cfgs if c[0] in want]
+        if not cfgs:
+            raise SystemExit("no H9c threshold matches " + " ".join(args.taus))
 
     total = len(seqs) * len(cfgs) * len(args.cqs)
     print("H9c CTC cq20 head-to-head: {} seqs x {} configs x {} cqs = {} encodes"

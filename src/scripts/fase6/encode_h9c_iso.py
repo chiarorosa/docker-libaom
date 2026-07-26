@@ -38,9 +38,11 @@ H9A_OFF = {"AV1_STUDENT_TAU_NONE": "2", "AV1_STUDENT_TAU_SPLIT": "2",
 H9C_TAUS = [("95", "0.95"), ("90", "0.90"), ("60", "0.60")]
 
 
-def configs_iso():
+def configs_iso(taus=None):
     cfgs = []
     for tag, tau in H9C_TAUS:
+        if taus and tag not in taus:
+            continue
         env = dict(H9A_OFF)
         env["AV1_STUDENT_H9C_ENABLE"] = "1"
         env["AV1_STUDENT_H9C_TAU"] = tau
@@ -59,6 +61,9 @@ def main():
     p.add_argument("--frames", type=int, default=15)
     p.add_argument("--seqs", nargs="+", default=["Neon1224"],
                    help="sequences whose filename contains these substrings")
+    p.add_argument("--taus", nargs="+", default=None,
+                   help="only these H9c thresholds, by tag (e.g. 90); "
+                        "default: all of " + " ".join(t for t, _ in H9C_TAUS))
     args = p.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
@@ -71,7 +76,9 @@ def main():
     seqs = [f for f in seqs if any(s in f for s in args.seqs)]
     if not seqs:
         raise SystemExit("no matching .y4m sequences in " + args.seq_dir)
-    cfgs = configs_iso()
+    cfgs = configs_iso(args.taus)
+    if not cfgs:
+        raise SystemExit("no H9c threshold matches " + " ".join(args.taus))
 
     total = len(seqs) * len(cfgs) * len(args.cqs)
     print("H9c ISOLATED cpu0 (H9a neutralized): {} seqs x {} configs x {} cqs "
