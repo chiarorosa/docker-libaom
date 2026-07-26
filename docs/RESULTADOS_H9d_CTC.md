@@ -132,9 +132,12 @@ duas delas por **dominância de Pareto estrita**. O resultado do capítulo de me
 (3 sequências, PL10 ≥ curva de τ nas três) **generaliza** para o conjunto CTC completo.
 
 ## 5. Limitações
-- **15 quadros** (padrão da Fase 6 CTC desta tese, não os 60 do CTC pleno). Consistente com
-  todas as demais linhas da tabela, logo as comparações internas são justas.
-- **PSNR-Y apenas**, sem PSNR-U/V nem VMAF — padrão adotado na tese.
+
+Decisões de escopo (métrica, número de quadros, divergências de flag impostas pelo libaom)
+estão registradas em `DECISOES_escopo.md` e **não** são limitações — em particular, os
+**15 quadros são exatamente a especificação da CTC §4.1** (`--limit=15`), não um recorte
+desta tese. Limitações de fato:
+
 - **Um único ponto de operação do H9d** (PL10 sobre P_rect). Uma família 2D (PL10/PL20 ×
   P_rect/A3) daria a fronteira completa; PL10 sobre P_rect é o par implantado/seguro.
 - **Tempo de parede** medido em contêiner compartilhado; Δ TS de ~0,1 pp (Neon1224) está na

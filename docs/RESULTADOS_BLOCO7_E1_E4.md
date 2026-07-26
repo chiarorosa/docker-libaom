@@ -92,8 +92,11 @@ a base H9a **fixa e verificada byte-a-byte** (`RESULTADOS_H9d_CTC.md` §1.1): o 
 inflou o H9c não pode ocorrer ali por construção.
 
 ## 4. Limitações
-- **15 quadros**, consistente com todas as demais linhas da Fase 6; comparações internas justas.
-- **PSNR-Y apenas.**
+
+Métrica (PSNR-Y) e número de quadros são **decisões de escopo**, não limitações — ver
+`DECISOES_escopo.md`; os 15 quadros são a própria especificação da CTC §4.1. Limitações de
+fato:
+
 - **E4 cobre 4 das 8 sequências** (Neon1224 + as 3 novas). A média de 64% é sobre 4, e a
   dispersão 28–95% indica que 4 amostras não fixam bem o valor central — a conclusão robusta
   é a **direção e a ordem de grandeza**, não o número exato.
