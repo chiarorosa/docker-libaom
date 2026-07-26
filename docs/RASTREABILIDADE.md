@@ -221,8 +221,14 @@ cost_red% em risco casado (SPLIT-lost cap; rect_off_wrong≤5 %):
 | H9c (teto) | 57,4 | 57,4 | 63,4 | 63,4 |
 
 No lever NONE-commit isolado (relevante para tempo): pixels24 10–19 %, **H9a
-16–25 %** — contexto RD grátis supera pixels ~50 % relativo. Veredito: **Gate 2
-PASSOU**, cenário (a).
+16–25 %** — os 12 atributos de vizinhança/quantização/posição agregam ~50 % relativo
+**sobre** os 24 de luma. Veredito: **Gate 2 PASSOU**, cenário (a).
+
+> **Nota de composição (2026-07-26).** A redação anterior ("contexto RD grátis supera
+> pixels ~50 % relativo") opunha dois conjuntos que não são disjuntos: `pixels24` é o
+> bloco `A` do próprio H9a, e o H9a **não contém nenhuma grandeza de custo RD** (essas
+> são o bloco `E` = H9c). O ganho medido é **marginal, não competitivo**. Ver
+> `RESULTADOS_auditoria_dominio_pixels.md`.
 
 ### 5.4 CTC Fase 6 e trocas — `benchmark/fase6*/`
 | Diretório | Conteúdo | Sumário versionado |

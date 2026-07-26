@@ -130,8 +130,32 @@ família baseada em pixels encerra assim:
 | `pixels24` (estudante de 24 atributos) | melhor modelo de pixels medido; ainda **muito atrás do H9a** |
 | Approach B / GNN (estrutural) | negativo no encoder (~2× pior), apesar de vencer offline |
 
-Nenhuma via de pixels foi implantada. O podador implantado (**H9a**) usa **contexto de
-taxa-distorção**, não pixels — e domina todas elas no crivo por 3 a 6×.
+Nenhuma via de pixels **aprendida de ponta a ponta** foi implantada.
+
+> **Correção (2026-07-26).** Uma versão anterior deste parágrafo afirmava que o podador
+> implantado "usa contexto de taxa-distorção, **não pixels**". **É falso.** O H9a é
+> `A+B+C`, e o bloco `A` (índices 0–23) é rotulado no próprio código como
+> `A 0..23 pixels` (`features.py:197`): variância global e por quadrante, gradientes
+> h/v, orientação, densidade de bordas, contraste com pai e irmãos. **Vinte e quatro
+> dos 36 atributos do H9a são descritores de luma**, e nenhum é uma grandeza de custo
+> RD — as de custo RD são o bloco `E`, que define o H9c, rejeitado. Ver
+> `RESULTADOS_auditoria_dominio_pixels.md`.
+
+A leitura correta da hierarquia não é "contexto RD vence pixels", e sim: **descritores
+manuais compactos de luma vencem uma rede convolucional profunda sobre pixels crus**, e
+o que separa o campeão do resto é **contexto causal de vizinhança** (12 atributos de
+custo ~zero) somado a esses descritores. O `pixels24` é literalmente o H9a menos os
+blocos B e C. Retornos marginais medidos no mesmo crivo, em `cost_red` 25%:
+
+| passo | `reg_frac` | ganho marginal |
+|---|--:|--:|
+| `variance` (1 descritor de luma) | 0,0573 | — |
+| `pixels24` (+23 descritores de luma) | 0,0121 | **4,7×** |
+| `convnext_ce` (+28,1 M parâmetros sobre pixels crus) | 0,0207 | **0,6× (pior)** |
+| `H9a` (`pixels24` + 12 de vizinhança/quant/posição) | 0,0036 | **3,4×** |
+
+O H9a domina todas as vias aprendidas no crivo por 3 a 6× — **sendo ele próprio,
+majoritariamente, um modelo de pixels**.
 
 ### 5.1 O que isto NÃO resolve
 

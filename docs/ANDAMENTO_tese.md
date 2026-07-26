@@ -259,11 +259,19 @@ SPLIT-lost {0,5/1/2}%:
 |---|---:|---:|---:|
 | variância | 0 | 0 | 0 |
 | pixels24 | 10,1 | 15,3 | 18,9 |
-| **H9a (contexto RD grátis)** | **15,7** | **20,1** | **24,9** |
+| **H9a (= pixels24 + vizinhança/quant/posição)** | **15,7** | **20,1** | **24,9** |
 | H9c (teto, none_rdcost) | 33,0 | 33,0 | 39,7 |
 
+> **Nota de composição (2026-07-26).** O rótulo anterior desta linha ("H9a = contexto RD
+> grátis") sugeria que o H9a e o `pixels24` fossem conjuntos disjuntos. **Não são:** o
+> `pixels24` é exatamente o bloco `A` do H9a (`H9_SUBSETS`, `features.py:214`), de modo
+> que a linha do H9a mede os **12 atributos adicionais** de vizinhança/quantização/posição
+> **sobre** os 24 de luma, não pixels contra outra coisa. Ver
+> `RESULTADOS_auditoria_dominio_pixels.md`.
+
 **Decisão: cenário (a)** — seguir com o modelo **pré-busca H9a** (pixels +
-vizinhança + quant + posição; SATD do bloco D não agrega, descartado). O teto H9c
+vizinhança + quant + posição; SATD do bloco D não agrega, descartado — mas ver a
+auditoria de 26/07: o D implementado não é o D especificado). O teto H9c
 (`none_rdcost`, pós-NONE) fica documentado como headroom para uma extensão futura
 (poda pós-NONE aprendida).
 

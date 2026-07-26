@@ -121,13 +121,31 @@ fórmulas (paridade bit-a-bit verificada, §2.6):
   granularidade relativa. Dados já residentes → custo de inferência ~zero.
 - **Bloco C — quantização/posição (32–35), grátis:** `log(dc_q²)`, qindex, posição
   normalizada.
-- **Bloco D — proxy de resíduo intra (SATD de Hadamard), barato:** descartado na
-  Fase 3 (não agrega sinal sobre A+B+C).
+- **Bloco D — SATD de Hadamard do bloco-fonte (36–37), barato:** descartado na
+  Fase 3 (não agrega sinal sobre A+B+C). **Atenção (26/07):** este bloco foi
+  *especificado* como o SATD do **resíduo de uma predição intra a partir dos
+  vizinhos** (`PLANO_H9_contribuicao_tese.md:326`), mas *implementado* como o SATD
+  do bloco-fonte, sem predição nem vizinho (`features.py:252`). São grandezas
+  distintas: a implementada é uma estatística só da fonte, correlacionada com a
+  variância e os gradientes que o bloco A já contém — daí o resultado nulo. A
+  hipótese especificada nunca foi testada; ver
+  `RESULTADOS_auditoria_dominio_pixels.md` e o bloco D' em
+  `features_intrapred.py`.
 - **Bloco E — custo RD real do `PARTITION_NONE` (36–38):** `log(none_rate)`,
   `log(none_dist)`, `log(none_rdcost)`. **Só disponível pós-NONE** → é o insumo
   exclusivo do H9c.
 
 Subconjuntos: **H9a = A+B+C (36 atributos)**; **H9c = A+B+C+E (39 atributos)**.
+
+> **Convenção de nomenclatura — "contexto RD" (fixada em 2026-07-26).** Ao longo da
+> tese, "contexto de taxa-distorção" / "contexto RD" designa o **contexto de decisão
+> barato que a busca RD nativa consulta** — blocos B e C (forma das partições vizinhas,
+> força de quantização, posição) — e **não** grandezas de custo taxa-distorção. Estas
+> últimas existem apenas no bloco E, exclusivo do H9c. Registre-se, para evitar a
+> leitura equivocada que já ocorreu em três documentos: **o H9a não contém nenhuma
+> grandeza de custo RD, e 24 dos seus 36 atributos são descritores de luma** — ou seja,
+> o podador implantado é, majoritariamente, um modelo de pixels. Ver
+> `RESULTADOS_auditoria_dominio_pixels.md`.
 
 ### 2.6 Builds, guarda de compilação e paridade C↔Python
 
