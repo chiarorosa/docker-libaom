@@ -7,6 +7,67 @@ artefatos: `RASTREABILIDADE.md`. Planos: `PLANO_hipoteses_experimentos.md`,
 
 ---
 
+## 0. Status e fila de execução — 2026-07-26
+
+### 0.1 Fechado desde a última atualização
+
+- **H9d — segunda solução positiva, fechada ponta a ponta.** Metodologia (3 seqs,
+  PL10 ≥ curva de τ) em `RESULTADOS_H9d_*.md`; **resultados no test set CTC** em
+  `RESULTADOS_H9d_CTC.md`: **+1,0 pp de TS por +0,018 pp de BD-rate**, preço de
+  0,018 pp/pp contra 0,063 pp/pp do knob de τ (~3,5× mais barato), vencendo a curva
+  de τ em **6/8** sequências, duas por dominância de Pareto estrita. Integridade
+  verificada byte-a-byte (H9d desligado ≡ `ml_balanced`).
+- **Bloco 7, E1 e E4** (`RESULTADOS_BLOCO7_E1_E4.md`): a Conclusão 2 passa a valer
+  em **8/8** sequências; e a decomposição do confound H9a/H9c **generaliza** — em
+  média **64%** do TS atribuído ao H9c era do H9a@default (28% no Tango a 95% no
+  TimeLapse). Reforça a rejeição do H9c como contribuição autônoma.
+- **Decisões de escopo** (`DECISOES_escopo.md`): PSNR-Y, 15 quadros (que são a
+  **especificação** da CTC §4.1, não um recorte — correção de registro), B2/E6 e
+  `h9acomb` fechados como decisão, não como pendência.
+
+### 0.2 Em execução
+
+Cadeia serial única (104 encodes, ~10h), 1 `aomenc` por vez para preservar a
+comparabilidade dos tempos: **E3** (`h9c_tau45`, joelho da curva de τ, 32) →
+**decomposição de 3 pernas** (`h9adef` em 3 seqs, 12) → **E2** (σ do tempo de
+parede: Crosswalk, 5 repetições × 3 configurações × 4 CQ, intercaladas, 60).
+
+### 0.3 Fila confirmada
+
+| ordem | trabalho | tipo | portão |
+|---|---|---|---|
+| 1 | **B3 Etapa 1** — direção HORZ/VERT com atributos pós-NONE | offline/GPU | morre se a acurácia condicional não subir acima dos 69% ou o recall do condicionamento seguir em ~42% |
+| 2 | **ConvNeXt** — retreino com alvo de *regret*, seleção corrigida | offline/GPU | morre se não superar a variância no crivo do A5 |
+| 3 | **Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC | encodes | — (confirmatório) |
+| 4 | ramos que passarem nos portões (B3 Etapas 2–4; replay H8) | ambos | — |
+| — | **E5** — ablação da CB-1 | encodes | **PAUSADO** por decisão; submissão a decidir |
+
+Restrição de agenda: treino em GPU carrega CPU no carregamento de dados e **não pode**
+correr durante encodes que medem tempo (o E2 acima é o mais sensível de toda a tese).
+
+### 0.4 Uma afirmação da tese sob re-medição
+
+O item 6 do arco (§1) — *"os pixels saturam na variância"*, tratado no corpo como
+espinha dorsal — repousa hoje em bases fracas, e a fila acima ataca isso:
+
+- a ablação que a sustenta é **Jockey, cpu-used=0, 2 quadros** (a CB-1);
+- o crivo de *regret* do A5 **contradiz** parcialmente (pixels24 0,015 vs variância
+  0,060), o que já motivou conceder a CB-2;
+- o ConvNeXt que mediu o teto foi selecionado por macro-F1 na **época 27**, com a
+  perda de validação já 15% acima do mínimo (`train.py:299-304`, `metrics.csv`) —
+  isto é, em sobreajuste franco;
+- e foi treinado com **entropia cruzada sobre rótulos duros**, quando a própria tese
+  demonstrou (Approach B) que acurácia por-nó é **mau proxy** do BD×tempo real. O
+  alvo de *regret* existe (`train_regret.py`) mas **nunca foi aplicado a pixels**.
+
+O item 2 da fila re-mede isso. **Ambos os desfechos são ganho:** se o teto subir, uma
+conclusão da tese muda; se não subir, a saturação deixa de repousar em 2 quadros e um
+modelo mal-selecionado. Note que os pixels **não precisam ser re-extraídos** — o
+`.pkl` guarda luma sem perdas (`round(pkl·255)` = quadro-fonte, `maxdiff=0`), então é
+trabalho de GPU, não de re-codificação da UVG.
+
+---
+
 ## 1. Arco da tese (o que estabelecemos, em ordem)
 
 1. **Infraestrutura** — instrumentação C do libaom, extração de dataset, ConvNeXt
