@@ -728,9 +728,18 @@ todos os níveis cpu):** pontos não-dominados, do menor BD ao maior:
    (~28% TS), deixando todo o regime 0-28% TS descoberto — o ML preenche
    continuamente. **Valor real = granularidade fina em baixo speedup**, não
    superar o pico.
-3. **Levers não se somam** (teto informacional): H9a (pixels+contexto), H9c
+3. **Levers que disputam a MESMA ação não se somam**: H9a (pixels+contexto), H9c
    (rdcost pós-NONE) e a CNN nativa exploram o mesmo sinal correlacionado
    ("blocos fáceis"). Prova: H9c sobre H9a = +0,26pp TS.
+
+   > **⚠ Correção (2026-07-26).** A redação original — "levers não se somam (teto
+   > informacional)" — **é refutada pelo H9d**, que soma **+1,02 pp** de TS sobre o
+   > H9a (4× o do H9c) com **informação idêntica à do H9c**. A não-aditividade não é
+   > informacional, é **sobreposição de ação**: H9a e H9c perguntam ambos "posso
+   > parar aqui?"; o H9d pergunta "vale avaliar AB/4-way?", ação disjunta. Ver
+   > `SINTESE §2.8` (espaço de projeto) e `SINTESE §6, Conclusão 3`. Restrição
+   > independente e complementar, pelo eixo da estrutura, em
+   > `RESULTADOS_approachB.md §7.1`.
 
 ### 8.4 Experimentos em andamento (2026-07-16)
 

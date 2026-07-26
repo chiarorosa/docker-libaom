@@ -172,6 +172,67 @@ O H9c, por operar **pós-NONE**, tem ação **binária**: `P(NONE) > τ` → enc
 busca ali (reusa `av1_disable_all_splits`, seguro pois `PARTITION_NONE` já foi
 avaliado). Os τ são o botão de operação que traça a curva TS × BD.
 
+### 2.8 O espaço de projeto dos podadores — duas dimensões ortogonais
+
+As três soluções implantadas (H9a, H9c, H9d) são frequentemente lidas como três níveis de
+sofisticação de uma mesma ideia. **Não são.** Elas ocupam pontos distintos de um plano de
+duas dimensões independentes: **quando** o podador age — e portanto que informação já foi
+paga — e **o que** ele poda. Explicitar esse plano é o que torna previsíveis os resultados
+de composição (§6, Conclusão 3).
+
+**Dimensão 1 — o ponto de enganche no fluxo de controle** (`av1_rd_pick_partition`):
+
+```
+av1_rd_pick_partition(bsize, ...)
+│
+├─ av1_prune_partitions_before_search()   ◄── H9a      nada foi avaliado ainda
+│
+├─ none_partition_search()                    avalia PARTITION_NONE  ← custo pago aqui
+│
+├─ av1_prune_after_none()                 ◄── H9c e H9d   mesmo gancho
+│
+├─ split_partition_search()                   SPLIT quadrada
+├─ rectangular_partition_search()             HORZ, VERT
+└─ portões AB {4,5,6,7} e 4-way {8,9}     ◄── o alvo do H9d
+```
+
+**Dimensão 2 — a ação**, isto é, que candidatos deixam de ser avaliados.
+
+| | **H9a** | **H9c** | **H9d** |
+|---|---|---|---|
+| **Quando age** | pré-busca | pós-NONE | pós-NONE |
+| **O que vê** | A+B+C = **36** atributos | + bloco E (taxa/dist/rdcost **reais** do NONE) = **39** | + bloco E, os mesmos **39** |
+| **O que decide** | cascata: comprometer NONE → só split quadrada → rect-off | **binária**: encerra a busca aqui | **seletiva**: vale avaliar AB e 4-way? |
+| **Custo de informação** | zero — nenhuma avaliação RD paga | uma avaliação de NONE | uma avaliação de NONE |
+
+**O H9c e o H9d são idênticos nas duas primeiras linhas** — mesmo gancho, mesmo vetor de 39
+atributos (`RESULTADOS_H9d_etapa2_C.md §4`: `student_h9d_decide` reusa exatamente o
+`student_node_features` + contexto pós-NONE do `student_h9c_decide`). Diferem **somente na
+ação**. Quem é diferente *em espécie* é o H9a: é o único que decide antes de qualquer custo
+de RD ter sido pago.
+
+**Consequência económica de cada posição.**
+- **H9a** tem o maior alcance e a maior cegueira: um acerto elimina a subárvore inteira,
+  **incluindo a própria avaliação do NONE** — é o único que pode economizar aquele custo.
+  Em troca, decide sem ver um único número de RD.
+- **H9c** tem teto **estruturalmente limitado**: agindo depois do NONE, jamais economiza o
+  NONE, só o que vem depois. Daí podar apenas ~4% de TS isolado (§5). Mais informação,
+  menos alcance.
+- **H9d** compartilha a limitação de alcance do H9c, mas mira um conjunto de candidatos que
+  nenhum dos outros dois visava — e que custa **34,3% do tempo de busca** (`RESULTADOS_C1_custo_por_candidato.md`).
+
+> **Nota de nomenclatura (fonte recorrente de confusão).** `H9a`/`H9b`/`H9c` nomeiam
+> **conjuntos de atributos** — qual bloco de informação se acrescenta. `H9d` nomeia uma
+> **ação** — qual conjunto de candidatos se poda. São dois esquemas de nomeação convivendo
+> na mesma família, o que faz o "H9d" parecer o quarto degrau de uma escada de informação
+> quando é, na verdade, uma coordenada do outro eixo. Registrado também em
+> `RESULTADOS_modelagem_B3_horz_vert.md:218`.
+
+> **Lacuna deste documento (26/07).** O H9d é a **segunda solução positiva implantada** e
+> não possui seção própria nesta síntese (há §3 a §5-ter para as Soluções 1–4 e o Approach
+> B). Seus resultados estão em `RESULTADOS_H9d_CTC.md`, `RESULTADOS_H9d_etapa3_encoder.md`
+> e `INVENTARIO_solucoes.md §5`, e devem ser incorporados aqui como §5-quater.
+
 ---
 
 ## 3. Solução 1 — CNN no domínio de pixels (ConvNeXt): diagnóstico e limite superior
@@ -485,11 +546,30 @@ cpu0. A escada discreta da nativa pula de cpu0 (0% TS) para cpu1 (~30% TS),
 deixando **todo o regime 0–30% TS descoberto** — o ML preenche continuamente. O
 valor prático é **granularidade fina em baixo speedup**, não superar o pico.
 
-**Conclusão 3 — os *levers* não se somam (limite superior informacional).** H9a
+**Conclusão 3 — *levers* que disputam a MESMA ação não se somam.** H9a
 (pixels+contexto), H9c (rdcost pós-NONE) e a CNN nativa exploram o **mesmo sinal
 correlacionado** — os "blocos fáceis". Prova direta: H9c sobre H9a = +0,26pp de
 TS. É a mesma história de saturação que a Solução 1 estabeleceu no domínio de
 pixels, agora confirmada no domínio RD.
+
+> **⚠ Correção do enunciado (2026-07-26).** Esta conclusão foi originalmente redigida na
+> forma geral — *"os levers não se somam"* — e nessa forma **é refutada pelo H9d**, que
+> soma **+1,02 pp** de TS sobre o H9a (quatro vezes o que o H9c somou) usando **informação
+> idêntica à do H9c**. A não-aditividade, portanto, **não é um limite informacional**: é
+> **sobreposição de ação**.
+>
+> Pelo espaço de projeto de §2.8: H9a e H9c ocupam pontos diferentes da dimensão *quando*,
+> mas a **mesma** posição na dimensão *o quê* — ambos perguntam "este bloco é fácil, posso
+> parar?", e por isso caçam os mesmos blocos lisos. O E4 mediu a sobreposição diretamente:
+> **64% do TS atribuído ao H9c era, na verdade, o H9a** rodando por baixo nos seus defaults
+> (`RESULTADOS_BLOCO7_E1_E4.md §2`). O H9d escapa porque sua ação é **disjunta** — não
+> pergunta "posso parar?", pergunta "vale avaliar AB e 4-way?", candidatos que custam 34,3%
+> do tempo de busca e que nenhum dos outros dois visava.
+>
+> **Enunciado correto:** dois podadores se somam na medida em que seus **conjuntos de
+> candidatos podados** são disjuntos, independentemente de terem ou não a mesma informação
+> de entrada. É uma afirmação mais estreita, mas verdadeira — e **prescritiva**: indica que
+> a via para novos ganhos é procurar ações ainda não disputadas, não mais informação.
 
 **Argumento transversal — custo de inferência (MEDIDO).** O microbenchmark de
 inferência isolada (`docs/RESULTADOS_microbench_pruner.md`, encode real cpu1)
