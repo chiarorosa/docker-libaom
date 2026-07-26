@@ -77,9 +77,15 @@ def collapse4(part10):
 # --------------------------------------------------------------------------
 # Coleta de features/rotulos por nivel (mesmo padrao de train_student_h9.py)
 # --------------------------------------------------------------------------
-def collect_by_dim(entries, per_pkl=None, limit=None, verbose_tag=""):
-    """Per-block-size {'feat':(N,36), 'truth':(N,)} sobre o dataset H9a,
-    usando o mapeamento 4-classes deste experimento."""
+def collect_by_dim(entries, per_pkl=None, limit=None, verbose_tag="",
+                   feature_set="h9a"):
+    """Per-block-size {'feat':(N,36 ou 39), 'truth':(N,)} sobre o dataset H9a,
+    usando o mapeamento 4-classes deste experimento. feature_set escolhe o
+    extrator: "h9a" (36 features, pre-busca) ou "h9c" (39 features, H9a + taxa/
+    distorcao/rdcost reais do PARTITION_NONE -- so disponiveis no ponto de
+    decisao pos-NONE, que e onde o B3 seria enganchado em C)."""
+    extractor = (featmod.node_features_h9c if feature_set == "h9c"
+                 else featmod.node_features_h9a)
     acc = {dim: {"feat": [], "truth": []} for dim, _ in MODEL_LEVELS}
     n_sb = 0
     for e in entries:
@@ -91,8 +97,8 @@ def collect_by_dim(entries, per_pkl=None, limit=None, verbose_tag=""):
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 if dim not in acc:
                     continue
-                f = featmod.node_features_h9a(sb["luma"], dim, r, c,
-                                              sb["qindex"], sb["ctx"][k])
+                f = extractor(sb["luma"], dim, r, c,
+                              sb["qindex"], sb["ctx"][k])
                 acc[dim]["feat"].append(f)
                 acc[dim]["truth"].append(collapse4(label))
             n_sb += 1
@@ -343,6 +349,10 @@ def main(argv):
     p.add_argument("--batch", type=int, default=4096)
     p.add_argument("--per-pkl-train", type=int, default=3000)
     p.add_argument("--per-pkl-eval", type=int, default=2000)
+    p.add_argument("--feature-set", choices=["h9a", "h9c"], default="h9a",
+                   help="h9a = 36 features pre-busca (o experimento original); "
+                        "h9c = 39, com taxa/dist/rdcost reais do NONE, que e o "
+                        "que o B3 veria no ponto de enganche pos-NONE")
     args = p.parse_args(argv)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -372,17 +382,21 @@ def main(argv):
 
     print("\n=== coleta (treino) ===", flush=True)
     train_data, n_sb_train = collect_by_dim(
-        train_e, per_pkl=args.per_pkl_train, verbose_tag="train")
+        train_e, per_pkl=args.per_pkl_train, verbose_tag="train",
+        feature_set=args.feature_set)
     print("total superblocos (treino): {}".format(n_sb_train), flush=True)
 
     print("\n=== coleta (held-out) ===", flush=True)
     eval_data, n_sb_eval = collect_by_dim(
-        heldout_e, per_pkl=args.per_pkl_eval, verbose_tag="eval")
+        heldout_e, per_pkl=args.per_pkl_eval, verbose_tag="eval",
+        feature_set=args.feature_set)
     print("total superblocos (held-out): {}".format(n_sb_eval), flush=True)
 
     os.makedirs(args.out_dir, exist_ok=True)
+    n_feat = (featmod.NUM_FEATURES_H9C if args.feature_set == "h9c"
+              else featmod.NUM_FEATURES_H9A)
     bundle = {"hidden": args.hidden, "students": {}, "norm": {},
-              "num_features": featmod.NUM_FEATURES_H9A, "feature_set": "h9a",
+              "num_features": n_feat, "feature_set": args.feature_set,
               "classes": NUM_B3_CLASSES}
 
     per_dim_eval = {}
