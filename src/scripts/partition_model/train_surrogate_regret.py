@@ -5,22 +5,25 @@ Por que existe
 --------------
 A afirmacao "os pixels saturam na variancia" -- tratada no corpo da tese como
 espinha dorsal -- foi estabelecida medindo o teto do dominio de pixels com um
-ConvNeXt que tem dois defeitos metodologicos:
+ConvNeXt treinado contra o objetivo errado.
 
-1. **Selecao do checkpoint pelo criterio errado.** `train.py:299-304` salva o
-   melhor por macro-F1. Em `results/models/surrogate_real/metrics.csv` o minimo
-   da perda de validacao esta na epoca 0 (2,0379) e o macro-F1 so cresce ate a
-   epoca 27 (0,1866), quando a val_loss ja subiu para 2,2992 -- 15% acima do
-   minimo. O `surrogate_best.pt` implantado como "teto" foi colhido em
-   sobreajuste franco, por um criterio que discorda da perda.
+**O objetivo de treino e mau proxy, e a propria tese demonstrou isso.** O treino
+usa entropia cruzada sobre rotulos duros, isto e, otimiza acuracia por no. O
+Approach B (`RESULTADOS_approachB.md` §6) mediu que **acuracia por-no e mau proxy
+do BD x tempo real de um podador**: a GNN venceu claramente offline e ficou ~2x
+pior no encoder. O alvo certo -- o *regret* do crivo A5 -- existe
+(`train_regret.py`) mas foi aplicado somente as 36 features do H9a, **nunca a
+pixels**.
 
-2. **Objetivo de treino que a propria tese demonstrou ser mau proxy.** O treino
-   usa entropia cruzada sobre rotulos duros, isto e, otimiza acuracia por no.
-   O Approach B (`RESULTADOS_approachB.md` §6) mediu que **acuracia por-no e mau
-   proxy do BD x tempo real de um podador**: a GNN venceu claramente offline e
-   ficou ~2x pior no encoder. O alvo certo -- o *regret* do crivo A5 -- existe
-   (`train_regret.py`) mas foi aplicado somente as 36 features do H9a, **nunca
-   a pixels**.
+> **Correcao (2026-07-26).** Uma versao anterior deste cabecalho alegava um
+> segundo defeito -- selecao do checkpoint por macro-F1 em sobreajuste. E FALSO,
+> e a alegacao vinha de leitura parcial do CSV. Em
+> `results/models/surrogate_real/metrics.csv` (30 epocas) o minimo de val_loss
+> (1,7999) E o maximo de macro-F1 (0,2034) ocorrem AMBOS na epoca 13, que e a
+> epoca do checkpoint salvo. Os criterios concordam e a selecao estava correta.
+> O modelo antigo e bem selecionado, apenas fraco em absoluto (macro-F1 0,203) e
+> treinado contra o objetivo errado. O retreino se justifica por esse motivo
+> unico.
 
 Este script ataca os dois. Nao ha re-extracao: o `.pkl` guarda a luma sem perdas
 (`round(pkl*255)` = quadro-fonte, `maxdiff=0`); e trabalho de GPU.
@@ -39,8 +42,11 @@ outra variavel solta.
   `regret.node_regrets` (o mesmo do crivo A5), normalizado por nivel pelo seu
   percentil 95 para que `alpha` tenha significado estavel entre niveis.
 - **Selecao:** pelo **mesmo** criterio ponderado, medido na validacao, com parada
-  antecipada por paciencia. Treinar por um criterio e selecionar por outro foi
-  precisamente o defeito 1.
+  antecipada por paciencia -- treinar e selecionar pelo mesmo criterio.
+- **Capacidade:** `--fusion-dim` tem default **128**, igual ao do
+  `surrogate_real` treinado (lido do seu checkpoint). Isso e deliberado: com 256
+  um eventual ganho seria confundido com capacidade dobrada, e a comparacao
+  precisa isolar o objetivo.
 
 Nos sem regret exato (`nr["exact"]` falso) entram com peso neutro 1,0 em vez de
 serem descartados: descarta-los enviesaria a amostra para os nos faceis.
@@ -269,7 +275,9 @@ def main(argv):
     p.add_argument("--out-dir", default=DEFAULT_OUT_DIR)
     p.add_argument("--cache-dir", default="/workspace/results/models/_cache_regret")
     p.add_argument("--variant", default="tiny")
-    p.add_argument("--fusion-dim", type=int, default=256)
+    p.add_argument("--fusion-dim", type=int, default=128,
+                   help="128 = mesma capacidade do surrogate_real treinado; "
+                        "mudar confunde objetivo com capacidade")
     p.add_argument("--pretrained", action="store_true")
     p.add_argument("--epochs", type=int, default=40)
     p.add_argument("--patience", type=int, default=8,

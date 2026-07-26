@@ -37,7 +37,7 @@ parede: Crosswalk, 5 repetições × 3 configurações × 4 CQ, intercaladas, 60
 | ordem | trabalho | tipo | portão |
 |---|---|---|---|
 | ~~1~~ | ~~**B3 Etapa 1**~~ — **ENCERRADO 2026-07-26, portão não atingido** | offline/GPU | acurácia direcional plana (+0,3 pp em controle pareado); recall subiu de ~42% para ~47%, insuficiente. Negativo medido em `RESULTADOS_modelagem_B3_horz_vert.md §7` |
-| 2 | **ConvNeXt** — retreino com alvo de *regret*, seleção corrigida | offline/GPU | morre se não superar a variância no crivo do A5 |
+| ~~2~~ | ~~**ConvNeXt** — retreino com alvo de *regret*~~ — **ENCERRADO 2026-07-26, hipótese refutada** | offline/GPU | o retreino **piorou** o modelo em toda a faixa (1,06× a 3,80×, pior na região conservadora). Hierarquia medida: H9a < pixels24 < convnext_ce < convnext_regret < variância. `RESULTADOS_convnext_regret.md` |
 | 3 | **Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC | encodes | — (confirmatório) |
 | 4 | ramos que passarem nos portões (B3 Etapas 2–4; replay H8) | ambos | — |
 | — | **E5** — ablação da CB-1 | encodes | **PAUSADO** por decisão; submissão a decidir |
@@ -53,12 +53,19 @@ espinha dorsal — repousa hoje em bases fracas, e a fila acima ataca isso:
 - a ablação que a sustenta é **Jockey, cpu-used=0, 2 quadros** (a CB-1);
 - o crivo de *regret* do A5 **contradiz** parcialmente (pixels24 0,015 vs variância
   0,060), o que já motivou conceder a CB-2;
-- o ConvNeXt que mediu o teto foi selecionado por macro-F1 na **época 27**, com a
-  perda de validação já 15% acima do mínimo (`train.py:299-304`, `metrics.csv`) —
-  isto é, em sobreajuste franco;
-- e foi treinado com **entropia cruzada sobre rótulos duros**, quando a própria tese
-  demonstrou (Approach B) que acurácia por-nó é **mau proxy** do BD×tempo real. O
-  alvo de *regret* existe (`train_regret.py`) mas **nunca foi aplicado a pixels**.
+- e o ConvNeXt que mediu o teto foi treinado com **entropia cruzada sobre rótulos
+  duros**, quando a própria tese demonstrou (Approach B) que acurácia por-nó é
+  **mau proxy** do BD×tempo real. O alvo de *regret* existe (`train_regret.py`)
+  mas **nunca foi aplicado a pixels**.
+
+> **Correção (2026-07-26).** A versão anterior desta seção alegava um defeito
+> adicional — checkpoint selecionado por macro-F1 na época 27, em sobreajuste. É
+> **falso**, e vinha de leitura parcial do `metrics.csv`. Nas 30 épocas completas,
+> o mínimo de `val_loss` (1,7999) e o máximo de macro-F1 (0,2034) ocorrem **ambos
+> na época 13**, que é a do checkpoint salvo: os critérios concordam e a seleção
+> estava correta. O modelo antigo é bem selecionado, apenas **fraco em absoluto**
+> (macro-F1 0,203) e treinado contra o objetivo errado. O item 2 da fila continua
+> justificado, por esse motivo único.
 
 O item 2 da fila re-mede isso. **Ambos os desfechos são ganho:** se o teto subir, uma
 conclusão da tese muda; se não subir, a saturação deixa de repousar em 2 quadros e um

@@ -56,9 +56,11 @@ import features as featmod  # noqa: E402
 import student as studentmod  # noqa: E402
 import simulate_pruning as sp  # noqa: E402
 import regret as regretmod  # noqa: E402
+from model import PartitionSurrogate  # noqa: E402
 
 # Ordem de apresentação (piso -> teto), família implantável primeiro.
-DISPLAY_ORDER = ["random", "variance", "pixels24", "H9a", "H9a_b1", "H9a_cw",
+DISPLAY_ORDER = ["random", "variance", "pixels24", "convnext_ce",
+                 "convnext_regret", "H9a", "H9a_b1", "H9a_cw",
                  "H9c", "regret", "GNN", "GNN_causal"]
 
 # Chão-de-verdade real medido no encoder (menor BD = vencedor), com fonte e
@@ -169,6 +171,45 @@ def score_student(sbs, bundle, device, feat_key, width):
                 feats, dtype=torch.float32, device=device)), -1).cpu().numpy()
         for (si, key), pp in zip(idx, p):
             sbs[si]["nodes"][key]["prob"] = pp
+
+
+def score_surrogate(sbs, ckpt, device, batch=64):
+    """Pontua o ConvNeXt substituto (o modelo-TETO do dominio de pixels).
+
+    Diferente de `score_student`, que consome vetores de atributos por no, aqui
+    a entrada e a propria luma do superbloco mais um plano constante de qindex
+    -- exatamente a entrada que o modelo ve no `surrogate_replay.py`, de modo
+    que o que o crivo mede e o mesmo objeto que o encoder mediria.
+
+    A capacidade (`fusion_dim`) e lida do checkpoint, nao fixada: comparar dois
+    ConvNeXt exige reconstruir cada um com a sua propria largura.
+
+    O colapso 10 -> 3 usa `student.collapse_probs`, a mesma fonte unica que o
+    replay usa para o encoder -- nao uma reimplementacao.
+    """
+    a = ckpt.get("args", {})
+    net = PartitionSurrogate(a.get("variant", "tiny"),
+                             a.get("fusion_dim", 128)).to(device).eval()
+    net.load_state_dict(ckpt["model"])
+    modeled = {d for d, _ in MODEL_LEVELS}
+
+    for s0 in range(0, len(sbs), batch):
+        chunk = sbs[s0:s0 + batch]
+        x = np.empty((len(chunk), 2, datamod.SB_SIZE_PX, datamod.SB_SIZE_PX),
+                     dtype=np.float32)
+        for i, sb in enumerate(chunk):
+            x[i, 0] = sb["luma"].astype(np.float32) / 255.0
+            x[i, 1] = float(sb["qindex"]) / 255.0
+        with torch.no_grad():
+            logits = net(torch.from_numpy(x).to(device))
+            probs = {d: F.softmax(logits[d].float(), dim=-1).cpu().numpy()
+                     for d, _ in MODEL_LEVELS}
+        for i, sb in enumerate(chunk):
+            for key, nd in sb["nodes"].items():
+                dim, r, c = key
+                if dim not in modeled:
+                    continue
+                nd["prob"] = studentmod.collapse_probs(probs[dim][i, r, c])
 
 
 def score_random(sbs, seed=0):
@@ -317,6 +358,13 @@ def main(argv):
     run("variance", lambda: sp.score_with_variance(sbs))
     run("pixels24", lambda: score_student(
         sbs, load("student_real/students.pt"), device, "feat", 24))
+    # Os dois ConvNeXt na MESMA vara: o teto de pixels como foi treinado (CE
+    # sobre rotulos duros) e o retreinado com alvo de regret. Sem o primeiro
+    # aqui, um ganho do segundo nao seria atribuivel ao objetivo.
+    run("convnext_ce", lambda: score_surrogate(
+        sbs, load("surrogate_real/surrogate_best.pt"), device))
+    run("convnext_regret", lambda: score_surrogate(
+        sbs, load("surrogate_regret/surrogate_regret_best.pt"), device))
     run("H9a", lambda: score_student(
         sbs, load("student_h9a/students.pt"), device, "feat", 36))
     if os.path.exists(os.path.join(args.models_dir,
