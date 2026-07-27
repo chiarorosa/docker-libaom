@@ -275,7 +275,18 @@ Com 39 atributos (contexto RD pós-NONE) o AUC sobe para **0,902**. Veredito: **
 | Config | BD-rate | TS% | Speedup | Impl. C | Portão | Enc. CTC |
 |---|--:|--:|--:|:--:|---|:--:|
 | H9a P_rect (base) | +0,568% | 17,72 | 1,223× | sim | Fase 6 ✅ | 8 |
-| **H9a + H9d (PL10)** | **+0,586%** | **18,74** | **1,238×** | sim | **Fase 6 ✅** | 8 |
+| **H9a + H9d PL10 (implantado)** | **+0,586%** | **18,74** | **1,238×** | sim | **Fase 6 ✅** | 8 |
+| H9a + H9d PL20 | +0,651% | 19,81 | 1,262× | sim | Fase 6 ✅ | 8 |
+| H9a A3 (base) | +1,403% | 31,51 | 1,492× | sim | Fase 6 ✅ | 8 |
+| H9a A3 + H9d PL10 | +1,409% | 31,68 | 1,495× | sim | Fase 6 ✅ (**inerte**) | 8 |
+| H9a A3 + H9d PL20 | +1,420% | 32,16 | 1,505× | sim | Fase 6 ✅ | 8 |
+
+Preço do tempo (pp de BD por pp de TS; knob de τ do H9a = 0,0606): **PL10×P_rect 0,0179
+(3,38× mais barato)** · PL20×P_rect 0,0399 (1,52×) · PL10×A3 0,0329 (1,84×) · PL20×A3 0,0258
+(2,35×). Os quatro batem o knob, mas o ganho de TS do H9d **desaba na base agressiva**
+(+1,02 pp → +0,17 pp): supera a resolução temporal (~0,46 pp) em **6/8** seqs na base
+balanceada e em **1/8** na agressiva. Sobre a base A3 o lever é praticamente inerte — os dois
+podadores passam a disputar o mesmo resíduo.
 
 **Contribuição marginal:** +1,02 pp de TS por +0,018 pp de BD = **0,018 pp/pp**, contra
 **0,063 pp/pp** do knob de τ do H9a — ou seja, **~3,5× mais barato** que subir τ. Vence em

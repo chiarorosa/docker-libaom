@@ -622,9 +622,35 @@ de τ em **6 das 8** sequências, **2 delas por Pareto estrito** (FoodMarket2 0,
 > os "blocos fáceis"; o H9d caça um conjunto de candidatos **disjunto**. É o resultado que
 > torna a Conclusão 3 prescritiva — *procure ações não disputadas, não mais informação*.
 
-**Ressalvas.** (i) A fronteira do H9d na CTC tem **um único ponto** (PL10 × P_rect); as três
-configurações restantes (PL20 × P_rect, PL10 × A3, PL20 × A3, ~9 h) são **confirmatórias** e
-não foram rodadas — o H9d é um ponto onde o H9a é uma curva. (ii) Os ganhos de TS de
+**A fronteira completa (27/07) — e o limite do lever.** As três configurações restantes foram
+medidas: 96 encodes, 2 bases do H9a × 2 forças do H9d, integridade reverificada nos **dois**
+presets de τ antes de rodar. Preço do tempo em pp de BD por pp de TS (knob de τ do H9a,
+P_rect→A3, = **0,0606** pp/pp na mesma agregação):
+
+| base H9a | força H9d | BD | TS | ΔTS (pp) | preço | vs knob |
+|---|---|--:|--:|--:|--:|--:|
+| P_rect | **PL10** (implantado) | 0,586% | 18,74 | **+1,02** | **0,0179** | **3,38×** |
+| P_rect | PL20 | 0,651% | 19,81 | +2,09 | 0,0399 | 1,52× |
+| A3 | PL10 | 1,409% | 31,68 | +0,17 | 0,0329 | 1,84× |
+| A3 | PL20 | 1,420% | 32,16 | +0,65 | 0,0258 | 2,35× |
+
+**Os quatro pontos batem o knob de τ** (1,5–3,4×), confirmando o lever. Mas a fronteira revela
+o que o ponto único escondia: **o valor marginal do H9d desaba conforme a base do H9a fica
+agressiva** — de +1,02 pp para **+0,17 pp** de TS. Por sequência, o ganho supera a resolução
+temporal (~0,46 pp) em **6/8** na base balanceada e em apenas **1/8** na agressiva (Neon1224 e
+Tango ficam **negativos**). Sobre a base A3 o H9d é, na prática, **inerte**.
+
+> **Consequência para §2.8 e a Conclusão 3.** A disjunção de ação que explica a aditividade do
+> H9d **não é absoluta — é dependente do ponto de operação**. Com τ_none=0,60 (A3), o H9a
+> NONE-commita tão cedo que os nós nunca chegam ao portão de AB/4-way: os dois levers passam a
+> disputar o **mesmo resíduo**, e o H9d volta a se comportar como o H9c. O enunciado correto
+> ganha uma cláusula: *dois podadores se somam na medida em que seus conjuntos de candidatos
+> podados são disjuntos **no ponto de operação em que rodam***. O ponto implantado
+> (P_rect × PL10) é justamente onde a disjunção é maior — o que valida a escolha, mas por
+> uma razão mais estreita do que "as ações são disjuntas".
+
+**Ressalvas.** (i) O ganho de +0,17 pp da base agressiva está **abaixo da resolução temporal
+medida** e não deve ser citado como positivo. (ii) Os ganhos de TS de
 Neon1224 (+0,1 pp) e Crosswalk (+0,4 pp) estão **dentro da resolução temporal medida**
 (σ ⇒ ~0,46 pp, `RESULTADOS_BLOCO7_E3_DEC_E2.md`); a média de +1,02 pp está a ~4,4σ e os
 BD-rate são exatos, então o Pareto não é afetado. (iii) O τ por nível foi calibrado nas 3
