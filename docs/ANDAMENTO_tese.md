@@ -68,11 +68,29 @@ global com o H9d).
 
 ### 0.2 Em execução
 
-**Nada.** A cadeia serial do Bloco 7 (104 encodes) encerrou em 26/07 e a fronteira do
-H9d (96 encodes) em 27/07; os dois experimentos offline da fila (B3 Etapa 1 e
-ConvNeXt-*regret*) encerraram em 26/07. Não há campanha de codificação nem treino em
-GPU em curso. O próximo encode depende de **decisão** (E5) ou de **agendamento**
-(fronteira Pareto global) — ver §0.3.
+**E5 — ablação de atribuição no conjunto de validação** (lançado 27/07 12:54 UTC).
+Três sequências em série — **FlowerPan → Lips → HoneyBee** —, 10 quadros, cpu0,
+CQ {20,32,43,55}, **política casada** (NONE-commit puro para os três braços:
+`TAU_SPLIT=2`, `TAU_REST=-1`). 17 pontos de operação por sequência: `ml` no grid
+**congelado** (0,95…0,50), `variance` estendida para o extremo conservador
+(0,999…0,80) e `random` com 4 pontos. **~228 codificações, ~18 h.**
+
+Progresso e resultados parciais em `results/benchmark/e5_ablation/<seq>/curve.csv`
+(escrito a cada ponto); log em `results/benchmark/e5_ablation.log`.
+Script: `src/scripts/benchmark/run_e5_validation.sh`.
+
+> **Por que o grid da variância muda e o do `ml` não.** A ablação já rodara no
+> **teste** com 10 quadros (Fase 5), mas as faixas de speedup saíram **disjuntas** em
+> 3/3 seqs — o `ml` opera em 1,05–1,59× e a variância, já no seu τ mais conservador do
+> grid congelado, salta para 1,89×. Sem sobreposição não existe comparação a tempo
+> casado. Estender o grid da variância é legítimo **na validação**, cujo papel
+> declarado é escolher limiares operacionais, e seria ilegítimo no teste (mexer em
+> configuração vendo dado de teste). O braço do `ml` fica intocado justamente para que
+> a proposta não seja a que se re-ajusta.
+
+Nada mais em curso: a cadeia do Bloco 7 encerrou em 26/07, a fronteira do H9d em
+27/07, e os dois experimentos offline (B3, ConvNeXt-*regret*) em 26/07. **Não lançar
+treino em GPU enquanto o E5 roda** — ele mede tempo de parede.
 
 ### 0.3 Fila confirmada
 
@@ -82,7 +100,7 @@ GPU em curso. O próximo encode depende de **decisão** (E5) ou de **agendamento
 | ~~2~~ | ~~**ConvNeXt** — retreino com alvo de *regret*~~ — **ENCERRADO 2026-07-26, hipótese refutada** | offline/GPU | o retreino **piorou** o modelo em toda a faixa (1,06× a 3,80×, pior na região conservadora). Hierarquia medida: H9a < pixels24 < convnext_ce < convnext_regret < variância. `RESULTADOS_convnext_regret.md` |
 | ~~3~~ | ~~**Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC~~ — **CONCLUÍDA 2026-07-27** | encodes | 96 encodes; os 4 pontos batem o knob de τ (1,52–3,38×) e o implantado é o melhor. **Achado novo:** o H9d é **inerte sobre a base agressiva** (+0,17 pp de TS, 1/8 seqs acima da resolução) → a aditividade **depende do ponto de operação**. `SINTESE §5-quater` |
 | ~~4~~ | ~~ramos que passarem nos portões (B3 Etapas 2–4; replay H8)~~ — **VAZIO**: nenhum ramo passou. O B3 parou na Etapa 1 e o replay H8 do `convnext_regret` foi dispensado (medir no codificador um modelo já pior offline que seu antecessor não se justifica) | ambos | — |
-| — | **E5** — ablação da CB-1 | encodes | **PAUSADO** por decisão. A condição que o adiava (item 2) **já ocorreu**; ver `DECISOES_escopo.md` — o item 2 não o subsumiu e o valor do E5 **aumentou** |
+| 5 | **E5** — ablação da CB-1 nas 3 seqs de validação | encodes | 🔄 **EM EXECUÇÃO desde 27/07 12:54 UTC** (~18 h, 228 encodes). Portão: com as faixas agora sobrepostas, o `ml` domina a variância a **tempo casado** em ≥2 das 3 seqs, por margem acima de ~0,46 pp (σ medido no E2) |
 | — | Recompor a **fronteira Pareto global** com o H9d nos demais níveis de cpu | encodes | não iniciado; ver `SINTESE §6` |
 
 Restrição de agenda: treino em GPU carrega CPU no carregamento de dados e **não pode**
@@ -326,7 +344,7 @@ título/resumo/objetivos com essa informação explícita.
 | **H9d** — 2ª solução | portão, C, codificador, CTC e **fronteira 2D** (96 encodes) | ✅ **CONCLUÍDA** — positiva, implantada | `RESULTADOS_H9d_*.md`, `SINTESE §5-quater` |
 | Bloco 7 (E1–E4, DEC, E2) | blindagem: generalização do confound, joelho de τ, σ do tempo | ✅ **CONCLUÍDO** | `RESULTADOS_BLOCO7_E1_E4.md`, `..._E3_DEC_E2.md` |
 | Auditoria + inventário | composição real do H9a, portão D', consolidação de todas as configs | ✅ **CONCLUÍDO** | `RESULTADOS_auditoria_dominio_pixels.md`, `INVENTARIO_solucoes.md` |
-| E5 — ablação da CB-1 | repor a ablação de atribuição no codificador (≥10 quadros, ≥2 seqs) | ⏸ **PAUSADO** por decisão | §0.3, `DECISOES_escopo.md` |
+| E5 — ablação da CB-1 | atribuição no codificador, 3 seqs de validação, 10 quadros | 🔄 **EM EXECUÇÃO** (27/07) | §0.2 |
 | Fronteira Pareto global | recompor com o H9d nos demais níveis de cpu | ⬜ pendente | §0.3, `SINTESE §6` |
 
 Legenda: ✅ concluído · ⏳ próximo · 🔄 em andamento · ⏸ pausado por decisão · ⬜ pendente.
