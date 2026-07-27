@@ -21,7 +21,7 @@ retangulares (HORZ/VERT), as quatro AB e as duas 4-way — até 9 formas por nó
 preditor que elimine formas improváveis **antes** (ou **durante**) a busca reduz
 o tempo sem, idealmente, degradar a taxa-distorção (RD).
 
-A investigação produziu **três soluções distintas**, que a tese apresenta e
+A investigação produziu **quatro soluções distintas**, que a tese apresenta e
 compara sob diferentes cenários e óticas:
 
 1. **Heurística baseada em CNN (domínio de pixels)** — um modelo convolucional
@@ -40,6 +40,11 @@ compara sob diferentes cenários e óticas:
 3. **Heurística baseada em NN pós-NONE (H9c)** — um MLP leve que atua **depois**
    de o codificador ter avaliado `PARTITION_NONE`, usando o custo RD real dessa
    avaliação para decidir se encerra a busca. É um **refinamento complementar**.
+4. **Poda seletiva das partições estendidas (H9d)** — mesmo gancho e **mesmos 39
+   atributos** do H9c, mas **ação distinta**: decide se vale avaliar AB e 4-way,
+   candidatos que consomem 34,3% do custo de busca. É a **segunda solução positiva
+   implantada** e a única cujo ganho **se soma** ao do H9a (+1,02 pp de TS). Ver §2.8
+   para o porquê — ação disjunta, não mais informação.
 
 O fio condutor metodológico de toda a investigação é a **caracterização honesta
 de um limite superior de desempenho informacional**: quanto do particionamento é
@@ -228,10 +233,9 @@ de RD ter sido pago.
 > quando é, na verdade, uma coordenada do outro eixo. Registrado também em
 > `RESULTADOS_modelagem_B3_horz_vert.md:218`.
 
-> **Lacuna deste documento (26/07).** O H9d é a **segunda solução positiva implantada** e
-> não possui seção própria nesta síntese (há §3 a §5-ter para as Soluções 1–4 e o Approach
-> B). Seus resultados estão em `RESULTADOS_H9d_CTC.md`, `RESULTADOS_H9d_etapa3_encoder.md`
-> e `INVENTARIO_solucoes.md §5`, e devem ser incorporados aqui como §5-quater.
+O H9d, a **segunda solução positiva implantada**, é tratado em **§5-quater**; suas medições
+completas estão em `RESULTADOS_H9d_predizibilidade.md`, `RESULTADOS_H9d_cota_superior.md`,
+`RESULTADOS_H9d_etapa2_C.md`, `RESULTADOS_H9d_etapa3_encoder.md` e `RESULTADOS_H9d_CTC.md`.
 
 ---
 
@@ -527,6 +531,108 @@ offline, contra heurísticas nativas dominantes).
 
 ---
 
+## 5-quater. Solução 5 — H9d: poda seletiva das partições estendidas (AB / 4-way)
+
+**O que a distingue — e por que não é "o próximo H9".** Pelo espaço de projeto de §2.8, o
+H9d **não** é o quarto degrau de uma escada de informação: é a **outra coordenada**.
+Compartilha com o H9c o gancho (`av1_prune_after_none`) e o **mesmo vetor de 39 atributos** —
+`student_h9d_decide` reusa exatamente o `student_node_features` + contexto pós-NONE do
+`student_h9c_decide`. O que muda é **a ação**: em vez de perguntar *"posso encerrar a busca
+aqui?"*, pergunta *"vale avaliar as partições **estendidas** — AB {4,5,6,7} e 4-way {8,9}?"*.
+NONE, rect e split ficam **intocados**.
+
+**Por que esse alvo.** O diagnóstico C1/C3, sobre todo o teste congelado, mediu que AB+4-way
+consomem **34,3% do custo de busca** (mínimo 28,9% — 3–4× acima do limiar de relevância de
+10%). É um pool grande que **nem o H9a nem o H9c jamais visaram especificamente**.
+
+**Etapa 1 — portão de predizibilidade (offline, 792 840 nós held-out).** A pergunta prévia:
+*as features sabem dizer que o nó não vai escolher partição estendida?*
+
+| nível | n | base EXT | ROC-AUC (36 feat.) | ROC-AUC (39 feat.) |
+|---|--:|--:|--:|--:|
+| 16 px | 572 213 | 9,9% | 0,906 | **0,919** |
+| 32 px | 172 627 | 13,1% | 0,817 | **0,829** |
+| 64 px | 48 000 | 3,0% | 0,864 | 0,865 |
+| **agregado** | **792 840** | 10,2% | **0,890** | **0,902** |
+
+Pontos de operação (39 atributos): a **50% de busca evitada**, apenas **1,1%** de vencedores
+perdidos; a 10% de perdas, **69,7%** de busca evitada. **Veredito: GO** para as Etapas 2–3.
+
+**Cota superior — quanto existe para ganhar.** Desligando AB/4-way por completo
+(`AV1_EXT_PART_OFF=1`, mesmo binário, gate inerte por padrão), 3 seqs de teste, 5 quadros:
+**+0,89% de BD por 1,431× de speedup**. E, o que importa, **marginalmente sobre o H9a P_ref**
+— pois o H9d só age no resíduo que o H9a deixou passar — ainda restam **1,293× de speedup**
+presos em AB/4-way (Jockey 1,367× · RaceNight 1,239× · RiverBank 1,290×). **O pool marginal
+é grande; não é ruído.**
+
+**Etapa 2 — integração em C (Gate C PASSOU).** Pesos do MLP de 39 entradas (2 saídas
+NÃO-EXT/EXT, por nível 16/32/64) exportados para `partition_student_h9d_weights.h`, com
+**round-trip verificado**: sobre 192 vetores aleatórios,
+`|softmax(PyTorch) − softmax(layout C)| = 1,35e−07`. A decisão marca
+`part_state->h9d_skip_ext`, consumido nos gates AB e 4-way, **reusando o mecanismo já
+validado** do `AV1_EXT_PART_OFF`. Superfície de controle por env-var
+(`AV1_STUDENT_H9D_ENABLE`, `AV1_STUDENT_H9D_TAU[_16/_32/_64]`), **off por padrão**; H9c e
+H9d rodam independentes.
+
+**Etapa 3 — no codificador: o τ global funciona, mas quebra numa sequência.** Sweep de τ
+sobre o H9a P_ref (3 seqs de teste, 5 quadros, vs âncora cpu0) mostra a fronteira do H9d
+**dentro** da curva do knob de τ do H9a. A 10 quadros, contra subir τ (`H9a A2`) ao mesmo
+speedup: **RaceNight domina Pareto** (0,981%/1,771× contra 1,282%/1,757× — mais rápido *e*
+−0,30 pp), **Jockey melhor** (−0,22 pp @1,775×), **RiverBank pior** (+0,12 pp). A correção
+foi **τ por nível de bloco**:
+
+| variante | Δ BD Jockey | Δ BD RaceNight | Δ BD RiverBank |
+|---|--:|--:|--:|
+| τ global 0,30 | −0,29 | −0,34 | **+0,12 (pior)** |
+| **PL10** (θ por nível @wl≈10%) | −0,02 | **−0,30** | **+0,05 (≈empate)** |
+| PL20 (@wl≈20%) | +0,03 | −0,12 | +0,04 |
+| PLmix (agressivo-16) | −0,00 | −0,08 | +0,03 |
+
+**Escolhido: PL10** (τ₁₆=0,091 · τ₃₂=0,103 · τ₆₄=0,014) — recupera o RiverBank sem abrir mão
+do ganho nas outras duas.
+
+**Validação universal (Fase 6, CTC Classe A1, 8 seqs, 15 quadros, cpu0).** Integridade
+verificada primeiro: com o H9d desligado, o codificador reproduz `ml_balanced`
+**byte-idêntico** (1 574 775 bytes, PSNR-Y 40,9720 dB).
+
+| config | BD-Rate | TS% | speedup |
+|---|--:|--:|--:|
+| H9a equilibrado (`ml_balanced`, P_rect) | +0,568% | 17,72 | 1,223× |
+| **H9a + H9d (PL10)** | **+0,586%** | **18,74** | **1,238×** |
+
+**A pergunta que importa não é "H9d vs nativo", e sim: partindo do ponto implantado, o H9d
+compra tempo mais barato do que simplesmente subir o τ do H9a?** Interpolando o segmento
+P_rect→A3 (o knob de τ) no TS que o H9d atingiu:
+
+| mecanismo | preço do tempo |
+|---|--:|
+| **H9d empilhado (PL10)** | **0,018 pp de BD por pp de TS** |
+| knob de τ do H9a (P_rect→A3) | 0,063 pp/pp |
+
+O H9d entrega **+1,02 pp de TS por +0,018 pp de BD** — cerca de **um terço** do que custaria
+obter o mesmo tempo afrouxando o limiar do H9a, isto é, **~3,5× mais barato**. Vence o knob
+de τ em **6 das 8** sequências, **2 delas por Pareto estrito** (FoodMarket2 0,63%→0,61% com
++1,8 pp de TS; Tango 1,15%→1,14% com +1,6 pp) — BD **cai** enquanto o tempo **melhora**.
+
+> **Leitura (por que esta solução importa para a tese).** O H9d é a **segunda solução
+> positiva implantada** e a prova empírica que corrige a Conclusão 3 (§6): ele soma **+1,02
+> pp** sobre o H9a — **quatro vezes** o que o H9c somou (+0,26 pp) — usando **informação
+> idêntica à do H9c**. Se a não-aditividade dos *levers* fosse um teto **informacional**,
+> isso seria impossível. O que a explica é **sobreposição de ação**: H9a e H9c caçam ambos
+> os "blocos fáceis"; o H9d caça um conjunto de candidatos **disjunto**. É o resultado que
+> torna a Conclusão 3 prescritiva — *procure ações não disputadas, não mais informação*.
+
+**Ressalvas.** (i) A fronteira do H9d na CTC tem **um único ponto** (PL10 × P_rect); as três
+configurações restantes (PL20 × P_rect, PL10 × A3, PL20 × A3, ~9 h) são **confirmatórias** e
+não foram rodadas — o H9d é um ponto onde o H9a é uma curva. (ii) Os ganhos de TS de
+Neon1224 (+0,1 pp) e Crosswalk (+0,4 pp) estão **dentro da resolução temporal medida**
+(σ ⇒ ~0,46 pp, `RESULTADOS_BLOCO7_E3_DEC_E2.md`); a média de +1,02 pp está a ~4,4σ e os
+BD-rate são exatos, então o Pareto não é afetado. (iii) O τ por nível foi calibrado nas 3
+seqs de teste UVG e aplicado sem re-ajuste à CTC — o resultado da CTC é, nesse sentido,
+genuinamente held-out.
+
+---
+
 ## 6. Análise integrada — fronteira Pareto e as três conclusões
 
 **Fronteira Pareto global (BD × TS, todos os níveis cpu, média 3 seqs
@@ -535,6 +641,13 @@ Boxing/FoodMarket2/Tango).** Pontos não-dominados, do menor BD ao maior:
 `H9c_cpu1 0,39%/29,6%` → `native_cpu2 0,41%/38,2% (TS/BD 94, pico)` →
 `H9c_cpu2 0,44%/39,1%` → `H9a_bal_cpu2 1,13%/47,1%` → `native_cpu3 2,80%/66,4%` →
 `H9c_cpu3 / H9a_cpu3 3,5–4,8%/70–78%`.
+
+> **Nota (26/07).** Esta fronteira é de uma análise anterior, sobre **3 sequências**
+> (Boxing/FoodMarket2/Tango); o **H9d não figura nela** por ter sido medido depois, sobre as
+> **8 seqs da CTC**. Sua ausência aqui **não** significa dominância — ao contrário, na
+> medição própria (§5-quater) ele é Pareto-não-dominado e vence o knob de τ em 6/8 seqs.
+> Recompor a fronteira global com o H9d exigiria as 3 configurações confirmatórias ainda não
+> rodadas (§5-quater, ressalva i).
 
 **Conclusão 1 — ninguém DOMINA a CNN nativa.** Nenhum ponto ML é estritamente
 melhor (mais TS a ≤ BD). O H9c empata a cpu1/2; a nativa mantém o pico de
@@ -613,10 +726,14 @@ vantagem. A razão "~50×/chamada" mede o algoritmo isolado, não o pruner impla
 2. H9a: gates, teste reservado (Fase 5), validação universal CTC (Fase 6) vs
    presets nativos, e swap ML-vs-ML (§4).
 3. H9c: gate, o *confound* e sua correção, o swap limpo e a decomposição (§5).
-4. Análise integrada: fronteira Pareto, as três conclusões, custo computacional
+4. H9d: o alvo AB/4-way (34,3% do custo), portão de predizibilidade, cota superior,
+   τ por nível e a contribuição marginal na CTC — a solução que **se soma** ao H9a
+   (§5-quater).
+5. Análise integrada: fronteira Pareto, as três conclusões, custo computacional
    (§6).
-5. Discussão: limite superior informacional; utilidade prática vs validação
-   metodológica; o papel de nicho e de substituto-leve das soluções ML.
+6. Discussão: limite superior informacional **corrigido** (a não-aditividade é de
+   *ação*, não de informação — §2.8); utilidade prática vs validação metodológica;
+   o papel de nicho e de substituto-leve das soluções ML.
 
 ---
 
@@ -628,8 +745,20 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 - **Fase 5 (teste reservado, 3 seqs):** H9a P_rect ~0,46%/26,5%; P_ref ~0,60%/29,5%.
 - **Fase 6 CTC (8 seqs) — praticante:** H9a bal 0,568%/19,3%; H9a aggr 1,403%/34,1%;
   nativo cpu1 0,449%/30,4%; cpu2 0,536%/40,4%; cpu3 2,722%/67,5%.
+- **Fase 6 CTC — H9a + H9d (PL10):** 0,586%/18,7% (TS canônico; o par H9a bal na
+  mesma definição é 17,7%). Marginal: **+1,02 pp de TS por +0,018 pp de BD**, ~3,5×
+  mais barato que o knob de τ (§5-quater).
 - **Swap 8 seqs — ML-vs-CNN nativa:** ver §4 (H9a) e §5 (H9c). Resumo: H9c ≈ nativa
   a cpu1/2; H9a poda mais a BD desproporcional.
+
+> **⚠ Atenção ao copiar estes números — há DUAS definições de TS na tese.**
+> `analyze_frontier.py:281` computa ambas: a **canônica** (média sobre CQ de
+> `1 − t/t_âncora`, depois sobre sequências) e a usada nas linhas de Fase 6 acima
+> (`1 − Σ_CQ t / Σ_CQ t_âncora`, ponderada pelo tempo, logo dominada por CQ 20). Elas
+> divergem até **~3 pp** (`results/benchmark/fase6_analysis/ts_definitions.csv`): o nativo
+> cpu1 é 30,4% numa e **32,6%** na outra. Os documentos mais recentes (H9d, Bloco 7) usam a
+> **canônica**. Tabela única já padronizada na canônica: **`INVENTARIO_solucoes.md`**.
+> Os BD-rate não são afetados.
 
 ---
 
