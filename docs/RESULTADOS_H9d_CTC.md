@@ -138,8 +138,13 @@ estão registradas em `DECISOES_escopo.md` e **não** são limitações — em p
 **15 quadros são exatamente a especificação da CTC §4.1** (`--limit=15`), não um recorte
 desta tese. Limitações de fato:
 
-- **Um único ponto de operação do H9d** (PL10 sobre P_rect). Uma família 2D (PL10/PL20 ×
-  P_rect/A3) daria a fronteira completa; PL10 sobre P_rect é o par implantado/seguro.
+- ~~**Um único ponto de operação do H9d** (PL10 sobre P_rect).~~ **Resolvido em 27/07:** a
+  família 2D (PL10/PL20 × P_rect/A3) foi medida, 96 encodes. Os quatro pontos batem o knob de
+  τ (1,52–3,38×) e **PL10 × P_rect é o melhor deles**, confirmando o par implantado. Mas a
+  fronteira expôs uma limitação que este documento não podia ver: **sobre a base agressiva o
+  H9d é inerte** (+0,17 pp de TS, acima da resolução em apenas 1/8 seqs, com Neon1224 e Tango
+  negativos) — a aditividade do lever **depende do ponto de operação**. Ver
+  `SINTESE §5-quater`.
 - **Tempo de parede** medido em contêiner compartilhado; Δ TS de ~0,1 pp (Neon1224) está na
   ordem do ruído de medição. Os Δ BD, ao contrário, são exatos (§3.2).
 - **Modelo treinado em 8 bits**, aplicado a conteúdo 10-bit; a normalização

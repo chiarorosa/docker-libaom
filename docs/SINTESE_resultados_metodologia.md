@@ -625,7 +625,9 @@ de τ em **6 das 8** sequências, **2 delas por Pareto estrito** (FoodMarket2 0,
 **A fronteira completa (27/07) — e o limite do lever.** As três configurações restantes foram
 medidas: 96 encodes, 2 bases do H9a × 2 forças do H9d, integridade reverificada nos **dois**
 presets de τ antes de rodar. Preço do tempo em pp de BD por pp de TS (knob de τ do H9a,
-P_rect→A3, = **0,0606** pp/pp na mesma agregação):
+P_rect→A3, = **0,0606** pp/pp na mesma agregação — o **0,063** citado acima vem do estimador
+por interpolação **por sequência** do `ctc_h9d_marginal.py`; os dois concordam a ~4%, e a
+razão contra o H9d implantado sai 3,38× ou 3,5× conforme o estimador):
 
 | base H9a | força H9d | BD | TS | ΔTS (pp) | preço | vs knob |
 |---|---|--:|--:|--:|--:|--:|
@@ -672,8 +674,9 @@ Boxing/FoodMarket2/Tango).** Pontos não-dominados, do menor BD ao maior:
 > (Boxing/FoodMarket2/Tango); o **H9d não figura nela** por ter sido medido depois, sobre as
 > **8 seqs da CTC**. Sua ausência aqui **não** significa dominância — ao contrário, na
 > medição própria (§5-quater) ele é Pareto-não-dominado e vence o knob de τ em 6/8 seqs.
-> Recompor a fronteira global com o H9d exigiria as 3 configurações confirmatórias ainda não
-> rodadas (§5-quater, ressalva i).
+> **Atualização (27/07):** a fronteira do H9d já foi medida (4 pontos, 8 seqs); recompor a
+> fronteira Pareto **global** com ela continua pendente, por exigir os pontos do H9d nos
+> demais níveis de cpu, que não foram rodados.
 
 **Conclusão 1 — ninguém DOMINA a CNN nativa.** Nenhum ponto ML é estritamente
 melhor (mais TS a ≤ BD). O H9c empata a cpu1/2; a nativa mantém o pico de

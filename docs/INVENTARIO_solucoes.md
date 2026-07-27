@@ -289,9 +289,15 @@ balanceada e em **1/8** na agressiva. Sobre a base A3 o lever é praticamente in
 podadores passam a disputar o mesmo resíduo.
 
 **Contribuição marginal:** +1,02 pp de TS por +0,018 pp de BD = **0,018 pp/pp**, contra
-**0,063 pp/pp** do knob de τ do H9a — ou seja, **~3,5× mais barato** que subir τ. Vence em
-**6 de 8** sequências, 2 por Pareto estrito. Integridade verificada: com H9d desligado, o
-bitstream reproduz `ml_balanced` **byte-idêntico** (1 574 775 bytes, PSNR-Y 40,9720 dB).
+**0,063 pp/pp** do knob de τ do H9a — **~3,5× mais barato** que subir τ. Vence em **6 de 8**
+sequências, 2 por Pareto estrito. Integridade verificada nos **dois** presets de τ: com H9d
+desligado, o bitstream reproduz `ml_balanced` (1 574 775 B, PSNR-Y 40,9720 dB) **e** `ml_aggr`
+(1 579 208 B, 40,9600 dB) byte-idênticos.
+
+> **Dois estimadores do preço do knob.** `0,063 pp/pp` vem da interpolação **por sequência**
+> (`ctc_h9d_marginal.py`); a média-das-médias sobre as 8 seqs dá **0,0606**. Concordam a ~4%,
+> e a razão contra o H9d implantado sai **3,5×** ou **3,38×** conforme o estimador. Nenhum
+> está errado — só não devem ser misturados na mesma tabela.
 
 ---
 
@@ -316,7 +322,7 @@ bitstream reproduz `ml_balanced` **byte-idêntico** (1 574 775 bytes, PSNR-Y 40,
 | **A — pixels** (ConvNeXt CE/regret, pixels24, GNN, bloco D, bloco D') | 8 | **não** | **fechada** — 5 tentativas independentes negativas |
 | **B — H9a** (P0/P_rect/P_ref/A1–A3, ml_balanced/aggr, 6 swaps) | 15 + 4 ablações + 4 diagnósticos | **sim** | **a solução da tese**; portões 2–5 e Fase 6 |
 | **C — H9c** (τ0,45/0,90/0,95, iso, 6 swaps) | 10 | **sim** | positivo **como substituto da CNN nativa** a cpu1/2; **não** é contribuição autônoma (64% do TS era o H9a) |
-| **D — H9d** (blanket, 4 τ globais, 4 τ por nível, CTC) | 10 | **sim** | **2ª solução positiva**; +1,02 pp TS por +0,018 pp BD, 3,5× mais barato que o knob de τ |
+| **D — H9d** (blanket, 4 τ globais, 4 τ por nível, **4 pontos de CTC**) | 13 | **sim** | **2ª solução positiva**; no ponto implantado +1,02 pp TS por +0,018 pp BD, **3,38×** mais barato que o knob de τ — mas **inerte sobre a base agressiva** (+0,17 pp, 1/8 seqs acima da resolução) |
 | **E — reformulações** (regressão de *regret*, 3 variantes) | 3 | não | refutada no Gate 3 |
 
 **Duas soluções positivas implantadas: H9a (principal) e H9d (complemento).** O H9c é
@@ -329,8 +335,11 @@ independente.
 
 - **Ablação de atribuição (§2.1) é de 2 quadros / 1 sequência** e é contradita pelo crivo
   A5. Resolvê-la é o item **E5**, hoje **pausado por decisão**.
-- **Fronteira do H9d na CTC** tem um único ponto (PL10 × P_rect); as 3 configs restantes
-  (PL20 × P_rect, PL10 × A3, PL20 × A3, ~9 h) são **confirmatórias** e não foram rodadas.
+- ~~**Fronteira do H9d na CTC** tem um único ponto~~ — **fechada em 27/07** (96 encodes, 4
+  pontos). Substituída por uma limitação nova: **o H9d é inerte sobre a base agressiva**
+  (+0,17 pp de TS, abaixo da resolução; só 1/8 seqs a supera), logo a aditividade do lever
+  **depende do ponto de operação**, não é propriedade absoluta da sua ação. Ver §5 e
+  `SINTESE §5-quater`.
 - **A CNN nativa não tem linha isolada de BD/TS** — só é observável por diferença nos
   *swaps*.
 - **Custo de inferência do ConvNeXt nunca foi pago** (`surrogate_replay.py:8`: *no

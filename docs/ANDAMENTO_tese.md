@@ -38,7 +38,7 @@ parede: Crosswalk, 5 repetições × 3 configurações × 4 CQ, intercaladas, 60
 |---|---|---|---|
 | ~~1~~ | ~~**B3 Etapa 1**~~ — **ENCERRADO 2026-07-26, portão não atingido** | offline/GPU | acurácia direcional plana (+0,3 pp em controle pareado); recall subiu de ~42% para ~47%, insuficiente. Negativo medido em `RESULTADOS_modelagem_B3_horz_vert.md §7` |
 | ~~2~~ | ~~**ConvNeXt** — retreino com alvo de *regret*~~ — **ENCERRADO 2026-07-26, hipótese refutada** | offline/GPU | o retreino **piorou** o modelo em toda a faixa (1,06× a 3,80×, pior na região conservadora). Hierarquia medida: H9a < pixels24 < convnext_ce < convnext_regret < variância. `RESULTADOS_convnext_regret.md` |
-| 3 | **Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC | encodes | — (confirmatório) |
+| ~~3~~ | ~~**Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC~~ — **CONCLUÍDA 2026-07-27** | encodes | 96 encodes; os 4 pontos batem o knob de τ (1,52–3,38×) e o implantado é o melhor. **Achado novo:** o H9d é **inerte sobre a base agressiva** (+0,17 pp de TS, 1/8 seqs acima da resolução) → a aditividade **depende do ponto de operação**. `SINTESE §5-quater` |
 | 4 | ramos que passarem nos portões (B3 Etapas 2–4; replay H8) | ambos | — |
 | — | **E5** — ablação da CB-1 | encodes | **PAUSADO** por decisão; submissão a decidir |
 

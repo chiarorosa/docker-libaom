@@ -91,7 +91,7 @@ Para não confundir decisão com pendência, os itens ainda abertos são:
 |---|---|---|---|
 | 1 | **B3** — sinal direcional (HORZ vs VERT) confirmado offline, nunca implantado em C | possível terceira solução positiva | na fila |
 | 2 | **ConvNeXt** — retreino com alvo de *regret*; o teto de pixels foi medido com modelo sobreajustado e objetivo errado | pode mudar uma conclusão | na fila |
-| 3 | **Fronteira do H9d** — o capítulo de resultados traz um único ponto de operação (PL10 sobre P_rect), enquanto o H9a traz uma curva | lacuna narrativa nos resultados | na fila |
+| ~~3~~ | ~~**Fronteira do H9d** — o capítulo de resultados traz um único ponto de operação (PL10 sobre P_rect), enquanto o H9a traz uma curva~~ | lacuna narrativa nos resultados | **FECHADO 27/07** — 96 encodes, 4 pontos. Os 4 batem o knob de τ; o implantado é o melhor (3,38×). Achado novo: **inerte sobre a base agressiva** (+0,17 pp, 1/8 seqs acima da resolução) → a aditividade depende do ponto de operação |
 | 4 | **E5** — ablação da CB-1 com ≥10 quadros e ≥2 sequências de validação | blindagem da metodologia | **PAUSADO** |
 
 O **E5 está pausado por decisão**, não descartado: parte do que ele responderia é
