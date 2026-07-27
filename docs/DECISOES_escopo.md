@@ -89,14 +89,23 @@ Para não confundir decisão com pendência, os itens ainda abertos são:
 
 | # | item | natureza | estado |
 |---|---|---|---|
-| 1 | **B3** — sinal direcional (HORZ vs VERT) confirmado offline, nunca implantado em C | possível terceira solução positiva | na fila |
-| 2 | **ConvNeXt** — retreino com alvo de *regret*; o teto de pixels foi medido com modelo sobreajustado e objetivo errado | pode mudar uma conclusão | na fila |
+| ~~1~~ | ~~**B3** — sinal direcional (HORZ vs VERT) confirmado offline, nunca implantado em C~~ | possível terceira solução positiva | **FECHADO 26/07 — negativo.** Acurácia direcional plana (69,2%→69,5% em controle pareado); recall ~42%→~47%, insuficiente. Nunca chegou a C. `RESULTADOS_modelagem_B3_horz_vert.md §7` |
+| ~~2~~ | ~~**ConvNeXt** — retreino com alvo de *regret*; o teto de pixels foi medido com modelo sobreajustado e objetivo errado~~ | pode mudar uma conclusão | **FECHADO 26/07 — refutado.** O retreino piorou o modelo em toda a faixa (1,06–3,80×). A premissa do "sobreajuste" era **falsa** (§4 do doc). Achado maior: o ConvNeXt perde para o `pixels24` e **não é teto de pixels**. `RESULTADOS_convnext_regret.md` |
 | ~~3~~ | ~~**Fronteira do H9d** — o capítulo de resultados traz um único ponto de operação (PL10 sobre P_rect), enquanto o H9a traz uma curva~~ | lacuna narrativa nos resultados | **FECHADO 27/07** — 96 encodes, 4 pontos. Os 4 batem o knob de τ; o implantado é o melhor (3,38×). Achado novo: **inerte sobre a base agressiva** (+0,17 pp, 1/8 seqs acima da resolução) → a aditividade depende do ponto de operação |
 | 4 | **E5** — ablação da CB-1 com ≥10 quadros e ≥2 sequências de validação | blindagem da metodologia | **PAUSADO** |
 
 O **E5 está pausado por decisão**, não descartado: parte do que ele responderia é
 subsumida pelo item 2 (que testa o **modelo-teto** com o objetivo certo, enquanto o
 E5 testa apenas o estudante). A submissão fica a decidir depois do item 2.
+
+> **Atualização (27/07) — a condição que adiava o E5 já ocorreu, e o resultado aumentou o
+> valor dele.** O item 2 fechou, mas **não** subsumiu o E5: descobriu-se que o `ml` da
+> ablação de atribuição usa as **36 features do H9a**, não um estudante de pixels
+> (`partition_strategy.c:2164`), de modo que o E5 mede a atribuição do **podador
+> implantado** — não do teto. E como o capítulo passou a apoiar-se na hierarquia do crivo
+> A5, que é declaradamente **não-adjudicante**, a confirmação no codificador ficou mais
+> necessária, não menos. Escopo: 2 seqs (~8 h, 104 encodes) ou 3 (~12 h, 156). Continua
+> **pausado aguardando decisão** — a decisão é do orientando, não uma pendência técnica.
 
 Ver `ANDAMENTO_tese.md §0` para a fila corrente e as restrições de agenda.
 
