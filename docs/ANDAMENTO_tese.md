@@ -1,22 +1,63 @@
 # Andamento da tese — status e próximo passo
 
 **Documento vivo.** Onde a tese está, o que foi decidido, e o próximo passo
-concreto. Atualizado em 2026-07-10 (branch `ml-partition-dev`). Índice de
-artefatos: `RASTREABILIDADE.md`. Planos: `PLANO_hipoteses_experimentos.md`,
-`PLANO_H9_contribuicao_tese.md`. Protocolo congelado: `PROTOCOLO_avaliacao.md`.
+concreto. Atualizado em **2026-07-27** (branch `ml-partition-dev`). Índice de
+artefatos: `RASTREABILIDADE.md`. Inventário de soluções e configurações:
+`INVENTARIO_solucoes.md`. Síntese para a escrita: `SINTESE_resultados_metodologia.md`.
+Planos: `PLANO_hipoteses_experimentos.md`, `PLANO_H9_contribuicao_tese.md`.
+Protocolo congelado: `PROTOCOLO_avaliacao.md`. Decisões de escopo (o que a tese
+deliberadamente não faz): `DECISOES_escopo.md`.
 
 ---
 
-## 0. Status e fila de execução — 2026-07-26
+## 0. Status e fila de execução — 2026-07-27
 
-### 0.1 Fechado desde a última atualização
+**Estado em uma linha.** As duas soluções positivas (H9a implantado, H9d empilhado)
+estão fechadas ponta a ponta, medidas sob protocolo CTC e documentadas; as cinco vias
+negativas estão encerradas nos seus portões; **nenhuma campanha está em execução**. O
+que resta é uma decisão do orientando (E5) e um item de agenda (fronteira Pareto
+global com o H9d).
 
-- **H9d — segunda solução positiva, fechada ponta a ponta.** Metodologia (3 seqs,
-  PL10 ≥ curva de τ) em `RESULTADOS_H9d_*.md`; **resultados no test set CTC** em
-  `RESULTADOS_H9d_CTC.md`: **+1,0 pp de TS por +0,018 pp de BD-rate**, preço de
-  0,018 pp/pp contra 0,063 pp/pp do knob de τ (~3,5× mais barato), vencendo a curva
-  de τ em **6/8** sequências, duas por dominância de Pareto estrita. Integridade
-  verificada byte-a-byte (H9d desligado ≡ `ml_balanced`).
+### 0.1 Fechado nesta janela (25–27/07)
+
+- **H9d — segunda solução positiva, fechada ponta a ponta**, em dois passos:
+  - *O ponto implantado no CTC (25/07)* — metodologia (3 seqs, PL10 ≥ curva de τ) em
+    `RESULTADOS_H9d_etapa3_encoder.md`; resultado do capítulo em
+    `RESULTADOS_H9d_CTC.md`: **+1,0 pp de TS por +0,018 pp de BD-rate**, vencendo a
+    curva de τ em **6/8** sequências, duas por dominância de Pareto estrita.
+  - *A fronteira 2D (27/07)* — família PL10/PL20 × P_rect/A3, **96 encodes**. Os quatro
+    pontos batem o knob de τ (1,52–3,38× mais barato) e o par **implantado
+    (PL10 × P_rect) é o melhor deles** (0,0179 pp/pp). **Achado novo:** o H9d é
+    **inerte sobre a base agressiva** (+0,17 pp de TS, acima da resolução em **1/8**
+    seqs, contra 6/8 na balanceada) → **a aditividade depende do ponto de operação**,
+    não é propriedade absoluta do lever. `SINTESE §5-quater`.
+  - Integridade byte-a-byte verificada nos **dois** presets de τ (H9d desligado ≡
+    `ml_balanced` e ≡ `ml_aggr`), o que torna todo o marginal medido limpo.
+- **Auditoria do domínio de pixels e portão do bloco D' (26/07)** — três achados
+  corretivos: (i) o **H9a é majoritariamente um modelo de pixels** (24 dos 36 atributos
+  são descritores de luma; `pixels24` é literalmente o seu bloco A), o que obrigou a
+  corrigir três afirmações já commitadas; (ii) o **bloco D implementado não é o
+  especificado**; (iii) o custo de inferência do ConvNeXt nunca foi pago. O portão do
+  **bloco D'** (predizibilidade intra a partir dos vizinhos, 3 atributos novos)
+  **NÃO passa** — quinto negativo independente do domínio de pixels, que fecha a
+  família. `RESULTADOS_auditoria_dominio_pixels.md`.
+- **Inventário consolidado (26/07)** — todas as soluções e **todas** as configurações
+  testadas, agrupadas por família, com implantação em C, portão atingido e cobertura
+  experimental por conjunto (VAL/TEST UVG, encodes UVG, encodes CTC).
+  `INVENTARIO_solucoes.md`.
+- **SINTESE §2.8 e §5-quater (26/07)** — formalizou-se o **espaço de projeto dos
+  podadores** em duas dimensões ortogonais (*quando* o podador age × *o quê* ele poda),
+  que é o que distingue conceitualmente as famílias B, C e D; e escreveu-se a seção
+  completa do H9d. A **Conclusão 3 foi corrigida**: a não-aditividade **não é um limite
+  informacional**, é **sobreposição de ação**.
+- **Bloco 7 — E3, decomposição de 3 pernas e E2 (26/07)**, 104 encodes em cadeia
+  serial (~9h54): (i) **o joelho da curva de τ está em τ≈60–70**, e τ45 é
+  *estritamente dominado* pelo knob nativo — a faixa inexplorada foi explorada e não
+  contém nada; (ii) a decomposição fecha o balanço e mostra **interação negativa
+  média de −1,9 pp** entre H9a e H9c (~12% do ganho potencial evapora na
+  sobreposição); (iii) **o piso de ruído do tempo foi medido**: CV mediano 0,28%,
+  resolução do TS pareado **~0,46 pp** — ~4× menor que o 1–2% suposto.
+  `RESULTADOS_BLOCO7_E3_DEC_E2.md`.
 - **Bloco 7, E1 e E4** (`RESULTADOS_BLOCO7_E1_E4.md`): a Conclusão 2 passa a valer
   em **8/8** sequências; e a decomposição do confound H9a/H9c **generaliza** — em
   média **64%** do TS atribuído ao H9c era do H9a@default (28% no Tango a 95% no
@@ -27,10 +68,11 @@ artefatos: `RASTREABILIDADE.md`. Planos: `PLANO_hipoteses_experimentos.md`,
 
 ### 0.2 Em execução
 
-Cadeia serial única (104 encodes, ~10h), 1 `aomenc` por vez para preservar a
-comparabilidade dos tempos: **E3** (`h9c_tau45`, joelho da curva de τ, 32) →
-**decomposição de 3 pernas** (`h9adef` em 3 seqs, 12) → **E2** (σ do tempo de
-parede: Crosswalk, 5 repetições × 3 configurações × 4 CQ, intercaladas, 60).
+**Nada.** A cadeia serial do Bloco 7 (104 encodes) encerrou em 26/07 e a fronteira do
+H9d (96 encodes) em 27/07; os dois experimentos offline da fila (B3 Etapa 1 e
+ConvNeXt-*regret*) encerraram em 26/07. Não há campanha de codificação nem treino em
+GPU em curso. O próximo encode depende de **decisão** (E5) ou de **agendamento**
+(fronteira Pareto global) — ver §0.3.
 
 ### 0.3 Fila confirmada
 
@@ -44,12 +86,13 @@ parede: Crosswalk, 5 repetições × 3 configurações × 4 CQ, intercaladas, 60
 | — | Recompor a **fronteira Pareto global** com o H9d nos demais níveis de cpu | encodes | não iniciado; ver `SINTESE §6` |
 
 Restrição de agenda: treino em GPU carrega CPU no carregamento de dados e **não pode**
-correr durante encodes que medem tempo (o E2 acima é o mais sensível de toda a tese).
+correr durante encodes que medem tempo. Vale para os dois itens abertos — tanto o E5
+quanto a fronteira Pareto global medem tempo de parede.
 
-### 0.4 Uma afirmação da tese sob re-medição
+### 0.4 Uma afirmação da tese sob re-medição — **RESOLVIDA em 26–27/07**
 
 O item 6 do arco (§1) — *"os pixels saturam na variância"*, tratado no corpo como
-espinha dorsal — repousa hoje em bases fracas, e a fila acima ataca isso:
+espinha dorsal — repousava em bases fracas, e a fila atacou isso:
 
 - a ablação que a sustenta é **Jockey, cpu-used=0, 2 quadros** (a CB-1);
 - o crivo de *regret* do A5 **contradiz** parcialmente (pixels24 0,015 vs variância
@@ -74,6 +117,36 @@ modelo mal-selecionado. Note que os pixels **não precisam ser re-extraídos** �
 `.pkl` guarda luma sem perdas (`round(pkl·255)` = quadro-fonte, `maxdiff=0`), então é
 trabalho de GPU, não de re-codificação da UVG.
 
+> **Desfecho (2026-07-26/27) — e foi o segundo dos dois.** O item 2 rodou: o retreino
+> com alvo de *regret* **piorou** o ConvNeXt em toda a faixa (1,06× a 3,80×), e a
+> premissa do sobreajuste era falsa (ver a correção acima). A afirmação da saturação
+> foi **retirada do corpo** e substituída pela **hierarquia medida** no crivo A5
+> (`reg_frac` a `cost_red` 25%, menor é melhor):
+>
+> | passo | `reg_frac` | ganho marginal |
+> |---|--:|--:|
+> | `variance` (1 descritor de luma) | 0,0573 | — |
+> | `pixels24` (+23 descritores de luma) | 0,0121 | **4,7×** |
+> | `convnext_ce` (+28,1 M de parâmetros sobre pixels crus) | 0,0207 | **0,6× (pior)** |
+> | `H9a` (`pixels24` + 12 de vizinhança/quant/posição) | 0,0036 | **3,4×** |
+>
+> Ou seja: **os pixels não saturam na variância** — o `pixels24` a bate por 4,7×. A
+> auditoria de 26/07 acrescentou a releitura que faltava: o próprio H9a **é**
+> majoritariamente um modelo de pixels (24 dos seus 36 atributos), de modo que o
+> enunciado correto **não** é "contexto RD vence pixels", e sim: **descritores manuais
+> compactos de luma vencem uma rede convolucional profunda sobre pixels crus, e 12
+> atributos causais de vizinhança/quantização/posição, de custo ~zero, acrescentam
+> 3,4× sobre eles**. O que ficou refutado, com cinco tentativas independentes, é a
+> alegação mais estreita e mais segura: **nenhuma via adicional no domínio de pixels
+> compete com esse conjunto**. Ver `RESULTADOS_convnext_regret.md §5` e
+> `RESULTADOS_auditoria_dominio_pixels.md §2.1`.
+>
+> **Resta uma ressalva viva:** a ablação de atribuição original (CB-1) continua sendo
+> de **2 quadros numa sequência**, e é ela que o **E5** repõe no codificador. O crivo
+> A5 é offline e **declaradamente não-adjudicante** — diverge do codificador no único
+> par com chão limpo. Por isso o E5 **ganhou** valor com este desfecho, em vez de
+> perdê-lo (ver `DECISOES_escopo.md`, atualização de 27/07).
+
 ---
 
 ## 1. Arco da tese (o que estabelecemos, em ordem)
@@ -93,8 +166,12 @@ trabalho de GPU, não de re-codificação da UVG.
 5. **H7/H8 (dado limpo)** — curva de operação real: **~7–29% de speedup a 0,4–1,6%
    de taxa BD**; teto do substituto (H8) ≈ de graça (−0,11% BD).
 6. **Ablação de atribuição** — resultado **negativo**: no lever NONE-commit, um
-   limiar de variância trivial **empata/supera** o estudante de pixels. Ou seja,
-   os pixels saturam na variância; o ganho não era atribuível ao ML.
+   limiar de variância trivial **empata/supera** o estudante de pixels. ~~Ou seja,
+   os pixels saturam na variância~~ — *essa leitura foi **retirada** em 26/07 (ver
+   §0.4): ela extrapolava um experimento de **2 quadros numa sequência** (a CB-1), e
+   o crivo A5 mede o contrário. O que permanece é o fato medido — naquele
+   experimento, a variância empata/supera — e a pendência do **E5**, que o repõe no
+   codificador.*
 7. **Pivô H9** — hipótese: **contexto de taxa-distorção barato** supera o teto de
    pixels. Protocolo congelado (Fase 0), instrumentação e re-extração (Fase 1),
    **Gate 2 offline PASSOU** (Fase 2): o contexto RD grátis (H9a) supera pixels
@@ -244,9 +321,15 @@ título/resumo/objetivos com essa informação explícita.
 | H9 Fase 3 | estudante tabular direto sobre H9a; Gate 3 (val) | ✅ **PASSOU** | `173aa8f`, `models/student_h9a/` |
 | H9 Fase 4 | features B/C em C; paridade C↔Python; no-op byte-idêntico | ✅ **PASSOU** | `b3cd3c1`..`ecf436b`, `models/student_h9a/gate4_evidence.txt` |
 | H9 Fase 5 | benchmark no teste held-out + ablação de atribuição | ✅ **CONCLUÍDA** (veredito matizado) | `docs/RESULTADOS_fase5.md`, `benchmark/h9_test/` |
-| **H9 Fase 6** | validação universal (seqs CTC) vs presets nativos cpu-used 1/2 | ⏳ **PRÓXIMO** | ver §4.2 |
+| **H9 Fase 6** | validação universal (8 seqs CTC) vs presets nativos cpu-used 1/2/3 | ✅ **CONCLUÍDA** | `RESULTADOS_fase6.md`, `RESULTADOS_fase6_swap_h9c.md`, `benchmark/fase6*/` |
+| H9c — caracterização | confound, isolação e *swap* da CNN nativa (8 seqs) | ✅ **CONCLUÍDA** — não é contribuição autônoma | §8, `RESULTADOS_fase6_swap_h9c.md` |
+| **H9d** — 2ª solução | portão, C, codificador, CTC e **fronteira 2D** (96 encodes) | ✅ **CONCLUÍDA** — positiva, implantada | `RESULTADOS_H9d_*.md`, `SINTESE §5-quater` |
+| Bloco 7 (E1–E4, DEC, E2) | blindagem: generalização do confound, joelho de τ, σ do tempo | ✅ **CONCLUÍDO** | `RESULTADOS_BLOCO7_E1_E4.md`, `..._E3_DEC_E2.md` |
+| Auditoria + inventário | composição real do H9a, portão D', consolidação de todas as configs | ✅ **CONCLUÍDO** | `RESULTADOS_auditoria_dominio_pixels.md`, `INVENTARIO_solucoes.md` |
+| E5 — ablação da CB-1 | repor a ablação de atribuição no codificador (≥10 quadros, ≥2 seqs) | ⏸ **PAUSADO** por decisão | §0.3, `DECISOES_escopo.md` |
+| Fronteira Pareto global | recompor com o H9d nos demais níveis de cpu | ⬜ pendente | §0.3, `SINTESE §6` |
 
-Legenda: ✅ concluído · ⏳ próximo · 🔄 em andamento · ⬜ pendente.
+Legenda: ✅ concluído · ⏳ próximo · 🔄 em andamento · ⏸ pausado por decisão · ⬜ pendente.
 
 ---
 
@@ -321,7 +404,8 @@ Ressalva (do review final): a paridade prova a **aritmética** das features; o
 **sourcing** do ctx (vizinhança/quant lidos em runtime) é validado por revisão de
 código contra o idioma nativo e, fim-a-fim, pelo benchmark da Fase 5.
 
-**PRÓXIMO PASSO (Fase 5 — benchmark de tese).** No conjunto de **teste** held-out
+**Fase 5 — benchmark de tese (desenho pré-registrado; executado, ver §4.1).** No
+conjunto de **teste** held-out
 (Jockey/RaceNight/RiverBank, ≥10 quadros): curva taxa BD × speedup do estudante H9a
 com `libaom_perf` (rebuild com o código de 36 features) vs `libaom_perf_anchor`;
 **ablação de atribuição** em speedup casado (H9a vs pixels vs variância vs aleatório,
@@ -331,10 +415,15 @@ em taxa BD a speedup casado, por margem além do ruído, em ≥2 das 3 seqs de t
 
 ---
 
-## 4.1 Fase 5 — resultados PARCIAIS (em andamento, 2/3 seqs)
+## 4.1 Fase 5 — resultados (CONCLUÍDA 3/3 seqs em 2026-07-13)
 
-**Estado:** benchmark real detached rodando; Jockey e RaceNight concluídos,
-RiverBank em execução. `RESULTADOS_fase5.md` (final) ainda não escrito. Resultados
+> **Nota de leitura.** O corpo desta seção foi escrito com 2/3 sequências e é mantido
+> como registro do raciocínio à medida que o dado chegava; o **fechamento com 3/3 e o
+> veredito do Gate 5 estão no fim da seção** e em `RESULTADOS_fase5.md`. Onde o texto
+> disser "em execução" ou "pode alterar o quadro", leia-se o parágrafo final.
+
+**Estado (histórico, 2/3):** Jockey e RaceNight concluídos, RiverBank em execução.
+Resultados
 em `results/benchmark/h9_test/<seq>/{curve_safe,curve_aggr,ablation}`. Encoder de
 teste `libaom_perf` (36 features, flag on) vs âncora `libaom_perf_anchor` (libaom
 cru); cpu-used=0, single-thread, 10 quadros, cq {20,32,43,55}.
@@ -424,7 +513,16 @@ não alterar o quadro; o veredito final sai quando o full fechar.
 
 ---
 
-## 4.2 PRÓXIMO PASSO — Fase 6: validação universal (CTC) vs presets nativos
+## 4.2 Fase 6 — validação universal (CTC) vs presets nativos: **CONCLUÍDA**
+
+> **Estado (2026-07-27).** Esta seção é o **desenho pré-registrado** da Fase 6, mantido
+> como registro de que os pontos de operação foram escolhidos *antes* de ver o conjunto
+> CTC. A fase foi executada por inteiro nas **8 sequências CTC**: resultados em
+> `RESULTADOS_fase6.md` (H9a), `RESULTADOS_fase6_swap_h9c.md` (H9c como substituto da
+> CNN nativa) e `RESULTADOS_H9d_CTC.md` (H9d). A resposta à "pergunta-chave" abaixo está
+> na **Conclusão 1** de `SINTESE §6`: **nenhum ponto de ML domina a CNN nativa** — o
+> valor prático está na **granularidade fina em baixo speedup** que a escada discreta
+> dos presets não oferece.
 
 **Motivação (validação externa real).** As 16 seqs do split 10/3/3 (treino/val/
 teste, todas UVG 4K) são o **universo do próprio ML** — mesmo as de teste, embora
@@ -496,17 +594,19 @@ condições universais.
 - **Publicação do dataset** — `docs/ZENODO_datasheet.md` pronto; conversão para
   `.npz` uint8 (`pkl_to_npz.py`) **não executada** (backup bruto bin+pkl indo para
   Google Drive primeiro).
-- **Extensão pós-NONE (H9c)** — opcional, documentada como headroom; só se o
-  Gate 5 do H9a pré-busca ficar aquém.
-- **Fase 6 (CTC) — parâmetros a decidir:** (a) **quais sequências CTC** (o usuário
-  disponibilizará); (b) **N quadros** por seq; (d) **quais presets nativos**
-  (cpu-used=1 e 2, ou outro par); (e) métrica de pareamento (BD-rate a speedup
-  casado, os três pilares). **(c) RESOLVIDO — dois operating points de ML**
-  (§4.2): equilibrado **conservador em BD** (~P_rect, ~0,46% BD a TS ~26%, escolhido
-  nos dados de teste) e agressivo (~A3, máxima TS com BD implantável, justificado
-  vs variância/aleatório).
-  Os τ exatos dos dois pontos serão fixados a partir das curvas de teste da Fase 5
-  antes de rodar a CTC.
+- ~~**Extensão pós-NONE (H9c)** — opcional, documentada como headroom~~ —
+  **RESOLVIDO:** foi implementada, integrada em C e medida (§7, §8). Veredito: **não é
+  contribuição autônoma** — 64% do TS que lhe era atribuído era o H9a rodando por baixo
+  (E4), e a interação entre os dois é **negativa** (−1,9 pp, Bloco 7/DEC). Permanece
+  como *substituto* competitivo da CNN nativa a cpu1/2 e como dono do extremo de baixo
+  BD. A "poda pós-NONE aprendida" que de fato virou contribuição foi o **H9d**, sobre
+  outra ação (partições estendidas).
+- ~~**Fase 6 (CTC) — parâmetros a decidir**~~ — **RESOLVIDO e executado:** (a) 8 seqs
+  da Classe A1 4K 10-bit; (b) **15 quadros**, que são a *especificação* da CTC §4.1
+  (`--limit=15`), não um recorte — ver `DECISOES_escopo.md §2`; (c) dois pontos de ML,
+  equilibrado (P_rect) e agressivo (A3), fixados nas curvas da Fase 5 **antes** de ver
+  a CTC; (d) presets nativos cpu-used **1, 2 e 3**; (e) BD-rate/TS vs a mesma âncora
+  cpu0, com a **grade 20/32/43/55** aplicada de forma idêntica a todas as configurações.
 - **Microbenchmark de inferência isolada do pruner — CONCLUÍDO (2026-07-17).**
   Medição direta (instrumentação `AV1_PRUNER_TIMING` em `partition_strategy.c`,
   encode real cpu1; `docs/RESULTADOS_microbench_pruner.md`): como algoritmo de
@@ -529,13 +629,29 @@ condições universais.
 
 ---
 
-## 6. Riscos vivos
+## 6. Riscos — o que se materializou e o que continua vivo
 
-- Gate 5 pode não confirmar a margem do Gate 2 (oráculo superestima) → mitigação:
-  a decisão final é sempre o tempo de parede; se a margem não sobreviver, a
-  contribuição recai na caracterização do teto informacional + o estudo H9c.
-- Custo de inferência das features B/C é ~zero (dados residentes), então não há
-  risco de "a poda não se pagar" no regime H9a (grátis).
+**Materializados (e absorvidos):**
+- ~~Gate 5 pode não confirmar a margem do Gate 2~~ — **materializou-se.** A forma
+  estrita do Gate 5 não foi atingida no teste, por **não-sobreposição de faixas** de
+  speedup entre ml e variância (3/3 seqs). Absorvido pela **atribuição a política
+  casada** (§4.1), que dispensa sobreposição, e pelos demais pilares. O risco maior
+  revelou-se outro: no Approach B o **oráculo inverteu o ranking** — não apenas
+  superestimou.
+- ~~Custo de inferência das features B/C~~ — **fechado por medição:** o pruner inteiro
+  (extração + inferência) é **≤0,32% do tempo de encode**; nada em BD×tempo se altera.
+  O que se perdeu foi o *direito de alegar leveza como vantagem*, não o resultado.
+
+**Vivos:**
+- **A atribuição do podador implantado repousa hoje em evidência offline.** A ablação
+  original é de 2 quadros numa sequência (CB-1) e o crivo A5 é declaradamente
+  não-adjudicante. É exatamente o que o **E5** repõe — e ele está **pausado por
+  decisão**, não por impedimento técnico.
+- **O σ do tempo é intra-execução.** Os ±0,23 pp de resolução (E2) valem para
+  comparações dentro de uma mesma janela contínua; números medidos com semanas de
+  intervalo pedem cautela adicional (`RESULTADOS_BLOCO7_E3_DEC_E2.md §4`).
+- **A fronteira Pareto global está desatualizada** — é de 3 seqs e não contém o H9d.
+  Sua ausência não é dominância, mas a figura, como está, subrepresenta a contribuição.
 
 ---
 
@@ -742,11 +858,11 @@ todos os níveis cpu):** pontos não-dominados, do menor BD ao maior:
    > independente e complementar, pelo eixo da estrutura, em
    > `RESULTADOS_approachB.md §7.1`.
 
-### 8.4 Experimentos em andamento (2026-07-16)
+### 8.4 Experimentos daquela rodada (2026-07-16) — **todos concluídos**
 
 - **Completar swap H9c nas 5 seqs faltantes** (Crosswalk, Neon1224,
   NocturneDance, PierSeaSide, TimeLapse) → `results/benchmark/fase6_swap_h9c/`,
-  para média de 8 seqs comparável ao swap H9a. RODANDO.
+  para média de 8 seqs comparável ao swap H9a. **CONCLUÍDO (2026-07-17).**
 - **Frontier-check combinado** (`encode_swap_combo.py`): H9a **conservador**
   (τ_none 0,98/0,95, sem rect-off) + H9c, como substituto da CNN nativa a
   cpu1/2/3, em Tango → `results/benchmark/fase6_swap_combo/`. Testa a única

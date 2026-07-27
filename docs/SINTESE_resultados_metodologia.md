@@ -827,6 +827,13 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 | **Frontier-check combinado** (H9a-conservador + H9c, swap, Tango) | ✅ **concluído** (2026-07-17) — não fura a fronteira | `results/benchmark/fase6_swap_combo/` |
 | Microbenchmark de inferência isolada do pruner | ✅ **concluído** (2026-07-17) — MLP ~50× mais barato/inferência que a CNN; **custo implantado medido em 2026-07-19: pruner inteiro (extração+inferência) ≤0,32% do encode**, sem efeito em BD×tempo, não é alavanca | `docs/RESULTADOS_microbench_pruner.md` §6 |
 | **Solução 4 — regressão de *regret*** | ✅ **concluído** (2026-07-17) — **resultado negativo**: regressão ranqueia poda pior que o classificador (Gate 3, mesmas features); Gate 5 pulado por regra de gate | `docs/RESULTADOS_solucao4.md`, `results/models/regret{,_balanced}/` |
+| **Solução 5 — H9d** (poda de AB/4-way pós-NONE) | ✅ **concluído** (2026-07-25/27) — **positivo e implantado**; CTC + fronteira 2D (96 encodes); inerte sobre a base agressiva | `RESULTADOS_H9d_*.md`, §5-quater |
+| Bloco 7 — E1/E4, E3, decomposição, E2 | ✅ **concluído** (2026-07-25/26) — confound em 8/8; joelho de τ em 60–70; **σ do TS medido: ±0,23 pp** | `RESULTADOS_BLOCO7_E1_E4.md`, `..._E3_DEC_E2.md` |
+| B3 — sinal direcional (HORZ vs VERT) | ✅ **concluído** (2026-07-26) — **negativo no portão**: acurácia plana (+0,3 pp pareado); nunca chegou a C | `RESULTADOS_modelagem_B3_horz_vert.md §7` |
+| ConvNeXt com alvo de *regret* | ✅ **concluído** (2026-07-26) — **refutado**: piorou 1,06–3,80×; o ConvNeXt **não é teto de pixels** | `RESULTADOS_convnext_regret.md` |
+| Auditoria do domínio de pixels + portão D' | ✅ **concluído** (2026-07-26) — o H9a **é** majoritariamente pixels; D' **não passa** (5º negativo) | `RESULTADOS_auditoria_dominio_pixels.md` |
+| **Fronteira Pareto global com o H9d** | ⬜ **pendente** — exige os pontos do H9d nos demais níveis de cpu | ver §6 e `ANDAMENTO_tese.md §0.3` |
+| **E5 — ablação de atribuição no codificador** | ⏸ **pausado por decisão** — repõe a CB-1 com ≥10 quadros e ≥2 seqs | `DECISOES_escopo.md` |
 
 **Resultado do frontier-check combinado (Tango, vs âncora cpu0):** o combinado
 H9a-conservador + H9c posiciona-se **entre** o H9c-swap e o H9a-swap — mais TS
