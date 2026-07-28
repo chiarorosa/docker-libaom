@@ -24,10 +24,14 @@ echo "STOP: Lips finished; ending before HoneyBee $(date -u +%FT%TZ)" >> "$LOG"
 if [ -f "$PIDFILE" ]; then
     kill "$(cat "$PIDFILE")" 2>/dev/null
 fi
-# ...then anything it left mid-flight. The `!/awk/` guard keeps this from
-# matching the awk process that carries the pattern in its own command line --
-# a self-match here would leave the real encoder running.
-for p in $(ps -eo pid,args | awk '/libaom_perf\/aomenc|ablation_attrib\.py/ && !/awk/ {print $1}'); do
+# ...then anything it left mid-flight. Match any aomenc under build/, not just
+# the test encoder: the first thing a new sequence runs is the ANCHOR, which is
+# build/libaom_perf_anchor/aomenc. A pattern of `libaom_perf/aomenc` misses it,
+# and the orphaned anchor then burns a core to write a file nobody reads --
+# observed on 2026-07-28, killed by hand.
+# The `!/awk/` guard keeps this from matching the awk process that carries the
+# pattern in its own command line; a self-match leaves the real encoder running.
+for p in $(ps -eo pid,args | awk '/build\/[^ ]*\/aomenc|ablation_attrib\.py/ && !/awk/ {print $1}'); do
     kill "$p" 2>/dev/null
 done
 
