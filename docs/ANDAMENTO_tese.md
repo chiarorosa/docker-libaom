@@ -68,16 +68,49 @@ global com o H9d).
 
 ### 0.2 Em execução
 
-**E5 — ablação de atribuição no conjunto de validação** (lançado 27/07 12:54 UTC).
-Três sequências em série — **FlowerPan → Lips → HoneyBee** —, 10 quadros, cpu0,
-CQ {20,32,43,55}, **política casada** (NONE-commit puro para os três braços:
-`TAU_SPLIT=2`, `TAU_REST=-1`). 17 pontos de operação por sequência: `ml` no grid
-**congelado** (0,95…0,50), `variance` estendida para o extremo conservador
-(0,999…0,80) e `random` com 4 pontos. **~228 codificações, ~18 h.**
+**E5 — ablação de atribuição no conjunto de validação** (lançado 27/07 12:54 UTC;
+retomado 28/07 após parada da máquina). **Duas** sequências — **FlowerPan → Lips**
+—, 10 quadros, cpu0, CQ {20,32,43,55}, **política casada** (NONE-commit puro para os
+três braços: `TAU_SPLIT=2`, `TAU_REST=-1`). 17 pontos de operação por sequência:
+`ml` no grid **congelado** (0,95…0,50), `variance` estendida para o extremo
+conservador (0,999…0,80) e `random` com 4 pontos.
+
+> **Escopo reduzido de 3 para 2 sequências (decisão de 28/07).** O portão do E5 é o
+> `ml` dominar a variância a tempo casado em **≥2 das 3** seqs de validação, e
+> FlowerPan + Lips já o decidem. A **HoneyBee** é onde o grid de τ original foi
+> calibrado — a menos independente das três —, logo a que menos acrescenta pelas
+> ~13 h que custaria. O corte é executado por vigia
+> (`src/scripts/benchmark/stop_e5_after_lips.sh`), que encerra a campanha ao fim da
+> Lips. Fica registrado como **decisão de escopo**, não como sequência que falhou.
+
+**Custo real, medido:** ~44 min por ponto na FlowerPan (a estimativa inicial de ~22
+min, extrapolada do Jockey, era otimista por 2× — a FlowerPan é 4K a 50 fps e sua
+âncora custa 1204 s em cq20 contra 887 s do Jockey). Total das duas: ~22 h.
 
 Progresso e resultados parciais em `results/benchmark/e5_ablation/<seq>/curve.csv`
 (escrito a cada ponto); log em `results/benchmark/e5_ablation.log`.
 Script: `src/scripts/benchmark/run_e5_validation.sh`.
+
+> **Interrupção de 27/07 e retomada.** A máquina virtual parou às 20:52, com a
+> FlowerPan em 15 dos 17 pontos. **Nada foi perdido:** a escrita incremental
+> preservou os 15 pontos e a âncora, e o `--resume` (28/07) reaproveita ambos,
+> codificando só o que falta. A retomada foi verificada sem custo antes de
+> relançar — com `--methods ml`, cujos 6 pontos estavam completos, o script
+> reaproveita a âncora, pula os 6 e não recodifica nada.
+
+**Resultado parcial da FlowerPan — as faixas agora se sobrepõem**, que é
+exatamente o que a Fase 5 não conseguiu produzir. A tempo casado:
+
+| speedup | `ml` | `variance` | razão |
+|---|--:|--:|--:|
+| ~1,15× | **0,095%** | 0,437% | 4,6× |
+| ~1,27× | **0,638%** | 1,18% | 1,85× |
+| ~1,19× | **0,274%** | `random` 5,181% | 19× |
+
+O extremo conservador que o grid antigo nunca sondou apareceu: `variance` a
+τ=0,999 entrega 1,7% de TS por **0,000%** de BD — a heurística *consegue* ser
+conservadora, só nunca havia sido medida ali. Isso torna a comparação honesta em
+vez de favorável à proposta.
 
 > **Por que o grid da variância muda e o do `ml` não.** A ablação já rodara no
 > **teste** com 10 quadros (Fase 5), mas as faixas de speedup saíram **disjuntas** em

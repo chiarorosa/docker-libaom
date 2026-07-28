@@ -106,10 +106,20 @@ E5 testa apenas o estudante). A submissão fica a decidir depois do item 2.
 > A5, que é declaradamente **não-adjudicante**, a confirmação no codificador ficou mais
 > necessária, não menos.
 >
-> **Decisão tomada e campanha lançada (27/07 12:54 UTC):** as **três** sequências de
-> validação — o papel delas na tese é exatamente este. Escopo real, dimensionado sobre
-> os tempos medidos da ablação do Jockey: **228 codificações, ~18 h** (a estimativa
-> anterior de "3 seqs ≈ 12 h" era otimista). Ver `ANDAMENTO_tese.md §0.2`.
+> **Decisão tomada e campanha lançada (27/07 12:54 UTC):** as sequências de validação
+> — o papel delas na tese é exatamente este.
+>
+> **Escopo fixado em 2 das 3 (28/07).** O portão é o `ml` dominar a variância a tempo
+> casado em **≥2 das 3** seqs, e **FlowerPan + Lips** já o decidem. A **HoneyBee fica
+> de fora por decisão**: é a sequência em que o grid de τ original foi calibrado,
+> portanto a menos independente das três, e custaria ~13 h para o menor acréscimo
+> possível. Registre-se como decisão de escopo — não é sequência que falhou nem
+> resultado omitido.
+>
+> **Custo real:** ~44 min por ponto de operação (4 CQ), medido na FlowerPan. As duas
+> estimativas anteriores (~12 h para 3 seqs, depois ~18 h) eram otimistas; a
+> extrapolação partia do Jockey, e a FlowerPan é 4K a 50 fps, com âncora de 1204 s em
+> cq20 contra 887 s do Jockey. Ver `ANDAMENTO_tese.md §0.2`.
 
 Ver `ANDAMENTO_tese.md §0` para a fila corrente e as restrições de agenda.
 
