@@ -52,6 +52,11 @@ def main(argv):
                         "matched-speedup comparison exists.")
     p.add_argument("--out-dir",
                    default="/workspace/results/benchmark/ablation_attrib")
+    p.add_argument("--resume", action="store_true",
+                   help="reuse the anchor and every completed point already in "
+                        "out-dir, encoding only what is missing. A full 3-sequence "
+                        "sweep runs for days; an interrupted one must not restart "
+                        "from zero.")
     args = p.parse_args(argv)
 
     taus = {m: list(args.tau_none) for m in args.methods}
@@ -66,26 +71,60 @@ def main(argv):
     os.makedirs(work, exist_ok=True)
     os.makedirs(args.out_dir, exist_ok=True)
 
-    print("=== ANCHOR (once) ===", flush=True)
-    _, _, anchor, rows = eval_point("anchor", args.anchor_enc, args.decoder,
-                                    args.seq, args, {}, work, None)
+    runs_csv = os.path.join(args.out_dir, "runs.csv")
+    curve_csv = os.path.join(args.out_dir, "curve.csv")
+
+    anchor, rows, done = None, [], []
+    if args.resume and os.path.exists(curve_csv):
+        with open(curve_csv, newline="") as f:
+            done = [(r["method"], float(r["tau_none"]),
+                     float(r["bd_rate_pct"]), float(r["speedup_x"]))
+                    for r in csv.DictReader(f)]
+        keep = {"anchor"} | {"{}_tn{:.3f}".format(m, tn) for m, tn, _, _ in done}
+        # A point interrupted mid-cq leaves rows in runs.csv but no curve entry;
+        # drop those so the reused rows and the reused summary stay in agreement.
+        with open(runs_csv, newline="") as f:
+            r = csv.reader(f)
+            next(r, None)
+            rows = [tuple(x) for x in r if x and x[0] in keep]
+        by_cq = {int(x[1]): x for x in rows if x[0] == "anchor"}
+        if sorted(by_cq) == sorted(args.cqs):
+            anchor = {"rate": [float(by_cq[cq][2]) for cq in args.cqs],
+                      "psnr": [float(by_cq[cq][3]) for cq in args.cqs],
+                      "time": [float(by_cq[cq][4]) for cq in args.cqs]}
+            print("=== RESUME: anchor reused, {} point(s) already done ===".format(
+                len(done)), flush=True)
+        else:
+            print("=== RESUME: anchor incomplete in runs.csv, re-encoding ===",
+                  flush=True)
+            anchor, rows, done = None, [], []
+
+    if anchor is None:
+        print("=== ANCHOR (once) ===", flush=True)
+        _, _, anchor, rows = eval_point("anchor", args.anchor_enc, args.decoder,
+                                        args.seq, args, {}, work, None)
 
     def flush(summary):
         """Rewrite both CSVs after every point: a 4K cpu0 sweep runs for hours,
         and a crash at the last point must not cost the whole campaign."""
-        with open(os.path.join(args.out_dir, "runs.csv"), "w", newline="") as f:
+        with open(runs_csv, "w", newline="") as f:
             csv.writer(f).writerows(
                 [("encoder", "cq", "kbps", "y_psnr", "encode_s")] + rows)
-        with open(os.path.join(args.out_dir, "curve.csv"), "w", newline="") as f:
+        with open(curve_csv, "w", newline="") as f:
             w = csv.writer(f)
             w.writerow(["method", "tau_none", "bd_rate_pct", "speedup_x", "ts_pct"])
             w.writerows([(m, tn, round(bd, 3), round(s, 3),
                           round((1 - 1 / s) * 100, 2)) for m, tn, bd, s in summary])
 
-    summary = []
+    summary = list(done)
+    already = {(m, round(tn, 4)) for m, tn, _, _ in done}
     flush(summary)
     for method in args.methods:
         for tn in taus[method]:
+            if (method, round(tn, 4)) in already:
+                print("=== {} tau={} already done, skipping ===".format(
+                    method, tn), flush=True)
+                continue
             name = "{}_tn{:.3f}".format(method, tn)
             env = {"AV1_STUDENT_BASELINE": method,
                    "AV1_STUDENT_TAU_NONE": str(tn),

@@ -40,7 +40,7 @@ run_seq() {
             ml=0.95,0.90,0.80,0.70,0.60,0.50 \
             variance=0.999,0.995,0.99,0.97,0.95,0.90,0.80 \
             random=0.95,0.90,0.80,0.70 \
-        --out-dir "$OUT/$name" \
+        --out-dir "$OUT/$name" --resume \
         || echo "!!! $name FAILED (rc=$?) -- continuing with the next sequence"
     echo "########## $name  end=$(date -u +%FT%TZ) ##########"
 }
