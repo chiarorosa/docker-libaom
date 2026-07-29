@@ -100,7 +100,9 @@ Execução sempre no container Docker `av1_bench` (mount `/workspace`), venv
 | `bd_rate.py` | Taxa BD de Bjøntegaard |
 | `run_benchmark.py` | Helpers encode/decode/PSNR-Y externo; BD-rate + speedup |
 | `h7h8_bench.py` | Driver combinado H7+H8 (um âncora, vários pontos operacionais; presets safe/aggressive) |
-| `ablation_attrib.py` | Ablação de atribuição: mesma política, fonte do escore = ml / variance / random |
+| `ablation_attrib.py` | Ablação de atribuição: mesma política, fonte do escore = ml / variance / random. `--tau-none-for` dá grid de τ **por braço** (sem ele as faixas de speedup saem disjuntas e não há comparação a tempo casado); `--resume` reaproveita âncora e pontos concluídos. Ver `RESULTADOS_E5_ablacao_validacao.md` |
+| `run_e5_validation.sh` | Fila do **E5**: as sequências de validação em série, com retomada. Resultados em `results/benchmark/e5_ablation/` |
+| `stop_e5_after_lips.sh` | Corte de escopo do E5 por vigia — encerra a fila ao fim da Lips, sem editar o driver em execução |
 | `analyze_ablation.py` | Comparação em **speedup casado** (interpolação); veredito de Pareto |
 | `microbench_pruner.py` | Custo do pruner sob `AV1_PRUNER_TIMING`: ns/chamada **e** agregado por encode (extração + frequência de invocação), com o peso relativo ao tempo de parede. Ver `RESULTADOS_microbench_pruner.md` §6 |
 

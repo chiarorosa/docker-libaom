@@ -167,10 +167,17 @@ o crivo A5 a **contradiz** (os modelos de pixels batem a variância por 2–5×,
 interpolação grosseira). Este experimento **não** resolve a contradição — ele apenas remove
 a hipótese de que o objetivo de treino a explicaria.
 
-Resolver exigiria o **E5** (ablação no encoder, ≥10 quadros, ≥2 sequências), hoje **pausado**
-por decisão. Enquanto ele não rodar, a recomendação é a tese **reportar a hierarquia medida**
-(H9a < pixels24 < ConvNeXt < variância no crivo; variância ≥ pixels na ablação de 2 quadros,
-em contradição declarada) em vez de afirmar a saturação como conclusão.
+Resolver exigiria uma ablação no encoder com ≥10 quadros e ≥2 sequências. O **E5** rodou
+em 2026-07-28 (`RESULTADOS_E5_ablacao_validacao.md`) e **não resolve esta contradição
+específica**: seu braço `ml` é o estudante **H9a** de 36 atributos, não o `pixels24`, de
+modo que ele arbitra *H9a × variância* (o H9a vence a tempo casado, por 4,6× e 1,85×) e
+não *pixels24 × variância*, que é o par em disputa aqui.
+
+A recomendação permanece, portanto, a mesma: a tese deve **reportar a hierarquia medida**
+(H9a < pixels24 < ConvNeXt < variância no crivo; variância ≥ pixels na ablação de 2
+quadros, em contradição declarada) em vez de afirmar a saturação como conclusão. O que
+mudou é que o topo dessa hierarquia — o H9a — passou a ter confirmação **no codificador**,
+e não só no crivo offline.
 
 ## 6. Reprodução
 ```bash

@@ -9,7 +9,7 @@ com dado, não com retórica.
 
 | # | objeção | estado |
 |---|---|---|
-| CB-1 | espinha = 1 seq + 2 quadros | **respondido** (exposição offline fechada; confirmação real → E5) |
+| CB-1 | espinha = 1 seq + 2 quadros | **respondido** (offline: crivo A5; **encoder: E5, 28/07** — 2 seqs de validação, 10 quadros, política casada) |
 | CB-2 | "talvez o modelo seja ruim, não os pixels" | **concedido e refinado** (a afirmação de saturação não se sustenta) |
 | CB-3 | "vocês têm um contraexemplo próprio" (GNN pixel-only) | **respondido** (offline-only + ganho estrutural) |
 | CB-4 | "~50× num escopo que exclui o que importa" | respondido (A3, `RESULTADOS_microbench_pruner.md §6`) |
@@ -31,9 +31,28 @@ quadros: o crivo do A5 (`RESULTADOS_oraculo_regret.md`) compara variância, pixe
 e H9a em **6 sequências held-out / 792.840 nós de decisão**, sob risco ponderado
 por custo RD. É uma base larga e estável, não anedótica.
 
-**O que permanece.** A confirmação no **encoder real** da ordenação, com ≥10
-quadros e ≥2 sequências, é o item **E5** do plano (Bloco 7). A exposição *offline*
-está fechada; a largura *no encoder* fica escopada — e é barata e defensiva.
+**A confirmação no encoder existe agora (E5, 2026-07-28).** Política casada em
+**2 sequências de validação, 10 quadros**, variando só a fonte do escore:
+
+| speedup casado | escore do modelo | variância | aleatório |
+|---|--:|--:|--:|
+| ~1,15× (FlowerPan) | **0,095%** | 0,437% (**4,6×**) | — |
+| ~1,27× (FlowerPan) | **0,638%** | 1,180% (**1,85×**) | — |
+| ~1,19× (Lips) | **0,285%** | *sem ponto* | 1,998% (**7,0×**) |
+
+**O que permanece — três ressalvas que a resposta carrega:**
+1. **O braço `ml` do E5 é o estudante H9a de 36 atributos, não o `pixels24`.** O E5
+   estabelece *H9a > variância no codificador*; a discordância específica entre A5 e
+   CB-1 é sobre *pixels24 × variância* e **continua aberta**.
+2. **O portão estrito não foi atingido** — pedia ≥2 de 3 sequências e obteve 1 de 2, com
+   a HoneyBee cortada por decisão de escopo.
+3. **Na Lips não há par casado:** a variância salta de 1,006× para 3,563× entre τ=0,99 e
+   τ=0,97. Isso, porém, **fecha a explicação alternativa** que existia na Fase 5 — o
+   extremo conservador foi sondado até τ=0,999 e a variância continua sem ponto de
+   operação na região implantável, logo a não-sobreposição é propriedade do **escore**,
+   não do grid.
+
+Ver `RESULTADOS_E5_ablacao_validacao.md`.
 
 ---
 
@@ -107,4 +126,7 @@ fortalece a tese em vez de enfraquecê-la:
 > agrega sinal de decisão além dos pixels.** Essa é a contribuição real, e é
 > robusta.
 
-A confirmação no encoder real da ordenação (E5) fecha o resto.
+A confirmação no encoder real (E5, 28/07) fecha a parte que lhe cabe: sob política
+idêntica, o escore do **H9a** vence o da variância a tempo casado. A ordenação
+*interna* ao domínio de pixels (`pixels24` × variância), que é onde A5 e CB-1
+discordam, **não** é arbitrada por ele — o braço `ml` do E5 é o H9a, não o `pixels24`.

@@ -716,10 +716,12 @@ condições universais.
   O que se perdeu foi o *direito de alegar leveza como vantagem*, não o resultado.
 
 **Vivos:**
-- **A atribuição do podador implantado repousa hoje em evidência offline.** A ablação
-  original é de 2 quadros numa sequência (CB-1) e o crivo A5 é declaradamente
-  não-adjudicante. É exatamente o que o **E5** repõe — e ele está **pausado por
-  decisão**, não por impedimento técnico.
+- ~~A atribuição do podador implantado repousa em evidência offline~~ — **muito
+  atenuado pelo E5 (28/07)**: há agora confirmação **no codificador**, a tempo casado,
+  em 2 seqs de validação com 10 quadros (o H9a vence a variância por 4,6× e 1,85×).
+  Resíduo vivo: o **portão estrito não foi atingido** (1 de 2, não ≥2 de 3), e o par
+  *`pixels24` × variância* — em que A5 e CB-1 discordam — **continua sem árbitro**,
+  porque o braço `ml` do E5 é o H9a, não o `pixels24`.
 - **O σ do tempo é intra-execução.** Os ±0,23 pp de resolução (E2) valem para
   comparações dentro de uma mesma janela contínua; números medidos com semanas de
   intervalo pedem cautela adicional (`RESULTADOS_BLOCO7_E3_DEC_E2.md §4`).

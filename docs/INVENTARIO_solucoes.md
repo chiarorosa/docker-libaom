@@ -90,8 +90,16 @@ codificação da família; **2 quadros, 1 sequência** — a limitação que mot
 
 > **A variância vence o modelo de pixels aqui** — o resultado negativo que motivou a virada
 > H9. **Ressalva registrada:** o crivo A5 (6 seqs, 792 mil nós) **contradiz**, com
-> `pixels24` batendo a variância. A contradição está declarada e não resolvida; resolvê-la
-> é o item **E5** (pausado).
+> `pixels24` batendo a variância. A contradição está declarada.
+>
+> **Atualização (28/07) — o E5 rodou, e resolve parte disto, não tudo.** No codificador,
+> a política casada em 2 seqs de validação com 10 quadros mostra o escore do modelo
+> vencendo a variância a tempo casado por **4,6×** e **1,85×** (FlowerPan). **Mas o braço
+> `ml` do E5 é o estudante H9a de 36 atributos, não o `pixels24`** — logo o E5 estabelece
+> *H9a > variância no codificador*, que é a afirmação que a tese precisa, e **não**
+> arbitra diretamente o par *pixels24 × variância* em que A5 e CB-1 discordam. Essa
+> contradição específica permanece declarada e não resolvida.
+> Ver `RESULTADOS_E5_ablacao_validacao.md`.
 
 ### 2.2 Hierarquia no crivo A5 (métrica de *regret*, offline, 6 seqs held-out)
 
@@ -334,7 +342,10 @@ independente.
 ## 8. Lacunas conhecidas neste inventário
 
 - **Ablação de atribuição (§2.1) é de 2 quadros / 1 sequência** e é contradita pelo crivo
-  A5. Resolvê-la é o item **E5**, hoje **pausado por decisão**.
+  A5. O **E5** (concluído 28/07, `RESULTADOS_E5_ablacao_validacao.md`) repôs a medição no
+  codificador com 10 quadros e 2 seqs de validação e mostrou o **H9a** vencendo a variância
+  a tempo casado; **a contradição específica `pixels24` × variância continua aberta**,
+  porque o braço `ml` do E5 é o H9a, não o `pixels24`. Lacuna estreitada, não fechada.
 - ~~**Fronteira do H9d na CTC** tem um único ponto~~ — **fechada em 27/07** (96 encodes, 4
   pontos). Substituída por uma limitação nova: **o H9d é inerte sobre a base agressiva**
   (+0,17 pp de TS, abaixo da resolução; só 1/8 seqs a supera), logo a aditividade do lever

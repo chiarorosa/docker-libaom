@@ -290,7 +290,12 @@ casado (ex.: a 1,3×, ML 1,39% BD vs variância 0,76%). Como a variância é **u
 > A afirmação **defensável e mais forte** é a hierarquia medida: **variância <
 > pixels24 < H9a** no crivo — o contexto RD agrega sinal *além* dos pixels, e os
 > pixels *além* da variância. Ver `RESPOSTAS_contra_argumentos_banca.md` (CB-1/2/3).
-> A confirmação da ordenação no encoder real (≥10 quadros, ≥2 seqs) é o item E5.
+> A confirmação no encoder real veio com o **E5** (28/07, 2 seqs de validação, 10
+> quadros, política casada): o escore do **H9a** vence o da variância a tempo casado
+> por **4,6×** e **1,85×**. Ressalva a carregar: o braço `ml` do E5 é o H9a, **não** o
+> `pixels24`, então a ordenação *interna* ao domínio de pixels — o par em que A5 e
+> CB-1 discordam — segue sem árbitro no codificador.
+> Ver `RESULTADOS_E5_ablacao_validacao.md`.
 
 > **⚠⚠ Refino final (2026-07-26) — o ConvNeXt foi medido no crivo e NÃO é teto.**
 > O refino acima notava que o "ml" da ablação era o estudante destilado, deixando
@@ -833,7 +838,7 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 | ConvNeXt com alvo de *regret* | ✅ **concluído** (2026-07-26) — **refutado**: piorou 1,06–3,80×; o ConvNeXt **não é teto de pixels** | `RESULTADOS_convnext_regret.md` |
 | Auditoria do domínio de pixels + portão D' | ✅ **concluído** (2026-07-26) — o H9a **é** majoritariamente pixels; D' **não passa** (5º negativo) | `RESULTADOS_auditoria_dominio_pixels.md` |
 | **Fronteira Pareto global com o H9d** | ⬜ **pendente** — exige os pontos do H9d nos demais níveis de cpu | ver §6 e `ANDAMENTO_tese.md §0.3` |
-| **E5 — ablação de atribuição no codificador** | ⏸ **pausado por decisão** — repõe a CB-1 com ≥10 quadros e ≥2 seqs | `DECISOES_escopo.md` |
+| **E5 — ablação de atribuição no codificador** | ✅ **concluído** (2026-07-28) — 144 encodes, 2 seqs de validação. 1ª comparação a **tempo casado** da tese: o H9a vence a variância por 4,6× e 1,85×. Portão estrito (≥2 de 3) **não** atingido — 1 de 2 | `RESULTADOS_E5_ablacao_validacao.md` |
 
 **Resultado do frontier-check combinado (Tango, vs âncora cpu0):** o combinado
 H9a-conservador + H9c posiciona-se **entre** o H9c-swap e o H9a-swap — mais TS

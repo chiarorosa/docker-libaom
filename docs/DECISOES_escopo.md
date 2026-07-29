@@ -94,9 +94,11 @@ Para não confundir decisão com pendência, os itens ainda abertos são:
 | ~~3~~ | ~~**Fronteira do H9d** — o capítulo de resultados traz um único ponto de operação (PL10 sobre P_rect), enquanto o H9a traz uma curva~~ | lacuna narrativa nos resultados | **FECHADO 27/07** — 96 encodes, 4 pontos. Os 4 batem o knob de τ; o implantado é o melhor (3,38×). Achado novo: **inerte sobre a base agressiva** (+0,17 pp, 1/8 seqs acima da resolução) → a aditividade depende do ponto de operação |
 | ~~4~~ | ~~**E5** — ablação da CB-1 com 10 quadros nas sequências de validação~~ | blindagem da metodologia | **CONCLUÍDO 28/07** — 144 encodes, 2 seqs. 1ª comparação a tempo casado da tese (o `ml` vence por 4,6× e 1,85× na FlowerPan); portão estrito **não** atingido (1 de 2). `RESULTADOS_E5_ablacao_validacao.md` |
 
-O **E5 está pausado por decisão**, não descartado: parte do que ele responderia é
-subsumida pelo item 2 (que testa o **modelo-teto** com o objetivo certo, enquanto o
-E5 testa apenas o estudante). A submissão fica a decidir depois do item 2.
+> *Registro histórico (26/07), superado pelas atualizações abaixo:* «O **E5 está
+> pausado por decisão**, não descartado: parte do que ele responderia é subsumida pelo
+> item 2 (que testa o **modelo-teto** com o objetivo certo, enquanto o E5 testa apenas
+> o estudante). A submissão fica a decidir depois do item 2.» — a premissa da subsunção
+> **não** se confirmou (ver abaixo), e o E5 foi executado em 28/07.
 
 > **Atualização (27/07) — a condição que adiava o E5 já ocorreu, e o resultado aumentou o
 > valor dele.** O item 2 fechou, mas **não** subsumiu o E5: descobriu-se que o `ml` da
