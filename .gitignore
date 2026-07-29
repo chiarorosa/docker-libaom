@@ -44,26 +44,19 @@ results/dataset_new/
 !results/dataset_h9/manifest.csv
 !results/dataset_h9/label_histogram.csv
 !results/dataset_h9/label_distribution.md
-results/benchmark/_work/
-results/benchmark/**/_work/
-# h8_probs (4 MB), gnn_probs (6 MB) e partstats (34 MB) passam a ser versionados:
-# sao dumps de analise que sustentam o teto H8, o replay do Approach B e o
-# RESULTADOS_C1, todos abaixo do limite de 100 MB por arquivo do GitHub.
-# Encoded bitstreams from benchmark runs are large and deterministically
-# reproducible from the source y4m + scripts; only the measured CSV/tex/log
-# summaries are kept in git.
-*.ivf
-# Same reason, and the reason the H9d/C2/C5 probe directories are no longer
-# excluded wholesale: those dirs are 24-96 .obu files plus ONE small raw.csv, and
-# excluding the directory took the CSV with it -- leaving RESULTADOS_C2, C5 and the
-# H9d marginal analysis citing numbers with no versioned provenance. Ignoring the
-# bitstream extension keeps the payload out and lets the summaries through.
-*.obu
+# h8_probs (4 MB), gnn_probs (6 MB) e partstats (110 MB) sao versionados: dumps de
+# analise que sustentam o teto H8, o replay do Approach B e o RESULTADOS_C1.
+#
+# Os fluxos de bits (.ivf/.obu, 1151 arquivos / 1,18 GB, maior deles 8,6 MB) tambem
+# sao versionados, por decisao explicita -- inclusive os que vivem nos diretorios
+# _work, onde estao 758 dos 1151. Ressalva registrada e mantida: eles sao saida
+# DETERMINISTICA do codificador, e os YUV de origem continuam fora do repositorio,
+# de modo que sua presenca nao permite verificar nada que os CSV ja versionados nao
+# permitam. Nenhum deles chega perto do limite de 100 MB por arquivo, e nenhum usa
+# LFS.
 
 # Transient build/training logs. The per-campaign run.log / .done files ARE kept:
 # they carry each encode's time/PSNR/kbps and are the provenance of the tables.
 logs/
 # PID files of detached campaigns -- meaningless once the run ends.
 *.pid
-results/benchmark/gnn_replay/_work/
-results/benchmark/gnn_frontier/_work/
