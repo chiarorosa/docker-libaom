@@ -113,28 +113,37 @@ de dados extraídos sob presets diferentes **não são comparáveis** entre si c
 rótulo de referência, e o valor de `cpu_used` é registrado por linha no
 manifesto justamente para tornar essa incomparabilidade explícita e auditável.
 
-O preço desta decisão é elevado e foi pago deliberadamente: a codificação a
-`cpu-used=0` custa aproximadamente 510 segundos por quadro em resolução 4K, o
-que coloca a geração completa do conjunto de dados na ordem de oito horas de
-processamento contínuo dentro do contêiner. Este custo é, também, a razão pela
-qual o arquivo binário intermediário foi tratado como cache de reconversão, pois
-recodificar é ordens de grandeza mais caro do que reler.
+O preço desta decisão é elevado e foi pago deliberadamente. A extração completa
+consumiu **32,3 horas** de processamento contínuo dentro do contêiner, para
+gerar as sessenta e quatro tarefas de codificação que compõem o conjunto de
+dados — dezesseis sequências por quatro pontos de quantização —, o que
+corresponde a uma mediana de **27,2 minutos por tarefa** de cinco quadros, ou
+seja, cerca de **363 segundos por quadro** em resolução 4K. Este custo é,
+também, a razão pela qual o arquivo binário intermediário foi tratado como cache
+de reconversão, pois recodificar é ordens de grandeza mais caro do que reler.
 
-Cabe registrar uma ressalva de procedência sobre este número. As duas cifras
-registradas no projeto para o custo da extração completa não se conciliam
-entre si, pois a ordem de grandeza implicada pelos 510 segundos por quadro é a
-de dezenas de horas, e não de oito. A extração completa foi executada de forma
-retomável, o que absorve interrupções sem perda de progresso, mas não permite
-reconstituir, a partir do registro disponível, o tempo total efetivamente
-gasto. `[completar: custo total de extração a reconferir —
-GUIA_partition_dataset.md:119 indica ~510 s/quadro; RASTREABILIDADE.md:259
-indica ≈8 h]`
+Cabe registrar como este número foi apurado, uma vez que as duas cifras que o
+projeto registrava para o custo da extração não se conciliavam entre si. O valor
+acima foi reconstituído a partir dos carimbos de conclusão de cada tarefa,
+gravados na coluna `timestamp` do manifesto: a janela vai de 2026-07-09T15:21:11
+a 2026-07-10T23:39:56, e a soma dos sessenta e três intervalos consecutivos
+iguala a janela total, sem intervalo anômalo, o que confirma que a execução foi
+contínua e que nenhum período de ociosidade infla a contagem. Deste modo, a
+cifra de aproximadamente 510 segundos por quadro registrada no guia de extração
+corresponde ao extremo lento da distribuição, e não à média, ao passo que a
+cifra de oito horas registrada no roteiro de reprodução está subestimada em
+cerca de quatro vezes e foi corrigida.
 
 > **Procedência.** `docs/RELATORIO_pipeline_dataset_particionamento.md` §5
 > (decisões metodológicas) e §6, itens 2 e 4 (achados);
 > `docs/GUIA_partition_dataset.md` §3 e §5;
 > `docs/SINTESE_resultados_metodologia.md` §2.1; `docs/RASTREABILIDADE.md` §3 e
-> §6. Artefato: coluna `cpu_used` em `results/dataset_h9/manifest.csv`.
+> §6. Artefato: colunas `cpu_used` e `timestamp` em
+> `results/dataset_h9/manifest.csv` (64 linhas). O custo total de 32,3 h foi
+> apurado em 2026-07-29 a partir dos carimbos de conclusão desta última coluna,
+> conforme descrito acima; reprodução da apuração pela diferença entre o menor e
+> o maior valor da coluna, com verificação de que a soma dos intervalos
+> consecutivos iguala a janela.
 
 ---
 

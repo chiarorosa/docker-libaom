@@ -256,7 +256,11 @@ atribuição), `h7h8/`, `h7h8_aggr/`, `h7h8_real/` (runs por ponto operacional),
 ## 6. Pipeline de reprodução (comando a comando, no container)
 
 ```bash
-# 0. Dataset (≈8 h, cpu-used=0, retomável) — venv python obrigatório
+# 0. Dataset (~32 h, cpu-used=0, retomável) — venv python obrigatório
+#    Custo medido (2026-07-29) pelos carimbos de `timestamp` do manifest.csv:
+#    janela 2026-07-09T15:21:11 -> 2026-07-10T23:39:56 = 32,3 h contínuas,
+#    64 tarefas (16 seqs x 4 cq), mediana 27,2 min/tarefa (~363 s/quadro 4K).
+#    A cifra anterior de "≈8 h" estava subestimada em ~4x.
 venv-ml/bin/python src/scripts/partition_dataset/build_dataset.py \
   --out-dir results/dataset_h9 --qps 20 32 43 55 --frames 5 --cpu-used 0 \
   --aomenc build/libaom_logpart/aomenc
