@@ -61,7 +61,17 @@ sobrecarga RD cai de 0,006% para 0,003% a 30% de `cost_red`.
 
 A redução absoluta (≤ 0,005 pp de sobrecarga RD) está **abaixo do piso de ruído do
 tempo de parede** do encoder (σ ≈ 1–2% por encode; ver `RESULTADOS_fase6_swap_h9c.md`
-§9). BD-rate é aproximadamente proporcional à sobrecarga RD, então o efeito
+§9).
+
+> **Correção (2026-07-29).** O piso de ruído citado acima (σ ≈ 1–2% por encode) é
+> uma suposição, não uma medição, e foi retratado pela medição direta do E2: com
+> cinco repetições intercaladas na Crosswalk, o coeficiente de variação mediano do
+> tempo bruto é de 0,28%, e a resolução do tempo pareado é de aproximadamente 0,46
+> ponto percentual, cerca de 4× mais fino do que o piso suposto aqui. A conclusão
+> desta seção não muda, pois a sobrecarga absoluta permanece imaterial sob o piso
+> medido. Ver `RESULTADOS_BLOCO7_E3_DEC_E2.md` §4.
+
+BD-rate é aproximadamente proporcional à sobrecarga RD, então o efeito
 esperado em BD×tempo real é da ordem de ~0,003% — **quase certamente não mensurável**
 num encode. Confirmar exigiria encodes (o lado C já lê τ do ambiente), mas o prior
 é que não aparece.
