@@ -68,12 +68,34 @@ global com o H9d).
 
 ### 0.2 Em execução
 
-**E5 — ablação de atribuição no conjunto de validação** (lançado 27/07 12:54 UTC;
-retomado 28/07 após parada da máquina). **Duas** sequências — **FlowerPan → Lips**
-—, 10 quadros, cpu0, CQ {20,32,43,55}, **política casada** (NONE-commit puro para os
-três braços: `TAU_SPLIT=2`, `TAU_REST=-1`). 17 pontos de operação por sequência:
-`ml` no grid **congelado** (0,95…0,50), `variance` estendida para o extremo
-conservador (0,999…0,80) e `random` com 4 pontos.
+**Nada.** O E5 encerrou em 28/07 23:35 UTC. Não há campanha de codificação nem treino
+em GPU em curso; o contêiner está limpo.
+
+### 0.2-bis E5 — concluído em 28/07 (o que ficou estabelecido)
+
+**E5 — ablação de atribuição no conjunto de validação** (27/07 12:54 → 28/07 23:35
+UTC; retomado uma vez após parada da máquina). **Duas** sequências — **FlowerPan e
+Lips** —, 10 quadros, cpu0, CQ {20,32,43,55}, **política casada** (NONE-commit puro
+para os três braços: `TAU_SPLIT=2`, `TAU_REST=-1`). 17 pontos por sequência: `ml` no
+grid **congelado** (0,95…0,50), `variance` estendida para o extremo conservador
+(0,999…0,80) e `random` com 4 pontos. **144 codificações, ~22 h.**
+
+**Resultado — `RESULTADOS_E5_ablacao_validacao.md`:**
+- **FlowerPan:** as faixas se sobrepõem e o `ml` vence **todos** os pares casados —
+  **4,6×** contra a variância a 1,15× e **1,85×** a 1,27×; 19× a 158× contra o
+  aleatório. É a **primeira comparação a tempo casado contra a variância** desta tese.
+- **Lips:** a variância salta de **1,006× para 3,563×** entre τ=0,99 e τ=0,97; o `ml`
+  vive inteiro nesse vão, então não há par casado. Mas a explicação alternativa que
+  incomodava na Fase 5 — *"o grid foi mal escolhido"* — **fica fechada**: sondou-se
+  até τ=0,999 e a variância continua sem ponto de operação na região implantável. A
+  não-sobreposição é **propriedade do escore**, não do grid.
+- O `ml` atinge **BD-rate negativo em 2/2** (−0,015% e −0,073%): há ajuste que
+  economiza 4–7% do tempo sem custo de qualidade.
+
+**Portão: NÃO atingido na forma estrita.** Pedia dominância a tempo casado em **≥2 de
+3** seqs; obteve **1 de 2**, com a HoneyBee cortada por escopo. O que decidiria: três
+pontos de τ dentro do precipício da Lips (0,985/0,98/0,975), **~2,3 h, não executado**
+— ver §5 do documento.
 
 > **Escopo reduzido de 3 para 2 sequências (decisão de 28/07).** O portão do E5 é o
 > `ml` dominar a variância a tempo casado em **≥2 das 3** seqs de validação, e
@@ -133,7 +155,7 @@ treino em GPU enquanto o E5 roda** — ele mede tempo de parede.
 | ~~2~~ | ~~**ConvNeXt** — retreino com alvo de *regret*~~ — **ENCERRADO 2026-07-26, hipótese refutada** | offline/GPU | o retreino **piorou** o modelo em toda a faixa (1,06× a 3,80×, pior na região conservadora). Hierarquia medida: H9a < pixels24 < convnext_ce < convnext_regret < variância. `RESULTADOS_convnext_regret.md` |
 | ~~3~~ | ~~**Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC~~ — **CONCLUÍDA 2026-07-27** | encodes | 96 encodes; os 4 pontos batem o knob de τ (1,52–3,38×) e o implantado é o melhor. **Achado novo:** o H9d é **inerte sobre a base agressiva** (+0,17 pp de TS, 1/8 seqs acima da resolução) → a aditividade **depende do ponto de operação**. `SINTESE §5-quater` |
 | ~~4~~ | ~~ramos que passarem nos portões (B3 Etapas 2–4; replay H8)~~ — **VAZIO**: nenhum ramo passou. O B3 parou na Etapa 1 e o replay H8 do `convnext_regret` foi dispensado (medir no codificador um modelo já pior offline que seu antecessor não se justifica) | ambos | — |
-| 5 | **E5** — ablação da CB-1 nas 3 seqs de validação | encodes | 🔄 **EM EXECUÇÃO desde 27/07 12:54 UTC** (~18 h, 228 encodes). Portão: com as faixas agora sobrepostas, o `ml` domina a variância a **tempo casado** em ≥2 das 3 seqs, por margem acima de ~0,46 pp (σ medido no E2) |
+| ~~5~~ | ~~**E5** — ablação da CB-1 nas seqs de validação~~ — **CONCLUÍDO 28/07** | encodes | 144 encodes, 2 seqs. **1ª comparação a tempo casado** da tese: o `ml` vence a variância por 4,6× e 1,85× na FlowerPan. Portão estrito (≥2 de 3) **não** atingido — 1 de 2, HoneyBee cortada por escopo. `RESULTADOS_E5_ablacao_validacao.md` |
 | — | Recompor a **fronteira Pareto global** com o H9d nos demais níveis de cpu | encodes | não iniciado; ver `SINTESE §6` |
 
 Restrição de agenda: treino em GPU carrega CPU no carregamento de dados e **não pode**
@@ -377,7 +399,7 @@ título/resumo/objetivos com essa informação explícita.
 | **H9d** — 2ª solução | portão, C, codificador, CTC e **fronteira 2D** (96 encodes) | ✅ **CONCLUÍDA** — positiva, implantada | `RESULTADOS_H9d_*.md`, `SINTESE §5-quater` |
 | Bloco 7 (E1–E4, DEC, E2) | blindagem: generalização do confound, joelho de τ, σ do tempo | ✅ **CONCLUÍDO** | `RESULTADOS_BLOCO7_E1_E4.md`, `..._E3_DEC_E2.md` |
 | Auditoria + inventário | composição real do H9a, portão D', consolidação de todas as configs | ✅ **CONCLUÍDO** | `RESULTADOS_auditoria_dominio_pixels.md`, `INVENTARIO_solucoes.md` |
-| E5 — ablação da CB-1 | atribuição no codificador, 3 seqs de validação, 10 quadros | 🔄 **EM EXECUÇÃO** (27/07) | §0.2 |
+| E5 — ablação da CB-1 | atribuição no codificador, 2 seqs de validação, 10 quadros | ✅ **CONCLUÍDO** (28/07) — portão estrito não atingido | `RESULTADOS_E5_ablacao_validacao.md` |
 | Fronteira Pareto global | recompor com o H9d nos demais níveis de cpu | ⬜ pendente | §0.3, `SINTESE §6` |
 
 Legenda: ✅ concluído · ⏳ próximo · 🔄 em andamento · ⏸ pausado por decisão · ⬜ pendente.
