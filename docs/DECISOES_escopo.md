@@ -38,6 +38,11 @@ mudança deliberada *"AI frame count: 30 → 15 frames (`--limit=15`)"*.
 recorte próprio ("não os 60 do CTC pleno"). Isso estava **errado** e foi corrigido em
 `RESULTADOS_H9d_CTC.md` e `RESULTADOS_BLOCO7_E1_E4.md`. Não há déficit de quadros a defender.
 
+**Procedência (versionada em 2026-07-29):** o documento normativo está no repositório em
+`src/samples/aomctc_test_set/CWG-G082_AV2_CTC_v9.pdf`, com a extração de texto em
+`_ctc_text.txt` do mesmo diretório, o que torna a citação verificável sem acesso externo.
+A entrada do changelog citada acima está na linha 25 da extração.
+
 ## 3. Divergências forçadas pela versão do libaom
 
 Auditando o comando de encode contra a CTC §4.1, duas diferenças são **impostas pelo
