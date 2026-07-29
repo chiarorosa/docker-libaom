@@ -184,17 +184,18 @@ foi localizado está listado, sem exceção, na Seção 4.
   CSVs; a tabela apenas reúne as duas fontes em uma única grade ordenada por
   aceleração.
 
-#### Tabela 9 — Hierarquia no crivo ponderado por *regret*
+#### Tabela 9 — Hierarquia no crivo de perda de otimalidade
 
 - **Destino.** Resultados §1 (Seção 1.4).
-- **Legenda.** A Tabela 9 apresenta a fração de *regret* de cada subconjunto
-  de atributos avaliado no crivo ponderado por custo de taxa-distorção real,
-  medida a 25% e a 30% de redução de custo casada, sobre seis sequências do
-  conjunto de validação e de teste reservado.
-- **Colunas.** subconjunto (variância; ConvNeXt com alvo de *regret*; ConvNeXt
-  com entropia cruzada; `pixels24`; H9a; escore aleatório, como piso) —
-  fração de *regret* a 25% de `cost_red` — fração de *regret* a 30% de
-  `cost_red`.
+- **Legenda.** A Tabela 9 apresenta a fração de perda de otimalidade (do
+  inglês *regret*) de cada subconjunto de atributos avaliado no crivo
+  ponderado por custo de taxa-distorção real, medida a 25% e a 30% de redução
+  de custo casada, sobre seis sequências do conjunto de validação e de teste
+  reservado.
+- **Colunas.** subconjunto (variância; ConvNeXt com alvo de perda de
+  otimalidade; ConvNeXt com entropia cruzada; `pixels24`; H9a; pontuação
+  aleatória, como piso) — fração de perda de otimalidade a 25% de `cost_red`
+  — fração de perda de otimalidade a 30% de `cost_red`.
 - **Linhas.** seis, uma por subconjunto, ordenadas da pior para a melhor.
 - **Dado de origem.** `results/models/oracle_regret/frontier.csv` (colunas
   `pruner,tau,cost_red,split_lost,reg_abs,reg_rel,reg_frac_pct,...`,
@@ -452,9 +453,9 @@ descobrir depois.
 
 As figuras candidatas mínimas exigidas pelo escopo deste plano — a fronteira
 de compromisso global, as curvas de limiar por sequência, a hierarquia no
-crivo de *regret*, a decomposição do custo de busca por família de
+crivo de perda de otimalidade, a decomposição do custo de busca por família de
 candidatos, a decomposição de ganho entre alavancas empilhadas e a
-comparação a tempo casado entre fontes de escore — estão todas cobertas
+comparação a tempo casado entre fontes de pontuação — estão todas cobertas
 abaixo, respectivamente pelas Figuras 1, 5, 2, 1 (mesma figura da
 decomposição de custo, ver nota), 6 e 4. As Figuras 3, 7 e 8 são adicionais,
 justificadas por conteúdo já redigido nos documentos-fonte que se beneficia
@@ -506,18 +507,18 @@ de leitura visual.
   plt.savefig("fig_decomposicao_custo_busca.png", dpi=200)
   ```
 
-#### Figura 2 — Hierarquia no crivo ponderado por *regret*
+#### Figura 2 — Hierarquia no crivo de perda de otimalidade
 
 - **Destino.** Resultados §1 (Seção 1.4), companheira da Tabela 9.
-- **Legenda.** A Figura 2 apresenta a fração de *regret* de cada subconjunto
-  de atributos avaliado no crivo ponderado por custo de taxa-distorção real, a
-  25% de redução de custo casada, em escala logarítmica, evidenciando a
-  distância entre a variância isolada e o H9a.
+- **Legenda.** A Figura 2 apresenta a fração de perda de otimalidade de cada
+  subconjunto de atributos avaliado no crivo ponderado por custo de
+  taxa-distorção real, a 25% de redução de custo casada, em escala
+  logarítmica, evidenciando a distância entre a variância isolada e o H9a.
 - **Tipo de gráfico.** Barras verticais, ordenadas do maior para o menor
-  valor de fração de *regret*, com eixo logarítmico.
+  valor de fração de perda de otimalidade, com eixo logarítmico.
 - **Eixos e séries.** Eixo horizontal: subconjunto de atributos (variância;
-  ConvNeXt-*regret*; ConvNeXt-CE; `pixels24`; H9a). Eixo vertical (log):
-  fração de *regret* (%) a `cost_red` = 25%.
+  ConvNeXt-perda de otimalidade; ConvNeXt-CE; `pixels24`; H9a). Eixo vertical
+  (log): fração de perda de otimalidade (%) a `cost_red` = 25%.
 - **Dado de origem.** `results/models/oracle_regret/frontier.csv` e
   `results/models/oracle_regret_convnext/frontier.csv`.
 - **Esboço de script.**
@@ -578,17 +579,17 @@ de leitura visual.
   plt.savefig("fig_confiabilidade_h9a.png", dpi=200)
   ```
 
-#### Figura 4 — Comparação a tempo casado entre fontes de escore
+#### Figura 4 — Comparação a tempo casado entre fontes de pontuação
 
 - **Destino.** Resultados §2 (Seção 2.6, ablação E5), com painel de referência
   da ablação da Seção 1.3 (Jockey).
 - **Legenda.** A Figura 4 apresenta a taxa BD contra a aceleração para as três
-  fontes de escore — modelo, variância e escore aleatório —, sob política
+  fontes de pontuação — modelo, variância e pontuação aleatória —, sob política
   idêntica de comprometimento com `PARTITION_NONE`, nas sequências de
   validação FlowerPan e Lips, com um painel adicional da sequência Jockey
   como referência do experimento de menor escala descrito na Seção 1.3.
 - **Tipo de gráfico.** Gráfico de dispersão com linhas conectando os pontos
-  de cada braço (fonte do escore), em três painéis lado a lado (um por
+  de cada braço (fonte da pontuação), em três painéis lado a lado (um por
   sequência).
 - **Eixos e séries.** Eixo horizontal: aceleração (×) ou redução de tempo
   (%). Eixo vertical: taxa BD (%). Séries (cor): modelo, variância, aleatório.

@@ -30,7 +30,7 @@ linha e de coluna no quadro, e a profundidade do nó.
 O bloco **D**, com **dois atributos**, e o bloco **E**, com **três atributos**,
 completam o vetor. O bloco E é o custo de taxa-distorção real da partição
 `PARTITION_NONE` — `log1p` da taxa, da distorção e do custo RD — e só existe
-**depois** que o codificador avaliou essa partição para o nó corrente, o que o
+**depois** que o codificador avaliou esta partição para o nó corrente, o que o
 torna estruturalmente indisponível a qualquer podador que atue antes da busca. No
 vetor completo o bloco E ocupa os índices 38 a 40, e no vetor implantado de
 trinta e nove, em que o bloco D é descartado, ele ocupa os índices 36 a 38.
@@ -57,7 +57,7 @@ obrigatório. A especificação, fixada em `PLANO_H9_contribuicao_tese.md:326`,
 define `satd_pred` como o SATD do **resíduo de uma predição intra barata
 construída a partir dos vizinhos reconstruídos** — PAETH ou o melhor entre DC,
 PAETH e dois modos direcionais — e `satd_gain` como a diferença normalizada entre
-o SATD da fonte e o SATD desse resíduo, tendo o plano advertido que um resíduo de
+o SATD da fonte e o SATD deste resíduo, tendo o plano advertido que um resíduo de
 predição constante possui a mesma variância do bloco e nada acrescentaria ao
 bloco A. A implementação em `features.py:252-260,305-308` calcula
 `block_satd(block)`, ou seja, a transformada de Hadamard do **bloco-fonte**, sem
@@ -131,7 +131,7 @@ mais caras. O bloco **D** exige uma transformada de Hadamard por nó, e o bloco 
 exigiria, além dela, uma predição intra por nó — custo barato, mas não nulo, e
 não justificado por ganho de sinal nenhum. O bloco **E** é o extremo oposto:
 exige a **avaliação completa de taxa-distorção da partição `PARTITION_NONE`**, o
-que significa que o podador que o consome já pagou esse custo e jamais poderá
+que significa que o podador que o consome já pagou este custo e jamais poderá
 economizá-lo.
 
 > **Procedência.** `docs/ARQUITETURA_pruner_implantado.md` §2 e §3;
@@ -273,7 +273,7 @@ econômica direta. O H9a possui o maior alcance e a maior cegueira, pois um acer
 elimina a subárvore inteira, **incluindo a própria avaliação de
 `PARTITION_NONE`** — é o único capaz de economizar aquele custo —, e em troca
 decide sem ver um único número de taxa-distorção. O H9c possui limite superior
-estruturalmente restrito, pois, agindo depois da avaliação, jamais economiza esse
+estruturalmente restrito, pois, agindo depois da avaliação, jamais economiza este
 custo e só alcança o que vem depois, o que explica a sua redução de tempo isolada
 de cerca de 4%: mais informação, menos alcance. O H9d compartilha a limitação de
 alcance do H9c, mas mira um conjunto de candidatos que nenhum dos outros dois

@@ -5,7 +5,7 @@ realizadas: a partição das sequências, a cobertura de codificação, as métr
 reportadas, o piso de ruído do tempo de parede e a cascata de critérios
 quantitativos que autorizou, ou interrompeu, cada etapa da investigação. O
 protocolo foi fixado **antes** de existir qualquer resultado da família de
-soluções que a tese defende, e é esse ordenamento temporal — não a qualidade dos
+soluções que a tese defende, e é este ordenamento temporal — não a qualidade dos
 números que vieram depois — que sustenta a validade das conclusões apresentadas
 no capítulo de resultados.
 
@@ -25,7 +25,7 @@ O objetivo do congelamento é, justamente, eliminar a objeção de seleção *a
 posteriori*: uma investigação que percorre dezenas de configurações produz, por
 construção, um espectro largo de resultados, e a escolha do recorte mais
 favorável **depois** de ver os números é indistinguível, na leitura final, de uma
-descoberta genuína. Fixar o recorte antes torna essa confusão impossível, pois os
+descoberta genuína. Fixar o recorte antes torna esta confusão impossível, pois os
 números da tese saem exclusivamente do conjunto de teste reservado, que nunca
 participou de nenhuma decisão de modelo, de atributo ou de limiar.
 
@@ -187,7 +187,7 @@ para tornar a divergência visível:
 
 A divergência entre as duas não é decorativa: ela chega a cerca de três pontos
 percentuais, magnitude idêntica à das diferenças que os capítulos discutem. No
-artefato medido, o preset nativo `cpu-used=1` registra 32,59% na definição
+artefato medido, o *preset* nativo `cpu-used=1` registra 32,59% na definição
 canônica e 30,42% na ponderada, uma diferença de 2,17 pontos percentuais; o maior
 afastamento observado é de 2,97 pontos percentuais, na configuração de troca do
 podador pós-NONE em `cpu-used=2` (40,73% contra 37,76%). O sinal da diferença não
@@ -215,13 +215,13 @@ Uma medição de tempo de parede só é interpretável se o seu piso de ruído f
 conhecido, pois a alternativa é discutir diferenças que a própria repetição do
 experimento produziria. Este piso foi medido diretamente, e não estimado: cinco
 repetições intercaladas de três configurações — âncora, podador equilibrado e
-preset nativo `cpu-used=1` — sobre quatro pontos de quantização, em execução
+*preset* nativo `cpu-used=1` — sobre quatro pontos de quantização, em execução
 contínua.
 
 A dispersão do tempo bruto é pequena. O coeficiente de variação mediano é de
 **0,28%**, com máximo de 0,64% entre as células medidas. O plano original supunha
 um desvio da ordem de 1 a 2% por codificação, inferido de violações de
-monotonicidades que valem por construção; a medição direta mostra que essa
+monotonicidades que valem por construção; a medição direta mostra que esta
 estimativa era pessimista por um fator próximo de quatro, o que torna resolvíveis
 diversas comparações antes descartadas como indistinguíveis do ruído.
 
@@ -230,9 +230,9 @@ de tempo pareada. Para o podador equilibrado, cuja redução medida é de 20,29%
 desvio sobre as cinco repetições é de **±0,23 pontos percentuais**, com erro
 padrão de 0,10 ponto, o que estabelece uma **resolução efetiva de comparação
 pareada de aproximadamente 0,46 ponto percentual**, tomada como dois desvios. Para
-o preset nativo `cpu-used=1`, cuja redução medida é de 32,84%, o desvio é ainda
+o *preset* nativo `cpu-used=1`, cuja redução medida é de 32,84%, o desvio é ainda
 menor, de ±0,09 ponto, com resolução de cerca de 0,18 ponto. Diferenças de
-redução de tempo inferiores a essa resolução não são citadas como positivas em
+redução de tempo inferiores a esta resolução não são citadas como positivas em
 nenhum ponto desta tese, e as que a superam com folga são reportadas com a
 margem explícita — o ganho marginal de 1,02 ponto percentual da segunda solução
 implantada, por exemplo, situa-se a cerca de 4,4 desvios acima do ruído.
@@ -307,7 +307,7 @@ foi cortada por decisão de escopo, por ser aquela em que a grade de limiares
 original havia sido calibrada.
 
 Cabe acrescentar que o ponto de operação da tese **é** um limiar sobre a saída
-probabilística do modelo, e que a leitura desse limiar como grau de confiança foi
+probabilística do modelo, e que a leitura deste limiar como grau de confiança foi
 verificada, e não suposta. Sobre 1 816 393 nós de decisão do conjunto de teste
 reservado, o erro esperado de calibração da classe predita é de **0,0112**, e a
 precisão real no limiar implantado de 0,90 é de 95,6% para a classe NONE e de
@@ -342,15 +342,15 @@ de quantização e dez quadros no conjunto reservado. A sua função é **valida
 atribuir**. É nele que se prova que a redução de tempo é atribuível à seleção de
 nós feita pelo modelo, e não à política de poda que o envolve, pois a ablação de
 atribuição mantém a política, o codificador e a sequência fixos, trocando
-**apenas a fonte do escore** entre o modelo, a variância e um escore aleatório.
-Sem esse cenário, um ganho de tempo seria apenas um ganho de tempo; com ele, o
+**apenas a fonte da pontuação** entre o modelo, a variância e uma pontuação aleatória.
+Sem este cenário, um ganho de tempo seria apenas um ganho de tempo; com ele, o
 ganho tem uma causa medida.
 
 O segundo é a **CTC**, com as oito sequências da Classe A1 em 4K e dez bits, em
 configuração intraquadro e quinze quadros. A sua função é produzir os
 **resultados finais**, comparáveis à literatura da área e medidos contra o próprio
-botão de velocidade do codificador, isto é, contra os presets nativos. Por outro
-lado, é um cenário que **não** isola mérito, pois os presets nativos misturam a
+botão de velocidade do codificador, isto é, contra os *presets* nativos. Por outro
+lado, é um cenário que **não** isola mérito, pois os *presets* nativos misturam a
 rede convolucional intraquadro com dezenas de heurísticas que não são de
 aprendizado de máquina; uma comparação de categoria correta exige, então,
 desligar a rede nativa e colocar o modelo proposto como único podador.
@@ -380,7 +380,7 @@ cobertura de quatro pontos de quantização, a âncora em busca completa de
 taxa-distorção, os três pilares de métrica com a definição canônica de redução de
 tempo, o piso de ruído de aproximadamente 0,46 ponto percentual na comparação
 pareada e a cascata de critérios que autorizou cada etapa. Todos esses elementos
-foram fixados antes das medições que decidem, e é essa anterioridade que permite
+foram fixados antes das medições que decidem, e é esta anterioridade que permite
 apresentar os resultados — inclusive os negativos, inclusive o critério não
 atingido na forma estrita — como resultados, e não como recorte.
 

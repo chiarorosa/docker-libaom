@@ -345,10 +345,11 @@ Cinco vias foram encerradas nos seus critérios de decisão, cada uma com
 resultado negativo medido, e cada uma delimitando por medição uma região do
 espaço de soluções que deixa de ser conjectura. O domínio de pixels fecha com
 cinco tentativas independentes negativas — o modelo substituto convolucional
-por entropia cruzada e por *regret*, a rede de grafos estrutural e as duas
-variantes do bloco de atributos D —, nenhuma competindo com o contexto de
-taxa-distorção barato do H9a. A reformulação por regressão de *regret* foi
-refutada na validação: entregou 0,00% de redução de custo a risco casado,
+por entropia cruzada e por perda de otimalidade (do inglês *regret*), a rede
+de grafos estrutural e as duas variantes do bloco de atributos D —, nenhuma
+competindo com o contexto de taxa-distorção barato do H9a. A reformulação por
+regressão da perda de otimalidade foi refutada na validação: entregou 0,00% de
+redução de custo a risco casado,
 contra 51,73% do classificador H9a sobre as mesmas entradas. E a rede de
 grafos, embora tenha furado a cota superior medida no oráculo por vinte e oito
 pontos percentuais, foi refutada no codificador real, onde o H9a a domina por

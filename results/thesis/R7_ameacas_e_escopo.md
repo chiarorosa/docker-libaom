@@ -41,9 +41,10 @@ acurácia por nó e o custo de oráculo são, deste modo, maus indicadores do
 compromisso entre taxa BD e tempo real de um podador. A consequência
 metodológica é direta: rejeição ou aprovação fora do codificador é indício, não
 prova de ordenação, e por isso todo veredito final desta tese passa pelo
-codificador. É também por isso que a decisão de não levar a regressão de
-*regret* ao codificador foi reenquadrada como assimetria de custo
-experimental, e não como implicação lógica de que o codificador confirmaria a
+codificador. É também por isso que a decisão de não levar a regressão da
+perda de otimalidade (do inglês *regret*) ao codificador foi reenquadrada como
+assimetria de custo experimental, e não como implicação lógica de que o
+codificador confirmaria a
 rejeição do oráculo.
 
 ### 7.1.2 Ruído de poucos quadros e a resolução do tempo medido
@@ -76,7 +77,7 @@ Os limiares operacionais de cada podador foram calibrados no conjunto de
 validação e congelados antes de qualquer medição no conjunto de teste
 reservado, por decisão de protocolo contra a seleção a posteriori. Esta
 prática tem um custo: no conjunto de teste reservado, as faixas de aceleração
-alcançadas pelo escore aprendido e pela variância trivial saíram disjuntas nas
+alcançadas pela pontuação aprendida e pela variância trivial saíram disjuntas nas
 três sequências, de modo que não houve, ali, um ponto de tempo casado entre os
 dois para comparar diretamente a taxa BD. Estender a grade da variância depois
 de ver o conjunto de teste resolveria a disjunção, mas violaria o próprio
@@ -87,7 +88,7 @@ A mitigação adotada foi dupla. Na validação, o experimento E5 estendeu
 legitimamente a grade da variância até o extremo conservador, pois ali o papel
 declarado do conjunto é escolher limiares, e não medir o resultado final; no
 conjunto de teste, manteve-se a atribuição por política casada, que dispensa
-sobreposição de velocidade — sob a mesma política, o escore aprendido alcança
+sobreposição de velocidade — sob a mesma política, a pontuação aprendida alcança
 taxa BD mínima de 0,008% na RiverBank contra 0,75% da variância, uma razão de
 94 vezes, com 11 vezes na Jockey e 44 vezes na RaceNight.
 
@@ -97,7 +98,7 @@ A eficiência relativa de cada podador varia por sequência, e médias sobre o
 conjunto podem mascarar esta variação. A FoodMarket2 é um caso identificado de
 sequência atípica, favorável ao podador nativo além do padrão das demais
 sequências da grade CTC. A Lips, por sua vez, expõe um comportamento quase
-bimodal do escore de variância: entre os limiares 0,99 e 0,97, a aceleração
+bimodal da pontuação de variância: entre os limiares 0,99 e 0,97, a aceleração
 salta de 1,006× para 3,563× e a taxa BD, de 0,019% para 6,58%, sem ponto
 intermediário na grade — provavelmente porque a Lips é um *close-up* de rosto,
 dominado por regiões de pele lisas e de variância baixa e homogênea, sobre as
@@ -152,7 +153,7 @@ Um risco permanece vivo, e é retomado na Parte III desta seção: a atribuiçã
 podador implantado repousava inteiramente em evidência offline até o
 experimento E5, que a confirmou no codificador sob política casada em duas
 sequências de validação, mas sem atingir a forma estrita do critério
-pré-registrado. O par de escores `pixels24` e variância, especificamente,
+pré-registrado. O par de pontuações `pixels24` e variância, especificamente,
 segue sem árbitro no codificador.
 
 > **Procedência.** `docs/SINTESE_resultados_metodologia.md` §9, fonte

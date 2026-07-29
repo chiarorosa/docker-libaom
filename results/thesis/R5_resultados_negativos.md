@@ -22,7 +22,8 @@ os resultados positivos das Seções 2 a 4, uma vez que foi medido contra a mesm
 régua.
 
 São apresentadas, nesta ordem, duas reformulações do próprio problema — a
-regressão de *regret* e a decisão estruturada por rede de grafos —, quatro
+regressão da perda de otimalidade (do inglês *regret*) e a decisão estruturada
+por rede de grafos —, quatro
 ablações de modelagem sobre a solução implantada e três diagnósticos de
 engenharia que sustentam decisões tomadas nos capítulos anteriores. A seção
 encerra com a síntese do que o conjunto destes negativos estabelece
@@ -34,14 +35,15 @@ positivamente sobre a natureza do problema de particionamento.
 
 ---
 
-## 5.1 A reformulação por regressão de *regret*
+## 5.1 A reformulação por regressão da perda de otimalidade
 
 As soluções apresentadas nas Seções 2 e 3 aprenderam o particionamento como
 **classificação** do rótulo de partição, em três classes, e podaram por
 **confiança**, ou seja, por um limiar τ aplicado sobre a distribuição de saída do
 modelo. Esta seção apresenta a reformulação que substitui esta formulação por uma
 **regressão**: em vez de classificar o rótulo, regredir diretamente o custo de
-taxa-distorção de podar — grandeza designada *regret* — e podar por custo
+taxa-distorção de podar — grandeza designada perda de otimalidade — e podar
+por custo
 predito. A motivação é legítima e precisa de ser registrada como tal, pois a
 fronteira entre taxa BD e tempo é governada por *quanto* de taxa-distorção se
 perde ao podar, que é uma grandeza contínua; um preditor competente deste custo
@@ -50,7 +52,7 @@ inacessível ao classificador.
 
 A reformulação foi construída sem nenhuma reextração de dados. O alvo foi
 reconstruído a partir da árvore de particionamento comprometida pelo codificador,
-definindo-se, para cada nó de decisão, o *regret* relativo como a diferença entre
+definindo-se, para cada nó de decisão, a perda de otimalidade relativa como a diferença entre
 o custo de taxa-distorção do `PARTITION_NONE` e o custo da subárvore ótima,
 normalizada por este último. O preditor é um perceptrone de múltiplas camadas por
 tamanho de bloco, com a mesma topologia do H9a, cabeça de regressão única e
@@ -60,7 +62,7 @@ comparação isole a formulação e não a informação disponível.
 O primeiro critério de decisão da cascata, que afere a viabilidade do sinal, foi
 atingido, mas com uma ressalva que antecipou o modo de falha. Sobre as dez
 sequências de treino, a fração de nós com alvo exato ficou em 51,3%, 66,3% e
-83,8% para os blocos de 64, 32 e 16 amostras, e o desvio do *regret* ficou em
+83,8% para os blocos de 64, 32 e 16 amostras, e o desvio da perda de otimalidade ficou em
 0,143, 0,066 e 0,019, satisfazendo os limiares pré-registrados de 40% e de
 0,001. A ressalva registrada foi a **inflação de zeros** do alvo, que cresce com
 a profundidade da árvore: 59,5% de zeros em 64 amostras, 83,6% em 32 amostras e
@@ -70,7 +72,7 @@ inteiramente nos blocos grandes.
 O preditor ingênuo colapsou exatamente na distribuição a priori, como a inflação
 de zeros fazia prever. A perda Huber final ficou em 0,00184, 0,00079 e 0,00027
 por tamanho de bloco, valores trivialmente baixos por serem dominados pela massa
-de zeros, e o modelo passou a prever *regret* próximo de zero para quase todos os
+de zeros, e o modelo passou a prever perda de otimalidade próxima de zero para quase todos os
 nós, inclusive para os que exigem divisão. No terceiro critério de decisão, que
 mede a redução de custo de busca a risco casado — sendo o risco a fração de nós
 verdadeiramente `PARTITION_SPLIT` comprometidos com `PARTITION_NONE`, designada
@@ -82,7 +84,7 @@ fraca, atingiu 4,46% e 6,35% nos mesmos pontos.
 
 A correção estatística da inflação de zeros foi implementada e medida, em vez de
 assumida. Introduziu-se uma perda Huber ponderada que rebalanceia, por tamanho de
-bloco, os nós de *regret* não nulo, com pesos de 8,21, 17,76 e 45,56 para as
+bloco, os nós de perda de otimalidade não nula, com pesos de 8,21, 17,76 e 45,56 para as
 frações de zero de 0,89, 0,95 e 0,98 da população de alvo exato. O modelo
 balanceado de fato aprendeu a cauda da distribuição, o que se verifica pela
 elevação da perda Huber para 0,00361, 0,00436 e 0,00196, mas o balanceamento
@@ -90,11 +92,11 @@ elevação da perda Huber para 0,00361, 0,00436 e 0,00196, mas o balanceamento
 0,05, 0,1 e 0,2, a redução de custo permaneceu em 0,00% em todos os pontos de
 risco, e o piso de *SPLIT-lost* permaneceu em cerca de 11%, pois existe uma massa
 de aproximadamente 11% de nós verdadeiramente `PARTITION_SPLIT` que o regressor
-mapeia para *regret* próximo de zero, indistinguíveis dos nós seguros.
+mapeia para perda de otimalidade próxima de zero, indistinguíveis dos nós seguros.
 
 A conclusão de valor metodológico é firme e independe da magnitude dos números.
 A decisão de poda é, no fundo, uma **classificação** entre seguro e inseguro, e a
-**magnitude** do *regret* não é ordenável a partir de atributos pré-busca
+**magnitude** da perda de otimalidade não é ordenável a partir de atributos pré-busca
 baratos: ao otimizar esta magnitude, o regressor gasta capacidade em valores que
 não sobrevivem à predição, enquanto o classificador se concentra exatamente na
 fronteira de decisão que o ordenamento de poda exige. A probabilidade da decisão
@@ -193,7 +195,7 @@ limite está na **qualidade das decisões** e não na calibração.
 Cabe registrar, por honestidade de procedência, que o **mecanismo** desta falha
 não está provado. A explicação originalmente proposta — a de que o custo seria
 dominado por poucas podas erradas caras em taxa-distorção — foi **retirada** por
-medição posterior: no crivo ponderado por *regret*, as podas da rede de grafos
+medição posterior: no crivo ponderado por perda de otimalidade, as podas da rede de grafos
 são baratas tanto por contagem, com *SPLIT-lost* de 0,25%, quanto por custo
 ponderado, com sobrecarga de taxa-distorção próxima de zero e a menor de todas as
 soluções avaliadas. A falha real, portanto, não está na ação de comprometer o nó
@@ -233,7 +235,7 @@ possui, com a vantagem decisiva de ser causalmente disponível no podador
 pré-busca. Foram acrescentados seis atributos ao vetor do H9a, deliberadamente
 restritos a **magnitudes** de taxa-distorção medidas e nunca a rótulos ou
 decisões, elevando a entrada de 36 para 42 atributos. O critério foi o crivo
-ponderado por *regret*, que mede a qualidade fundamental da decisão a redução de
+ponderado por perda de otimalidade, que mede a qualidade fundamental da decisão a redução de
 custo casada, e o resultado é negativo e robusto: a 30% de redução de custo, a
 sobrecarga relativa de taxa-distorção sobe de 24,81 para 38,81, e o negativo
 persiste em toda a fronteira, com 35,9 contra 59,7 a 34% de redução de custo e
@@ -306,7 +308,7 @@ a decisão de treinar sem ponderação.
 > controle pareado e a variância entre execuções de ±2 a 3 pontos percentuais);
 > `docs/RESULTADOS_modelagem_B4_ponderacao_classe.md` §§1–6;
 > `docs/RESULTADOS_oraculo_regret.md` §§2–3 (definição do crivo ponderado por
-> *regret*, 792.840 nós); `docs/INVENTARIO_solucoes.md` §3.5. Artefatos:
+> perda de otimalidade, 792.840 nós); `docs/INVENTARIO_solucoes.md` §3.5. Artefatos:
 > `results/models/{student_h9a_b1,b2_tau_qindex,student_h9a_4cls,b3_postnone,b3_control36,student_h9a_cw,oracle_regret_b1}/`.
 > Scripts: `src/scripts/partition_model/{train_student_h9.py,oracle_regret.py,b2_tau_per_qindex.py,b3_horz_vert.py,calibration.py,compare_students.py}`.
 
@@ -378,7 +380,7 @@ a sua contribuição.
 
 A primeira afirmação é sobre a **formulação correta**. A decisão de poda é uma
 classificação entre seguro e inseguro, e não uma estimativa de custo, pois a
-magnitude do *regret* é dominada pelo conteúdo e não é ordenável a partir de
+magnitude da perda de otimalidade é dominada pelo conteúdo e não é ordenável a partir de
 atributos pré-busca baratos. Esta afirmação não é uma preferência de projeto: ela
 foi obtida construindo a alternativa, treinando-a com competência, corrigindo o
 seu modo de falha estatístico e medindo-a contra o classificador sobre entradas

@@ -171,7 +171,7 @@ consistente nas três sequências, e a RiverBank é o caso extremo favorável, c
 gratuita.
 
 O segundo pilar é a atribuição do ganho ao aprendizado. Sob política idêntica,
-variando apenas a fonte do escore, o modelo domina o escore aleatório em todas as
+variando apenas a fonte da pontuação, o modelo domina a pontuação aleatória em todas as
 sequências e em todos os níveis medidos: a aceleração casada de 1,15×, o modelo
 custa 0,13% contra 1,79% do aleatório na Jockey, 0,34% contra 3,75% na RaceNight e
 0,11% contra 3,40% na RiverBank; a aceleração casada de 1,30×, custa 0,26% contra
@@ -194,13 +194,13 @@ dado de teste violaria o congelamento antisseleção.
 O que sustenta a contribuição, então, são três afirmações, e nenhuma delas depende
 da sobreposição de faixas. A primeira é a **redução de tempo contra a âncora**,
 forte e consistente nas três sequências, nos termos da Tabela 2.2. A segunda é a
-**superioridade sobre o escore aleatório**, clara nas três sequências. A terceira,
+**superioridade sobre a pontuação aleatória**, clara nas três sequências. A terceira,
 e a mais forte, é a **atribuição a política casada**: mantida idêntica a política
-primária de comprometimento com NONE e variando somente a fonte do escore, a taxa
-BD mínima alcançável pelo escore do modelo é de **0,16%** na Jockey, **0,09%** na
+primária de comprometimento com NONE e variando somente a fonte da pontuação, a taxa
+BD mínima alcançável pela pontuação do modelo é de **0,16%** na Jockey, **0,09%** na
 RaceNight e **0,008%** na RiverBank, contra **1,76%**, **3,96%** e **0,75%** da
-variância, razões de **11×, 44× e 94×**. Ou seja, o escore do modelo alcança uma
-região de baixa taxa BD que o escore de variância é estruturalmente incapaz de
+variância, razões de **11×, 44× e 94×**. Ou seja, a pontuação do modelo alcança uma
+região de baixa taxa BD que a pontuação de variância é estruturalmente incapaz de
 tocar, pois a sua regra grosseira compromete o nó com o `PARTITION_NONE` em
 qualquer bloco liso, inclusive naqueles que deveriam ser divididos. Na validação,
 onde a grade sobrepôs, a dominância direta a aceleração casada foi obtida — 0,66%
@@ -265,7 +265,7 @@ interpolado ofereceria naquele ponto. Deste modo, a contribuição não precisa
 vencer a fronteira nativa inteira para ser útil: ela preenche uma granularidade de
 operação em baixo regime de aceleração que o degrau grosseiro dos *presets* não
 alcança. Cabe destacar, por fim, que este achado atinge a utilidade prática e não
-a validação metodológica, uma vez que a superioridade do escore de taxa-distorção
+a validação metodológica, uma vez que a superioridade da pontuação de taxa-distorção
 sobre a variância sob política casada, estabelecida na Seção 2.3, permanece
 inalterada.
 
@@ -356,7 +356,7 @@ cujo papel declarado no protocolo é escolher limiares operacionais — e produz
 **primeira comparação a tempo casado contra a variância em toda a investigação**.
 Os três braços rodam a mesma política no mesmo codificador, com comprometimento
 com NONE puro, divisão quadrada nunca forçada e poda das formas retangulares
-desligada, variando exclusivamente a fonte do escore. Apenas a grade de limiares
+desligada, variando exclusivamente a fonte da pontuação. Apenas a grade de limiares
 da variância foi estendida ao extremo conservador, até 0,999, jamais sondado
 antes; a grade do modelo permaneceu **intocada**, de modo que a alteração
 beneficia o adversário e não a hipótese. A campanha cobriu trinta e quatro pontos
@@ -365,7 +365,7 @@ de operação, cento e quarenta e quatro codificações e cerca de vinte e duas 
 Na **FlowerPan** as faixas se sobrepõem e o modelo domina em todos os pares
 medidos, sem interpolação. A aceleração de aproximadamente 1,15×, o modelo custa
 0,095% de taxa BD contra 0,437% da variância, razão de **4,6×**; a aproximadamente
-1,27×, custa 0,638% contra 1,180%, razão de **1,85×**. Contra o escore aleatório
+1,27×, custa 0,638% contra 1,180%, razão de **1,85×**. Contra a pontuação aleatória
 as razões são muito maiores, de **158×** a aproximadamente 1,10× e de **19×** a
 aproximadamente 1,19×. A grade estendida fez exatamente o que se pretendia: a
 variância a limiar 0,999 entrega 1,7% de redução de tempo a **0,000%** de taxa BD,
@@ -378,13 +378,13 @@ limiares 0,99 e 0,97 a variância salta de 1,006× para **3,563×** de aceleraç
 de 0,019% para **6,58%** de taxa BD, sem qualquer ponto intermediário na grade; o
 modelo vive inteiramente dentro deste vão, de 1,074× a 1,283×, de modo que a
 comparação a tempo casado contra a variância **não existe** nesta sequência.
-Contra o escore aleatório a comparação existe e é limpa, com razão de **7,0×** a
+Contra a pontuação aleatória a comparação existe e é limpa, com razão de **7,0×** a
 aproximadamente 1,19×. O mecanismo provável é a natureza do conteúdo — um
 primeiro plano de rosto, com grandes regiões de pele lisas e de variância baixa e
 homogênea, sobre as quais um limiar de variância se comporta de forma
 aproximadamente bimodal —, mas cabe registrar que este mecanismo é interpretação e
 não medição. A consequência para a tese é forte: a não-sobreposição observada no
-conjunto de teste reservado é **propriedade do escore**, e não artefato da grade
+conjunto de teste reservado é **propriedade da pontuação**, e não artefato da grade
 congelada, o que fecha a explicação alternativa incômoda que a Fase 5 deixara em
 aberto.
 
@@ -401,8 +401,8 @@ sequências, e obteve-se **uma de duas** — a FlowerPan —, pois na Lips não 
 casado a comparar e a HoneyBee foi cortada por **decisão de escopo declarada**,
 por ser a sequência em que a grade original havia sido calibrada e, portanto, a
 menos independente das três. A afirmação defensável não é a de dominância
-universal, e sim a seguinte: sob política idêntica, o escore do modelo gradua
-continuamente a região implantável de baixa taxa BD, que o escore da variância ou
+universal, e sim a seguinte: sob política idêntica, a pontuação do modelo gradua
+continuamente a região implantável de baixa taxa BD, que a pontuação da variância ou
 não alcança ou atravessa de um salto, e, onde ambos coexistem, o modelo custa de
 duas a cinco vezes menos taxa BD pelo mesmo tempo. Três pontos de limiar na Lips,
 dentro do vão, decidiriam o critério na forma estrita a um custo aproximado de

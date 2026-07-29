@@ -22,7 +22,8 @@ Este enquadramento é o que sustenta a arquitetura dos dois capítulos. Ele acom
 sem tensão, o conjunto completo do que foi investigado: o modelo substituto
 convolucional (ConvNeXt), os perceptrones de múltiplas camadas por tamanho de
 bloco (H9a, H9c, H9d), a rede de grafos do Approach B e a reformulação por
-regressão de *regret* — todas são redes neurais propostas como heurística de poda
+regressão da perda de otimalidade (do inglês *regret*) — todas são redes
+neurais propostas como heurística de poda
 para a mesma decisão de particionamento intraquadro. As soluções que não
 sobreviveram aos critérios de decisão não são descarte: são o resultado do
 estudo, e entram nos capítulos com essa função.
@@ -116,8 +117,10 @@ medidos contra o próprio botão de velocidade do codificador.
    ou "limite superior de desempenho", nunca "teto"; "conjunto de teste
    reservado", nunca *held-out*; "atributos", nunca *features*; "critério de
    decisão" ou "etapa de validação", nunca *gate*; "sobreajuste", nunca *overfit*;
-   "transição abrupta na curva", nunca "penhasco". Estrangeirismos legítimos em
-   itálico; siglas expandidas na primeira ocorrência.
+   "transição abrupta na curva", nunca "penhasco"; "pontuação", nunca "escore" nem
+   *score*; "perda de otimalidade", nunca *regret*, ressalvados os identificadores
+   de código e nomes de artefato, que permanecem em inglês. Estrangeirismos
+   legítimos em itálico; siglas expandidas na primeira ocorrência.
 3. **Nenhum dado inventado.** Todo número provém de um documento ou artefato deste
    projeto. Lacuna se marca com `[completar: descrição do que falta]`; nunca se
    preenche por estimativa.

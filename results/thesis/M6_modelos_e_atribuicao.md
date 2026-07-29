@@ -7,7 +7,8 @@ o modelo substituto convolucional multinível, a destilação de conhecimento qu
 dele derivou o modelo estudante da era de pixels, os perceptrones de múltiplas
 camadas por tamanho de bloco que constituem os artefatos implantados, a rede de
 grafos com passagem de mensagens da abordagem estruturada e a reformulação do
-problema por regressão de *regret*. A segunda parte apresenta a **metodologia de
+problema por regressão da perda de otimalidade (do inglês *regret*). A segunda
+parte apresenta a **metodologia de
 atribuição**, que é a contribuição metodológica deste capítulo: o conjunto de
 desenhos experimentais que separa o mérito do modelo do mérito do invólucro que
 o executa, e que estabelece, por medição, os limites do que uma avaliação fora
@@ -39,7 +40,7 @@ de 16×16 dispõe simultaneamente da sua vizinhança imediata e do contexto do
 superbloco inteiro, o que é exatamente a informação que a busca recursiva
 consome ao descer a árvore.
 
-As **cabeças por nível** operam sobre agrupamentos médios desse mapa fundido, de
+As **cabeças por nível** operam sobre agrupamentos médios deste mapa fundido, de
 modo que cada célula agrega precisamente a região do bloco que lhe corresponde:
 um agrupamento 4×4 produz a grade de blocos de 16×16 amostras, um agrupamento
 8×8 produz a grade de blocos de 32×32 amostras e a média global produz a
@@ -73,7 +74,7 @@ porque afeta a leitura de todo o capítulo. A intenção original era utilizá-l
 como **cota superior do domínio de pixels**, pois ele reúne capacidade elevada,
 acesso à luminância bruta e possibilidade de execução exata dentro do
 codificador por reinjeção de probabilidades pré-computadas, sem qualquer custo
-computacional de inferência convolucional em C. Duas medições retiraram esse
+computacional de inferência convolucional em C. Duas medições retiraram este
 papel. Primeiro, uma ablação controlada do objetivo de treino — a mesma
 arquitetura e a mesma dimensão de fusão de 128 canais, alterando somente a perda
 para uma entropia cruzada ponderada por nó com peso `1 + α·regret_rel`, com
@@ -86,7 +87,7 @@ como a tentativa documentada de estabelecer a cota superior, e não como a cota
 superior: um modelo batido por outro de acesso estritamente menor à informação
 não estabelece limite superior de desempenho algum. O único limite superior
 genuíno do arcabouço é o **oráculo**, ou seja, a decisão de taxa-distorção ótima
-com *regret* nulo, que limita qualquer podador.
+com perda de otimalidade nula, que limita qualquer podador.
 
 > **Procedência.** `src/scripts/partition_model/model.py` (arquitetura
 > `PartitionSurrogate`: captura dos estágios, fusão descendente, agrupamentos
@@ -179,7 +180,8 @@ vezes, e a fração máxima de custo podável cai de 42% para 35%. Como a polít
 limiarizada sobre a probabilidade, é a calibração, e não a revocação, que
 determina o que o codificador paga. Deste modo, o **critério de seleção de
 modelo** adotado não é a acurácia por nó nem o macro-F1, e sim o **crivo
-ponderado por *regret* a redução de custo casada**, descrito na Seção 6.10; foi
+ponderado por perda de otimalidade a redução de custo casada**, descrito na
+Seção 6.10; foi
 por este critério que as duas extensões investigadas — a ponderação de classe e
 o acréscimo de seis atributos de contexto de taxa-distorção herdado do bloco-pai
 e dos irmãos já decididos — foram rejeitadas, e que a estratificação do limiar
@@ -248,35 +250,39 @@ convolucional nativa.
 
 ---
 
-## 6.5 A reformulação por regressão de *regret*
+## 6.5 A reformulação por regressão da perda de otimalidade
 
 Todas as formulações anteriores tratam a poda como **classificação** da decisão
 do nó. A reformulação investigada substitui o alvo pelo **custo real de podar**:
-em vez de predizer qual partição vence, o modelo prediz o *regret*, definido
+em vez de predizer qual partição vence, o modelo prediz a perda de
+otimalidade — ou seja, o sobrecusto de taxa-distorção da poda —, definida
 como a diferença entre o custo de taxa-distorção de comprometer o nó com
 `PARTITION_NONE` e o custo da subárvore que a busca completa encontraria, uma
 grandeza não negativa que vale zero sempre que a decisão correta já era
 `PARTITION_NONE`. A motivação é direta e decorre de um resultado desta própria
 investigação: a acurácia por nó demonstrou ser mau indicador do compromisso
-entre taxa BD e tempo de um podador, e o *regret* é a grandeza que o podador de
-fato arrisca a cada poda.
+entre taxa BD e tempo de um podador, e a perda de otimalidade é a grandeza que
+o podador de fato arrisca a cada poda.
 
 A arquitetura preserva a topologia de 64 e 32 unidades por tamanho de bloco e
 substitui a cabeça de três classes por uma **cabeça de regressão única**. O alvo
-é o logaritmo de um mais o *regret* relativo, a perda é a de Huber com parâmetro
+é o logaritmo de um mais a perda de otimalidade relativa, a perda é a de Huber
+com parâmetro
 unitário, e a otimização utiliza o algoritmo Adam com taxa de aprendizado de
 `1·10⁻³` por 200 épocas, sobre os mesmos 36 atributos do H9a, de modo que a
 comparação isole a formulação do alvo.
 
 O tratamento da **inflação de zeros** é a decisão metodológica central desta
-via. A distribuição do *regret* é dominada por nós de valor exatamente nulo, e
-uma regressão ingênua sobre esse alvo degenera, pois minimiza a perda predizendo
-zero em quase toda parte. Foram treinadas, então, duas variantes: uma ingênua e
-uma **balanceada**, em que as amostras de *regret* não nulo recebem peso igual à
+via. A distribuição da perda de otimalidade é dominada por nós de valor
+exatamente nulo, e uma regressão ingênua sobre este alvo degenera, pois
+minimiza a perda predizendo zero em quase toda parte. Foram treinadas, então,
+duas variantes: uma ingênua e uma **balanceada**, em que as amostras de perda
+de otimalidade não nula recebem peso igual à
 razão entre o número de amostras nulas e não nulas, limitado superiormente, o
 que resultou em pesos efetivos entre 8 e 46 vezes. A ressalva que a ablação
 expõe é estrutural e não se resolve por reponderação: cerca de **11%** dos nós
-cuja decisão verdadeira é `SPLIT` têm *regret* aproximadamente nulo, e são,
+cuja decisão verdadeira é `SPLIT` têm perda de otimalidade aproximadamente
+nula, e são,
 portanto, **indistinguíveis dos nós seguros** por qualquer regressão sobre esta
 grandeza, o que dá base empírica à afirmação de que a poda é fundamentalmente
 uma decisão de classificação.
@@ -295,19 +301,20 @@ uma decisão de classificação.
 
 A segunda parte desta seção apresenta a metodologia de atribuição. O problema
 que ela resolve é o seguinte: um podador aprendido é composto por **duas peças
-separáveis**, ou seja, uma **fonte de escore**, que é o modelo, e uma
-**política**, que converte o escore em ações de poda sobre o espaço de busca.
-Qualquer escore, inclusive um escore sem informação alguma, produz alguma
+separáveis**, ou seja, uma **fonte de pontuação**, que é o modelo, e uma
+**política**, que converte a pontuação em ações de poda sobre o espaço de
+busca. Qualquer pontuação, inclusive uma pontuação sem informação alguma,
+produz alguma
 redução de tempo quando alimentado a uma política agressiva, pois é a política
 que remove candidatos da busca. Então, um número de aceleração medido, por maior
-que seja, **não é evidência de que o modelo aprendeu algo**, e a ausência dessa
+que seja, **não é evidência de que o modelo aprendeu algo**, e a ausência desta
 distinção é uma fragilidade recorrente da literatura de poda aprendida.
 
 A posição adotada nesta tese é que um ganho de tempo só é atribuível ao modelo
-se **sobrevive à comparação com fontes de escore alternativas executadas sob a
-mesma política e no mesmo codificador**. Deste modo, a unidade de comparação
+se **sobrevive à comparação com fontes de pontuação alternativas executadas sob
+a mesma política e no mesmo codificador**. Deste modo, a unidade de comparação
 deixa de ser o par formado por modelo e política e passa a ser exclusivamente a
-fonte do escore, que é a única variável manipulada. As seções seguintes
+fonte da pontuação, que é a única variável manipulada. As seções seguintes
 descrevem os quatro desenhos que materializam esta posição — a ablação de
 atribuição em três braços, a substituição direta do podador nativo, a
 decomposição com neutralização de alavanca e a simulação oráculo —, cada um
@@ -333,7 +340,7 @@ heurística manual óbvia segundo a qual um bloco liso não deve ser dividido,
 construída sobre o atributo isolado mais informativo e que é, ele próprio, uma
 das entradas do modelo — o que torna a comparação deliberadamente severa, pois
 um modelo bem ajustado não deveria ser dominado por um de seus próprios
-atributos. O braço **escore aleatório** utiliza uma função de dispersão uniforme
+atributos. O braço **pontuação aleatória** utiliza uma função de dispersão uniforme
 e determinística da identidade do nó, o que poda a **mesma fração** de nós que
 os demais, escolhidos ao acaso, isolando o efeito do invólucro.
 
@@ -350,23 +357,25 @@ saíram disjuntas nas três sequências, o que impediu qualquer par casado.
 A comparação a política casada é o argumento mais forte por duas razões. A
 primeira é que ela **controla o invólucro inteiro** — mesma política, mesmos
 limiares de ação, mesmo codificador, mesmo âncora, mesma sequência —, deixando a
-fonte do escore como única variável manipulada, o que é a condição lógica da
+fonte da pontuação como única variável manipulada, o que é a condição lógica da
 atribuição. A segunda é que ela **dispensa a sobreposição de faixas**, pois a
-ausência de ponto de operação de um escore na região implantável deixa de ser
-uma limitação da medição e passa a ser um **resultado sobre o escore**. Este é
+ausência de ponto de operação de uma pontuação na região implantável deixa de
+ser uma limitação da medição e passa a ser um **resultado sobre a
+pontuação**. Este é
 exatamente o caso observado na sequência Lips, em que a curva da variância
 apresenta uma **transição abrupta** entre os limiares 0,99 e 0,97: a aceleração
 salta de **1,006× para 3,563×** e a taxa BD de **0,019% para 6,580%**, sem
-qualquer ponto intermediário, enquanto o escore do modelo gradua continuamente a
-faixa de **1,074× a 1,283×**. Neste caso, não há par casado a comparar, e ainda
-assim a comparação a política casada estabelece a afirmação mais forte, ou seja,
-que a não sobreposição é propriedade do escore da variância e não da grade de
+qualquer ponto intermediário, enquanto a pontuação do modelo gradua
+continuamente a faixa de **1,074× a 1,283×**. Neste caso, não há par casado a
+comparar, e ainda assim a comparação a política casada estabelece a afirmação
+mais forte, ou seja, que a não sobreposição é propriedade da pontuação da
+variância e não da grade de
 limiares escolhida.
 
 Duas salvaguardas de honestidade completam o desenho. A grade de limiares do
 braço do modelo é mantida **congelada**, e apenas a grade do braço adversário foi
 estendida ao extremo conservador, de modo que a alteração beneficie o adversário
-e nunca a hipótese; e essa extensão foi executada no **conjunto de validação**,
+e nunca a hipótese; e esta extensão foi executada no **conjunto de validação**,
 cujo papel declarado no protocolo é a escolha de limiares operacionais, e não no
 conjunto de teste reservado. Além disso, o critério de decisão pré-registrado
 exigia dominância a tempo casado em pelo menos duas de três sequências de
@@ -388,8 +397,8 @@ declarado como não atingido na forma estrita, com o que de fato se obteve.
 
 ## 6.8 A substituição direta do podador nativo
 
-A comparação contra os presets de velocidade do codificador de referência não é
-uma comparação de categoria correta, pois cada preset altera simultaneamente
+A comparação contra os *presets* de velocidade do codificador de referência não é
+uma comparação de categoria correta, pois cada *preset* altera simultaneamente
 dezenas de heurísticas não aprendidas, além da rede convolucional nativa de poda
 de partição. Para isolar o mérito do podador aprendido foi desenvolvida a
 **substituição direta** (do inglês *swap*): fixa-se o nível de velocidade,
@@ -468,11 +477,12 @@ mede quantas vezes a política contradiz a decisão verdadeira da busca de
 taxa-distorção.
 
 A medição de risco por contagem foi posteriormente substituída por um **crivo
-ponderado por *regret***, pois tratar como equivalentes uma poda errada em um
-bloco liso, cujo custo é praticamente nulo, e uma poda errada em um bloco
-texturizado, cujo custo é elevado, é indefensável. O crivo reporta a fração de
-sobrecarga de taxa-distorção, ou seja, a soma dos *regrets* normalizada pelo
-custo total, ao longo de uma fronteira de redução de custo, evitando comparar
+ponderado por perda de otimalidade**, pois tratar como equivalentes uma poda
+errada em um bloco liso, cujo custo é praticamente nulo, e uma poda errada em
+um bloco texturizado, cujo custo é elevado, é indefensável. O crivo reporta a
+fração de sobrecarga de taxa-distorção, ou seja, a soma das perdas de
+otimalidade normalizada pelo custo total, ao longo de uma fronteira de redução
+de custo, evitando comparar
 soluções em extremos opostos das suas faixas; ele foi aplicado a **792.840 nós
 de decisão** das seis sequências de validação e teste, com os modelos treinados
 nas dez restantes.
@@ -488,8 +498,9 @@ entre modelos pode se inverter** entre a simulação e o codificador real. A red
 de grafos da Seção 6.4 supera o perceptrone implantado por ampla margem no
 oráculo e, medida no codificador pelo mesmo gancho de reinjeção de
 probabilidades, perde para ele por cerca de **duas vezes** em taxa BD ao longo de
-toda a varredura de limiares; e o próprio crivo ponderado por *regret* diverge do
-codificador justamente neste único par com terreno de comparação limpo. Então,
+toda a varredura de limiares; e o próprio crivo ponderado por perda de
+otimalidade diverge do codificador justamente neste único par com terreno de
+comparação limpo. Então,
 uma avaliação fora do codificador **filtra perdedores, mas não coroa
 vencedores**, e as margens relativas obtidas fora dele são **indício e não prova**
 de ordenação. Duas consequências práticas decorrem disto e são respeitadas em
@@ -526,7 +537,7 @@ entre elas uma comparação de formulações, e não de orçamentos de treino.
 
 A metodologia de atribuição é o que permite que os números do próximo capítulo
 sejam lidos como afirmações sobre modelos, e não sobre políticas de poda. A
-ablação em três braços sob política casada isola a fonte do escore; a
+ablação em três braços sob política casada isola a fonte da pontuação; a
 substituição direta com neutralização explícita mede um podador isoladamente
 contra o podador nativo; a decomposição com neutralização de alavanca separa o
 ganho de podadores empilhados; e a simulação oráculo triaria candidatos a um

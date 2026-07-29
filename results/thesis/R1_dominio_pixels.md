@@ -7,7 +7,8 @@ estudante da era de pixels e a medição da cota superior por reprodução das
 decisões do modelo substituto convolucional, o defeito de luminância nula que
 obrigou à remedição de toda a cadeia exploratória inicial, a ablação de
 atribuição que produziu o primeiro resultado negativo forte, a hierarquia medida
-no crivo ponderado por *regret*, a demonstração de que o modelo substituto
+no crivo ponderado por perda de otimalidade (do inglês *regret*), a
+demonstração de que o modelo substituto
 convolucional não estabelece cota superior alguma, a auditoria de composição do
 vetor de atributos da solução implantada e, por fim, o quinto e último resultado
 negativo desta família.
@@ -46,7 +47,7 @@ foi este o resultado que o trabalho carregou antes da reformulação.
 A cota superior do domínio foi medida pelo experimento designado H8, que não
 treina modelo algum: as probabilidades do modelo substituto são gravadas por nó
 fora do codificador e reinjetadas nele por arquivo, de modo que a mesma chamada
-de poda aplique exatamente a mesma política com os escores do substituto. O
+de poda aplique exatamente a mesma política com as pontuações do substituto. O
 codificador é, então, convertido em instrumento de medição da cota superior do
 substituto, sem que uma única convolução seja executada em C. No ponto
 conservador, com os limiares 0,90, 0,90 e 0,20, a reprodução das decisões do
@@ -127,18 +128,18 @@ permanente do arcabouço, e não em correção pontual.
 
 A pergunta que a curva de operação da Seção 1.1 não responde é a da atribuição:
 o ganho medido decorre do aprendizado, ou decorre da política de poda, que
-produziria ganho semelhante com qualquer escore razoável? Para respondê-la foi
-executada uma **ablação de atribuição** que mantém a política rigorosamente
+produziria ganho semelhante com qualquer pontuação razoável? Para respondê-la
+foi executada uma **ablação de atribuição** que mantém a política rigorosamente
 idêntica — comprometimento com o `PARTITION_NONE` no mesmo ponto de inserção,
-mesma grade de limiares, mesmo codificador — e varia **exclusivamente a fonte do
-escore**, comparando o modelo estudante de pixels, um escore aleatório e um
-limiar de variância trivial da forma `exp(−var/1000)`.
+mesma grade de limiares, mesmo codificador — e varia **exclusivamente a fonte
+da pontuação**, comparando o modelo estudante de pixels, uma pontuação
+aleatória e um limiar de variância trivial da forma `exp(−var/1000)`.
 
 O resultado é negativo e consistente. A tempo casado, o limiar de variância
 apresenta taxa BD **menor que a do modelo estudante em todos os cinco níveis de
 aceleração medidos**: **0,171% contra 0,238%** a 1,05×, **0,408% contra 1,058%**
 a 1,15×, **0,764% contra 1,393%** a 1,30×, **1,119% contra 1,660%** a 1,45× e
-**1,357% contra 1,895%** a 1,55×. O escore aleatório, por sua vez, é largamente
+**1,357% contra 1,895%** a 1,55×. A pontuação aleatória, por sua vez, é largamente
 inferior aos dois, com **2,935%** a 1,30× e **4,745%** a 1,55×, o que estabelece
 que existe aprendizado no modelo estudante, mas não o suficiente para separá-lo
 de uma estatística de uma única grandeza.
@@ -172,21 +173,24 @@ barato.
 
 ---
 
-## 1.4 A hierarquia medida no crivo ponderado por *regret*
+## 1.4 A hierarquia medida no crivo de perda de otimalidade
 
 A contradição entre a ablação de atribuição e as medições posteriores foi
 arbitrada, na medida em que um crivo offline pode arbitrar, pelo crivo ponderado
-por *regret*, que substitui a contagem de nós comprometidos pelo custo de
-taxa-distorção real de cada poda. A grandeza reportada é a **fração de *regret***,
-definida como a razão percentual entre a soma do *regret* absoluto e o custo de
-taxa-distorção total, e ela é lida a **redução de custo casada**, de modo que
-todos os candidatos sejam comparados no mesmo ponto de operação. A avaliação
+por perda de otimalidade, que substitui a contagem de nós comprometidos pelo
+custo de taxa-distorção real de cada poda. A grandeza reportada é a **fração de
+perda de otimalidade**, definida como a razão percentual entre a soma da perda
+de otimalidade absoluta — ou seja, o sobrecusto de taxa-distorção pago por
+podar em vez de tomar a subárvore ótima — e o custo de taxa-distorção total, e
+ela é lida a **redução de custo casada**, de modo que todos os candidatos sejam
+comparados no mesmo ponto de operação. A avaliação
 cobre **seis sequências** do conjunto de validação e de teste reservado e
 **792.840 nós de decisão**, contra os modelos treinados nas dez sequências
 restantes.
 
 A hierarquia medida a 25% de redução de custo, na qual o menor valor é o melhor,
-é a seguinte: **variância 0,0573; ConvNeXt com alvo de *regret* 0,0219; ConvNeXt
+é a seguinte: **variância 0,0573; ConvNeXt com alvo de perda de otimalidade
+0,0219; ConvNeXt
 com entropia cruzada 0,0207; `pixels24` 0,0121; e H9a 0,0036**. Os ganhos
 marginais entre passos sucessivos são igualmente informativos: acrescentar os
 vinte e três descritores manuais restantes à variância isolada compra **4,7×**;
@@ -195,7 +199,7 @@ acrescentar 28,1 milhões de parâmetros convolucionais sobre pixels crus rende
 quantização e posição ao `pixels24` compra **3,4×**.
 
 A mesma ordenação se reproduz no ponto de 30% de redução de custo, com H9a em
-0,006, `pixels24` em 0,015, variância em 0,060 e escore aleatório em 0,612, o que
+0,006, `pixels24` em 0,015, variância em 0,060 e pontuação aleatória em 0,612, o que
 confirma que a hierarquia não é artefato de um ponto de operação isolado. Esta
 hierarquia é o enunciado que a tese sustenta a respeito do domínio de pixels, e
 ela é incompatível com qualquer leitura de que a informação disponível nos pixels
@@ -212,7 +216,8 @@ do codificador, e a sua função declarada é eliminar candidatos inferiores ant
 do custo caro de codificação, e não coroar vencedores.
 
 > **Procedência.** `docs/RESULTADOS_oraculo_regret.md` §2 a §4 (definição da
-> fração de *regret*, extensão do conjunto e fronteira por redução de custo);
+> fração de perda de otimalidade, extensão do conjunto e fronteira por redução
+> de custo);
 > `docs/RESULTADOS_convnext_regret.md` §2 e §5 (hierarquia a 25% e ganhos
 > marginais) e §3 (ressalva da amostragem da curva da variância);
 > `docs/INVENTARIO_solucoes.md` §2.2. Artefatos:
@@ -243,8 +248,9 @@ e não a respeito dos pixels.
 A segunda é a do retreino com o alvo correto. O modelo substituto original fora
 treinado com entropia cruzada sobre rótulos duros, ou seja, otimizando acurácia
 por nó, quando a própria tese já havia estabelecido que acurácia por nó é mau
-substituto do compromisso entre taxa BD e tempo. O retreino contra o *regret*,
-com peso `1 + α·regret_rel` e `α = 3`, mantendo arquitetura, largura de fusão e
+substituto do compromisso entre taxa BD e tempo. O retreino contra a perda de
+otimalidade, com peso `1 + α·regret_rel` e `α = 3`, mantendo arquitetura,
+largura de fusão e
 todo o caminho a jusante inalterados, **piorou o modelo em toda a faixa**, por
 fatores de 1,06× a 3,80×, com a piora **maior justamente na região conservadora**
 que um podador implantável ocuparia. A refutação é forte porque objetivo de
@@ -264,7 +270,7 @@ fraco em termos absolutos.
 Deste modo, o registro honesto do que a tese possui é o seguinte: uma **cota
 inferior** do domínio de pixels, dada pelo melhor desempenho observado, que é o
 do `pixels24`, e uma **cota superior genuína apenas no oráculo**, ou seja, na
-decisão de taxa-distorção ótima de *regret* nulo, que limita qualquer podador e
+decisão de taxa-distorção ótima de perda de otimalidade nula, que limita qualquer podador e
 não apenas os de pixels. A cota superior do domínio de pixels permanece **não
 medida**, e o modelo substituto convolucional permanece no arcabouço como
 instrumento de diagnóstico e como a tentativa documentada de estabelecê-la.
@@ -382,7 +388,7 @@ delimitado: o positivo em 32 amostras e o fato de que o nível de 64 amostras é
 
 Com este veredito, a família fecha com **cinco tentativas independentes
 negativas**: o modelo substituto convolucional com entropia cruzada, o modelo
-substituto convolucional com alvo de *regret*, a decisão estruturada por rede de
+substituto convolucional com alvo de perda de otimalidade, a decisão estruturada por rede de
 grafos do Approach B, o bloco D sobre o bloco-fonte e o bloco D' de
 predizibilidade intra a partir dos vizinhos.
 

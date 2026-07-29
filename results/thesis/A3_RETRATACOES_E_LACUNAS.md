@@ -70,13 +70,15 @@ a R24).
   `reg_frac` em `cost_red` 25%, cerca de **1,7×**. Um modelo batido por outro de acesso
   estritamente menor à informação não delimita cota superior alguma, pois o resultado
   enuncia algo sobre o treino e não sobre os pixels. Some-se que treiná-lo com o alvo de
-  *regret* **piorou-o em toda a faixa (1,06× a 3,80×)** e que dobrar a largura de fusão
+  perda de otimalidade (do inglês *regret*) **piorou-o em toda a faixa (1,06× a 3,80×)** e
+  que dobrar a largura de fusão
   altera a perda de validação em **0,16%**, ou seja, capacidade não é a restrição.
 - **Enunciado vigente.** O ConvNeXt permanece como **instrumento de diagnóstico** e como
   a tentativa documentada de estabelecer a cota superior, não como a cota. A tese tem uma
   **cota inferior** do domínio de pixels — o `pixels24` — e uma cota superior genuína
-  apenas no **oráculo**, a decisão RD-ótima de *regret* zero, que limita qualquer podador
-  e não só os de pixels. A cota superior do domínio de pixels permanece **não medida**.
+  apenas no **oráculo**, a decisão RD-ótima de perda de otimalidade zero — ou seja, sem
+  sobrecusto de taxa-distorção da poda —, que limita qualquer podador e não só os de
+  pixels. A cota superior do domínio de pixels permanece **não medida**.
 - **Data e documento.** Corrigido em **2026-07-26**; `docs/ANDAMENTO_tese.md` §1.3
   (reescrito nessa data), `docs/SINTESE_resultados_metodologia.md` §3 (refino final) e
   `docs/RESULTADOS_convnext_regret.md` §5.
@@ -93,7 +95,8 @@ a R24).
   estava correta.
 - **Enunciado vigente.** O modelo substituto original está **bem selecionado**; ele é
   apenas **fraco em absoluto** (macro-F1 **0,203**) e foi treinado contra o objetivo
-  errado. O retreino com o alvo de *regret* justificava-se por esse motivo único, e o
+  errado. O retreino com o alvo de perda de otimalidade justificava-se por esse motivo
+  único, e o
   motivo caiu junto com o resultado.
 - **Data e documento.** Corrigido em **2026-07-26**; `docs/ANDAMENTO_tese.md` §0.4 (nota
   "Correção (2026-07-26)", que retifica o commit `0122b53`) e
@@ -350,8 +353,8 @@ a R24).
   seu critério de decisão **não passa**: a área de comprometimento cai em 16 px, o nível
   com 15 855 nós e 8,5× mais dados, onde a entropia cruzada piora 0,1% e a área sob a
   curva cai 0,001. Deste modo, o domínio de pixels fecha por uma via a mais, com **cinco**
-  tentativas independentes negativas — ConvNeXt-CE, ConvNeXt-*regret*, GNN do Approach B,
-  bloco D e bloco D'.
+  tentativas independentes negativas — ConvNeXt-CE, ConvNeXt-perda de otimalidade, GNN do
+  Approach B, bloco D e bloco D'.
 - **Data e documento.** Registrado em **2026-07-26**;
   `docs/RESULTADOS_auditoria_dominio_pixels.md` §3, §6, §6.1, §6.2 e §7.
 
@@ -368,8 +371,8 @@ a R24).
   experimental** — o custo de integrar em C e rodar horas de codificação contra o valor
   esperado da informação, dado que o sinal offline era fraco. É escolha de alocação de
   esforço, defensável como tal, e **não** uma implicação de que o codificador confirmaria
-  a rejeição. O motivo substantivo de não priorizar a regressão de *regret* é a
-  zero-inflação, independente do argumento do oráculo. A decisão não muda; muda a razão.
+  a rejeição. O motivo substantivo de não priorizar a regressão da perda de otimalidade é
+  a zero-inflação, independente do argumento do oráculo. A decisão não muda; muda a razão.
 - **Data e documento.** Corrigido em **2026-07-19**; `docs/RESULTADOS_solucao4.md` §7
   (bloco "Correção (2026-07-19) — a justificativa acima tem dois defeitos", identificado
   como **correção D2**), com a consequência metodológica registrada em
@@ -381,7 +384,7 @@ a R24).
 - **Enunciado antigo (literal).** a derrota real do GNN atribuída a «poucas podas erradas
   **caras em RD**».
 - **Por que caiu.** A medição do A5 **não sustenta** essa causa: as podas NONE do GNN são
-  baratas por contagem (`split_lost` **0,25%**) **e** por *regret* ponderado
+  baratas por contagem (`split_lost` **0,25%**) **e** por perda de otimalidade ponderada
   (`reg_frac` ≈ 0, o menor de todos). Logo, a falha do GNN **não está na ação de
   encerramento em NONE**.
 - **Enunciado vigente.** A causa do fenômeno fica como **pergunta aberta** — vazamento de
@@ -584,7 +587,7 @@ carregar.
   1,15× e **1,85×** a 1,27×); atribuição limpa contra o aleatório em **2 de 2**, com
   margens de **7× a 158×**; taxa BD negativa em **2 de 2** (−0,015% e −0,073%); e o
   fechamento da explicação alternativa da Fase 5, pois a não-sobreposição é **propriedade
-  do escore**, e não do grid de τ.
+  da pontuação**, e não do grid de τ.
 - **Capítulo afetado.** Metodologia §3 (`M3_protocolo_avaliacao.md`, critérios em
   cascata), Resultados §2 (`R2_h9a.md`) e Resultados §7
   (`R7_ameacas_e_escopo.md`).
@@ -736,7 +739,7 @@ carregar.
   teste, o que viola o congelamento anti-seleção *a posteriori*.
 - **Por que importa.** A forma estrita do Gate 5 **não** foi atingida no teste, e o texto
   deve dizê-lo. O que a sustenta é a atribuição **a política casada**, que dispensa
-  sobreposição: sob a mesma política, o escore do modelo alcança taxa BD mínima de 0,008%
+  sobreposição: sob a mesma política, a pontuação do modelo alcança taxa BD mínima de 0,008%
   na RiverBank contra 0,75% da variância — razão de **94×**, com **11×** na Jockey e
   **44×** na RaceNight.
 - **Capítulo afetado.** Metodologia §3 (`M3_protocolo_avaliacao.md`), Resultados §2
@@ -801,7 +804,8 @@ derrubada pelo próprio projeto.
    que ele é **bem selecionado e fraco em absoluto**, com macro-F1 de 0,203, e treinado
    contra o objetivo errado. (R3)
 7. Escrever sempre **cinco** tentativas independentes negativas no domínio de pixels —
-   ConvNeXt-CE, ConvNeXt-*regret*, GNN do Approach B, bloco D e bloco D' —, nunca quatro.
+   ConvNeXt-CE, ConvNeXt-perda de otimalidade, GNN do Approach B, bloco D e bloco D' —,
+   nunca quatro.
    (R15)
 8. Declarar explicitamente que os resultados H8 e derivados **ignoram o custo de
    inferência**, pois nenhuma inferência convolucional foi executada em C. (L5)

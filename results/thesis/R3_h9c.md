@@ -2,11 +2,11 @@
 
 Esta seção apresenta a terceira solução investigada nesta tese — o podador H9c, um
 refinamento que age **depois** da avaliação de `PARTITION_NONE` e que utiliza, como
-informação de entrada, o custo de taxa-distorção real dessa avaliação — e relata,
+informação de entrada, o custo de taxa-distorção real desta avaliação — e relata,
 com o detalhamento que o caso exige, o episódio de autocorreção experimental que a
 caracterização desta solução impôs. São apresentados, nesta ordem, o projeto do
 refinamento e o seu ponto de inserção no fluxo de controle do codificador, o
-critério de decisão offline atingido com folga e o contraste entre esse desempenho
+critério de decisão offline atingido com folga e o contraste entre este desempenho
 e o que o codificador viria a medir, o fator de confusão que contaminou as
 primeiras medições em codificação real e a sua correção quantificada, o resultado
 limpo da substituição direta nas oito sequências das condições comuns de teste
@@ -98,7 +98,7 @@ consolidado internamente foi **retratado** depois que se identificou um fator de
 confusão nas medições que o sustentavam. O relato é feito por inteiro, com a
 quantificação do efeito e a lista explícita das afirmações retiradas, pois a
 auditabilidade da cadeia de decisões é o fio condutor metodológico desta tese e um
-episódio de autocorreção medido é evidência dessa auditabilidade, não exceção a
+episódio de autocorreção medido é evidência desta auditabilidade, não exceção a
 ela.
 
 **A causa.** A compilação de desempenho do codificador executa o podador H9a
@@ -148,7 +148,7 @@ constante que se pudesse descontar por um fator único**: a contribuição real 
 H9c varia de desprezível a moderada conforme o conteúdo. Cabe registrar que os
 deltas de tempo aqui envolvidos, de 5 a 13 pontos percentuais, estão muito acima
 do piso de ruído posteriormente medido por repetição, cuja resolução é de cerca de
-0,46 ponto percentual, e a conclusão não depende dessa incerteza.
+0,46 ponto percentual, e a conclusão não depende desta incerteza.
 
 **As afirmações retiradas.** Por conta do fator de confusão, ficam retiradas e não
 reaparecem em nenhum ponto desta tese: (i) a afirmação de que **o H9c seria de duas
@@ -164,7 +164,7 @@ taxa BD a 19,43% de redução de tempo contra 0,194% a 21,58% do H9a, comparaç�
 que o H9a dominava nos dois eixos. Mas as duas linhas daquela tabela mediam
 **objetos diferentes**, uma vez que a linha do H9c continha o H9a por baixo, e a
 comparação não era válida. A decisão de parada tomada naquele momento era correta
-**com a informação então disponível**, e é sob essa qualificação que ela consta do
+**com a informação então disponível**, e é sob esta qualificação que ela consta do
 registro histórico do projeto.
 
 Uma última observação de ordem técnica cabe aqui. Nas duas sequências em que o H9c
@@ -172,7 +172,7 @@ isolado quase não poda, a taxa BD medida fica **levemente negativa** — −0,0
 PierSeaSide e −0,024% na TimeLapse. São valores minúsculos, mas exatos, pois
 contagem de bytes e PSNR são determinísticos, e a explicação é estrutural: podar
 um candidato altera o contexto de vizinhança das decisões seguintes, e a busca de
-partição do AV1 não é monotônica nesse sentido.
+partição do AV1 não é monotônica neste sentido.
 
 > **Procedência.** `docs/ANDAMENTO_tese.md` §7 (retratação no topo) e §8.1
 > (identificação e quantificação do fator de confusão na Neon1224; lista das
@@ -231,7 +231,7 @@ todos os regimes, com diferenças de +0,47 a +1,63 ponto percentual, p ≤ 0,01 
 nenhuma sequência favorável, o que situa o H9c como o único podador desta tese
 competitivo neste cenário.
 
-A média sobre a grade, contudo tomada como resumo único, anula um efeito real e
+Mas a média sobre a grade, tomada como resumo único, anula um efeito real e
 de sinal oposto entre as duas alavancas, e este efeito é uma contribuição própria.
 Decompondo por regime de quantização, no regime de alta qualidade — níveis 20 e 32
 — o H9c a τ=0,95 custa **menos da metade** da taxa BD da nativa nos dois *presets*
