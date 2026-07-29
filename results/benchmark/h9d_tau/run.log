@@ -1,0 +1,69 @@
+  P_ref            Jockey     cq20  211.3s
+  P_ref            Jockey     cq32   89.1s
+  P_ref            Jockey     cq43   74.1s
+  P_ref            Jockey     cq55   58.3s
+  P_ref            RaceNight  cq20  258.1s
+  P_ref            RaceNight  cq32   99.8s
+  P_ref            RaceNight  cq43   78.0s
+  P_ref            RaceNight  cq55   61.5s
+  P_ref            RiverBank  cq20  192.6s
+  P_ref            RiverBank  cq32  145.3s
+  P_ref            RiverBank  cq43  131.8s
+  P_ref            RiverBank  cq55   85.2s
+  A1_none80        Jockey     cq20  212.7s
+  A1_none80        Jockey     cq32   89.2s
+  A1_none80        Jockey     cq43   73.4s
+  A1_none80        Jockey     cq55   58.6s
+  A1_none80        RaceNight  cq20  263.4s
+  A1_none80        RaceNight  cq32   99.9s
+  A1_none80        RaceNight  cq43   77.5s
+  A1_none80        RaceNight  cq55   62.2s
+  A1_none80        RiverBank  cq20  198.4s
+  A1_none80        RiverBank  cq32  147.5s
+  A1_none80        RiverBank  cq43  133.1s
+  A1_none80        RiverBank  cq55   87.3s
+  A2_none70        Jockey     cq20  153.3s
+  A2_none70        Jockey     cq32   79.7s
+  A2_none70        Jockey     cq43   67.5s
+  A2_none70        Jockey     cq55   54.5s
+  A2_none70        RaceNight  cq20  228.1s
+  A2_none70        RaceNight  cq32   85.9s
+  A2_none70        RaceNight  cq43   72.5s
+  A2_none70        RaceNight  cq55   59.8s
+  A2_none70        RiverBank  cq20  179.8s
+  A2_none70        RiverBank  cq32  133.9s
+  A2_none70        RiverBank  cq43  124.2s
+  A2_none70        RiverBank  cq55   81.7s
+  A3_none60_rest40 Jockey     cq20  121.8s
+  A3_none60_rest40 Jockey     cq32   70.1s
+  A3_none60_rest40 Jockey     cq43   62.3s
+  A3_none60_rest40 Jockey     cq55   51.9s
+  A3_none60_rest40 RaceNight  cq20  178.3s
+  A3_none60_rest40 RaceNight  cq32   74.0s
+  A3_none60_rest40 RaceNight  cq43   68.2s
+  A3_none60_rest40 RaceNight  cq55   57.9s
+  A3_none60_rest40 RiverBank  cq20  170.7s
+  A3_none60_rest40 RiverBank  cq32  116.1s
+  A3_none60_rest40 RiverBank  cq43  113.3s
+  A3_none60_rest40 RiverBank  cq55   76.0s
+
+=== BD-rate x speedup vs MESMO anchor nativo (5fr) ===
+seq         config            BD-rate%   speedup
+Jockey      P_ref (tau)         +1.412    1.471x
+Jockey      A1_none80 (tau)     +1.416    1.467x
+Jockey      A2_none70 (tau)     +2.047    1.793x
+Jockey      A3_none60_rest40 (tau)    +2.466    2.080x
+Jockey      H9a+extoff          +2.193    2.000x  <-- empilhado
+--------------------------------------------------
+RaceNight   P_ref (tau)         +0.322    1.527x
+RaceNight   A1_none80 (tau)     +0.317    1.510x
+RaceNight   A2_none70 (tau)     +1.109    1.702x
+RaceNight   A3_none60_rest40 (tau)    +1.959    2.007x
+RaceNight   H9a+extoff          +1.208    1.856x  <-- empilhado
+--------------------------------------------------
+RiverBank   P_ref (tau)         +0.160    1.322x
+RiverBank   A1_none80 (tau)     +0.165    1.295x
+RiverBank   A2_none70 (tau)     +0.275    1.411x
+RiverBank   A3_none60_rest40 (tau)    +0.453    1.540x
+RiverBank   H9a+extoff          +0.913    1.661x  <-- empilhado
+--------------------------------------------------

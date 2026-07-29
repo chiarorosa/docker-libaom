@@ -1,0 +1,17 @@
+# leitura 1: disponibilidade
+dim,nodes,avail,avail_pct
+64,3000,0,0.0
+32,10598,1869,17.64
+16,34524,15855,45.92
+
+"# leitura 2: CE/AUC por nivel, so nos com vizinho"
+dim,nodes,ce_H9a,auc_H9a,ce_H9b,auc_H9b,ce_H9a+D',auc_H9a+D'
+64,0,nan,nan,nan,nan,nan,nan
+32,1869,0.76574,0.85139,0.76108,0.85428,0.74217,0.86808
+16,15855,0.51487,0.84714,0.51316,0.84814,0.51436,0.84646
+
+# leitura 3: cost_red em risco casado
+subset,cost_red_SL0.5,cost_red_SL1.0,cost_red_SL2.0,cost_red_SL3.0
+H9a,7.362,7.362,15.366,21.485
+H9b,7.166,7.166,14.825,47.797
+H9a+D',6.828,6.828,14.738,21.298

@@ -1,0 +1,126 @@
+  tau0.55 Jockey     cq20  183.0s
+  tau0.55 Jockey     cq32   73.1s
+  tau0.55 Jockey     cq43   64.1s
+  tau0.55 Jockey     cq55   55.4s
+  tau0.55 RaceNight  cq20  183.8s
+  tau0.55 RaceNight  cq32   82.5s
+  tau0.55 RaceNight  cq43   71.1s
+  tau0.55 RaceNight  cq55   59.7s
+  tau0.55 RiverBank  cq20  185.1s
+  tau0.55 RiverBank  cq32  131.5s
+  tau0.55 RiverBank  cq43  114.6s
+  tau0.55 RiverBank  cq55   77.7s
+  tau0.62 Jockey     cq20  187.9s
+  tau0.62 Jockey     cq32   77.8s
+  tau0.62 Jockey     cq43   67.1s
+  tau0.62 Jockey     cq55   56.0s
+  tau0.62 RaceNight  cq20  200.1s
+  tau0.62 RaceNight  cq32   87.9s
+  tau0.62 RaceNight  cq43   73.8s
+  tau0.62 RaceNight  cq55   60.7s
+  tau0.62 RiverBank  cq20  189.4s
+  tau0.62 RiverBank  cq32  139.8s
+  tau0.62 RiverBank  cq43  120.8s
+  tau0.62 RiverBank  cq55   80.6s
+  tau0.68 Jockey     cq20  191.8s
+  tau0.68 Jockey     cq32   83.2s
+  tau0.68 Jockey     cq43   70.2s
+  tau0.68 Jockey     cq55   56.9s
+  tau0.68 RaceNight  cq20  232.5s
+  tau0.68 RaceNight  cq32   91.5s
+  tau0.68 RaceNight  cq43   74.6s
+  tau0.68 RaceNight  cq55   61.5s
+  tau0.68 RiverBank  cq20  193.1s
+  tau0.68 RiverBank  cq32  144.7s
+  tau0.68 RiverBank  cq43  127.5s
+  tau0.68 RiverBank  cq55   82.7s
+  tau0.74 Jockey     cq20  205.9s
+  tau0.74 Jockey     cq32   86.3s
+  tau0.74 Jockey     cq43   73.1s
+  tau0.74 Jockey     cq55   57.7s
+  tau0.74 RaceNight  cq20  253.6s
+  tau0.74 RaceNight  cq32   97.4s
+  tau0.74 RaceNight  cq43   77.3s
+  tau0.74 RaceNight  cq55   61.2s
+  tau0.74 RiverBank  cq20  194.0s
+  tau0.74 RiverBank  cq32  147.6s
+  tau0.74 RiverBank  cq43  130.9s
+  tau0.74 RiverBank  cq55   84.7s
+  tau0.80 Jockey     cq20  212.8s
+  tau0.80 Jockey     cq32   89.5s
+  tau0.80 Jockey     cq43   73.9s
+  tau0.80 Jockey     cq55   58.9s
+  tau0.80 RaceNight  cq20  259.9s
+  tau0.80 RaceNight  cq32   98.9s
+  tau0.80 RaceNight  cq43   78.4s
+  tau0.80 RaceNight  cq55   62.4s
+  tau0.80 RiverBank  cq20  196.1s
+  tau0.80 RiverBank  cq32  147.0s
+  tau0.80 RiverBank  cq43  133.9s
+  tau0.80 RiverBank  cq55   85.2s
+  tau0.86 Jockey     cq20  217.7s
+  tau0.86 Jockey     cq32   91.2s
+  tau0.86 Jockey     cq43   75.4s
+  tau0.86 Jockey     cq55   59.4s
+  tau0.86 RaceNight  cq20  264.0s
+  tau0.86 RaceNight  cq32  101.7s
+  tau0.86 RaceNight  cq43   79.3s
+  tau0.86 RaceNight  cq55   63.1s
+  tau0.86 RiverBank  cq20  197.8s
+  tau0.86 RiverBank  cq32  149.5s
+  tau0.86 RiverBank  cq43  135.3s
+  tau0.86 RiverBank  cq55   86.2s
+  tau0.92 Jockey     cq20  222.5s
+  tau0.92 Jockey     cq32   95.7s
+  tau0.92 Jockey     cq43   77.2s
+  tau0.92 Jockey     cq55   60.5s
+  tau0.92 RaceNight  cq20  267.3s
+  tau0.92 RaceNight  cq32  105.8s
+  tau0.92 RaceNight  cq43   80.3s
+  tau0.92 RaceNight  cq55   64.2s
+  tau0.92 RiverBank  cq20  198.6s
+  tau0.92 RiverBank  cq32  152.4s
+  tau0.92 RiverBank  cq43  134.7s
+  tau0.92 RiverBank  cq55   88.0s
+  tau0.96 Jockey     cq20  227.0s
+  tau0.96 Jockey     cq32   96.2s
+  tau0.96 Jockey     cq43   79.7s
+  tau0.96 Jockey     cq55   60.6s
+  tau0.96 RaceNight  cq20  262.4s
+  tau0.96 RaceNight  cq32  109.6s
+  tau0.96 RaceNight  cq43   82.8s
+  tau0.96 RaceNight  cq55   65.3s
+  tau0.96 RiverBank  cq20  199.5s
+  tau0.96 RiverBank  cq32  151.0s
+  tau0.96 RiverBank  cq43  136.2s
+  tau0.96 RiverBank  cq55   89.5s
+
+=== C5: fronteira BD-rate x speedup por tau_none global (vs nativo, 5fr) ===
+seq         tau     BD-rate%   speedup
+Jockey      0.55      +1.723    1.694x
+Jockey      0.62      +1.587    1.637x
+Jockey      0.68      +1.519    1.583x
+Jockey      0.74      +1.424    1.505x
+Jockey      0.80      +1.416    1.463x
+Jockey      0.86      +1.435    1.435x
+Jockey      0.92      +1.432    1.396x
+Jockey      0.96      +1.420    1.374x
+----------------------------------------------
+RaceNight   0.55      +1.665    1.912x
+RaceNight   0.62      +1.386    1.797x
+RaceNight   0.68      +0.891    1.651x
+RaceNight   0.74      +0.532    1.552x
+RaceNight   0.80      +0.317    1.520x
+RaceNight   0.86      +0.277    1.494x
+RaceNight   0.92      +0.209    1.467x
+RaceNight   0.96      +0.181    1.460x
+----------------------------------------------
+RiverBank   0.55      +0.196    1.441x
+RiverBank   0.62      +0.216    1.382x
+RiverBank   0.68      +0.165    1.338x
+RiverBank   0.74      +0.204    1.316x
+RiverBank   0.80      +0.165    1.305x
+RiverBank   0.86      +0.186    1.289x
+RiverBank   0.92      +0.168    1.279x
+RiverBank   0.96      +0.188    1.273x
+----------------------------------------------

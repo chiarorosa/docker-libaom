@@ -1,0 +1,71 @@
+  h9d_tau0.05 Jockey     cq20  211.2s
+  h9d_tau0.05 Jockey     cq32   89.5s
+  h9d_tau0.05 Jockey     cq43   72.8s
+  h9d_tau0.05 Jockey     cq55   57.6s
+  h9d_tau0.05 RaceNight  cq20  242.2s
+  h9d_tau0.05 RaceNight  cq32   99.4s
+  h9d_tau0.05 RaceNight  cq43   77.6s
+  h9d_tau0.05 RaceNight  cq55   61.5s
+  h9d_tau0.05 RiverBank  cq20  198.3s
+  h9d_tau0.05 RiverBank  cq32  147.0s
+  h9d_tau0.05 RiverBank  cq43  133.8s
+  h9d_tau0.05 RiverBank  cq55   84.5s
+  h9d_tau0.10 Jockey     cq20  212.7s
+  h9d_tau0.10 Jockey     cq32   87.6s
+  h9d_tau0.10 Jockey     cq43   71.6s
+  h9d_tau0.10 Jockey     cq55   56.9s
+  h9d_tau0.10 RaceNight  cq20  235.4s
+  h9d_tau0.10 RaceNight  cq32   97.8s
+  h9d_tau0.10 RaceNight  cq43   76.8s
+  h9d_tau0.10 RaceNight  cq55   61.5s
+  h9d_tau0.10 RiverBank  cq20  195.2s
+  h9d_tau0.10 RiverBank  cq32  144.9s
+  h9d_tau0.10 RiverBank  cq43  130.7s
+  h9d_tau0.10 RiverBank  cq55   83.5s
+  h9d_tau0.20 Jockey     cq20  189.9s
+  h9d_tau0.20 Jockey     cq32   82.8s
+  h9d_tau0.20 Jockey     cq43   67.4s
+  h9d_tau0.20 Jockey     cq55   55.1s
+  h9d_tau0.20 RaceNight  cq20  224.3s
+  h9d_tau0.20 RaceNight  cq32   91.9s
+  h9d_tau0.20 RaceNight  cq43   74.1s
+  h9d_tau0.20 RaceNight  cq55   60.3s
+  h9d_tau0.20 RiverBank  cq20  189.3s
+  h9d_tau0.20 RiverBank  cq32  135.6s
+  h9d_tau0.20 RiverBank  cq43  125.3s
+  h9d_tau0.20 RiverBank  cq55   82.2s
+  h9d_tau0.30 Jockey     cq20  160.9s
+  h9d_tau0.30 Jockey     cq32   77.0s
+  h9d_tau0.30 Jockey     cq43   65.6s
+  h9d_tau0.30 Jockey     cq55   55.7s
+  h9d_tau0.30 RaceNight  cq20  217.1s
+  h9d_tau0.30 RaceNight  cq32   87.7s
+  h9d_tau0.30 RaceNight  cq43   70.8s
+  h9d_tau0.30 RaceNight  cq55   58.3s
+  h9d_tau0.30 RiverBank  cq20  183.6s
+  h9d_tau0.30 RiverBank  cq32  127.2s
+  h9d_tau0.30 RiverBank  cq43  116.7s
+  h9d_tau0.30 RiverBank  cq55   78.6s
+  h9d_tau0.45 Jockey     cq20  149.6s
+  h9d_tau0.45 Jockey     cq32   73.3s
+  h9d_tau0.45 Jockey     cq43   63.6s
+  h9d_tau0.45 Jockey     cq55   53.3s
+  h9d_tau0.45 RaceNight  cq20  210.9s
+  h9d_tau0.45 RaceNight  cq32   86.8s
+  h9d_tau0.45 RaceNight  cq43   68.1s
+  h9d_tau0.45 RaceNight  cq55   55.9s
+  h9d_tau0.45 RiverBank  cq20  160.5s
+  h9d_tau0.45 RiverBank  cq32  122.9s
+  h9d_tau0.45 RiverBank  cq43  112.7s
+  h9d_tau0.45 RiverBank  cq55   76.7s
+
+=== Etapa 3 F1: H9a+H9d seletivo vs curva de tau do H9a (5fr) ===
+
+--- Jockey ---  config                 BD-rate%  speedup
+Traceback (most recent call last):
+  File "/workspace/src/scripts/benchmark/h9d_selective_sweep.py", line 105, in <module>
+    main()
+  File "/workspace/src/scripts/benchmark/h9d_selective_sweep.py", line 88, in main
+    bd, sp = bd_sp(nat, h9a_base[seq])
+                        ~~~~~~~~^^^^^
+KeyError: 'Jockey'

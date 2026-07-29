@@ -1,0 +1,78 @@
+  P_ref   Jockey     cq20  211.6s
+  P_ref   Jockey     cq32   89.6s
+  P_ref   Jockey     cq43   74.3s
+  P_ref   Jockey     cq55   57.6s
+  P_ref   RaceNight  cq20  255.9s
+  P_ref   RaceNight  cq32  100.0s
+  P_ref   RaceNight  cq43   78.2s
+  P_ref   RaceNight  cq55   61.5s
+  P_ref   RiverBank  cq20  195.8s
+  P_ref   RiverBank  cq32  150.6s
+  P_ref   RiverBank  cq43  134.4s
+  P_ref   RiverBank  cq55   86.7s
+  off16   Jockey     cq20  254.6s
+  off16   Jockey     cq32  101.7s
+  off16   Jockey     cq43   78.3s
+  off16   Jockey     cq55   60.0s
+  off16   RaceNight  cq20  260.7s
+  off16   RaceNight  cq32  111.4s
+  off16   RaceNight  cq43   81.1s
+  off16   RaceNight  cq55   63.0s
+  off16   RiverBank  cq20  199.0s
+  off16   RiverBank  cq32  152.5s
+  off16   RiverBank  cq43  138.5s
+  off16   RiverBank  cq55   89.1s
+  off32   Jockey     cq20  243.6s
+  off32   Jockey     cq32  108.9s
+  off32   Jockey     cq43   86.1s
+  off32   Jockey     cq55   60.3s
+  off32   RaceNight  cq20  376.5s
+  off32   RaceNight  cq32  127.7s
+  off32   RaceNight  cq43   96.1s
+  off32   RaceNight  cq55   65.3s
+  off32   RiverBank  cq20  265.6s
+  off32   RiverBank  cq32  164.5s
+  off32   RiverBank  cq43  141.7s
+  off32   RiverBank  cq55   89.7s
+  off64   Jockey     cq20  253.8s
+  off64   Jockey     cq32  107.2s
+  off64   Jockey     cq43   86.8s
+  off64   Jockey     cq55   62.6s
+  off64   RaceNight  cq20  276.9s
+  off64   RaceNight  cq32  118.7s
+  off64   RaceNight  cq43   88.4s
+  off64   RaceNight  cq55   68.7s
+  off64   RiverBank  cq20  210.9s
+  off64   RiverBank  cq32  153.5s
+  off64   RiverBank  cq43  144.9s
+  off64   RiverBank  cq55   99.2s
+
+=== C2: contribuicao por nivel (vs nativo, 5fr) ===
+seq         variant   BD-rate%   speedup
+Jockey      P_ref       +1.412    1.469x  <-- todos
+Jockey      off16       +1.324    1.287x
+Jockey      off32       +1.294    1.276x
+Jockey      off64       +0.111    1.247x
+   contribuicao marginal de cada nivel (P_ref - offL):
+     nivel 16: speedup +0.183x  BD +0.089 pp
+     nivel 32: speedup +0.194x  BD +0.119 pp
+     nivel 64: speedup +0.223x  BD +1.302 pp
+----------------------------------------------
+RaceNight   P_ref       +0.322    1.532x  <-- todos
+RaceNight   off16       +0.301    1.471x
+RaceNight   off32       +0.331    1.141x
+RaceNight   off64       -0.195    1.374x
+   contribuicao marginal de cada nivel (P_ref - offL):
+     nivel 16: speedup +0.061x  BD +0.021 pp
+     nivel 32: speedup +0.391x  BD -0.009 pp
+     nivel 64: speedup +0.158x  BD +0.517 pp
+----------------------------------------------
+RiverBank   P_ref       +0.160    1.292x  <-- todos
+RiverBank   off16       +0.142    1.266x
+RiverBank   off32       +0.097    1.109x
+RiverBank   off64       +0.055    1.205x
+   contribuicao marginal de cada nivel (P_ref - offL):
+     nivel 16: speedup +0.026x  BD +0.018 pp
+     nivel 32: speedup +0.184x  BD +0.064 pp
+     nivel 64: speedup +0.087x  BD +0.105 pp
+----------------------------------------------

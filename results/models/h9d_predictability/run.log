@@ -1,0 +1,141 @@
+device: cuda
+sklearn disponivel: False
+descobertos 64 pkl(s) em /workspace/results/dataset_h9
+treino: 40 pkl(s) (['Beauty', 'Bosphorus', 'CityAlley', 'FlowerFocus', 'FlowerKids', 'ReadySetGo', 'ShakeNDry', 'SunBath', 'Twilight', 'YachtRide']); held-out: 24 pkl(s) (['HoneyBee', 'FlowerPan', 'Lips', 'Jockey', 'RaceNight', 'RiverBank'])
+
+=== coleta (treino) ===
+[train] Beauty_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (3000 total)
+[train] Beauty_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (6000 total)
+[train] Beauty_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (9000 total)
+[train] Beauty_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (12000 total)
+[train] Bosphorus_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (15000 total)
+[train] Bosphorus_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (18000 total)
+[train] Bosphorus_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (21000 total)
+[train] Bosphorus_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (24000 total)
+[train] CityAlley_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (27000 total)
+[train] CityAlley_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (30000 total)
+[train] CityAlley_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (33000 total)
+[train] CityAlley_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (36000 total)
+[train] FlowerFocus_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (39000 total)
+[train] FlowerFocus_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (42000 total)
+[train] FlowerFocus_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (45000 total)
+[train] FlowerFocus_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (48000 total)
+[train] FlowerKids_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (51000 total)
+[train] FlowerKids_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (54000 total)
+[train] FlowerKids_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (57000 total)
+[train] FlowerKids_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (60000 total)
+[train] ReadySetGo_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (63000 total)
+[train] ReadySetGo_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (66000 total)
+[train] ReadySetGo_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (69000 total)
+[train] ReadySetGo_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (72000 total)
+[train] ShakeNDry_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (75000 total)
+[train] ShakeNDry_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (78000 total)
+[train] ShakeNDry_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (81000 total)
+[train] ShakeNDry_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (84000 total)
+[train] SunBath_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (87000 total)
+[train] SunBath_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (90000 total)
+[train] SunBath_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (93000 total)
+[train] SunBath_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (96000 total)
+[train] Twilight_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (99000 total)
+[train] Twilight_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (102000 total)
+[train] Twilight_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (105000 total)
+[train] Twilight_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (108000 total)
+[train] YachtRide_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +3000 sb (111000 total)
+[train] YachtRide_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +3000 sb (114000 total)
+[train] YachtRide_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +3000 sb (117000 total)
+[train] YachtRide_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +3000 sb (120000 total)
+total superblocos (treino): 120000
+
+=== coleta (held-out) ===
+[eval] FlowerPan_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +2000 sb (2000 total)
+[eval] FlowerPan_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +2000 sb (4000 total)
+[eval] FlowerPan_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +2000 sb (6000 total)
+[eval] FlowerPan_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +2000 sb (8000 total)
+[eval] HoneyBee_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +2000 sb (10000 total)
+[eval] HoneyBee_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +2000 sb (12000 total)
+[eval] HoneyBee_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +2000 sb (14000 total)
+[eval] HoneyBee_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +2000 sb (16000 total)
+[eval] Jockey_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +2000 sb (18000 total)
+[eval] Jockey_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +2000 sb (20000 total)
+[eval] Jockey_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +2000 sb (22000 total)
+[eval] Jockey_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +2000 sb (24000 total)
+[eval] Lips_3840x2160_120fps_420_8bit_YUV_RAW_cq20.pkl: +2000 sb (26000 total)
+[eval] Lips_3840x2160_120fps_420_8bit_YUV_RAW_cq32.pkl: +2000 sb (28000 total)
+[eval] Lips_3840x2160_120fps_420_8bit_YUV_RAW_cq43.pkl: +2000 sb (30000 total)
+[eval] Lips_3840x2160_120fps_420_8bit_YUV_RAW_cq55.pkl: +2000 sb (32000 total)
+[eval] RaceNight_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +2000 sb (34000 total)
+[eval] RaceNight_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +2000 sb (36000 total)
+[eval] RaceNight_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +2000 sb (38000 total)
+[eval] RaceNight_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +2000 sb (40000 total)
+[eval] RiverBank_3840x2160_50fps_420_8bit_YUV_RAW_cq20.pkl: +2000 sb (42000 total)
+[eval] RiverBank_3840x2160_50fps_420_8bit_YUV_RAW_cq32.pkl: +2000 sb (44000 total)
+[eval] RiverBank_3840x2160_50fps_420_8bit_YUV_RAW_cq43.pkl: +2000 sb (46000 total)
+[eval] RiverBank_3840x2160_50fps_420_8bit_YUV_RAW_cq55.pkl: +2000 sb (48000 total)
+total superblocos (held-out): 48000
+
+=== treino dim 64px (n=120000) ===
+  counts(NAO_EXT/EXT)=[115461, 4539]
+    epoch 10/30 loss=0.1314
+    epoch 20/30 loss=0.1256
+    epoch 30/30 loss=0.1228
+
+--- nivel 64px (held-out) ---
+  n=48000 base_rate(EXT)=3.0% roc_auc=0.8636 pr_auc=0.1548
+    [fixando winners_lost -> search_avoided]
+      winners_lost~  5%: theta=0.0067 winners_lost=  5.0% search_avoided= 50.2%
+      winners_lost~ 10%: theta=0.0137 winners_lost= 10.1% search_avoided= 63.2%
+      winners_lost~ 20%: theta=0.0318 winners_lost= 20.0% search_avoided= 76.0%
+    [fixando search_avoided -> winners_lost]
+      search_avoided~ 50%: theta=0.0066 search_avoided= 50.0% winners_lost=  5.0%
+      search_avoided~ 70%: theta=0.0211 search_avoided= 70.0% winners_lost= 14.2%
+      search_avoided~ 90%: theta=0.0878 search_avoided= 90.0% winners_lost= 47.7%
+
+=== treino dim 32px (n=424579) ===
+  counts(NAO_EXT/EXT)=[372899, 51680]
+    epoch 10/30 loss=0.2881
+    epoch 20/30 loss=0.2839
+    epoch 30/30 loss=0.2814
+
+--- nivel 32px (held-out) ---
+  n=172627 base_rate(EXT)=13.1% roc_auc=0.8168 pr_auc=0.3594
+    [fixando winners_lost -> search_avoided]
+      winners_lost~  5%: theta=0.0483 winners_lost=  5.0% search_avoided= 42.4%
+      winners_lost~ 10%: theta=0.0871 winners_lost= 10.0% search_avoided= 51.8%
+      winners_lost~ 20%: theta=0.1468 winners_lost= 20.0% search_avoided= 62.5%
+    [fixando search_avoided -> winners_lost]
+      search_avoided~ 50%: theta=0.0785 search_avoided= 50.0% winners_lost=  8.8%
+      search_avoided~ 70%: theta=0.1897 search_avoided= 70.0% winners_lost= 29.6%
+      search_avoided~ 90%: theta=0.3305 search_avoided= 90.0% winners_lost= 68.5%
+
+=== treino dim 16px (n=1316179) ===
+  counts(NAO_EXT/EXT)=[1236385, 79794]
+    epoch 10/30 loss=0.1395
+    epoch 20/30 loss=0.1371
+    epoch 30/30 loss=0.1360
+
+--- nivel 16px (held-out) ---
+  n=572213 base_rate(EXT)=9.9% roc_auc=0.9059 pr_auc=0.4517
+    [fixando winners_lost -> search_avoided]
+      winners_lost~  5%: theta=0.0378 winners_lost=  5.0% search_avoided= 61.9%
+      winners_lost~ 10%: theta=0.0946 winners_lost= 10.0% search_avoided= 71.0%
+      winners_lost~ 20%: theta=0.1872 winners_lost= 20.0% search_avoided= 79.1%
+    [fixando search_avoided -> winners_lost]
+      search_avoided~ 50%: theta=0.0122 search_avoided= 50.0% winners_lost=  1.8%
+      search_avoided~ 70%: theta=0.0861 search_avoided= 70.0% winners_lost=  9.3%
+      search_avoided~ 90%: theta=0.3930 search_avoided= 90.0% winners_lost= 51.0%
+
+Salvo -> /workspace/results/models/h9d_predictability/students.pt
+
+=== AGREGADO (todos os niveis, held-out) ===
+n=792840 base_rate(EXT)=10.2% roc_auc=0.8901 pr_auc=0.4251
+    [fixando winners_lost -> search_avoided]
+      winners_lost~  5%: theta=0.0381 winners_lost=  5.0% search_avoided= 58.0%
+      winners_lost~ 10%: theta=0.0854 winners_lost= 10.0% search_avoided= 67.1%
+      winners_lost~ 20%: theta=0.1644 winners_lost= 20.0% search_avoided= 76.0%
+    [fixando search_avoided -> winners_lost]
+      search_avoided~ 50%: theta=0.0187 search_avoided= 50.0% winners_lost=  2.6%
+      search_avoided~ 70%: theta=0.1075 search_avoided= 70.0% winners_lost= 12.5%
+      search_avoided~ 90%: theta=0.3607 search_avoided= 90.0% winners_lost= 54.3%
+
+=== VEREDITO ===
+SEPARAVEL: features distinguem EXT -- H9d seletivo promissor (winners_lost~10% -> search_avoided=67.1% agregado)

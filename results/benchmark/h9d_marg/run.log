@@ -1,0 +1,34 @@
+  Jockey     cq20 h9a        880.3 kb  PSNR-Y 40.762   213.3s
+  Jockey     cq20 h9a_extoff     877.5 kb  PSNR-Y 40.752   139.7s
+  Jockey     cq32 h9a        338.8 kb  PSNR-Y 39.846    89.2s
+  Jockey     cq32 h9a_extoff     338.8 kb  PSNR-Y 39.838    68.9s
+  Jockey     cq43 h9a        166.7 kb  PSNR-Y 38.709    73.9s
+  Jockey     cq43 h9a_extoff     166.6 kb  PSNR-Y 38.692    59.7s
+  Jockey     cq55 h9a         74.8 kb  PSNR-Y 36.672    58.4s
+  Jockey     cq55 h9a_extoff      74.3 kb  PSNR-Y 36.626    49.9s
+  RaceNight  cq20 h9a       1713.0 kb  PSNR-Y 38.220   263.4s
+  RaceNight  cq20 h9a_extoff    1687.0 kb  PSNR-Y 38.192   204.5s
+  RaceNight  cq32 h9a        438.1 kb  PSNR-Y 37.041   101.7s
+  RaceNight  cq32 h9a_extoff     438.4 kb  PSNR-Y 37.037    85.3s
+  RaceNight  cq43 h9a        202.9 kb  PSNR-Y 36.142    79.1s
+  RaceNight  cq43 h9a_extoff     202.8 kb  PSNR-Y 36.129    65.5s
+  RaceNight  cq55 h9a         89.1 kb  PSNR-Y 34.634    62.7s
+  RaceNight  cq55 h9a_extoff      88.4 kb  PSNR-Y 34.599    53.8s
+  RiverBank  cq20 h9a       2600.8 kb  PSNR-Y 40.698   198.8s
+  RiverBank  cq20 h9a_extoff    2602.6 kb  PSNR-Y 40.687   154.7s
+  RiverBank  cq32 h9a       1194.1 kb  PSNR-Y 37.946   148.6s
+  RiverBank  cq32 h9a_extoff    1194.4 kb  PSNR-Y 37.929   114.6s
+  RiverBank  cq43 h9a        515.6 kb  PSNR-Y 35.093   135.4s
+  RiverBank  cq43 h9a_extoff     514.2 kb  PSNR-Y 35.067   103.5s
+  RiverBank  cq55 h9a        184.4 kb  PSNR-Y 31.975    86.7s
+  RiverBank  cq55 h9a_extoff     183.4 kb  PSNR-Y 31.893    68.7s
+
+=== marginal H9d pos-NONE (H9a+extoff vs H9a) ===
+seq           BD-rate%    speedup t_base/t_off
+Jockey          +0.765     1.367x  434.8/318.2
+RaceNight       +0.879     1.239x  507.0/409.1
+RiverBank       +0.749     1.290x  569.6/441.4
+----------------------------------------------
+MEDIA           +0.798     1.293x
+
+Leitura: BD-rate/speedup MARGINAL de desligar AB/4-way em cima do H9a operante (P_ref). Se marginal ~ ruido, H9d pos-NONE morre; se material a baixo BD, um H9d seletivo estilo H9c vale construir.

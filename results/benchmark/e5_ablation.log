@@ -1,0 +1,249 @@
+########## FlowerPan  start=2026-07-27T12:54:47Z ##########
+=== ANCHOR (once) ===
+  [anchor] cq20: 40.5745 dB, 133410.0 kbps, 1204.0s
+  [anchor] cq32: 38.5392 dB, 55666.8 kbps, 672.4s
+  [anchor] cq43: 36.5663 dB, 28145.0 kbps, 526.4s
+  [anchor] cq55: 33.7442 dB, 13595.2 kbps, 328.7s
+=== ml_tn0.950 ===
+  [ml_tn0.950] cq20: 40.5741 dB, 133354.7 kbps, 1175.6s
+  [ml_tn0.950] cq32: 38.5394 dB, 55663.2 kbps, 637.4s
+  [ml_tn0.950] cq43: 36.5629 dB, 28111.2 kbps, 506.4s
+  [ml_tn0.950] cq55: 33.7360 dB, 13571.5 kbps, 308.6s
+=== ml_tn0.900 ===
+  [ml_tn0.900] cq20: 40.5736 dB, 133366.9 kbps, 1170.0s
+  [ml_tn0.900] cq32: 38.5349 dB, 55567.0 kbps, 618.2s
+  [ml_tn0.900] cq43: 36.5585 dB, 28094.8 kbps, 492.9s
+  [ml_tn0.900] cq55: 33.7309 dB, 13551.4 kbps, 299.6s
+=== ml_tn0.800 ===
+  [ml_tn0.800] cq20: 40.5709 dB, 133192.2 kbps, 1147.6s
+  [ml_tn0.800] cq32: 38.5260 dB, 55409.4 kbps, 580.3s
+  [ml_tn0.800] cq43: 36.5470 dB, 28013.1 kbps, 473.4s
+  [ml_tn0.800] cq55: 33.6983 dB, 13422.2 kbps, 283.4s
+=== ml_tn0.700 ===
+  [ml_tn0.700] cq20: 40.5654 dB, 132987.0 kbps, 1120.3s
+  [ml_tn0.700] cq32: 38.5159 dB, 55252.9 kbps, 549.0s
+  [ml_tn0.700] cq43: 36.5313 dB, 27935.1 kbps, 454.4s
+  [ml_tn0.700] cq55: 33.6596 dB, 13269.0 kbps, 264.3s
+=== ml_tn0.600 ===
+  [ml_tn0.600] cq20: 40.5574 dB, 132657.4 kbps, 1095.1s
+  [ml_tn0.600] cq32: 38.5017 dB, 55063.7 kbps, 516.4s
+  [ml_tn0.600] cq43: 36.5003 dB, 27734.6 kbps, 427.9s
+  [ml_tn0.600] cq55: 33.6145 dB, 13146.5 kbps, 247.4s
+=== ml_tn0.500 ===
+  [ml_tn0.500] cq20: 40.5447 dB, 132148.4 kbps, 1048.0s
+  [ml_tn0.500] cq32: 38.4825 dB, 54889.6 kbps, 480.0s
+  [ml_tn0.500] cq43: 36.4579 dB, 27505.6 kbps, 393.5s
+  [ml_tn0.500] cq55: 33.5605 dB, 13003.0 kbps, 231.0s
+=== variance_tn0.999 ===
+  [variance_tn0.999] cq20: 40.5745 dB, 133410.0 kbps, 1177.8s
+  [variance_tn0.999] cq32: 38.5392 dB, 55666.8 kbps, 654.2s
+  [variance_tn0.999] cq43: 36.5663 dB, 28145.0 kbps, 528.6s
+  [variance_tn0.999] cq55: 33.7442 dB, 13595.2 kbps, 326.4s
+=== variance_tn0.995 ===
+  [variance_tn0.995] cq20: 40.5732 dB, 133326.6 kbps, 1179.8s
+  [variance_tn0.995] cq32: 38.5385 dB, 55656.2 kbps, 655.2s
+  [variance_tn0.995] cq43: 36.5666 dB, 28149.6 kbps, 525.9s
+  [variance_tn0.995] cq55: 33.7442 dB, 13595.2 kbps, 325.4s
+=== variance_tn0.990 ===
+  [variance_tn0.990] cq20: 40.5704 dB, 133186.5 kbps, 1160.4s
+  [variance_tn0.990] cq32: 38.5376 dB, 55630.7 kbps, 649.4s
+  [variance_tn0.990] cq43: 36.5664 dB, 28155.0 kbps, 523.8s
+  [variance_tn0.990] cq55: 33.7433 dB, 13591.9 kbps, 328.0s
+=== variance_tn0.970 ===
+  [variance_tn0.970] cq20: 40.5127 dB, 131220.3 kbps, 976.1s
+  [variance_tn0.970] cq32: 38.5174 dB, 55448.1 kbps, 587.9s
+  [variance_tn0.970] cq43: 36.5455 dB, 28058.0 kbps, 497.9s
+  [variance_tn0.970] cq55: 33.7269 dB, 13562.3 kbps, 314.3s
+=== variance_tn0.950 ===
+  [variance_tn0.950] cq20: 40.4597 dB, 130013.8 kbps, 846.0s
+  [variance_tn0.950] cq32: 38.4893 dB, 55300.2 kbps, 526.6s
+  [variance_tn0.950] cq43: 36.5089 dB, 27942.4 kbps, 466.0s
+  [variance_tn0.950] cq55: 33.6865 dB, 13458.8 kbps, 300.2s
+=== variance_tn0.900 ===
+  [variance_tn0.900] cq20: 40.3580 dB, 128982.9 kbps, 603.8s
+  [variance_tn0.900] cq32: 38.4111 dB, 55075.5 kbps, 397.6s
+  [variance_tn0.900] cq43: 36.3867 dB, 27514.9 kbps, 380.7s
+  [variance_tn0.900] cq55: 33.5350 dB, 13028.5 kbps, 256.6s
+=== variance_tn0.800 ===
+  [variance_tn0.800] cq20: 40.2821 dB, 129448.0 kbps, 435.6s
+  [variance_tn0.800] cq32: 38.3269 dB, 55316.8 kbps, 302.2s
+  [variance_tn0.800] cq43: 36.2508 dB, 27195.5 kbps, 305.3s
+  [variance_tn0.800] cq55: 33.3466 dB, 12635.9 kbps, 213.9s
+=== random_tn0.950 ===
+  [random_tn0.950] cq20: 40.5232 dB, 133518.2 kbps, 1087.2s
+  [random_tn0.950] cq32: 38.4950 dB, 56049.2 kbps, 603.2s
+  [random_tn0.950] cq43: 36.4921 dB, 28207.6 kbps, 488.0s
+  [random_tn0.950] cq55: 33.6273 dB, 13497.8 kbps, 306.7s
+=== random_tn0.900 ===
+  [random_tn0.900] cq20: 40.4705 dB, 133841.5 kbps, 998.0s
+  [random_tn0.900] cq32: 38.4517 dB, 56597.1 kbps, 551.9s
+  [random_tn0.900] cq43: 36.4076 dB, 28315.3 kbps, 451.9s
+  [random_tn0.900] cq55: 33.4928 dB, 13401.7 kbps, 285.8s
+=== random_tn0.800 ===
+########## FlowerPan  start=2026-07-28T11:27:41Z ##########
+=== RESUME: anchor reused, 15 point(s) already done ===
+=== ml tau=0.95 already done, skipping ===
+=== ml tau=0.9 already done, skipping ===
+=== ml tau=0.8 already done, skipping ===
+=== ml tau=0.7 already done, skipping ===
+=== ml tau=0.6 already done, skipping ===
+=== ml tau=0.5 already done, skipping ===
+=== variance tau=0.999 already done, skipping ===
+=== variance tau=0.995 already done, skipping ===
+=== variance tau=0.99 already done, skipping ===
+=== variance tau=0.97 already done, skipping ===
+=== variance tau=0.95 already done, skipping ===
+=== variance tau=0.9 already done, skipping ===
+=== variance tau=0.8 already done, skipping ===
+=== random tau=0.95 already done, skipping ===
+=== random tau=0.9 already done, skipping ===
+=== random_tn0.800 ===
+  [random_tn0.800] cq20: 40.3842 dB, 134255.2 kbps, 832.2s
+  [random_tn0.800] cq32: 38.3778 dB, 57402.8 kbps, 460.0s
+  [random_tn0.800] cq43: 36.2779 dB, 28479.8 kbps, 385.4s
+  [random_tn0.800] cq55: 33.2791 dB, 13142.6 kbps, 248.4s
+=== random_tn0.700 ===
+  [random_tn0.700] cq20: 40.3128 dB, 134690.4 kbps, 684.0s
+  [random_tn0.700] cq32: 38.3189 dB, 58029.7 kbps, 381.9s
+  [random_tn0.700] cq43: 36.1768 dB, 28562.6 kbps, 326.8s
+  [random_tn0.700] cq55: 33.1134 dB, 12944.0 kbps, 216.6s
+
+=== ATTRIBUTION ABLATION (FlowerPan, 10 frames) ===
+method     tau_none   BD-rate%      TS%    speedup
+ml            0.950     -0.015      3.8      1.039
+ml            0.900      0.015      5.6      1.059
+ml            0.800      0.015      9.0      1.099
+ml            0.700      0.095     12.6      1.144
+ml            0.600      0.274     16.3      1.195
+ml            0.500      0.638     21.2      1.269
+variance      0.999      0.000      1.7      1.017
+variance      0.995      0.004      1.7      1.017
+variance      0.990      0.013      2.5      1.026
+variance      0.970      0.437     13.0      1.150
+variance      0.950      1.180     21.7      1.277
+variance      0.900      3.414     40.0      1.667
+variance      0.800      6.610     54.0      2.173
+random        0.950      2.372      9.0      1.099
+random        0.900      5.181     16.2      1.194
+random        0.800      9.642     29.5      1.418
+random        0.700     13.225     41.1      1.697
+ABLATION_DONE
+########## FlowerPan  end=2026-07-28T12:30:38Z ##########
+########## Lips  start=2026-07-28T12:30:38Z ##########
+=== ANCHOR (once) ===
+  [anchor] cq20: 39.2136 dB, 205659.6 kbps, 1814.9s
+  [anchor] cq32: 35.4405 dB, 21031.9 kbps, 701.6s
+  [anchor] cq43: 34.9587 dB, 2655.6 kbps, 224.0s
+  [anchor] cq55: 34.7007 dB, 1114.1 kbps, 160.2s
+=== ml_tn0.950 ===
+  [ml_tn0.950] cq20: 39.2132 dB, 205645.9 kbps, 1808.6s
+  [ml_tn0.950] cq32: 35.4448 dB, 21180.2 kbps, 652.6s
+  [ml_tn0.950] cq43: 34.9593 dB, 2651.4 kbps, 136.7s
+  [ml_tn0.950] cq55: 34.7009 dB, 1115.3 kbps, 102.3s
+=== ml_tn0.900 ===
+  [ml_tn0.900] cq20: 39.2123 dB, 205604.9 kbps, 1811.8s
+  [ml_tn0.900] cq32: 35.4352 dB, 20866.1 kbps, 601.8s
+  [ml_tn0.900] cq43: 34.9566 dB, 2649.4 kbps, 124.7s
+  [ml_tn0.900] cq55: 34.6995 dB, 1111.6 kbps, 92.0s
+=== ml_tn0.800 ===
+  [ml_tn0.800] cq20: 39.2113 dB, 205538.0 kbps, 1804.2s
+  [ml_tn0.800] cq32: 35.4302 dB, 20669.6 kbps, 486.7s
+  [ml_tn0.800] cq43: 34.9533 dB, 2639.8 kbps, 115.7s
+  [ml_tn0.800] cq55: 34.6964 dB, 1106.7 kbps, 88.2s
+=== ml_tn0.700 ===
+  [ml_tn0.700] cq20: 39.2025 dB, 205185.2 kbps, 1789.8s
+  [ml_tn0.700] cq32: 35.4262 dB, 20538.5 kbps, 462.2s
+  [ml_tn0.700] cq43: 34.9520 dB, 2628.7 kbps, 108.2s
+  [ml_tn0.700] cq55: 34.6931 dB, 1101.8 kbps, 86.0s
+=== ml_tn0.600 ===
+  [ml_tn0.600] cq20: 39.1925 dB, 204935.5 kbps, 1754.0s
+  [ml_tn0.600] cq32: 35.4169 dB, 20173.3 kbps, 408.9s
+  [ml_tn0.600] cq43: 34.9496 dB, 2616.2 kbps, 100.8s
+  [ml_tn0.600] cq55: 34.6874 dB, 1094.2 kbps, 84.0s
+=== ml_tn0.500 ===
+  [ml_tn0.500] cq20: 39.1839 dB, 204662.1 kbps, 1714.6s
+  [ml_tn0.500] cq32: 35.4130 dB, 20054.7 kbps, 372.4s
+  [ml_tn0.500] cq43: 34.9496 dB, 2611.4 kbps, 92.4s
+  [ml_tn0.500] cq55: 34.6851 dB, 1090.3 kbps, 81.7s
+=== variance_tn0.999 ===
+  [variance_tn0.999] cq20: 39.2136 dB, 205659.6 kbps, 1807.3s
+  [variance_tn0.999] cq32: 35.4405 dB, 21031.9 kbps, 704.6s
+  [variance_tn0.999] cq43: 34.9587 dB, 2655.6 kbps, 223.6s
+  [variance_tn0.999] cq55: 34.7007 dB, 1114.1 kbps, 160.7s
+=== variance_tn0.995 ===
+  [variance_tn0.995] cq20: 39.2136 dB, 205659.6 kbps, 1805.3s
+  [variance_tn0.995] cq32: 35.4405 dB, 21031.9 kbps, 701.6s
+  [variance_tn0.995] cq43: 34.9587 dB, 2655.6 kbps, 223.2s
+  [variance_tn0.995] cq55: 34.7007 dB, 1114.1 kbps, 160.1s
+=== variance_tn0.990 ===
+  [variance_tn0.990] cq20: 39.2129 dB, 205611.6 kbps, 1803.0s
+  [variance_tn0.990] cq32: 35.4407 dB, 21051.9 kbps, 699.2s
+  [variance_tn0.990] cq43: 34.9585 dB, 2655.3 kbps, 222.2s
+  [variance_tn0.990] cq55: 34.7007 dB, 1114.1 kbps, 160.2s
+=== variance_tn0.970 ===
+  [variance_tn0.970] cq20: 38.6499 dB, 191755.4 kbps, 426.1s
+  [variance_tn0.970] cq32: 35.3699 dB, 18685.0 kbps, 213.0s
+  [variance_tn0.970] cq43: 34.9508 dB, 2628.1 kbps, 96.4s
+  [variance_tn0.970] cq55: 34.6934 dB, 1101.4 kbps, 78.5s
+=== variance_tn0.950 ===
+  [variance_tn0.950] cq20: 38.6294 dB, 191934.3 kbps, 317.7s
+  [variance_tn0.950] cq32: 35.3616 dB, 18444.0 kbps, 163.1s
+  [variance_tn0.950] cq43: 34.9447 dB, 2632.9 kbps, 86.4s
+  [variance_tn0.950] cq55: 34.6853 dB, 1103.8 kbps, 72.5s
+=== variance_tn0.900 ===
+  [variance_tn0.900] cq20: 38.6204 dB, 192141.2 kbps, 261.6s
+  [variance_tn0.900] cq32: 35.3594 dB, 18428.4 kbps, 137.0s
+  [variance_tn0.900] cq43: 34.9441 dB, 2626.3 kbps, 79.1s
+  [variance_tn0.900] cq55: 34.6774 dB, 1093.2 kbps, 68.6s
+=== variance_tn0.800 ===
+  [variance_tn0.800] cq20: 38.6134 dB, 192155.9 kbps, 226.2s
+  [variance_tn0.800] cq32: 35.3566 dB, 18365.3 kbps, 118.9s
+  [variance_tn0.800] cq43: 34.9425 dB, 2628.8 kbps, 72.5s
+  [variance_tn0.800] cq55: 34.6719 dB, 1090.6 kbps, 65.3s
+=== random_tn0.950 ===
+  [random_tn0.950] cq20: 39.1422 dB, 204394.1 kbps, 1670.9s
+  [random_tn0.950] cq32: 35.4273 dB, 20643.1 kbps, 647.2s
+  [random_tn0.950] cq43: 34.9563 dB, 2664.2 kbps, 203.9s
+  [random_tn0.950] cq55: 34.6972 dB, 1110.5 kbps, 151.1s
+=== random_tn0.900 ===
+  [random_tn0.900] cq20: 39.0701 dB, 202807.2 kbps, 1528.2s
+  [random_tn0.900] cq32: 35.4153 dB, 20324.7 kbps, 591.4s
+  [random_tn0.900] cq43: 34.9545 dB, 2649.1 kbps, 190.0s
+  [random_tn0.900] cq55: 34.6915 dB, 1104.4 kbps, 140.1s
+=== random_tn0.800 ===
+  [random_tn0.800] cq20: 38.9506 dB, 200039.7 kbps, 1263.4s
+  [random_tn0.800] cq32: 35.3988 dB, 19841.4 kbps, 486.7s
+  [random_tn0.800] cq43: 34.9488 dB, 2625.5 kbps, 154.5s
+  [random_tn0.800] cq55: 34.6849 dB, 1095.6 kbps, 121.0s
+=== random_tn0.700 ===
+  [random_tn0.700] cq20: 38.8589 dB, 197737.5 kbps, 1041.4s
+  [random_tn0.700] cq32: 35.3853 dB, 19399.8 kbps, 403.6s
+  [random_tn0.700] cq43: 34.9467 dB, 2622.8 kbps, 129.5s
+  [random_tn0.700] cq55: 34.6806 dB, 1100.0 kbps, 105.7s
+
+=== ATTRIBUTION ABLATION (Lips, 10 frames) ===
+method     tau_none   BD-rate%      TS%    speedup
+ml            0.950     -0.073      6.9      1.074
+ml            0.900      0.125      9.3      1.103
+ml            0.800      0.190     14.0      1.163
+ml            0.700      0.285     15.7      1.186
+ml            0.600      0.416     19.1      1.236
+ml            0.500      0.521     22.1      1.283
+variance      0.999      0.000      0.2      1.002
+variance      0.995      0.000      0.4      1.004
+variance      0.990      0.019      0.6      1.006
+variance      0.970      6.580     71.9      3.563
+variance      0.950      7.474     77.9      4.535
+variance      0.900      7.903     81.2      5.309
+variance      0.800      8.243     83.4      6.007
+random        0.950      1.013      7.8      1.085
+random        0.900      1.998     15.5      1.184
+random        0.800      3.590     30.2      1.432
+random        0.700      4.795     42.1      1.726
+ABLATION_DONE
+########## Lips  end=2026-07-28T23:35:17Z ##########
+########## HoneyBee  start=2026-07-28T23:35:17Z ##########
+=== ANCHOR (once) ===
+STOP: Lips finished; ending before HoneyBee 2026-07-28T23:35:22Z
+Terminated
+E5_ALL_DONE (stopped after Lips, by design) 2026-07-28T23:35:22Z

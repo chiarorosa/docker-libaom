@@ -1,0 +1,63 @@
+  native    Jockey     cq20  650.0s
+  native    Jockey     cq32  276.7s
+  native    Jockey     cq43  210.6s
+  native    Jockey     cq55  137.2s
+  native    RaceNight  cq20  806.1s
+  native    RaceNight  cq32  352.9s
+  native    RaceNight  cq43  241.0s
+  native    RaceNight  cq55  154.1s
+  native    RiverBank  cq20  580.8s
+  native    RiverBank  cq32  364.0s
+  native    RiverBank  cq43  323.7s
+  native    RiverBank  cq55  210.8s
+  h9a       Jockey     cq20  433.2s
+  h9a       Jockey     cq32  180.0s
+  h9a       Jockey     cq43  149.0s
+  h9a       Jockey     cq55  115.6s
+  h9a       RaceNight  cq20  527.0s
+  h9a       RaceNight  cq32  201.3s
+  h9a       RaceNight  cq43  156.2s
+  h9a       RaceNight  cq55  123.0s
+  h9a       RiverBank  cq20  391.4s
+  h9a       RiverBank  cq32  297.1s
+  h9a       RiverBank  cq43  266.4s
+  h9a       RiverBank  cq55  173.3s
+  h9a_a2    Jockey     cq20  305.7s
+  h9a_a2    Jockey     cq32  157.5s
+  h9a_a2    Jockey     cq43  136.7s
+  h9a_a2    Jockey     cq55  109.0s
+  h9a_a2    RaceNight  cq20  447.8s
+  h9a_a2    RaceNight  cq32  171.0s
+  h9a_a2    RaceNight  cq43  146.6s
+  h9a_a2    RaceNight  cq55  119.4s
+  h9a_a2    RiverBank  cq20  365.0s
+  h9a_a2    RiverBank  cq32  268.9s
+  h9a_a2    RiverBank  cq43  248.9s
+  h9a_a2    RiverBank  cq55  161.7s
+  h9a_h9d   Jockey     cq20  326.4s
+  h9a_h9d   Jockey     cq32  152.7s
+  h9a_h9d   Jockey     cq43  131.2s
+  h9a_h9d   Jockey     cq55  107.7s
+  h9a_h9d   RaceNight  cq20  441.1s
+  h9a_h9d   RaceNight  cq32  177.5s
+  h9a_h9d   RaceNight  cq43  141.1s
+  h9a_h9d   RaceNight  cq55  117.9s
+  h9a_h9d   RiverBank  cq20  366.5s
+  h9a_h9d   RiverBank  cq32  255.4s
+  h9a_h9d   RiverBank  cq43  233.5s
+  h9a_h9d   RiverBank  cq55  159.2s
+
+=== Etapa 3 F2 (10fr): H9a+H9d vs subir tau (A2), vs nativo ===
+seq         config     BD-rate%   speedup
+Jockey      h9a          +1.428    1.452x
+Jockey      h9a_a2       +2.038    1.798x
+Jockey      h9a_h9d      +1.783    1.775x  <-- H9d
+--------------------------------------------
+RaceNight   h9a          +0.440    1.542x
+RaceNight   h9a_a2       +1.282    1.757x
+RaceNight   h9a_h9d      +0.981    1.771x  <-- H9d
+--------------------------------------------
+RiverBank   h9a          +0.181    1.311x
+RiverBank   h9a_a2       +0.282    1.416x
+RiverBank   h9a_h9d      +0.443    1.458x  <-- H9d
+--------------------------------------------

@@ -1,0 +1,51 @@
+  PL10   Jockey     cq20  210.5s
+  PL10   Jockey     cq32   86.8s
+  PL10   Jockey     cq43   71.2s
+  PL10   Jockey     cq55   57.2s
+  PL10   RaceNight  cq20  235.3s
+  PL10   RaceNight  cq32   96.2s
+  PL10   RaceNight  cq43   76.9s
+  PL10   RaceNight  cq55   61.6s
+  PL10   RiverBank  cq20  197.3s
+  PL10   RiverBank  cq32  146.6s
+  PL10   RiverBank  cq43  131.2s
+  PL10   RiverBank  cq55   84.2s
+  PL20   Jockey     cq20  203.1s
+  PL20   Jockey     cq32   85.1s
+  PL20   Jockey     cq43   70.5s
+  PL20   Jockey     cq55   56.8s
+  PL20   RaceNight  cq20  230.0s
+  PL20   RaceNight  cq32   94.8s
+  PL20   RaceNight  cq43   75.7s
+  PL20   RaceNight  cq55   62.6s
+  PL20   RiverBank  cq20  193.1s
+  PL20   RiverBank  cq32  141.0s
+  PL20   RiverBank  cq43  127.4s
+  PL20   RiverBank  cq55   83.0s
+  PLmix  Jockey     cq20  212.1s
+  PLmix  Jockey     cq32   89.1s
+  PLmix  Jockey     cq43   71.6s
+  PLmix  Jockey     cq55   58.2s
+  PLmix  RaceNight  cq20  233.2s
+  PLmix  RaceNight  cq32   99.4s
+  PLmix  RaceNight  cq43   77.9s
+  PLmix  RaceNight  cq55   61.8s
+  PLmix  RiverBank  cq20  192.5s
+  PLmix  RiverBank  cq32  144.7s
+  PLmix  RiverBank  cq43  130.4s
+  PLmix  RiverBank  cq55   84.1s
+
+=== Fase 2b: H9d tau por nivel (vs nativo, 5fr) ===
+seq         config   BD-rate%   speedup
+Jockey      PL10       +1.446    1.495x
+Jockey      PL20       +1.564    1.531x
+Jockey      PLmix      +1.421    1.476x
+------------------------------------------
+RaceNight   PL10       +0.424    1.616x
+RaceNight   PL20       +0.709    1.640x
+RaceNight   PLmix      +0.611    1.608x
+------------------------------------------
+RiverBank   PL10       +0.209    1.311x
+RiverBank   PL20       +0.233    1.347x
+RiverBank   PLmix      +0.196    1.329x
+------------------------------------------

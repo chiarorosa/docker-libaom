@@ -1,0 +1,34 @@
+  Jockey     cq20 native     880.0 kb  PSNR-Y 40.770   326.8s
+  Jockey     cq20 extoff     883.5 kb  PSNR-Y 40.764   196.5s
+  Jockey     cq32 native     337.7 kb  PSNR-Y 39.861   137.0s
+  Jockey     cq32 extoff     337.5 kb  PSNR-Y 39.847    95.8s
+  Jockey     cq43 native     166.3 kb  PSNR-Y 38.734   103.9s
+  Jockey     cq43 extoff     166.6 kb  PSNR-Y 38.715    78.0s
+  Jockey     cq55 native      75.0 kb  PSNR-Y 36.717    68.8s
+  Jockey     cq55 extoff      75.0 kb  PSNR-Y 36.681    58.5s
+  RaceNight  cq20 native    1681.7 kb  PSNR-Y 38.196   392.2s
+  RaceNight  cq20 extoff    1693.4 kb  PSNR-Y 38.199   246.5s
+  RaceNight  cq32 native     436.4 kb  PSNR-Y 37.043   172.1s
+  RaceNight  cq32 extoff     438.0 kb  PSNR-Y 37.039   130.7s
+  RaceNight  cq43 native     203.0 kb  PSNR-Y 36.150   117.9s
+  RaceNight  cq43 extoff     203.3 kb  PSNR-Y 36.141    93.8s
+  RaceNight  cq55 native      89.3 kb  PSNR-Y 34.655    77.2s
+  RaceNight  cq55 extoff      88.5 kb  PSNR-Y 34.610    64.6s
+  RiverBank  cq20 native    2589.8 kb  PSNR-Y 40.688   285.8s
+  RiverBank  cq20 extoff    2596.2 kb  PSNR-Y 40.680   189.2s
+  RiverBank  cq32 native    1192.3 kb  PSNR-Y 37.943   180.7s
+  RiverBank  cq32 extoff    1194.8 kb  PSNR-Y 37.932   135.2s
+  RiverBank  cq43 native     514.3 kb  PSNR-Y 35.088   162.6s
+  RiverBank  cq43 extoff     513.2 kb  PSNR-Y 35.060   120.1s
+  RiverBank  cq55 native     182.6 kb  PSNR-Y 31.964   104.2s
+  RiverBank  cq55 extoff     180.9 kb  PSNR-Y 31.875    78.7s
+
+=== cota superior H9d (blanket AB/4-way off vs nativo) ===
+seq           BD-rate%    speedup t_nat/t_off
+Jockey          +1.129     1.485x 636.5/428.7
+RaceNight       +0.760     1.418x 759.4/535.7
+RiverBank       +0.794     1.402x 733.3/523.2
+--------------------------------------------
+MEDIA           +0.894     1.431x
+
+Leitura: BD-rate>0 = custo de qualidade de remover AB/4-way; speedup = teto (blanket). H9d seletivo fica dentro do envelope.
