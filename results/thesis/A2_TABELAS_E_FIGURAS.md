@@ -89,12 +89,18 @@ foi localizado está listado, sem exceção, na Seção 4.
 - **Destino.** Metodologia §3 (`M3_protocolo_avaliacao.md`, Seção 3.5).
 - **Legenda.** A Tabela 4 apresenta a divergência entre as duas definições de
   redução de tempo em uso no projeto, a canônica e a da síntese, para as
-  dezessete configurações da grade completa de substituição direta do H9a e
-  do H9c, com a diferença em pontos percentuais entre as duas.
+  **vinte e quatro** configurações medidas na grade das condições comuns de
+  teste, com a diferença em pontos percentuais entre as duas, destacando as
+  soluções implantadas.
 - **Colunas.** configuração — TS% (definição canônica) — TS% (definição da
   síntese) — Δ (pontos percentuais).
-- **Linhas.** dezessete, uma por configuração (seis níveis de `cpu-used` × H9a
-  balanceado/agressivo e H9c τ=0,90/0,95, mais os três *presets* nativos).
+- **Linhas.** **vinte e quatro**, uma por configuração: as de substituição
+  direta em `cpu-used` 1/2/3 (H9a equilibrado e agressivo, H9c τ=0,90 e τ=0,95),
+  as medidas em `cpu-used=0` (H9c τ=0,45, τ=0,90 e τ=0,95; H9a equilibrado e
+  agressivo; e as quatro variantes com H9d) e os três *presets* nativos.
+  *Corrigido em 2026-07-29:* a especificação previa dezessete linhas, número
+  anterior à campanha do H9d, e a seleção parcial excluía as configurações
+  implantadas e a maior divergência positiva do conjunto.
 - **Dado de origem.** `results/benchmark/fase6_analysis/ts_definitions.csv`
   (verificado por `Glob` e conferido diretamente: colunas
   `config,ts_canonical,ts_sintese,delta_pp`).

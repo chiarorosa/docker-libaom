@@ -134,21 +134,29 @@ Documento de suporte: `docs/ZENODO_datasheet.md` (Partes 1 e 2).
 **Legenda.** A Tabela 4 apresenta a divergência entre as duas definições de
 redução de tempo em uso no projeto — a **canônica**, padronizada e adotada
 por esta tese, e a **ponderada pelo tempo**, aqui referida como "da síntese"
-— para as dezessete configurações da grade completa de substituição direta do
-H9a e do H9c, com a diferença em pontos percentuais entre as duas, ordenadas
-da maior para a menor magnitude de divergência.
+— para as **vinte e quatro** configurações medidas na grade das condições
+comuns de teste, com a diferença em pontos percentuais entre as duas,
+ordenadas da maior para a menor magnitude de divergência. As linhas
+correspondentes às **soluções implantadas** estão destacadas em negrito.
 
 | Configuração | TS% (definição canônica) | TS% (definição ponderada pelo tempo) | Δ (pp) |
 |---|--:|--:|--:|
 | H9c τ=0,95, cpu-used=2 | 40,73 | 37,76 | −2,97 |
 | H9c τ=0,95, cpu-used=1 | 30,34 | 27,53 | −2,81 |
 | H9c τ=0,90, cpu-used=2 | 42,07 | 39,30 | −2,76 |
+| **H9a agressivo, cpu-used=0** | **31,51** | **34,14** | **+2,63** |
 | H9c τ=0,90, cpu-used=1 | 31,65 | 29,05 | −2,60 |
+| **H9a agressivo + H9d (PL10), cpu-used=0** | **31,68** | **34,27** | **+2,59** |
+| H9a agressivo + H9d (PL20), cpu-used=0 | 32,16 | 34,73 | +2,57 |
 | Preset nativo, cpu-used=2 | 42,72 | 40,37 | −2,36 |
 | Preset nativo, cpu-used=1 | 32,59 | 30,42 | −2,17 |
+| H9c τ=0,45, cpu-used=0 | 21,35 | 23,39 | +2,04 |
 | H9a equilibrado, cpu-used=2 | 50,05 | 48,44 | −1,61 |
-| H9a equilibrado, cpu-used=1 | 40,20 | 39,06 | −1,14 |
-| H9c τ=0,90, cpu-used=0 | 13,59 | 14,63 | +1,05 |
+| H9a equilibrado + H9d (PL20), cpu-used=0 | 19,81 | 21,36 | +1,55 |
+| **H9a equilibrado, cpu-used=0** | **17,72** | **19,26** | **+1,53** |
+| **H9a equilibrado + H9d (PL10), cpu-used=0** | **18,74** | **20,20** | **+1,46** |
+| H9a equilibrado, cpu-used=1 | 40,20 | 39,05 | −1,14 |
+| H9c τ=0,90, cpu-used=0 | 13,59 | 14,63 | +1,04 |
 | H9c τ=0,95, cpu-used=0 | 12,61 | 13,55 | +0,95 |
 | Preset nativo, cpu-used=3 | 67,94 | 67,46 | −0,49 |
 | H9c τ=0,95, cpu-used=3 | 70,25 | 69,80 | −0,44 |
@@ -169,22 +177,36 @@ pelo ponto de quantização mais custoso (`cq=20`). A divergência chega a cerca
 de três pontos percentuais, e o sinal da diferença não é constante entre
 configurações. As taxas BD não são afetadas por esta escolha, pois dependem
 apenas de bytes e de PSNR, valores determinísticos; a ambiguidade é exclusiva
-do eixo de tempo. As configurações "cpu-used=N" nomeiam a substituição direta
-do podador nativo pelo H9a ou pelo H9c no nível de velocidade N; as linhas de
-H9c sem sufixo de `cpu-used` correspondem à medição em `cpu-used=0`, isto é,
-sem as demais heurísticas de velocidade dos *presets* nativos.
+do eixo de tempo. As configurações "cpu-used=N" com N maior que zero nomeiam a
+substituição direta do podador nativo pelo H9a ou pelo H9c naquele nível de
+velocidade; as configurações em `cpu-used=0` são as medições sem as demais
+heurísticas de velocidade dos *presets* nativos, e é entre elas que estão as
+soluções efetivamente implantadas.
+
+Cabe destacar um padrão que a tabela completa revela e que uma seleção parcial
+esconderia: **o sinal da divergência separa os dois regimes de medição**. As
+configurações medidas em `cpu-used=0` — entre elas todas as soluções
+implantadas — divergem no sentido **positivo**, ou seja, a definição ponderada
+pelo tempo lhes atribui mais redução de tempo do que a canônica; as
+configurações de substituição direta em `cpu-used` 1, 2 e 3 divergem no sentido
+**negativo**. Então, escolher a definição ponderada pelo tempo favoreceria
+sistematicamente as soluções desta tese na comparação contra os *presets*
+nativos, em até cerca de 2,6 pontos percentuais no ponto agressivo do H9a, e é
+precisamente por isso que a definição **canônica** foi adotada como padrão: ela
+é a que não beneficia a proposta.
 
 **Procedência.** Dado de origem:
 `results/benchmark/fase6_analysis/ts_definitions.csv`, colunas `config`,
-`ts_canonical`, `ts_sintese`, `delta_pp` (verificado por `Glob` e conferido
-diretamente; arquivo regenerado em 2026-07-29, conteúdo lido nesta data). O
-arquivo contém 24 configurações no total; as dezessete selecionadas para esta
-tabela são as previstas pela especificação — H9a equilibrado e H9a agressivo
-em `cpu-used` 1/2/3, H9c τ=0,90 e τ=0,95 em `cpu-used=0` e em `cpu-used` 1/2/3,
-e os três *presets* nativos —, excluindo sete linhas adicionais
-(`h9c_tau45`, `ml_aggr`, `ml_aggr_h9d`, `ml_aggr_h9d_pl20`, `ml_bal_h9d`,
-`ml_bal_h9d_pl20`, `ml_balanced`) incorporadas ao artefato pela campanha do
-H9d, posterior à especificação original de dezessete linhas. Script:
+`ts_canonical`, `ts_sintese`, `delta_pp` (arquivo regenerado em 2026-07-29 pela
+recomposição da fronteira de compromisso, conteúdo lido nesta data). As **vinte
+e quatro** configurações do artefato estão todas representadas. Registre-se que
+a especificação original desta tabela em `A2_TABELAS_E_FIGURAS.md` previa
+dezessete linhas, número anterior à campanha do H9d; a tabela foi ampliada para
+as vinte e quatro por decisão de 2026-07-29, uma vez que as sete linhas
+acrescentadas (`h9c_tau45`, `ml_balanced`, `ml_aggr` e as quatro variantes com
+H9d) contêm as configurações implantadas e a maior divergência positiva de todo
+o conjunto, de modo que a seleção parcial subestimava esse lado da divergência
+por um fator próximo de duas vezes e meia. Script:
 `src/scripts/fase6/analyze_frontier.py`. Documento-fonte:
 `M3_protocolo_avaliacao.md` §3.5.
 
