@@ -106,7 +106,13 @@ foram medidos **875.317 nós** de decisão sobre as três sequências do conjunt
 teste reservado, em codificação intraquadro com `cpu-used=0`. O tempo de
 trabalho local de um nó foi definido como a soma dos candidatos não recursivos,
 excluindo deliberadamente a coluna da divisão quadrada, cujo temporizador
-engloba a recursão e contabilizaria o mesmo trabalho múltiplas vezes.
+engloba a recursão e contabilizaria o mesmo trabalho múltiplas vezes. Deste
+modo, os percentuais de custo apresentados a seguir têm por denominador os
+**nove candidatos não recursivos** — o `PARTITION_NONE`, as duas retangulares,
+as quatro AB e as duas 4-way —, e não as dez formas do enum. Esta distinção deve
+acompanhar toda citação destes valores, pois as duas contagens convivem no
+trabalho: dez é o número de formas que o codificador pode escolher e que o
+modelo prediz, e nove é a base sobre a qual o custo de busca local é medido.
 
 A decomposição agregada mostra que o custo se distribui em três blocos de
 tamanho comparável. O `PARTITION_NONE` consome **30,1%** do tempo de busca

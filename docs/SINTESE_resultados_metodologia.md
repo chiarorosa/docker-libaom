@@ -17,9 +17,25 @@ do AV1** por meio de **poda aprendida** do espaço de busca recursivo de
 partições (`av1_rd_pick_partition`), preservando a eficiência de compressão. A
 decisão de particionamento é um dos maiores custos do codificador: para cada
 superbloco, o AV1 avalia recursivamente `PARTITION_NONE`, `SPLIT`, as duas
-retangulares (HORZ/VERT), as quatro AB e as duas 4-way — até 9 formas por nó. Um
+retangulares (HORZ/VERT), as quatro AB e as duas 4-way — até 10 formas por nó. Um
 preditor que elimine formas improváveis **antes** (ou **durante**) a busca reduz
 o tempo sem, idealmente, degradar a taxa-distorção (RD).
+
+> **Correção (2026-07-29) — e a distinção entre as duas contagens.** A redação
+> anterior dizia "até 9 formas por nó", em desacordo com a própria enumeração
+> desta frase, que arrola dez. O enum `PARTITION_TYPE` (`src/aom/av1/common/enums.h:152-163`)
+> define **dez** tipos, e `EXT_PARTITION_TYPES` = 10; o instrumento do C1
+> cronometra as dez colunas (`times[EXT_PARTITION_TYPES]`).
+>
+> **Mas os percentuais de custo desta tese têm denominador nove, e não dez.** O
+> C1 exclui deliberadamente a coluna do `SPLIT`, cujo temporizador engloba a
+> recursão e contaria o trabalho dos nós-descendentes múltiplas vezes
+> (`RESULTADOS_C1_custo_por_candidato.md` §2). O tempo de trabalho **local** de um
+> nó é, então, a soma dos **nove candidatos não-recursivos** — NONE, HORZ, VERT,
+> as quatro AB e as duas 4-way —, e é sobre esta base que se lê a decomposição
+> 30,1% / 35,6% / 20,4% / 13,9%, que soma 100%, bem como os **34,3%** das
+> partições estendidas que motivam o H9d. Ao citar qualquer destes percentuais,
+> deve-se declarar que o denominador é o trabalho local de nove candidatos.
 
 A investigação produziu **quatro soluções distintas**, que a tese apresenta e
 compara sob diferentes cenários e óticas:
