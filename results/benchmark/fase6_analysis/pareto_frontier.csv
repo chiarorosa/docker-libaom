@@ -1,8 +1,15 @@
 config,bd_rate,ts_pct,speedup,dominated_by
+h9c_tau95,0.1598,12.6063,1.1477,
+h9c_tau90,0.1715,13.5876,1.1621,
 ml_balanced,0.5676,17.7238,1.2226,h9c_tau90_cpu1;h9c_tau90_cpu2;h9c_tau95_cpu1;h9c_tau95_cpu2;native_cpu1;native_cpu2
+ml_bal_h9d,0.5858,18.739,1.2378,h9c_tau90_cpu1;h9c_tau90_cpu2;h9c_tau95_cpu1;h9c_tau95_cpu2;native_cpu1;native_cpu2
+ml_bal_h9d_pl20,0.6508,19.8115,1.255,h9c_tau45;h9c_tau90_cpu1;h9c_tau90_cpu2;h9c_tau95_cpu1;h9c_tau95_cpu2;native_cpu1;native_cpu2
+h9c_tau45,0.6429,21.3515,1.2978,h9c_tau90_cpu1;h9c_tau90_cpu2;h9c_tau95_cpu1;h9c_tau95_cpu2;native_cpu1;native_cpu2
 h9c_tau95_cpu1,0.4143,30.3408,1.4694,
 ml_aggr,1.4032,31.5127,1.4918,h9a_bal_cpu1;h9a_bal_cpu2;h9c_tau90_cpu1;h9c_tau90_cpu2;h9c_tau95_cpu2;native_cpu1;native_cpu2
 h9c_tau90_cpu1,0.4476,31.6451,1.4981,
+ml_aggr_h9d,1.4088,31.6827,1.4941,h9a_bal_cpu1;h9a_bal_cpu2;h9c_tau90_cpu2;h9c_tau95_cpu2;native_cpu1;native_cpu2
+ml_aggr_h9d_pl20,1.4199,32.1605,1.5052,h9a_bal_cpu1;h9a_bal_cpu2;h9c_tau90_cpu2;h9c_tau95_cpu2;native_cpu1;native_cpu2
 native_cpu1,0.4487,32.5943,1.5083,
 h9a_bal_cpu1,0.9146,40.1959,1.6938,h9c_tau90_cpu2;h9c_tau95_cpu2;native_cpu2
 h9c_tau95_cpu2,0.5158,40.7323,1.7455,

@@ -683,6 +683,19 @@ Boxing/FoodMarket2/Tango).** Pontos não-dominados, do menor BD ao maior:
 > fronteira Pareto **global** com ela continua pendente, por exigir os pontos do H9d nos
 > demais níveis de cpu, que não foram rodados.
 
+> **Correção (2026-07-29).** A pendência acima estava mal descrita: o artefato
+> `pareto_frontier.csv` já reunia as **8 sequências** da CTC desde 19/07, e o
+> `raw_results.csv` de 27/07 já continha o H9d. Bastou reexecutar
+> `analyze_frontier.py`, sem nenhuma codificação nova, para recompor a
+> fronteira. O resultado tem **24 configurações avaliadas, 15 não-dominadas**;
+> o extremo de baixo BD melhora para `h9c_tau95` (0,160%/12,61%) e `h9c_tau90`
+> (0,172%/13,59%); e as quatro configurações do H9d **figuram e são
+> dominadas**, o que **não contradiz** o seu resultado marginal — a base do
+> H9a já é dominada pelo mesmo conjunto, de modo que o H9d herda a posição do
+> H9a e a melhora dentro dela. Continua pendente apenas o H9d nos níveis
+> `cpu-used` 1 a 3, ~192 codificações não rodadas. Ver
+> `docs/RESULTADOS_fronteira_pareto_global.md`.
+
 **Conclusão 1 — ninguém DOMINA a CNN nativa.** Nenhum ponto ML é estritamente
 melhor (mais TS a ≤ BD). O H9c empata a cpu1/2; a nativa mantém o pico de
 eficiência (TS/BD 78–94).
@@ -837,7 +850,7 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 | B3 — sinal direcional (HORZ vs VERT) | ✅ **concluído** (2026-07-26) — **negativo no portão**: acurácia plana (+0,3 pp pareado); nunca chegou a C | `RESULTADOS_modelagem_B3_horz_vert.md §7` |
 | ConvNeXt com alvo de *regret* | ✅ **concluído** (2026-07-26) — **refutado**: piorou 1,06–3,80×; o ConvNeXt **não é teto de pixels** | `RESULTADOS_convnext_regret.md` |
 | Auditoria do domínio de pixels + portão D' | ✅ **concluído** (2026-07-26) — o H9a **é** majoritariamente pixels; D' **não passa** (5º negativo) | `RESULTADOS_auditoria_dominio_pixels.md` |
-| **Fronteira Pareto global com o H9d** | ⬜ **pendente** — exige os pontos do H9d nos demais níveis de cpu | ver §6 e `ANDAMENTO_tese.md §0.3` |
+| **Fronteira Pareto global com o H9d** | ✅ **recomposta para `cpu-used=0`** (2026-07-29) — reexecução do script, sem codificação nova; 24 configurações, 15 não-dominadas; H9d figura e é dominado, sem contradizer o marginal. **Pendente** nos níveis `cpu-used` 1 a 3 (~192 codificações) | `docs/RESULTADOS_fronteira_pareto_global.md`, ver §6 |
 | **E5 — ablação de atribuição no codificador** | ✅ **concluído** (2026-07-28) — 144 encodes, 2 seqs de validação. 1ª comparação a **tempo casado** da tese: o H9a vence a variância por 4,6× e 1,85×. Portão estrito (≥2 de 3) **não** atingido — 1 de 2 | `RESULTADOS_E5_ablacao_validacao.md` |
 
 **Resultado do frontier-check combinado (Tango, vs âncora cpu0):** o combinado

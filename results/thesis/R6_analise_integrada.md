@@ -15,53 +15,118 @@ encaminhamento para as ameaças à validade que qualificam esta leitura.
 ## 6.1 A fronteira de compromisso global
 
 A fronteira de compromisso global entre taxa BD e redução de tempo foi
-construída sobre três sequências da grade das condições comuns de teste (do
-inglês *Common Test Conditions* – CTC) — BoxingPractice, FoodMarket2 e Tango —, no arranjo de substituição direta que isola cada podador da rede
-convolucional nativa, cobrindo todos os quatro níveis de `cpu-used` (de 0 a 3)
-contra a mesma âncora libaom `cpu-used=0`. A definição de redução de tempo
-empregada é a canônica, adotada por todos os documentos mais recentes do
-projeto: a média, sobre os quatro pontos de quantização, da razão entre o tempo
-economizado e o tempo da âncora, calculada primeiro por sequência e depois pela
-média entre sequências. Esta cobertura de três sequências, e não das oito da
-CTC completa, é uma limitação declarada da figura, que reflete o custo de
-campanha da análise de fronteira, executada antes de o H9d existir como
-solução. Os valores desta fronteira são específicos das três sequências que a
-compõem e não devem ser confundidos com os valores canônicos sobre as oito
-sequências da CTC citados adiante para os mesmos presets nativos: a diferença
-é de amostra, não de definição — ambas usam a redução de tempo canônica.
+recomposta em 29 de julho de 2026, por reexecução do script de análise
+(`analyze_frontier.py`), sem nenhuma codificação nova, sobre as oito
+sequências da grade das condições comuns de teste (do inglês *Common Test
+Conditions* – CTC), Classe A1, quinze quadros, na grade de quantização CQ
+20/32/43/55, no arranjo de substituição direta que isola cada podador da rede
+convolucional nativa e cobre os quatro níveis de `cpu-used` (de 0 a 3) contra a
+mesma âncora libaom `cpu-used=0`. A taxa BD é medida por PSNR-Y, pelo método de
+Bjøntegaard, e a definição de redução de tempo empregada continua sendo a
+canônica, adotada por todos os documentos mais recentes do projeto: a média,
+sobre os quatro pontos de quantização, da razão entre o tempo economizado e o
+tempo da âncora, calculada primeiro por sequência e depois pela média entre
+sequências.
 
-Os pontos não dominados da fronteira, do menor para o maior custo em taxa BD,
-são os seguintes: o H9c a τ = 0,95 em `cpu-used=0`, a 0,21% de taxa BD por 13,9%
-de redução de tempo; o H9c a τ = 0,90 no mesmo preset, a 0,23% por 15,0%; o
-preset nativo `cpu-used=1`, a 0,37% por 28,6%; o H9c a τ = 0,90 empilhado no
-preset 1, a 0,39% por 29,6%; o preset nativo `cpu-used=2`, a 0,41% por 38,2% —
-o ponto de maior razão entre redução de tempo e taxa BD de toda a fronteira, com
-valor de 94, e por isso o pico de eficiência da solução nativa; o H9c empilhado
-no preset 2, a 0,44% por 39,1%; o H9a balanceado empilhado no preset 2, a 1,13%
-por 47,1%; o H9a agressivo empilhado nos presets 1 e 2, entre 1,9% e 2,0% de
-taxa BD por 52% a 60% de redução de tempo; o preset nativo `cpu-used=3`, a
-2,80% por 66,4%; e, por fim, o H9c e o H9a no preset 3, entre 3,5% e 4,8% de
-taxa BD por 70% a 78% de redução de tempo.
+O registro anterior desta seção descrevia a fronteira como construída sobre
+três sequências — BoxingPractice, FoodMarket2 e Tango — e sem os pontos do
+H9d. Este registro estava desatualizado, e não incompleto por natureza da
+medição: o artefato `pareto_frontier.csv`, numa execução de 19 de julho, já
+reunia as oito sequências da CTC, pois o seu ponto do preset nativo
+`cpu-used=1` registrava 0,449% de taxa BD por 32,59% de redução de tempo, que
+é o valor canônico das oito sequências, e não o das três que o texto
+descrevia; e o `raw_results.csv` de 27 de julho já continha as quatro
+configurações do H9d. A recomposição, então, consistiu em reexecutar o script
+de análise sobre entradas já existentes, e não em rodar nenhuma codificação
+adicional. A fronteira passou de dezessete para vinte e quatro configurações
+avaliadas, das quais quinze são não dominadas.
 
-Esta fronteira **não contém os pontos do H9d**, e a ausência precisa de ser lida
-com precisão. O H9d foi medido depois da análise de fronteira global, sobre um
-arranjo distinto — as oito sequências da CTC, no ponto de inserção pós-NONE,
-empilhado sobre o H9a —, e a sua contribuição marginal, apresentada na Seção 4
-deste capítulo, tem métrica própria: a comparação contra a curva de limiares do
-H9a, e não contra a fronteira de todos os presets e todos os níveis de
-`cpu-used`. Recompor a fronteira global com os pontos do H9d exigiria
-codificá-lo nos demais níveis de `cpu-used`, o que não foi feito. A ausência do
-H9d nesta figura, portanto, **não significa dominância**: na sua medição
-própria, o H9d é não dominado no sentido de Pareto e vence a curva de limiares
-do H9a em seis das oito sequências CTC, duas delas por dominância estrita. A
-figura desta seção subrepresenta a segunda solução positiva da tese, e não a
-invalida.
+A Tabela 6.1 apresenta os quinze pontos não dominados da fronteira recomposta,
+do menor para o maior custo em taxa BD.
 
-> **Procedência.** `docs/ANDAMENTO_tese.md` §8.3 (fronteira Pareto global, três
-> sequências, todos os níveis de `cpu-used`); `docs/SINTESE_resultados_metodologia.md`
-> §6 e §8 (definição canônica de redução de tempo); `results/thesis/A3_RETRATACOES_E_LACUNAS.md`
-> L1 (lacuna sobre a ausência do H9d). Artefatos: `results/benchmark/fase6_swap/`
-> e `results/benchmark/fase6_swap_h9c/` (não versionados).
+| Configuração | Taxa BD | Redução de tempo | Aceleração |
+|---|--:|--:|--:|
+| H9c a τ=0,95, `cpu-used=0` | 0,160% | 12,61% | 1,148× |
+| H9c a τ=0,90, `cpu-used=0` | 0,172% | 13,59% | 1,162× |
+| H9c a τ=0,95, preset 1 | 0,414% | 30,34% | 1,469× |
+| H9c a τ=0,90, preset 1 | 0,448% | 31,65% | 1,498× |
+| rede convolucional nativa, preset 1 | 0,449% | 32,59% | 1,508× |
+| H9c a τ=0,95, preset 2 | 0,516% | 40,73% | 1,746× |
+| rede convolucional nativa, preset 2 | 0,536% | 42,72% | 1,788× |
+| H9a balanceado, preset 2 | 1,030% | 50,05% | 2,046× |
+| H9a agressivo, preset 1 | 1,685% | 51,82% | 2,104× |
+| H9a agressivo, preset 2 | 1,805% | 60,97% | 2,610× |
+| rede convolucional nativa, preset 3 | 2,722% | 67,94% | 3,159× |
+| H9c a τ=0,95, preset 3 | 3,384% | 70,25% | 3,419× |
+| H9c a τ=0,90, preset 3 | 3,397% | 70,67% | 3,474× |
+| H9a balanceado, preset 3 | 3,866% | 73,09% | 3,754× |
+| H9a agressivo, preset 3 | 4,347% | 77,30% | 4,465× |
+
+Os dois pontos de menor custo em taxa BD de toda a fronteira pertencem ao H9c
+em `cpu-used=0`, e o ponto de maior custo é o H9a agressivo no preset 3. Entre
+os dois extremos, a fronteira alterna soluções aprendidas e presets nativos: a
+rede convolucional nativa ocupa três dos quinze pontos, um por preset a partir
+de `cpu-used=1`, e o H9c e o H9a ocupam os demais, sobretudo nos extremos de
+baixo e de alto custo.
+
+As quatro configurações do H9d passam a figurar na análise, sobre as oito
+sequências da CTC, e todas elas são dominadas no espaço global recomposto.
+A Tabela 6.2 apresenta as duas bases do H9a — balanceada e agressiva — e as
+variantes de cada uma somadas ao H9d, com o conjunto de pontos que as domina.
+
+| Configuração | Taxa BD | Redução de tempo | Dominada por |
+|---|--:|--:|---|
+| H9a balanceado (base, sem H9d) | 0,568% | 17,72% | a rede convolucional nativa e o H9c, presets 1 e 2 |
+| H9a balanceado + H9d (implantado) | 0,586% | 18,74% | o mesmo conjunto |
+| H9a balanceado + H9d, calibração PL20 | 0,651% | 19,81% | idem, mais o H9c a τ=0,45 |
+| H9a agressivo (base) | 1,403% | 31,51% | o H9a balanceado nos presets 1 e 2, o H9c no preset 2, a rede nativa nos presets 1 e 2 |
+| H9a agressivo + H9d | 1,409% | 31,68% | idem |
+| H9a agressivo + H9d, calibração PL20 | 1,420% | 32,16% | idem |
+
+Esta dominância não contradiz o resultado do H9d, e a leitura correta precisa
+ser registrada com cuidado. O H9d é um complemento do H9a, medido como
+contribuição marginal sobre uma base fixa e avaliado quanto à não dominância
+contra a curva de limiares do próprio H9a, e não contra a fronteira de todos
+os presets e todos os níveis de `cpu-used` — o quadro apresentado na Seção 6.4
+e detalhado em `docs/RESULTADOS_H9d_CTC.md`. Neste quadro, que é o válido, o
+H9d entrega +1,02 ponto percentual de redução de tempo por +0,018 ponto
+percentual de taxa BD sobre o H9a balanceado, e vence a curva de limiares em
+seis das oito sequências CTC.
+
+O que a Tabela 6.2 mostra é outra coisa: a base já é dominada antes de o H9d
+ser somado a ela. O H9a balanceado, sozinho, é dominado exatamente pelo mesmo
+conjunto de configurações que domina o H9a balanceado somado ao H9d. Então, o
+H9d não perde posição alguma na fronteira global — ele herda a posição do H9a,
+e a melhora marginalmente dentro dela —, pois a dominância vem de o ponto de
+operação do H9a viver em `cpu-used=0`, regime no qual os presets nativos a
+`cpu-used` 1 e 2 entregam mais redução de tempo por menos taxa BD. Deste modo,
+a conclusão da tese sobre o H9d não muda, mas passa a ser enunciável de forma
+mais precisa: nenhum ponto do H9a, somado ou não ao H9d, é não dominado na
+fronteira global; o valor destas soluções é a granularidade fina dentro da
+curva de limiares, apresentada na Seção 6.3, e não uma posição própria na
+fronteira global.
+
+A limitação que resta sobre esta fronteira não é mais a ausência do H9d —
+fechada para o regime `cpu-used=0`, que é onde o H9d foi medido e implantado
+—, e sim a sua ausência nos demais níveis de preset. O H9d não foi codificado
+empilhado sobre `cpu-used` 1, 2 e 3, e fechar esta lacuna custaria cerca de
+cento e noventa e duas codificações, na combinação de duas bases do H9a por
+três níveis de preset por oito sequências por quatro pontos de quantização. Há
+razão medida para esperar rendimento baixo desta campanha: o H9d mostrou-se
+inerte sobre a base agressiva do H9a, com apenas +0,17 ponto percentual de
+redução de tempo, acima da resolução temporal medida em somente uma das oito
+sequências; e os presets nativos mais rápidos já podam de forma agressiva, de
+modo que o resíduo sobre o qual o H9d atua tende a encolher conforme o preset
+avança.
+
+> **Procedência.** `docs/RESULTADOS_fronteira_pareto_global.md` §3 (tabela dos
+> quinze pontos não dominados), §4.1, §4.2 (leitura da dominância do H9d) e §5
+> (limitação remanescente); artefato
+> `results/benchmark/fase6_analysis/pareto_frontier.csv` (execução de
+> 2026-07-29, 24 configurações, 15 não dominadas); `docs/SINTESE_resultados_metodologia.md`
+> §6 e §8 (definição canônica de redução de tempo); `docs/ANDAMENTO_tese.md`
+> §0.3 e §8.3 (nota de correção de 2026-07-29); `results/thesis/A3_RETRATACOES_E_LACUNAS.md`
+> L1 (lacuna sobre a fronteira, fechada para `cpu-used=0`).
 
 ---
 
@@ -102,15 +167,18 @@ ocupar o que a nativa deixa descoberto — o objeto da Conclusão 2.
 
 A segunda conclusão é positiva e delimita com precisão onde está o valor
 prático das soluções aprendidas. Os pontos de menor taxa BD de toda a fronteira
-global pertencem ao H9c em `cpu-used=0`, entre 0,21% e 0,23% de taxa BD por
-13,9% a 15,0% de redução de tempo — uma região de compromisso que a escada de
+global pertencem ao H9c em `cpu-used=0`, a 0,160% e 0,172% de taxa BD por
+12,61% e 13,59% de redução de tempo — uma região de compromisso que a escada de
 presets nativos simplesmente não alcança, pois o preset nativo salta de
 `cpu-used=0`, sem nenhuma redução de tempo, para `cpu-used=1`, a aproximadamente
-32,6% de redução de tempo sob a definição canônica. Todo o regime entre 0% e
-32,6% de redução de tempo fica, então, descoberto pela escada discreta do
-codificador, e é exatamente este regime que as soluções aprendidas preenchem de
-forma contínua, por variação do limiar de decisão, sem retreino e sem
-recompilação.
+32,6% de redução de tempo sob a definição canônica. Estes dois pontos não
+figuravam na fronteira apurada antes de 29 de julho de 2026, pois, naquela
+execução, eles não estavam completos nas oito sequências e foram excluídos pelo
+filtro do script de análise; a recomposição da fronteira, então, deu, à
+Conclusão 2, os seus donos legítimos. Todo o regime entre 0% e 32,6% de redução
+de tempo fica, então, descoberto pela escada discreta do codificador, e é
+exatamente este regime que as soluções aprendidas preenchem de forma contínua,
+por variação do limiar de decisão, sem retreino e sem recompilação.
 
 A mesma leitura se confirma, com maior amplitude, na grade completa das oito
 sequências da CTC: as configurações do H9c em `cpu-used=0` nunca excedem 0,27%
@@ -299,8 +367,9 @@ substitutos.
 ## 6.7 Encaminhamento
 
 Esta análise integrada apoia-se sobre decisões de escopo e limitações medidas
-que precisam de ser declaradas com o mesmo rigor dos resultados: a cobertura de
-três sequências da fronteira global, a resolução temporal do experimento
+que precisam de ser declaradas com o mesmo rigor dos resultados: a ausência do
+H9d nos níveis de preset acima do `cpu-used=0` na fronteira global, a mistura de
+campanhas distintas que a fronteira reúne, a resolução temporal do experimento
 pareado, a dependência da Conclusão 3 ao ponto de operação, e a natureza dos
 indicadores substitutos que a Conclusão 3 e a síntese dos negativos colocam
 sob suspeita. Estas ameaças à validade, e os limites de escopo que decorrem

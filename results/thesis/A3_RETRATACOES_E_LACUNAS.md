@@ -25,13 +25,13 @@ das citações, este documento segue a terminologia fixada em `00_PLANO_capitulo
 
 # PARTE I — Afirmações retiradas ou corrigidas
 
-Esta parte apresenta vinte e três afirmações que circularam nos documentos do projeto,
+Esta parte apresenta vinte e quatro afirmações que circularam nos documentos do projeto,
 em alguns casos já commitadas, e que medições posteriores derrubaram ou obrigaram a
 reformular. Elas estão agrupadas por objeto: o domínio de pixels (R1 a R5), a família de
 podadores H9 (R6 a R9), o custo computacional (R10), o protocolo (R11 e R12), o
 enquadramento da contribuição (R13 e R14), a instrumentação de atributos (R15), os
 resultados negativos (R16 a R19) e as suposições de método que a medição substituiu (R20
-a R23).
+a R24).
 
 ---
 
@@ -507,6 +507,32 @@ a R23).
   copiar estes números"), com o artefato de divergência em
   `results/benchmark/fase6_analysis/ts_definitions.csv`.
 
+## R24 — A fronteira de compromisso global como análise de três sequências sem o H9d
+
+- **Enunciado antigo (literal).** «A fronteira de compromisso global entre taxa BD e
+  redução de tempo foi construída sobre três sequências da grade das condições comuns de
+  teste (do inglês *Common Test Conditions* – CTC) — BoxingPractice, FoodMarket2 e
+  Tango»; e «Esta fronteira **não contém os pontos do H9d**».
+- **Por que caiu.** A pendência estava **mal descrita**, não incompleta por natureza da
+  medição. O artefato `pareto_frontier.csv`, numa execução de 19 de julho, já reunia as
+  **oito sequências** da CTC — o seu ponto do preset nativo `cpu-used=1` registrava
+  0,449% de taxa BD por 32,59% de redução de tempo, valor canônico das oito sequências, e
+  não das três que o texto descrevia —; e o `raw_results.csv` de 27 de julho já continha
+  as quatro configurações do H9d. O `analyze_frontier.py` descobre as configurações
+  sozinho e mantém as completas nas oito sequências, de modo que bastou **reexecutá-lo**,
+  sem nenhuma codificação nova.
+- **Enunciado vigente.** A fronteira recomposta em **2026-07-29** reúne vinte e quatro
+  configurações avaliadas, das quais quinze são não dominadas, sobre as oito sequências
+  da CTC. As quatro configurações do H9d passam a figurar na análise, e nenhuma delas é
+  não dominada: a base do H9a já é dominada pelo mesmo conjunto que domina o H9a somado
+  ao H9d, de modo que o H9d **não perde posição alguma**, herdando a do H9a e
+  melhorando-a marginalmente. Esta dominância **não contradiz** o resultado do H9d, que
+  continua sendo medido, corretamente, como contribuição marginal sobre uma base fixa e
+  contra a curva de limiares do próprio H9a.
+- **Data e documento.** Corrigido em **2026-07-29**;
+  `docs/RESULTADOS_fronteira_pareto_global.md`; `results/thesis/R6_analise_integrada.md`
+  §6.1 (reescrito); lacuna L1 desta parte.
+
 ---
 
 # PARTE II — Lacunas conhecidas e pendências
@@ -520,26 +546,29 @@ carregar.
 
 ---
 
-## L1 — A fronteira de compromisso global não contém os pontos do H9d
+## L1 — O H9d na fronteira de compromisso global além de `cpu-used=0`
 
-- **O que falta.** A fronteira de Pareto global de taxa BD por tempo, que reúne todos os
-  níveis de `cpu-used`, é de uma análise anterior sobre **3 sequências**
-  (Boxing, FoodMarket2 e Tango) e **não contém o H9d**, medido depois sobre as 8
-  sequências da CTC. Recompô-la exige os pontos do H9d nos demais níveis de `cpu-used`,
-  que **não foram rodados**.
-- **Por que importa.** A ausência do H9d nessa fronteira **não é dominância**; mas a
-  figura, como está, **subrepresenta a contribuição**, pois omite a segunda solução
-  positiva justamente na única figura que compara tudo contra tudo. Na medição própria, o
-  H9d é não dominado no sentido de Pareto e vence o botão de τ em 6 de 8 sequências.
-- **Capítulo afetado.** Resultados §6 (`R6_analise_integrada.md`), e por consequência a
-  figura da fronteira global planejada em `A2_TABELAS_E_FIGURAS.md`.
-- **Custo de fechamento.** **Não registrado pelo projeto.** Como referência de ordem de
-  grandeza da mesma família, a fronteira bidimensional do H9d — duas bases do H9a por duas
-  forças do H9d — custou **96 codificações**; o número de codificações da recomposição
-  global não foi calculado em documento algum.
-- **Procedência.** `docs/SINTESE_resultados_metodologia.md` §6 (nota de 26/07 com
-  atualização de 27/07), `docs/ANDAMENTO_tese.md` §0.3 (último item da fila) e §6 (riscos
-  vivos), `docs/INVENTARIO_solucoes.md` §8.
+- **O que falta.** A lacuna anterior — a fronteira de Pareto global era de uma análise
+  sobre **3 sequências** (Boxing, FoodMarket2 e Tango) e não continha o H9d — foi
+  **fechada em 2026-07-29** pela recomposição do script de análise sobre as **8
+  sequências** da CTC, sem nenhuma codificação nova (ver retratação R24). Ela foi
+  **substituída por uma lacuna mais estreita**: o H9d não foi codificado empilhado sobre
+  os presets `cpu-used` 1, 2 e 3, apenas sobre `cpu-used=0`, que é onde foi medido e
+  implantado.
+- **Por que importa.** Na fronteira recomposta, as quatro configurações do H9d **figuram**
+  e são **dominadas**, o que não contradiz o seu resultado marginal, medido sobre uma base
+  fixa e contra a curva de limiares do próprio H9a. Mas o texto não pode afirmar nada
+  sobre o comportamento do H9d nos demais níveis de preset, pois falta o dado.
+- **Capítulo afetado.** Resultados §6 (`R6_analise_integrada.md`).
+- **Custo de fechamento.** **Cerca de 192 codificações**, registrado: duas bases do H9a
+  por três níveis de `cpu-used` por oito sequências por quatro pontos de quantização. Há
+  razão medida para esperar rendimento baixo: o H9d mostrou-se **inerte sobre a base
+  agressiva** do H9a (+0,17 pp de redução de tempo, acima da resolução em apenas 1 de 8
+  sequências), e os presets nativos mais rápidos já podam agressivamente, de modo que o
+  resíduo sobre o qual o H9d age tende a encolher.
+- **Procedência.** `docs/RESULTADOS_fronteira_pareto_global.md` §5; `docs/ANDAMENTO_tese.md`
+  §0.3 e §8.3 (nota de correção de 2026-07-29); `results/thesis/R6_analise_integrada.md`
+  §6.1.
 
 ## L2 — O critério de decisão estrito do E5 foi atingido em uma de duas sequências
 
@@ -844,8 +873,11 @@ derrubada pelo próprio projeto.
 28. Declarar o critério de decisão do E5 como **não atingido na forma estrita**, com o que
     de fato se obteve, e sem apresentar a HoneyBee como sequência que falhou — é **decisão
     de escopo**. (L2)
-29. Declarar que a fronteira de compromisso global **não contém o H9d**, e que essa
-    ausência **não é dominância**. (L1)
+29. Declarar que a fronteira de compromisso global recomposta (2026-07-29, oito
+    sequências, 24 configurações, 15 não dominadas) **contém** os pontos do H9d e que
+    estes são **dominados**; e que essa dominância **não contradiz** o resultado marginal
+    do H9d, pois a base do H9a já é dominada pelo mesmo conjunto. Não afirmar nada sobre o
+    H9d nos níveis `cpu-used` 1 a 3, que não foram codificados. (L1, R24)
 30. Declarar que o par `pixels24` contra variância **continua sem árbitro no codificador**,
     e que o E5 decide *H9a contra variância*, não aquele par. (L3)
 
@@ -859,4 +891,5 @@ derrubada pelo próprio projeto.
 `docs/RESULTADOS_C5_fronteira_tau.md`, `docs/RESULTADOS_fase5.md`,
 `docs/RESULTADOS_fase6.md`, `docs/RESULTADOS_microbench_pruner.md`,
 `docs/METODOLOGIA_pipeline_ML.md`, `docs/RASTREABILIDADE.md`, `docs/DECISOES_escopo.md`,
-`docs/RESPOSTAS_contra_argumentos_banca.md` e `docs/INVENTARIO_solucoes.md`.*
+`docs/RESPOSTAS_contra_argumentos_banca.md`, `docs/INVENTARIO_solucoes.md` e
+`docs/RESULTADOS_fronteira_pareto_global.md`.*

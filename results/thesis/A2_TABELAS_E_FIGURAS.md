@@ -416,15 +416,18 @@ descobrir depois.
   balanceado; H9a + H9d PL10; H9a agressivo; H9c τ=0,95 no *preset* 1; H9c
   τ=0,95 no *preset* 2) — taxa BD — redução de tempo — aceleração — status na
   fronteira de Pareto (dominado / não dominado).
-- **Linhas.** oito, uma por configuração.
-- **Dado de origem.** `results/benchmark/fase6/bdrate_average.csv` (H9a,
-  H9d, presets) e `results/benchmark/fase6_swap_h9c/swap_average.csv` (H9c),
-  ambos já verificados nas Tabelas 12, 15 e 18.
-- **Script/observação.** Não há script único que já produza esta tabela
-  combinada; requer reunir as duas fontes citadas e recalcular a
-  não-dominância de Pareto sobre o conjunto unido, com
-  `src/scripts/benchmark/analyze_frontier.py` como base de partida (já
-  calcula a fronteira sobre `fase6_swap_h9c`, falta estender ao H9d).
+- **Linhas.** vinte e quatro, uma por configuração avaliada, com a coluna de
+  status marcando as quinze não dominadas.
+- **Dado de origem.** `results/benchmark/fase6_analysis/pareto_frontier.csv`,
+  regenerado em 2026-07-29 por `src/scripts/fase6/analyze_frontier.py` a
+  partir de `results/benchmark/{fase6,fase6_swap,fase6_swap_h9c}/raw_results.csv`,
+  sobre as oito sequências da CTC: vinte e quatro configurações avaliadas,
+  quinze marcadas como não dominadas.
+- **Script/observação.** O script já produz a tabela e a marcação de
+  dominância diretamente (coluna `dominated_by`, vazia nos pontos não
+  dominados); não é necessário unir fontes nem recalcular a fronteira à mão.
+  Ver `docs/RESULTADOS_fronteira_pareto_global.md` §2 (comando de reprodução)
+  e §3 (tabela dos pontos não dominados).
 
 #### Tabela 21 — As três conclusões da tese, com o número que as sustenta
 
@@ -850,33 +853,20 @@ de leitura visual.
 - **Eixos e séries.** Eixo horizontal: redução de tempo (%). Eixo vertical:
   taxa BD (%). Marcadores por família (presets nativos: quadrado; H9a:
   círculo; H9a+H9d: círculo preenchido; H9c: triângulo).
-- **Dado de origem.** `results/benchmark/fase6/bdrate_average.csv` (H9a, H9d,
-  presets) e `results/benchmark/fase6_swap_h9c/swap_average.csv` (H9c).
+- **Dado de origem.** `results/benchmark/fase6_analysis/pareto_frontier.csv`
+  (execução de 2026-07-29, vinte e quatro configurações, quinze não
+  dominadas), já unificado pelo script sobre as três campanhas (`fase6`,
+  `fase6_swap`, `fase6_swap_h9c`), sem necessidade de renomear ou concatenar
+  colunas. Colunas confirmadas: `config`, `bd_rate`, `ts_pct`, `speedup`,
+  `dominated_by` (vazia nos pontos não dominados).
 - **Esboço de script.**
   ```python
   import pandas as pd
   import matplotlib.pyplot as plt
 
-  fase6 = pd.read_csv("results/benchmark/fase6/bdrate_average.csv")
-  swap_h9c = pd.read_csv("results/benchmark/fase6_swap_h9c/swap_average.csv")
-  swap_h9c = swap_h9c[swap_h9c["kind"].str.startswith("h9c")]
-  swap_h9c = swap_h9c.rename(columns={"kind": "config", "ts_pct": "ts_pct",
-                                       "bd_rate": "bd_rate"})
+  points = pd.read_csv("results/benchmark/fase6_analysis/pareto_frontier.csv")
+  points["pareto"] = points["dominated_by"].isna() | (points["dominated_by"] == "")
 
-  points = pd.concat([
-      fase6[["config", "bd_rate", "ts_pct"]],
-      swap_h9c[["config", "bd_rate", "ts_pct"]],
-  ], ignore_index=True)
-
-  def pareto_mask(df, x="ts_pct", y="bd_rate"):
-      # não dominado: nenhum outro ponto tem ts maior E bd menor ou igual
-      mask = []
-      for i, r in df.iterrows():
-          dominated = ((df[x] >= r[x]) & (df[y] <= r[y]) & (df.index != i)).any()
-          mask.append(not dominated)
-      return mask
-
-  points["pareto"] = pareto_mask(points)
   fig, ax = plt.subplots(figsize=(7, 6))
   ax.scatter(points["ts_pct"], points["bd_rate"], c=points["pareto"].map({True: "tab:red", False: "gray"}))
   for _, r in points.iterrows():
@@ -887,11 +877,10 @@ de leitura visual.
   plt.savefig("fig_fronteira_global.png", dpi=200)
   ```
 - **Observação.** Esta é a figura mais consequente do plano, pois sustenta
-  diretamente duas das três conclusões da tese (Tabela 21). A união das duas
-  fontes de dados requer atenção aos nomes de coluna, que divergem levemente
-  entre `bdrate_average.csv` (`bd_rate`, `ts_pct`) e `swap_average.csv`
-  (`bd_rate`, `ts_pct` sob a chave `kind` em vez de `config`) — renomear antes
-  de concatenar.
+  diretamente duas das três conclusões da tese (Tabela 21). O artefato de
+  origem já existe pronto para plotagem, regenerado em 2026-07-29 por
+  `src/scripts/fase6/analyze_frontier.py`; não é mais necessário unir fontes
+  nem recalcular a fronteira de Pareto à mão.
 
 ---
 
@@ -922,18 +911,6 @@ script citado.
   reexecutar `h9d_predictability.py` com uma opção de exportação de métricas
   por nível em CSV, opção que o script, pelo que esta auditoria verificou, não
   oferece.
-- **Tabela 20 e Figura 9 (fronteira de compromisso global).** Não há um único
-  CSV que já reúna H9a, H9d, H9c e os *presets* nativos num mesmo esquema de
-  colunas: é preciso unir `results/benchmark/fase6/bdrate_average.csv` e
-  `results/benchmark/fase6_swap_h9c/swap_average.csv`, com renomeação de
-  colunas, e recalcular a fronteira de Pareto sobre o conjunto unido — o que
-  nenhum script existente faz automaticamente. Esta é a mesma lacuna registrada
-  como L1 em `A3_RETRATACOES_E_LACUNAS.md`: a versão histórica desta fronteira,
-  citada em `SINTESE_resultados_metodologia.md §6`, cobre apenas três
-  sequências (Boxing, FoodMarket2, Tango) e não contém o H9d; a versão
-  especificada aqui usa as oito sequências da CTC e as duas fontes já
-  confirmadas presentes no repositório, o que a torna executável sem nova
-  codificação, mas ainda não foi executada.
 - **Figura 8 (inversão do crivo oráculo, painel esquerdo).** Os quatro
   arquivos `gate_oracle.csv` existem, mas os nomes exatos das colunas de
   risco casado (`split_lost` ou equivalente) não foram conferidos linha a

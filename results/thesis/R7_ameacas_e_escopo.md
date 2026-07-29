@@ -250,19 +250,32 @@ Esta parte fecha o capítulo com o que permanece genuinamente em aberto — não
 decisão, mas pendência —, o que a distingue exatamente por isso das decisões
 de escopo da Parte II.
 
-### 7.3.1 A fronteira de compromisso global sem os pontos do H9d
+### 7.3.1 O H9d na fronteira de compromisso global além do `cpu-used=0`
 
 A fronteira de compromisso entre taxa BD e tempo que reúne todos os níveis do
-*preset* nativo é de uma análise anterior, sobre três sequências, e não contém o
-H9d, medido depois sobre as oito sequências da CTC. A ausência não é
-dominância — na medição própria, o H9d é não dominado no sentido de Pareto e
-vence a curva de limiares do H9a em seis de oito sequências —, mas a figura,
-como está, subrepresenta a segunda solução positiva desta tese na única
-comparação que reúne tudo contra tudo. Recompô-la exige os pontos do H9d nos
-demais níveis do *preset* nativo, que ainda não foram medidos; o custo desta
-recomposição não está registrado em nenhum documento do projeto, embora a
-campanha de ordem de grandeza comparável — a fronteira bidimensional do H9d —
-tenha custado noventa e seis codificações.
+*preset* nativo foi recomposta em 2026-07-29 e passou a conter as quatro
+configurações do H9d, de modo que a lacuna registrada até então — uma fronteira
+de três sequências, sem a segunda solução positiva desta tese — está fechada
+para o regime `cpu-used=0`. A recomposição custou uma reexecução de rotina de
+análise, pois o dado já existia: as configurações do H9d haviam entrado no
+arquivo de resultados oito dias depois do último cálculo da fronteira.
+
+O que permanece em aberto é mais estreito. O H9d **não foi codificado nos níveis
+`cpu-used` 1, 2 e 3**, e por isso a fronteira o representa apenas no regime em
+que foi implantado. Fechar esta lacuna exigiria duas bases por três níveis de
+*preset* por oito sequências por quatro pontos de quantização, ou seja, cerca de
+cento e noventa e duas codificações. Há razão medida para esperar rendimento
+baixo, pois o H9d mostrou-se inerte sobre a base agressiva do H9a e os *presets*
+nativos mais rápidos já podam de forma agressiva, o que tende a reduzir o
+resíduo sobre o qual o H9d age.
+
+Cabe destacar, ainda, que as configurações do H9d são **dominadas** na fronteira
+global, e que esta constatação não contradiz a contribuição da solução: a base
+sobre a qual o H9d age já é dominada pelo mesmo conjunto de configurações, uma
+vez que opera em `cpu-used=0`, regime no qual os *presets* nativos entregam mais
+redução de tempo por menos taxa BD. O quadro em que o H9d é julgado é o da
+contribuição marginal sobre base fixa e o da não-dominância contra a curva de
+limiares do próprio H9a, e nele o resultado se mantém.
 
 ### 7.3.2 O critério estrito do E5 atingido em uma de duas sequências
 
@@ -304,9 +317,14 @@ não enfraquecem as duas soluções positivas apresentadas nas seções anterior
 delimitam, com a mesma disciplina de medição que produziu estas soluções,
 exatamente até onde cada afirmação desta tese se sustenta.
 
-> **Procedência.** `docs/SINTESE_resultados_metodologia.md` §6 (fronteira
-> global sem o H9d, nota de 26/07 com atualização de 27/07);
-> `docs/ANDAMENTO_tese.md` §0.3 e §6; `docs/INVENTARIO_solucoes.md` §8
+> **Procedência.** `docs/RESULTADOS_fronteira_pareto_global.md` (recomposição de
+> 29/07: fronteira de oito sequências com as quatro configurações do H9d, a
+> dominância da base e o custo de cerca de 192 codificações para os demais
+> níveis de *preset*); artefato `results/benchmark/fase6_analysis/pareto_frontier.csv`
+> (24 configurações, 15 não dominadas); script `src/scripts/fase6/analyze_frontier.py`;
+> `docs/SINTESE_resultados_metodologia.md` §6 e `docs/ANDAMENTO_tese.md` §0.3, §6
+> e §8.3, com as respectivas notas de correção de 29/07;
+> `docs/INVENTARIO_solucoes.md` §8
 > (lacunas primeira, segunda e quinta); `docs/RESULTADOS_E5_ablacao_validacao.md`
 > §4, §5 e §6 (veredito, o que decidiria o critério e custo de ~2,3 h);
 > `docs/DECISOES_escopo.md` (atualização de 28/07, corte de escopo da

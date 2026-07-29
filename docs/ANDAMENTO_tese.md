@@ -158,6 +158,16 @@ treino em GPU enquanto o E5 roda** — ele mede tempo de parede.
 | ~~5~~ | ~~**E5** — ablação da CB-1 nas seqs de validação~~ — **CONCLUÍDO 28/07** | encodes | 144 encodes, 2 seqs. **1ª comparação a tempo casado** da tese: o `ml` vence a variância por 4,6× e 1,85× na FlowerPan. Portão estrito (≥2 de 3) **não** atingido — 1 de 2, HoneyBee cortada por escopo. `RESULTADOS_E5_ablacao_validacao.md` |
 | — | Recompor a **fronteira Pareto global** com o H9d nos demais níveis de cpu | encodes | não iniciado; ver `SINTESE §6` |
 
+> **Correção (2026-07-29).** O item acima — "Recompor a fronteira Pareto global
+> com o H9d nos demais níveis de cpu" — estava mal descrito como pendência
+> plena. A recomposição não exigiu codificação nova: o artefato
+> `pareto_frontier.csv` já reunia as 8 sequências da CTC desde 19/07 e o
+> `raw_results.csv` de 27/07 já continha o H9d; bastou reexecutar
+> `analyze_frontier.py`. A fronteira está **recomposta em `cpu-used=0`** (24
+> configurações, 15 não-dominadas); o que continua pendente é o H9d nos níveis
+> `cpu-used` 1 a 3, ~192 codificações não rodadas. Ver
+> `docs/RESULTADOS_fronteira_pareto_global.md`.
+
 Restrição de agenda: treino em GPU carrega CPU no carregamento de dados e **não pode**
 correr durante encodes que medem tempo. Vale para os dois itens abertos — tanto o E5
 quanto a fronteira Pareto global medem tempo de parede.
@@ -728,6 +738,14 @@ condições universais.
 - **A fronteira Pareto global está desatualizada** — é de 3 seqs e não contém o H9d.
   Sua ausência não é dominância, mas a figura, como está, subrepresenta a contribuição.
 
+> **Correção (2026-07-29).** Este risco foi **encerrado para `cpu-used=0`**. A
+> fronteira foi recomposta por reexecução do script de análise, sem nenhuma
+> codificação nova, sobre as 8 sequências da CTC (24 configurações, 15
+> não-dominadas). O H9d agora figura na fronteira e é dominado, o que não
+> contradiz o seu resultado marginal — a base do H9a já é dominada pelo mesmo
+> conjunto. O que resta vivo é o H9d nos níveis `cpu-used` 1 a 3, não
+> codificado. Ver `docs/RESULTADOS_fronteira_pareto_global.md`.
+
 ---
 
 ## 7. H9c — teto de contexto RD pós-NONE (2026-07-15): implementado, testado, não sobrevive ao piloto real
@@ -932,6 +950,19 @@ todos os níveis cpu):** pontos não-dominados, do menor BD ao maior:
    > `SINTESE §2.8` (espaço de projeto) e `SINTESE §6, Conclusão 3`. Restrição
    > independente e complementar, pelo eixo da estrutura, em
    > `RESULTADOS_approachB.md §7.1`.
+
+> **Correção (2026-07-29).** A fronteira Pareto global acima é a análise de **3
+> sequências** (Boxing/FoodMarket2/Tango) descrita nesta seção, e a pendência de
+> recompô-la com o H9d **foi encerrada**. A recomposição, por reexecução do
+> script de análise sem nenhuma codificação nova, mostrou que o artefato já
+> reunia as **8 sequências** da CTC desde 19/07, e que o `raw_results.csv` de
+> 27/07 já continha o H9d: bastava reexecutar. A fronteira recomposta tem **24
+> configurações avaliadas, 15 não-dominadas**; o extremo de baixo BD melhora
+> para `h9c_tau95`(0,160%/12,61%) e `h9c_tau90`(0,172%/13,59%); e as quatro
+> configurações do H9d **figuram e são dominadas**, o que **não contradiz** o
+> resultado marginal do H9d — a base do H9a já é dominada pelo mesmo conjunto,
+> de modo que o H9d herda a posição do H9a e a melhora dentro dela. Ver
+> `docs/RESULTADOS_fronteira_pareto_global.md`.
 
 ### 8.4 Experimentos daquela rodada (2026-07-16) — **todos concluídos**
 
