@@ -101,7 +101,20 @@ fronteira: ela tende a zero quando a poda tende a zero e cresce
 monotonicamente com a agressividade, ao contrário de um dano médio por poda,
 que permaneceria elevado sob poda escassa. A leitura é feita a redução de custo
 de busca (`cost_red`) casada entre subconjuntos, de modo que todos sejam
-comparados no mesmo ponto de operação; menor valor é melhor. Os valores a 25%
+comparados no mesmo ponto de operação; menor valor é melhor.
+
+*Advertência de leitura.* Nem as colunas nem as células desta tabela são
+grandezas do codificador. As colunas são **custo de busca modelado** — número de
+candidatos de forma ponderado pela área do bloco, conforme a Seção 3.4.1 do
+Capítulo de Metodologia —, e não redução de tempo de parede: "25% de `cost_red`"
+não significa vinte e cinco por cento de tempo economizado. As células são
+sobrecusto de taxa-distorção normalizado por um denominador que soma os três
+níveis da hierarquia, recobrindo a mesma área da imagem, e não são taxa BD nem
+convertem nela. Por conseguinte, a tabela sustenta **razões entre subconjuntos
+ao mesmo ponto de operação** — o `pixels24` desperdiça 3,4 vezes o que o H9a
+desperdiça, a 25% —, e **não** o enunciado de que o `pixels24` custaria 0,0121%
+de eficiência de compressão. O custo medido em codificador do `pixels24` consta
+da Tabela 8, e é de 0,422% a 0,492% de taxa BD. Os valores a 25%
 provêm de `docs/RESULTADOS_convnext_regret.md` §2, tabela por `cost_red`
 redondo (5%, 10%, 15%, 20%, 25%); os valores a 30% provêm do ranqueamento de
 `docs/RESULTADOS_oraculo_regret.md` §3, que não inclui as duas variantes do

@@ -166,6 +166,68 @@ todos os níveis comparáveis é o dominante.
 > `src/scripts/benchmark/run_benchmark.py` (codificação, decodificação e PSNR-Y),
 > `src/scripts/benchmark/analyze_ablation.py` (comparação a aceleração casada).
 
+### 3.4.1 As métricas do crivo offline e a sua não conversão nos três pilares
+
+Os três pilares acima são medidos **dentro do codificador**. A investigação
+recorre, porém, a um segundo conjunto de métricas, computadas **fora** dele, por
+simulação sobre árvores de decisão previamente gravadas, e a distinção entre os
+dois conjuntos precisa ser mantida com rigor, sob pena de se atribuir a um
+resultado offline uma consequência que ele não mede.
+
+A **redução de custo de busca**, denotada `cost_red` e reportada em porcentagem,
+é a métrica de economia do crivo offline. Ela não é tempo de parede nem
+estimativa de tempo de parede: é um **contador analítico de trabalho**, definido
+como o número de candidatos de forma que uma busca completa avaliaria no nó,
+ponderado pela área do bloco em pixels. Na formulação empregada, o custo de um
+nó de dimensão *n* é o produto do número de candidatos por *n*², com nove
+candidatos para blocos de 64, 32 e 16 px e quatro para blocos de 8 px, e a
+redução é a diferença percentual entre o custo somado sobre os nós que a
+política visita e o custo da busca completa. A grandeza foi construída para
+**casar pontos de operação** entre candidatos — comparar o dano de políticas que
+podam quantidades diferentes de trabalho não seria informativo —, e não para
+prever a economia de tempo que o codificador realizaria.
+
+A **fração de perda de otimalidade**, `reg_frac`, é a métrica de dano do mesmo
+crivo, definida na Seção 1.4 do Capítulo de Resultados. Cabe registrar aqui uma
+propriedade do seu denominador que restringe a sua leitura: a soma percorre os
+nós de decisão dos três níveis da hierarquia — 64, 32 e 16 px —, os quais
+**recobrem a mesma área da imagem**, ao passo que a codificação efetiva emprega
+apenas um nível por região. Um superbloco contribui, assim, com vinte e um nós
+para o denominador, dos quais somente um subconjunto disjunto sobrevive na
+partição escolhida. O denominador não é, portanto, o custo de codificar o
+quadro, e sim a soma de custos hipotéticos mutuamente excludentes, o que o torna
+sistematicamente maior e, por consequência, torna `reg_frac` sistematicamente
+menor do que qualquer perda de eficiência observável no codificador.
+
+Uma segunda razão, de natureza distinta, separa as duas famílias. A simulação
+offline repassa uma árvore gravada e desconta valores registrados: podar um nó
+subtrai o sobrecusto que aquele nó apresentava na gravação. No codificador, ao
+contrário, podar um nó altera o contexto de tudo o que se segue — a reconstrução
+que serve de referência à predição intraquadro dos blocos posteriores, os
+contextos de codificação entrópica e a vizinhança causal dos nós vizinhos. Esta
+propagação está inteiramente ausente do crivo.
+
+Deste modo, **nenhum fator de conversão entre as duas famílias é postulado nesta
+tese, e nenhum resultado offline é apresentado como previsão de taxa BD ou de
+tempo**. As métricas offline são empregadas em regime estritamente **ordinal**:
+elas ordenam candidatos a um custo de segundos de processamento gráfico, e
+apenas os candidatos sobreviventes são levados à medição em codificador, cujo
+custo é de horas. Toda razão extraída delas é uma razão entre candidatos ao
+mesmo ponto de operação, jamais um valor absoluto de perda. O caso designado B2
+ilustra a necessidade desta disciplina: positivo no crivo, com ganho relativo de
+1,6× a 2,7×, e declarado imaterial no codificador por situar-se abaixo do piso
+de ruído estabelecido na Seção 3.6.
+
+> **Procedência.** Definição de `cost_red`:
+> `src/scripts/partition_model/simulate_pruning.py`, dicionário `CANDS` e função
+> `node_cost` (linhas 59 a 63), com o comentário de derivação dos nove candidatos
+> nas linhas 55 a 58. Níveis de decisão do denominador de `reg_frac`:
+> `src/scripts/partition_model/regret.py`, constante `DECISION_DIMS` (linha 16);
+> acumulação em `src/scripts/partition_model/oracle_regret.py` (linhas 119, 139 e
+> 297). O caráter ordinal do crivo consta de `oracle_regret.py`, docstring do
+> módulo (linhas 2 e 18), e a sua aplicação ao caso B2 de
+> `docs/RESULTADOS_modelagem_B2_tau_qindex.md` §4.
+
 ---
 
 ## 3.5 As duas definições de redução de tempo — e qual foi padronizada
