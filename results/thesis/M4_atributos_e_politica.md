@@ -70,20 +70,25 @@ codificador.
 ## 4.2 O bloco D: a especificação e a implementação divergem
 
 A auditoria de código realizada em 26 de julho de 2026 estabeleceu que o bloco D
-**implementado não é o bloco D especificado**, e o registro desta divergência é
-obrigatório. A especificação, fixada em `PLANO_H9_contribuicao_tese.md:326`,
-define `satd_pred` como o SATD do **resíduo de uma predição intra barata
-construída a partir dos vizinhos reconstruídos** — PAETH ou o melhor entre DC,
-PAETH e dois modos direcionais — e `satd_gain` como a diferença normalizada entre
-o SATD da fonte e o SATD deste resíduo, tendo o plano advertido que um resíduo de
-predição constante possui a mesma variância do bloco e nada acrescentaria ao
-bloco A. A implementação em `features.py:252-260,305-308` calcula
-`block_satd(block)`, ou seja, a transformada de Hadamard do **bloco-fonte**, sem
-predição alguma e sem tocar em nenhum vizinho. Deste modo, o bloco D implementado
-é uma estatística exclusivamente da fonte, correlacionada com a variância e com
-os gradientes que o bloco A já contém, e o seu resultado nulo na etapa de
-validação de sinal — 46,9 / 50,5 / 53,4 / 57,8 contra 47,0 / 49,7 / 52,6 / 57,3
-do H9a — era esperado e **não informa sobre a hipótese que o plano formulou**.
+**implementado não é o bloco D especificado**. O registro desta divergência é
+obrigatório.
+
+A especificação, fixada em `PLANO_H9_contribuicao_tese.md:326`, define
+`satd_pred` como o SATD do **resíduo de uma predição intra barata construída a
+partir dos vizinhos reconstruídos** — PAETH, ou o melhor entre DC, PAETH e dois
+modos direcionais. Define ainda `satd_gain` como a diferença normalizada entre o
+SATD da fonte e o SATD desse resíduo. O plano advertia que um resíduo de predição
+constante possui a mesma variância do bloco e nada acrescentaria ao bloco A.
+
+A implementação em `features.py:252-260,305-308` calcula `block_satd(block)`, ou
+seja, a transformada de Hadamard do **bloco-fonte**, sem predição alguma e sem
+tocar em vizinho algum.
+
+O bloco D implementado é, deste modo, estatística exclusivamente da fonte,
+correlacionada com a variância e com os gradientes que o bloco A já contém. O seu
+resultado nulo na etapa de validação de sinal — 46,9 / 50,5 / 53,4 / 57,8 contra
+47,0 / 49,7 / 52,6 / 57,3 do H9a — era esperado e **não informa sobre a hipótese
+que o plano formulou**.
 
 A hipótese especificada foi testada posteriormente, sob o nome de bloco D', com
 três atributos que escolhem o melhor preditor entre DC, V, H e PAETH e medem a
@@ -101,28 +106,32 @@ portanto, excluído de todos os conjuntos implantados.
 
 Uma precisão de composição atravessa todo o restante deste texto e corrige três
 afirmações anteriores dos documentos do projeto. O conjunto `pixels24` é definido
-como `list(range(24))` e o H9a como `list(range(36))`, de modo que **o `pixels24`
-é literalmente o bloco A do H9a**. Os dois braços comparados na etapa de
-validação de sinal e no crivo A5 **não são conjuntos disjuntos**: um contém o
-outro. Toda comparação entre `pixels24` e H9a mede, portanto, o retorno dos **doze
-atributos adicionais** de vizinhança de particionamento, quantização e posição
-**sobre** os vinte e quatro descritores de luminância, e nunca o retorno de um
-domínio de informação contra outro.
+como `list(range(24))` e o H9a como `list(range(36))`. Ou seja: **o `pixels24` é
+literalmente o bloco A do H9a**.
+
+Os dois braços comparados na etapa de validação de sinal e no crivo A5 **não são
+conjuntos disjuntos** — um contém o outro. Toda comparação entre `pixels24` e H9a
+mede, portanto, o retorno dos **doze atributos adicionais** de vizinhança de
+particionamento, quantização e posição **sobre** os vinte e quatro descritores de
+luminância. Jamais o retorno de um domínio de informação contra outro.
 
 A consequência é uma releitura da hierarquia medida no crivo A5, em `cost_red`
-casado de 25%: a variância isolada atinge `reg_frac` de 0,0573; o `pixels24`,
-acrescentando vinte e três descritores de luminância, atinge 0,0121, um ganho de
-4,7×; o `convnext_ce`, acrescentando 28,1 milhões de parâmetros sobre pixels
-crus, atinge 0,0207, isto é, 0,6× — pior; e o H9a, acrescentando os doze
-atributos de vizinhança, quantização e posição, atinge 0,0036, um ganho de 3,4×.
-A leitura correta não é a de que contexto de taxa-distorção vence pixels, e sim a
-de que descritores manuais compactos vencem uma rede convolucional profunda sobre
-pixels crus, e de que o que separa o conjunto campeão do restante não é
-capacidade de modelo, e sim contexto causal de vizinhança. Registre-se, com o
-mesmo rigor, que **o podador implantado é majoritariamente um modelo de pixels**,
-pois vinte e quatro dos seus trinta e seis atributos são descritores de
-luminância, e que ele **não contém nenhuma grandeza de custo de taxa-distorção**,
-uma vez que estas existem apenas no bloco E.
+casado de 25%. A variância isolada atinge `reg_frac` de 0,0573. O `pixels24`,
+acrescentando vinte e três descritores de luminância, atinge 0,0121 — um ganho de
+4,7×. O `convnext_ce`, acrescentando 28,1 milhões de parâmetros sobre pixels
+crus, atinge 0,0207, isto é, 0,6×, o que significa piora. O H9a, acrescentando os
+doze atributos de vizinhança, quantização e posição, atinge 0,0036 — um ganho de
+3,4×.
+
+A leitura correta não é a de que contexto de taxa-distorção vence pixels. É a de
+que descritores manuais compactos vencem uma rede convolucional profunda sobre
+pixels crus, e a de que o que separa o conjunto campeão do restante não é
+capacidade de modelo, e sim contexto causal de vizinhança.
+
+Registre-se, com o mesmo rigor, que **o podador implantado é majoritariamente um
+modelo de pixels**, uma vez que vinte e quatro dos seus trinta e seis atributos
+são descritores de luminância. Registre-se também que ele **não contém grandeza
+alguma de custo de taxa-distorção**, pois estas existem apenas no bloco E.
 
 > **Procedência.** `docs/RESULTADOS_auditoria_dominio_pixels.md` §2, §2.1 e §7;
 > `features.py:204,216`; `docs/RESULTADOS_convnext_regret.md` §2;
@@ -132,25 +141,29 @@ uma vez que estas existem apenas no bloco E.
 ## 4.4 O custo de obtenção de cada bloco
 
 O critério que governou a inclusão de cada bloco é o custo de obtê-lo no ponto
-exato do fluxo de controle em que o podador é consultado. Os blocos **B** e **C**
-são **leitura grátis de estado já residente na memória do codificador**: os
-tamanhos das partições vizinhas vêm de `xd->above_mbmi` e `xd->left_mbmi`, que a
-busca nativa já mantém e já consulta; a quantização vem de `dc_q`; a posição e a
-profundidade vêm de `mi_row`, `mi_col` e da dimensão do nó. Nenhum desses doze
-atributos exige aritmética sobre pixels.
+exato do fluxo de controle em que o podador é consultado.
 
-O bloco **A** também não exige nova instrumentação — os pixels do bloco, do
-bloco-pai e dos irmãos já estão no quadro-fonte, e o pai é obtido por aritmética
-de ponteiros a partir das coordenadas do nó —, mas exige **cômputo**: somas
-inteiras, variâncias, diferenças de gradiente e perfis de linha e de coluna sobre
-os n² pixels do bloco. Este custo é linear na área e foi aceito porque uma única
-avaliação de candidato na busca RD já percorre a mesma área com operações muito
-mais caras. O bloco **D** exige uma transformada de Hadamard por nó, e o bloco D'
-exigiria, além dela, uma predição intra por nó — custo barato, mas não nulo, e
-não justificado por ganho de sinal nenhum. O bloco **E** é o extremo oposto:
-exige a **avaliação completa de taxa-distorção da partição `PARTITION_NONE`**, o
-que significa que o podador que o consome já pagou este custo e jamais poderá
-economizá-lo.
+Os blocos **B** e **C** são **leitura grátis de estado já residente na memória do
+codificador**. Os tamanhos das partições vizinhas vêm de `xd->above_mbmi` e
+`xd->left_mbmi`, que a busca nativa já mantém e já consulta. A quantização vem de
+`dc_q`. A posição e a profundidade vêm de `mi_row`, `mi_col` e da dimensão do nó.
+Nenhum desses doze atributos exige aritmética sobre pixels.
+
+O bloco **A** também não exige nova instrumentação, uma vez que os pixels do
+bloco, do bloco-pai e dos irmãos já estão no quadro-fonte, e o pai é obtido por
+aritmética de ponteiros a partir das coordenadas do nó. Ele exige, contudo,
+**cômputo**: somas inteiras, variâncias, diferenças de gradiente e perfis de
+linha e de coluna sobre os n² pixels do bloco. Este custo é linear na área e foi
+aceito porque uma única avaliação de candidato na busca RD já percorre a mesma
+área com operações muito mais caras.
+
+O bloco **D** exige uma transformada de Hadamard por nó. O bloco D' exigiria,
+além dela, uma predição intra por nó — custo barato, mas não nulo, e não
+justificado por ganho de sinal algum.
+
+O bloco **E** é o extremo oposto. Ele exige a **avaliação completa de
+taxa-distorção da partição `PARTITION_NONE`**, o que significa que o podador que
+o consome já pagou este custo e jamais poderá economizá-lo.
 
 > **Procedência.** `docs/ARQUITETURA_pruner_implantado.md` §2 e §3;
 > `src/scripts/partition_model/features.py:263-324`;
@@ -182,25 +195,29 @@ também as partições estendidas AB e 4-way.
 
 Não satisfeita nenhuma das três condições, o nó segue para a busca completa. A
 política **apenas remove candidatos e jamais força um candidato ilegal**, de modo
-que o fluxo permanece válido e o formato do *bitstream* não muda. O podador
-pós-`PARTITION_NONE` da variante H9c aplica uma ação **binária** — se
-`P(NONE) > τ`, a busca encerra ali, o que é seguro justamente porque a partição já
-foi avaliada — e o H9d aplica uma ação **seletiva**, decidindo se vale avaliar as
-partições estendidas, sem tocar em `PARTITION_NONE`, nas retangulares ou na
-*split*.
+que o fluxo permanece válido e o formato do *bitstream* não muda.
 
-O vetor de limiares τ é, literalmente, o ponto de operação da solução: baixar
-`τ_none` faz o codificador aceitar a decisão do modelo com menos confiança, cortar
-mais subárvores e ceder mais taxa BD, e subir `τ_none` faz o oposto. O ponto
-equilibrado, com `τ_none` de 0,95 e `τ_rest` de 0,20, obteve cerca de 0,46% de
-taxa BD a aproximadamente 26,5% de redução de tempo, e o ponto agressivo, com
-0,60 e 0,40, obteve de 1,4% a 2% de taxa BD a 48–57% de redução — dois ajustes do
-mesmo controle, não dois modelos. Uma varredura fina do limiar global, com oito
-valores entre 0,55 e 0,96, verificou que a fronteira resultante é **densa e
-contínua**: o maior intervalo de aceleração entre valores vizinhos, em vinte e uma
-vizinhanças medidas, é de 0,15×, e a maioria fica em torno de 0,03×, com taxa BD
-suave e monótona. Deste modo, a decisão dura por limiar funciona como um controle
-efetivamente contínuo do ponto de operação, sem retreino.
+O podador pós-`PARTITION_NONE` da variante H9c aplica uma ação **binária**: se
+`P(NONE) > τ`, a busca encerra ali. Isso é seguro justamente porque a partição já
+foi avaliada. O H9d, por sua vez, aplica uma ação **seletiva**, decidindo se vale
+avaliar as partições estendidas, sem tocar em `PARTITION_NONE`, nas retangulares
+ou na *split*.
+
+O vetor de limiares τ é, literalmente, o ponto de operação da solução. Baixar
+`τ_none` faz o codificador aceitar a decisão do modelo com menos confiança,
+cortar mais subárvores e ceder mais taxa BD. Subir `τ_none` faz o oposto.
+
+O ponto equilibrado, com `τ_none` de 0,95 e `τ_rest` de 0,20, obteve cerca de
+0,46% de taxa BD a aproximadamente 26,5% de redução de tempo. O ponto agressivo,
+com 0,60 e 0,40, obteve de 1,4% a 2% de taxa BD a 48–57% de redução. São dois
+ajustes do mesmo controle, e não dois modelos.
+
+Uma varredura fina do limiar global, com oito valores entre 0,55 e 0,96,
+verificou que a fronteira resultante é **densa e contínua**. O maior intervalo de
+aceleração entre valores vizinhos, em vinte e uma vizinhanças medidas, é de
+0,15×, e a maioria fica em torno de 0,03×, com taxa BD suave e monótona. A
+decisão dura por limiar funciona, deste modo, como um controle efetivamente
+contínuo do ponto de operação, sem retreino.
 
 > **Procedência.** `docs/ARQUITETURA_pruner_implantado.md` §1, §4, §5 e §6;
 > `src/aom/av1/encoder/partition_strategy.c`, `student_prune_partition` e
@@ -215,20 +232,26 @@ Os limiares são mantidos **por nível de tamanho de bloco**, em uma tabela inde
 por 16, 32 e 64 px, e a justificativa é experimental. A decomposição por remoção
 de um nível de cada vez, a partir do ponto implantado — `τ_none` de 0,85, 0,80 e
 0,80 em 16, 32 e 64 px, `τ_split` de 0,90 e `τ_rest` de 0,20 —, mediu eficiências
-radicalmente distintas entre os níveis. O nível de 64 px é a alavanca agressiva e
-cara: desligá-lo na sequência Jockey derruba a taxa BD de 1,412% para 0,111%, ou
-seja, remove cerca de 92% do custo de qualidade ao preço de apenas 0,223× de
-aceleração, o que corresponde a 5,84 pontos percentuais de taxa BD por 1× de
-aceleração. O nível de 32 px é o mais eficiente, chegando a render 0,391× de
-aceleração na sequência RaceNight com uma variação de taxa BD de −0,009 ponto
-percentual, isto é, praticamente grátis. O nível de 16 px contribui pouco em ambos
-os eixos. O ganho, portanto, **não vem de um único nível**, e a dependência do
-conteúdo é forte o bastante para que um limiar único por ação seja subótimo. O
-mesmo padrão se repetiu na calibração do podador das partições estendidas: um
-limiar global de 0,30 melhorava duas sequências e piorava a terceira em 0,12 ponto
-percentual de taxa BD, e a correção foi a adoção de limiares por nível — 0,091 em
-16 px, 0,103 em 32 px e 0,014 em 64 px —, que recuperou a sequência prejudicada
-sem abrir mão do ganho nas demais.
+radicalmente distintas entre os níveis.
+
+O nível de 64 px é a alavanca agressiva e cara. Desligá-lo na sequência Jockey
+derruba a taxa BD de 1,412% para 0,111%, ou seja, remove cerca de 92% do custo de
+qualidade ao preço de apenas 0,223× de aceleração. Isso corresponde a 5,84 pontos
+percentuais de taxa BD por 1× de aceleração.
+
+O nível de 32 px é o mais eficiente. Ele chega a render 0,391× de aceleração na
+sequência RaceNight com uma variação de taxa BD de −0,009 ponto percentual, isto
+é, praticamente grátis. O nível de 16 px, por sua vez, contribui pouco em ambos
+os eixos.
+
+O ganho, portanto, **não vem de um único nível**, e a dependência do conteúdo é
+forte o bastante para que um limiar único por ação seja subótimo.
+
+O mesmo padrão se repetiu na calibração do podador das partições estendidas. Um
+limiar global de 0,30 melhorava duas sequências e piorava a terceira em 0,12
+ponto percentual de taxa BD. A correção foi a adoção de limiares por nível —
+0,091 em 16 px, 0,103 em 32 px e 0,014 em 64 px —, que recuperou a sequência
+prejudicada sem abrir mão do ganho nas demais.
 
 > **Procedência.** `docs/RESULTADOS_C2_sweep_niveis.md` §2, §3 e §4, script
 > `src/scripts/benchmark/c2_level_sweep.py`, dados em
@@ -241,28 +264,32 @@ sem abrir mão do ganho nas demais.
 A análise pré-H7 investigou se existiria, na arquitetura convolucional ou na rede
 perceptron, algo não explorado capaz de viabilizar uma redução de busca
 substancialmente maior. A resposta obtida é que a maior alavanca **não é o
-modelo**: é o **espaço de ações da política de poda** e a **métrica de custo**
-usada para escolher o ponto de operação. Em `cpu-used=0`, cada nó de dimensão
-igual ou superior a 16 px avalia até **dez candidatos de forma** — a contagem
-verificada no código e resolvida na Seção 1.1 —, e **oito dos dez** são
-retangulares, AB ou 4-way, o que corresponde a cerca de 77% do custo modelado.
-A política então vigente usava apenas duas das três saídas do modelo e
-eliminava somente subárvores, de modo que um nó não podado pagava os dez
-candidatos integralmente. A métrica de simulação, por sua vez, contava **nós**
-eliminados, e não custo de busca, sendo por construção cega a qualquer ação em
-nível de candidato: o ponto de operação de 8,5% de redução media outra grandeza
-que não o tempo.
+modelo**. São o **espaço de ações da política de poda** e a **métrica de custo**
+usada para escolher o ponto de operação.
+
+Em `cpu-used=0`, cada nó de dimensão igual ou superior a 16 px avalia até **dez
+candidatos de forma** — a contagem verificada no código e resolvida na Seção 1.1.
+Destes, **oito dos dez** são retangulares, AB ou 4-way, o que corresponde a cerca
+de 77% do custo modelado. A política então vigente usava apenas duas das três
+saídas do modelo e eliminava somente subárvores, de modo que um nó não podado
+pagava os dez candidatos integralmente.
+
+A métrica de simulação, por sua vez, contava **nós** eliminados, e não custo de
+busca. Ela era, por construção, cega a qualquer ação em nível de candidato: o
+ponto de operação de 8,5% de redução media outra grandeza que não o tempo.
 
 Corrigidos os dois itens — a ação de desativação das retangulares por P(REST) e a
 métrica de custo ponderado, somadas aos limiares por nível, ao contexto
 hierárquico do bloco A e ao aumento de capacidade da rede —, a simulação passou a
-indicar 34,7% de redução de custo com 0,01% de *split* perdida e 1,5% de
-desativações indevidas de retangulares, contra os 9% a 10,5% da política anterior.
+indicar 34,7% de redução de custo, com 0,01% de *split* perdida e 1,5% de
+desativações indevidas de retangulares, contra os 9% a 10,5% da política
+anterior.
+
 No codificador real, a curva medida vai de 0,25% de taxa BD a 1,03× de aceleração
-no ponto conservador até 1,62% a 1,29× no ponto agressivo, com a poda de
-retangulares contribuindo no regime seguro e o compromisso com `PARTITION_NONE`
-dominando o regime agressivo. Esta descoberta justifica o peso que esta tese
-atribui ao projeto da política, e não apenas ao do modelo.
+no ponto conservador até 1,62% a 1,29× no ponto agressivo. A poda de retangulares
+contribui no regime seguro, ao passo que o compromisso com `PARTITION_NONE` domina
+o regime agressivo. Esta descoberta justifica o peso que esta tese atribui ao
+projeto da política, e não apenas ao do modelo.
 
 > **Procedência.** `docs/PREH7_analise_alavancas.md` §1, §2, §3, §5 e §6;
 > `src/aom/av1/encoder/partition_search.c:4090,4149,5077`. Ressalva registrada na
@@ -272,39 +299,49 @@ atribui ao projeto da política, e não apenas ao do modelo.
 ## 4.8 O espaço de projeto: duas dimensões ortogonais
 
 As três soluções implantadas são frequentemente lidas como três níveis de
-sofisticação de uma mesma ideia, e não são: ocupam pontos distintos de um plano de
-**duas dimensões independentes**. A primeira dimensão é **quando** o podador age,
-ou seja, qual é o seu ponto de enganche em `av1_rd_pick_partition` e, por
-consequência, que informação já foi paga — o H9a age em
-`av1_prune_partitions_before_search`, antes de qualquer avaliação, e o H9c e o H9d
-agem em `av1_prune_after_none`, depois da avaliação de `PARTITION_NONE`. A segunda
-dimensão é **o que** o podador poda: a cascata de três ações no H9a, o
+sofisticação de uma mesma ideia. Não são: ocupam pontos distintos de um plano de
+**duas dimensões independentes**.
+
+A primeira dimensão é **quando** o podador age, ou seja, qual é o seu ponto de
+enganche em `av1_rd_pick_partition` e, por conseguinte, que informação já foi
+paga. O H9a age em `av1_prune_partitions_before_search`, antes de qualquer
+avaliação. O H9c e o H9d agem em `av1_prune_after_none`, depois da avaliação de
+`PARTITION_NONE`.
+
+A segunda dimensão é **o que** o podador poda: a cascata de três ações no H9a, o
 encerramento binário da busca no H9c e a ação seletiva sobre as partições
 estendidas no H9d.
 
-Esta taxonomia prediz quais podadores se somam, e é esta a sua utilidade
+Esta taxonomia prediz quais podadores se somam, e é essa a sua utilidade
 metodológica. O H9c e o H9d são idênticos nas duas primeiras coordenadas — mesmo
-gancho e mesmo vetor de trinta e nove atributos — e diferem somente na ação; quem
+gancho e mesmo vetor de trinta e nove atributos — e diferem somente na ação. Quem
 difere em espécie é o H9a, o único que decide antes de qualquer custo de
-taxa-distorção ter sido pago. Cada posição no plano carrega uma consequência
-econômica direta. O H9a possui o maior alcance e a maior cegueira, pois um acerto
-elimina a subárvore inteira, **incluindo a própria avaliação de
-`PARTITION_NONE`** — é o único capaz de economizar aquele custo —, e em troca
-decide sem ver um único número de taxa-distorção. O H9c possui limite superior
-estruturalmente restrito, pois, agindo depois da avaliação, jamais economiza este
-custo e só alcança o que vem depois, o que explica a sua redução de tempo isolada
-de cerca de 4%: mais informação, menos alcance. O H9d compartilha a limitação de
-alcance do H9c, mas mira um conjunto de candidatos que nenhum dos outros dois
-visava e que consome **34,3% do custo de busca**, com mínimo medido de 28,9%.
-Deste modo, a taxonomia antecipa que o H9d se **soma** ao H9a em vez de competir
-com ele, o que a medição confirmou: 1,02 ponto percentual adicional de redução de
-tempo ao custo de 0,018 ponto percentual de taxa BD, sobre o H9a já implantado.
+taxa-distorção ter sido pago.
 
-Cabe registrar uma fonte recorrente de confusão de nomenclatura: os rótulos H9a,
-H9b e H9c nomeiam **conjuntos de atributos**, enquanto H9d nomeia uma **ação**. São
-dois esquemas de nomeação convivendo na mesma família, o que faz o H9d parecer o
-quarto degrau de uma escada de informação quando é, na verdade, uma coordenada do
-outro eixo.
+Cada posição no plano carrega uma consequência econômica direta.
+
+O H9a possui o maior alcance e a maior cegueira. Um acerto elimina a subárvore
+inteira, **incluindo a própria avaliação de `PARTITION_NONE`** — é o único capaz
+de economizar aquele custo. Em troca, decide sem ver um único número de
+taxa-distorção.
+
+O H9c possui limite superior estruturalmente restrito. Agindo depois da
+avaliação, jamais economiza esse custo e só alcança o que vem depois, o que
+explica a sua redução de tempo isolada de cerca de 4%: mais informação, menos
+alcance.
+
+O H9d compartilha a limitação de alcance do H9c, mas mira um conjunto de
+candidatos que nenhum dos outros dois visava e que consome **34,3% do custo de
+busca**, com mínimo medido de 28,9%. A taxonomia antecipa, deste modo, que o H9d
+se **soma** ao H9a em vez de competir com ele. A medição confirmou: 1,02 ponto
+percentual adicional de redução de tempo ao custo de 0,018 ponto percentual de
+taxa BD, sobre o H9a já implantado.
+
+Cabe registrar uma fonte recorrente de confusão de nomenclatura. Os rótulos H9a,
+H9b e H9c nomeiam **conjuntos de atributos**, ao passo que H9d nomeia uma
+**ação**. São dois esquemas de nomeação convivendo na mesma família, o que faz o
+H9d parecer o quarto degrau de uma escada de informação quando é, na verdade, uma
+coordenada do outro eixo.
 
 > **Procedência.** `docs/SINTESE_resultados_metodologia.md` §2.8 e §5-quater;
 > `docs/RESULTADOS_H9d_etapa2_C.md` §4;
@@ -314,10 +351,12 @@ outro eixo.
 ## 4.9 Fechamento
 
 O projeto de atributos e a política de poda descritos nesta seção só têm valor de
-tese se as fórmulas que os definem forem as mesmas dos dois lados da fronteira
-entre o ambiente de treino e o codificador, e se o código acrescentado ao libaom
-não alterar em nada o comportamento do codificador quando desativado. A seção
-seguinte apresenta a arquitetura de software que sustenta estas duas garantias — a
-paridade bit-a-bit entre a implementação de referência em Python e a
+tese sob duas condições. A primeira é que as fórmulas que os definem sejam as
+mesmas dos dois lados da fronteira entre o ambiente de treino e o codificador. A
+segunda é que o código acrescentado ao libaom não altere em nada o comportamento
+do codificador quando desativado.
+
+A seção seguinte apresenta a arquitetura de software que sustenta estas duas
+garantias: a paridade bit a bit entre a implementação de referência em Python e a
 transliteração em C, e a guarda de compilação que assegura *bitstream*
 byte-idêntico à âncora com a solução desligada.
