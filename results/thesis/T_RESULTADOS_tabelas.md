@@ -85,11 +85,22 @@ decisão, ordenada do pior para o melhor subconjunto.
 | `pixels24` | 0,0121 | 0,015 |
 | **H9a** | **0,0036** | **0,006** |
 
-*Nota.* A fração de perda de otimalidade é a razão percentual entre a soma da
-perda de otimalidade absoluta — o custo de taxa-distorção real de cada poda,
-nulo quando a decisão já era `PARTITION_NONE` — e o custo de taxa-distorção
-total, lida a redução de
-custo de busca (`cost_red`) casada entre subconjuntos, de modo que todos sejam
+*Nota.* A fração de perda de otimalidade é a razão percentual entre o
+**sobrecusto** de taxa-distorção incorrido pelas podas efetuadas e o custo de
+taxa-distorção **total do conjunto de nós de decisão**. No numerador, a perda de
+otimalidade absoluta de um nó é a diferença entre o custo de taxa-distorção de
+comprometê-lo com `PARTITION_NONE` e o custo da subárvore que a busca completa
+encontraria — grandeza não negativa, por a subárvore ótima incluir o próprio
+`PARTITION_NONE` entre as suas opções, e nula sempre que a decisão correta já
+era `PARTITION_NONE` —, somada apenas sobre os nós que a política efetivamente
+podou naquele limiar. O denominador, por sua vez, é acumulado sobre a
+totalidade dos nós de decisão na construção do conjunto de dados, antes de
+qualquer limiar ser fixado, e é, portanto, **constante e independente do ponto
+de operação**. É esta última propriedade que torna a grandeza legível como
+fronteira: ela tende a zero quando a poda tende a zero e cresce
+monotonicamente com a agressividade, ao contrário de um dano médio por poda,
+que permaneceria elevado sob poda escassa. A leitura é feita a redução de custo
+de busca (`cost_red`) casada entre subconjuntos, de modo que todos sejam
 comparados no mesmo ponto de operação; menor valor é melhor. Os valores a 25%
 provêm de `docs/RESULTADOS_convnext_regret.md` §2, tabela por `cost_red`
 redondo (5%, 10%, 15%, 20%, 25%); os valores a 30% provêm do ranqueamento de
@@ -107,7 +118,11 @@ luminância, e a hierarquia mede apenas o treino realizado.
 > `results/models/oracle_regret_convnext/frontier.csv` (verificados por
 > `Glob`); `docs/RESULTADOS_convnext_regret.md` §2 e §5;
 > `docs/RESULTADOS_oraculo_regret.md` §3; `docs/INVENTARIO_solucoes.md` §2.2;
-> `R1_dominio_pixels.md` §1.4. Script: `src/scripts/partition_model/oracle_regret.py`.
+> `R1_dominio_pixels.md` §1.4. Script: `src/scripts/partition_model/oracle_regret.py`
+> — definição da perda de otimalidade absoluta na linha 12, acumulação do
+> numerador sobre os nós podados nas linhas 258 e 259, acumulação do denominador
+> `total_none_rd` sobre todos os nós de decisão nas linhas 119 e 139, e razão
+> final na linha 297.
 
 ---
 

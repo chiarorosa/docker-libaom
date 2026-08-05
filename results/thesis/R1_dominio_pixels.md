@@ -180,10 +180,16 @@ arbitrada, na medida em que um crivo offline pode arbitrar, pelo crivo ponderado
 por perda de otimalidade, que substitui a contagem de nós comprometidos pelo
 custo de taxa-distorção real de cada poda. A grandeza reportada é a **fração de
 perda de otimalidade**, definida como a razão percentual entre a soma da perda
-de otimalidade absoluta — ou seja, o sobrecusto de taxa-distorção pago por
-podar em vez de tomar a subárvore ótima — e o custo de taxa-distorção total, e
-ela é lida a **redução de custo casada**, de modo que todos os candidatos sejam
-comparados no mesmo ponto de operação. A avaliação
+de otimalidade absoluta dos nós efetivamente podados — ou seja, o sobrecusto de
+taxa-distorção pago por podar em vez de tomar a subárvore ótima, grandeza não
+negativa e nula sempre que a decisão correta já era `PARTITION_NONE` — e o
+custo de taxa-distorção total do conjunto de nós de decisão. Este denominador é
+acumulado antes de qualquer limiar ser fixado e permanece constante ao longo de
+toda a varredura, o que é a condição para que a grandeza seja legível como
+fronteira: ela tende a zero quando a poda tende a zero, ao passo que um dano
+médio por poda permaneceria elevado sob poda escassa. A grandeza é lida a
+**redução de custo casada**, de modo que todos os candidatos sejam comparados
+no mesmo ponto de operação. A avaliação
 cobre **seis sequências** do conjunto de validação e de teste reservado e
 **792.840 nós de decisão**, contra os modelos treinados nas dez sequências
 restantes.
