@@ -6,23 +6,28 @@ direta nos documentos `R1` a `R6` do Capítulo de Resultados. Cada tabela traz a
 identificação, a legenda redigida no padrão fixo do perfil estilístico da tese,
 os valores em Markdown com alinhamento numérico à direita, uma nota de rodapé
 com a definição de métrica e as ressalvas de comparabilidade, e a procedência
-completa. Nenhum valor deste documento é estimado: toda célula provém de um
-artefato ou de um documento já auditado do projeto, e a célula sem dado
-disponível recebe o marcador `[completar: ...]`, nunca uma aproximação.
+completa.
 
-Duas convenções valem para todo o documento. A primeira é de definição: a
-redução de tempo das Tabelas 12, 13, 15, 18, 19 e 20 usa, salvo declaração em
-contrário na própria tabela, a definição **canônica** — a média sobre os
-pontos de quantização de `1 − t/t_âncora`, seguida da média sobre as
-sequências —, e nunca a definição ponderada pelo tempo, que diverge da
-canônica em até cerca de três pontos percentuais conforme a configuração. A
+Nenhum valor deste documento é estimado. Toda célula provém de um artefato ou de
+um documento já auditado do projeto, e a célula sem dado disponível recebe o
+marcador `[completar: ...]`, nunca uma aproximação.
+
+Duas convenções valem para todo o documento.
+
+A primeira é de **definição**. A redução de tempo das Tabelas 12, 13, 15, 18, 19
+e 20 usa a definição **canônica**, salvo declaração em contrário na própria
+tabela: a média sobre os pontos de quantização de `1 − t/t_âncora`, seguida da
+média sobre as sequências. Nunca a definição ponderada pelo tempo, que diverge
+da canônica em até cerca de três pontos percentuais conforme a configuração. A
 Tabela 11 usa uma terceira convenção, própria da campanha do conjunto de teste
-reservado, declarada na sua própria nota. A segunda convenção é de retratação:
-nenhuma nota interpretativa deste documento apresenta o modelo substituto
-convolucional como cota superior do domínio de pixels, afirma que os pixels
-saturam na variância, chama o H9c de duas a quatro vezes mais eficiente que o
-H9a, ou trata a aditividade do H9d como propriedade absoluta da sua ação —
-conforme as retratações R1, R2, R6 e R9 de `A3_RETRATACOES_E_LACUNAS.md`.
+reservado, declarada na sua própria nota.
+
+A segunda é de **retratação**. Nenhuma nota interpretativa deste documento
+apresenta o modelo substituto convolucional como cota superior do domínio de
+pixels, afirma que os pixels saturam na variância, chama o H9c de duas a quatro
+vezes mais eficiente que o H9a, ou trata a aditividade do H9d como propriedade
+absoluta da sua ação. Assim determinam as retratações R1, R2, R6 e R9 de
+`A3_RETRATACOES_E_LACUNAS.md`.
 
 ---
 
@@ -48,13 +53,14 @@ convolução seja executada em C.
 | Reprodução do H8, ponto agressivo | 0,197 | 1,032 |
 
 *Nota.* Taxa BD sobre PSNR-Y, em porcentagem, contra a âncora libaom
-`cpu-used=0`; aceleração como razão de tempo de parede sobre a mesma âncora.
-Medição sobre duas imagens da sequência Jockey, valor padrão da campanha. As
-linhas de reprodução do H8 não pagam custo de inferência convolucional — as
-probabilidades do modelo substituto são pré-computadas fora do codificador e
-reinjetadas pela mesma chamada de poda —, de modo que a aceleração ali medida
-é cota superior otimista quanto ao custo de execução, e não comparável a uma
-implantação real dos 28,1 milhões de parâmetros do modelo substituto.
+`cpu-used=0`. A aceleração é a razão de tempo de parede sobre a mesma âncora. A
+medição cobre duas imagens da sequência Jockey, valor padrão da campanha.
+
+As duas linhas de reprodução do H8 não pagam custo de inferência convolucional.
+As probabilidades do modelo substituto são pré-computadas fora do codificador e
+reinjetadas pela mesma chamada de poda. A aceleração ali medida é, deste modo,
+uma cota superior otimista quanto ao custo de execução. Ela não é comparável a
+uma implantação real dos 28,1 milhões de parâmetros do modelo substituto.
 
 > **Procedência.** `results/benchmark/h7h8_real_summary.csv` (linhas
 > `P0_oldpolicy`, `P_rect`, `P_ref`, `H8_surrogate`) e
@@ -85,47 +91,64 @@ decisão, ordenada do pior para o melhor subconjunto.
 | `pixels24` | 0,0121 | 0,015 |
 | **H9a** | **0,0036** | **0,006** |
 
-*Nota.* A fração de perda de otimalidade é a razão percentual entre o
-**sobrecusto** de taxa-distorção incorrido pelas podas efetuadas e o custo de
-taxa-distorção **total do conjunto de nós de decisão**. No numerador, a perda de
-otimalidade absoluta de um nó é a diferença entre o custo de taxa-distorção de
-comprometê-lo com `PARTITION_NONE` e o custo da subárvore que a busca completa
-encontraria — grandeza não negativa, por a subárvore ótima incluir o próprio
-`PARTITION_NONE` entre as suas opções, e nula sempre que a decisão correta já
-era `PARTITION_NONE` —, somada apenas sobre os nós que a política efetivamente
-podou naquele limiar. O denominador, por sua vez, é acumulado sobre a
-totalidade dos nós de decisão na construção do conjunto de dados, antes de
-qualquer limiar ser fixado, e é, portanto, **constante e independente do ponto
-de operação**. É esta última propriedade que torna a grandeza legível como
-fronteira: ela tende a zero quando a poda tende a zero e cresce
-monotonicamente com a agressividade, ao contrário de um dano médio por poda,
-que permaneceria elevado sob poda escassa. A leitura é feita a redução de custo
-de busca (`cost_red`) casada entre subconjuntos, de modo que todos sejam
-comparados no mesmo ponto de operação; menor valor é melhor.
+*O que é a métrica.* A fração de perda de otimalidade é uma divisão. Em cima,
+o sobrecusto de taxa-distorção das podas feitas. Embaixo, o custo de
+taxa-distorção de todos os nós de decisão.
 
-*Advertência de leitura.* Nem as colunas nem as células desta tabela são
-grandezas do codificador. As colunas são **custo de busca modelado** — número de
-candidatos de forma ponderado pela área do bloco, conforme a Seção 3.4.1 do
-Capítulo de Metodologia —, e não redução de tempo de parede: "25% de `cost_red`"
-não significa vinte e cinco por cento de tempo economizado. As células são
-sobrecusto de taxa-distorção normalizado por um denominador que soma os três
-níveis da hierarquia, recobrindo a mesma área da imagem, e não são taxa BD nem
-convertem nela. Por conseguinte, a tabela sustenta **razões entre subconjuntos
-ao mesmo ponto de operação** — o `pixels24` desperdiça 3,4 vezes o que o H9a
-desperdiça, a 25% —, e **não** o enunciado de que o `pixels24` custaria 0,0121%
-de eficiência de compressão. O custo medido em codificador do `pixels24` consta
-da Tabela 8, e é de 0,422% a 0,492% de taxa BD. Os valores a 25%
-provêm de `docs/RESULTADOS_convnext_regret.md` §2, tabela por `cost_red`
-redondo (5%, 10%, 15%, 20%, 25%); os valores a 30% provêm do ranqueamento de
+O número de cima, por nó, é o custo de comprometer o nó com `PARTITION_NONE`
+menos o custo da subárvore que a busca completa encontraria. Ele nunca é
+negativo, uma vez que a subárvore ótima também pode escolher o `PARTITION_NONE`;
+no pior caso, empata. Ele vale zero sempre que a decisão correta já era
+`PARTITION_NONE`. A soma cobre apenas os nós que a política podou naquele
+limiar.
+
+O número de baixo é somado sobre todos os nós de decisão, na montagem do
+conjunto de dados, antes de qualquer limiar ser escolhido. Ele é, deste modo,
+**fixo**: não muda com o ponto de operação. É essa propriedade que permite ler a
+métrica como fronteira. Ela tende a zero quando a poda tende a zero e cresce
+junto com a agressividade. Se o denominador fosse apenas o dos nós podados, a
+métrica se tornaria um dano médio por poda e permaneceria alta mesmo sob poda
+escassa.
+
+A leitura é feita com a redução de custo de busca (`cost_red`) casada entre os
+subconjuntos, de modo que todos sejam comparados no mesmo ponto de operação.
+Menor é melhor.
+
+*O que esta tabela não diz.* Nada aqui é grandeza medida no codificador, e
+confundir os dois planos compromete a leitura.
+
+As colunas são **custo de busca modelado**: número de candidatos de forma
+ponderado pela área do bloco, conforme a Seção 3.4.1 do Capítulo de Metodologia.
+**Não é tempo.** "25% de `cost_red`" não significa 25% de tempo economizado.
+
+As células, por sua vez, **não são taxa BD** e não convertem em taxa BD. O
+denominador soma os três níveis da hierarquia, que recobrem a mesma área da
+imagem, ao passo que a codificação real emprega apenas um nível por região. Por
+conseguinte, o valor sai sistematicamente menor do que qualquer perda observável
+no codificador.
+
+O que a tabela sustenta é a **razão entre subconjuntos no mesmo ponto de
+operação**: a 25%, o `pixels24` desperdiça 3,4 vezes o que o H9a desperdiça. O
+que ela **não** sustenta é a afirmação de que o `pixels24` custaria 0,0121% de
+eficiência de compressão. O custo real do `pixels24` consta da Tabela 8: de
+0,422% a 0,492% de taxa BD.
+
+*De onde vêm os números, e o que falta.* Os valores a 25% provêm de
+`docs/RESULTADOS_convnext_regret.md` §2, na tabela por `cost_red` redondo (5%,
+10%, 15%, 20% e 25%). Os valores a 30% provêm do ranqueamento de
 `docs/RESULTADOS_oraculo_regret.md` §3, que não inclui as duas variantes do
-ConvNeXt, medidas em campanha posterior e nunca reexecutadas contra esse
-ponto. A grade de limiares da variância salta de 6,14% para 39,46% de
-`cost_red`, de modo que os valores intermediários da sua curva são
-interpolados através de um único vão, e a razão medida contra os subconjuntos
-de pixels deve ser lida com esta reserva. O modelo substituto convolucional
-não é apresentado como cota superior do domínio de pixels: ele perde para o
-`pixels24`, um perceptrone sobre vinte e quatro atributos manuais da mesma
-luminância, e a hierarquia mede apenas o treino realizado.
+ConvNeXt — medidas em campanha posterior e nunca reexecutadas contra esse ponto.
+As duas colunas, deste modo, não são comparáveis célula a célula.
+
+*Duas reservas.* A grade de limiares da variância salta de 6,14% para 39,46% de
+`cost_red`. Os dois pontos lidos caem dentro desse vão e são interpolados, de
+modo que a razão entre a variância e os subconjuntos de pixels é a mais frágil
+da tabela.
+
+O modelo substituto convolucional não é apresentado aqui como cota superior do
+domínio de pixels, uma vez que perde para o `pixels24` — um perceptrone sobre
+vinte e quatro atributos manuais da mesma luminância. A hierarquia mede o treino
+realizado, e não o limite da arquitetura.
 
 > **Procedência.** `results/models/oracle_regret/frontier.csv` e
 > `results/models/oracle_regret_convnext/frontier.csv` (verificados por
@@ -156,18 +179,22 @@ superblocos.
 | **H9a** (A + vizinhança + quantização/posição, 36 atributos) | **15,7** | **20,1** | **24,9** |
 | H9c (cota superior, custo RD real do `PARTITION_NONE`) | 33,0 | 33,0 | 39,7 |
 
-*Nota.* Redução de custo de busca (%) medida por simulação de oráculo, não
-redução de tempo de parede — a simulação superestima o ganho real de tempo
-por um fator próximo de cinco. A **seleção segue a regra de risco casado**:
-para cada subconjunto, toma-se, na varredura de limiares, a linha cujo
-`split_lost` fica imediatamente abaixo de cada patamar de risco declarado, e o
-`cost_red` correspondente é o valor reportado; o ponto de 1% de risco do H9a
-corresponde a `split_lost` medido de 0,498%, e o de 2% do `pixels24` a
-1,434%. Esta é a fonte correta: `gate2_final.csv` reúne uma agregação
-distinta, por limiares fixos de perda de SPLIT, e não sustenta estes valores.
-O `pixels24` é o próprio bloco A do H9a, de modo que a linha do H9a mede o
+*Nota.* Os valores são redução de custo de busca (%), medida por simulação de
+oráculo. **Não são redução de tempo de parede**, e a simulação superestima o
+ganho real de tempo por um fator próximo de cinco.
+
+A seleção segue a **regra de risco casado**. Para cada subconjunto, toma-se, na
+varredura de limiares, a linha cujo `split_lost` fica imediatamente abaixo de
+cada patamar de risco declarado, e reporta-se o `cost_red` correspondente. O
+ponto de 1% de risco do H9a corresponde a um `split_lost` medido de 0,498%, e o
+de 2% do `pixels24` a 1,434%.
+
+Registre-se a fonte correta: `gate2_final.csv` reúne agregação distinta, por
+limiares fixos de perda de SPLIT, e não sustenta estes valores.
+
+O `pixels24` é o próprio bloco A do H9a. A linha do H9a mede, portanto, o
 efeito marginal dos doze atributos adicionais de vizinhança, quantização e
-posição sobre os descritores de luminância, e não uma comparação entre
+posição sobre os descritores de luminância. Não se trata de comparação entre
 conjuntos disjuntos.
 
 > **Procedência.** `results/models/gate2_final_sweep.csv` (verificado por
@@ -196,16 +223,20 @@ quatro pontos de quantização e execução em uma única linha de execução.
 | A2 | 1,37% / 47,7% / 1,91× | 1,17% / 41,7% / 1,72× | 0,23% / 30,2% / 1,43× |
 | A3 | 2,03% / 57,2% / 2,34× | 1,72% / 50,7% / 2,03× | 0,38% / 36,8% / 1,58× |
 
-*Nota.* Cada célula traz taxa BD / redução de tempo / aceleração. Taxa BD
-sobre PSNR-Y contra a âncora libaom `cpu-used=0`; redução de tempo calculada
-ponto a ponto como `(1 − 1/aceleração)·100`, definição própria desta campanha
-e **distinta** tanto da canônica quanto da ponderada pelo tempo declaradas na
-Metodologia §3.5, pois aqui não há múltiplos pontos de quantização a
-agregar por sequência antes da média. Política completa: comprometimento com
-`PARTITION_NONE`, divisão quadrada forçada e poda das formas retangulares. O
-critério estrito de dominância sobre a variância a aceleração casada **não
-foi atingido** nesta campanha, por ausência de par casado nas três
-sequências — ressalva que acompanha esta tabela e não a invalida, pois a
+*Nota.* Cada célula traz taxa BD / redução de tempo / aceleração. A taxa BD é
+sobre PSNR-Y, contra a âncora libaom `cpu-used=0`.
+
+A redução de tempo é calculada ponto a ponto como `(1 − 1/aceleração)·100`.
+Trata-se de definição própria desta campanha, **distinta** tanto da canônica
+quanto da ponderada pelo tempo declaradas na Metodologia §3.5, uma vez que aqui
+não há múltiplos pontos de quantização a agregar por sequência antes da média.
+
+A política é a completa: comprometimento com `PARTITION_NONE`, divisão quadrada
+forçada e poda das formas retangulares.
+
+Uma ressalva acompanha esta tabela. O critério estrito de dominância sobre a
+variância a aceleração casada **não foi atingido** nesta campanha, por ausência
+de par casado nas três sequências. Ela não invalida a tabela, uma vez que a
 redução de tempo contra a âncora e a superioridade sobre a pontuação aleatória
 permanecem como pilares independentes.
 
@@ -237,18 +268,23 @@ quantização do restante da tese.
 | libaom `cpu-used=2` | +0,536% | 42,72% | 1,788× |
 | libaom `cpu-used=3` | +2,722% | 67,94% | 3,159× |
 
-*Nota.* Âncora libaom `cpu-used=0`; taxa BD sobre PSNR-Y; **redução de tempo
-na definição canônica**. Sob a definição ponderada pelo tempo, os mesmos
-artefatos registram 30,42% para o `cpu-used=1`, em vez de 32,59%, e 34,14%
-para o ponto agressivo, em vez de 31,51% — divergência de até cerca de três
-pontos percentuais, razão pela qual as duas definições nunca coexistem nesta
-tabela. A rede convolucional nativa de poda intraquadro está ativa nos
-*presets* `cpu-used` 1, 2 e 3 e desligada na âncora, verificado por teste
-empírico de identidade byte a byte, de modo que a comparação opõe
-configurações limpas e disjuntas. Nenhum ponto de aprendizado de máquina
-desta tabela domina a rede convolucional nativa na fronteira de taxa BD
-contra tempo; o valor medido é a granularidade fina de 12% a 22% de redução
-de tempo que a escada discreta dos *presets* não oferece.
+*Nota.* Âncora libaom `cpu-used=0`, taxa BD sobre PSNR-Y e **redução de tempo
+na definição canônica**.
+
+Sob a definição ponderada pelo tempo, os mesmos artefatos registram 30,42% para
+o `cpu-used=1`, em vez de 32,59%, e 34,14% para o ponto agressivo, em vez de
+31,51%. A divergência chega a cerca de três pontos percentuais, e é por isso que
+as duas definições nunca coexistem nesta tabela.
+
+A rede convolucional nativa de poda intraquadro está ativa nos *presets*
+`cpu-used` 1, 2 e 3 e desligada na âncora, o que foi verificado por teste
+empírico de identidade byte a byte. A comparação opõe, deste modo,
+configurações limpas e disjuntas.
+
+Quanto à leitura: nenhum ponto de aprendizado de máquina desta tabela domina a
+rede convolucional nativa na fronteira de taxa BD contra tempo. O valor medido é
+outro — a granularidade fina de 12% a 22% de redução de tempo, que a escada
+discreta dos *presets* não oferece.
 
 > **Procedência.** `results/benchmark/fase6/{raw_results.csv,
 > bdrate_per_seq.csv, bdrate_average.csv, tables.tex}` e
@@ -282,19 +318,23 @@ quantização das demais campanhas CTC.
 | 3 | H9a equilibrado | +3,866% | 73,09% | 3,754× |
 | 3 | H9a agressivo | +4,347% | 77,30% | 4,465× |
 
-*Nota.* Âncora libaom `cpu-used=0`; redução de tempo na definição canônica.
-O mecanismo de substituição foi verificado por identidade de resumo
-criptográfico do fluxo de bits em quatro configurações. No mesmo
-`cpu-used`, a rede convolucional nativa isolada tem sempre taxa BD e
-redução de tempo menores que o H9a — não há dominância direta em nenhum
-nível, e sim um compromisso em que o H9a corta mais tempo a custo de taxa BD
-desproporcional, de duas a três vezes o da nativa. Apenas um dos nove pontos
-é estritamente dominado — o H9a equilibrado a `cpu-used=1`, cravado pelo
-*preset* nativo `cpu-used=2` —, mas o retorno marginal entre pontos
-consecutivos cai de 116,4 no trecho puramente nativo para 2,7 no pior trecho,
-de modo que a fronteira de dominância, isoladamente, superestima quanto o H9a
-é competitivo. O H9a não supera a rede convolucional nativa como podador em
-nenhum arranjo desta tabela.
+*Nota.* Âncora libaom `cpu-used=0` e redução de tempo na definição canônica. O
+mecanismo de substituição foi verificado por identidade de resumo criptográfico
+do fluxo de bits em quatro configurações.
+
+No mesmo `cpu-used`, a rede convolucional nativa isolada tem sempre taxa BD e
+redução de tempo menores que o H9a. Não há dominância direta em nível algum. Há,
+sim, um compromisso: o H9a corta mais tempo a custo de taxa BD desproporcional,
+de duas a três vezes o da nativa.
+
+Apenas um dos nove pontos é estritamente dominado — o H9a equilibrado a
+`cpu-used=1`, cravado pelo *preset* nativo `cpu-used=2`. O retorno marginal
+entre pontos consecutivos, contudo, cai de 116,4 no trecho puramente nativo
+para 2,7 no pior trecho. Deste modo, a fronteira de dominância, tomada
+isoladamente, superestima quanto o H9a é competitivo.
+
+O H9a não supera a rede convolucional nativa como podador em arranjo algum desta
+tabela.
 
 > **Procedência.** `results/benchmark/fase6_swap/{raw_results.csv,
 > swap_per_seq.csv, swap_average.csv, swap_tables.tex}`. Documentos-fonte:
@@ -323,19 +363,25 @@ H9a explicitamente neutralizado por `τ = 2/2/−1`, na sequência Neon1224 a
 | H9c a τ=0,60, medido antes (H9a a 0,9 + H9c) | 0,386% | 20,53% |
 | H9c a τ=0,60, isolado | 0,100% | **9,31%** |
 
-*Nota.* Redução de tempo na definição canônica; taxa BD sobre PSNR-Y; a
-única variável alterada entre as linhas "medido antes" e "isolado" é a
-neutralização do H9a. Os primeiros roteiros de teste do H9c definiam apenas
-as suas próprias variáveis de ambiente e deixavam o H9a nos seus limiares
-compilados por padrão (`tau_none = tau_split = 0,9`), pois o H9a roda sob
-critério puramente geométrico, sem sinalizador de habilitação — ao contrário
-do H9c, cuja ativação depende de uma variável dedicada. Cada linha rotulada
-como H9c media, portanto, H9a a 0,9 empilhado com o H9c, e não o H9c isolado:
-de 82% a 96% da redução de tempo antes atribuída ao H9c provinha do H9a. Esta
-quantificação é local a uma sequência; a generalização a quatro sequências
-está na Tabela 16. Por decisão editorial, **não se afirma** nesta tabela nem
-em nenhuma outra desta tese que o H9c seria de duas a quatro vezes mais
-eficiente que o H9a — afirmação retirada por esta mesma medição.
+*Nota.* Redução de tempo na definição canônica e taxa BD sobre PSNR-Y. A única
+variável alterada entre as linhas "medido antes" e "isolado" é a neutralização
+do H9a.
+
+A origem do fator de confusão é a seguinte. Os primeiros roteiros de teste do
+H9c definiam apenas as suas próprias variáveis de ambiente e deixavam o H9a nos
+seus limiares compilados por padrão (`tau_none = tau_split = 0,9`). Isso ocorria
+porque o H9a roda sob critério puramente geométrico, sem sinalizador de
+habilitação, ao contrário do H9c, cuja ativação depende de uma variável
+dedicada. Cada linha rotulada como H9c media, portanto, o H9a a 0,9 empilhado
+com o H9c, e não o H9c isolado. De 82% a 96% da redução de tempo antes
+atribuída ao H9c provinha do H9a.
+
+Esta quantificação é local a uma sequência. A generalização a quatro sequências
+está na Tabela 16.
+
+Por decisão editorial, **não se afirma** nesta tabela nem em nenhuma outra desta
+tese que o H9c seria de duas a quatro vezes mais eficiente que o H9a. Foi esta
+mesma medição que retirou a afirmação.
 
 > **Procedência.** Linhas `h9ciso_*` de `results/benchmark/fase6/raw_results.csv`
 > (verificado por `Glob`). Documentos-fonte: `docs/ANDAMENTO_tese.md` §8.1;
@@ -365,17 +411,20 @@ neutralizado desde o roteiro.
 | 3 | H9c a τ=0,90 | 3,397 | 70,67 | 3,474× |
 | 3 | H9c a τ=0,95 | 3,384 | 70,25 | 3,419× |
 
-*Nota.* Âncora libaom `cpu-used=0`; redução de tempo na definição canônica;
-a definição ponderada pelo tempo diverge desta tabela de +2,63 a −2,97 pontos
+*Nota.* Âncora libaom `cpu-used=0` e redução de tempo na definição canônica. A
+definição ponderada pelo tempo diverge desta tabela de +2,63 a −2,97 pontos
 percentuais conforme a configuração e chega a reordenar o ranqueamento, razão
-pela qual as duas não coexistem. Na média da grade completa, o H9c e a rede
-convolucional nativa **empatam** nos *presets* 1 e 2 — nenhuma diferença é
-estatisticamente significativa em teste pareado (p = 0,278 e p = 0,291) — e o
-H9c é significativamente pior no *preset* 3 (p = 0,004). A afirmação
-defensável na grade completa é de paridade, não de superioridade; a vantagem
-própria do H9c aparece decomposta por regime de quantização, fora desta
-tabela, no regime de alta qualidade (CQ 20 e 32), onde é estatisticamente
-significativa em dois níveis independentes de *preset*.
+pela qual as duas não coexistem.
+
+Na média da grade completa, o H9c e a rede convolucional nativa **empatam** nos
+*presets* 1 e 2. Nenhuma diferença é estatisticamente significativa em teste
+pareado (p = 0,278 e p = 0,291). No *preset* 3, o H9c é significativamente pior
+(p = 0,004).
+
+A afirmação defensável na grade completa é, portanto, de paridade, e não de
+superioridade. A vantagem própria do H9c aparece decomposta por regime de
+quantização, fora desta tabela: no regime de alta qualidade (CQ 20 e 32), onde é
+estatisticamente significativa em dois níveis independentes de *preset*.
 
 > **Procedência.**
 > `results/benchmark/fase6_swap_h9c/{raw_results,swap_per_seq,swap_average}.csv`
@@ -404,18 +453,21 @@ tempo(H9c) + interação = tempo(H9a + H9c)`.
 | TimeLapse | 9,2% | 0,6% | 11,5% | 9,8% | +1,7 pp |
 | **Média** | **10,9%** | **5,6%** | **14,6%** | **16,5%** | **−1,9 pp** |
 
-*Nota.* Redução de tempo na definição canônica; âncora libaom `cpu-used=0`.
-A interação é negativa em três das quatro sequências e na média, o que
-indica que cerca de 12% do ganho potencial evapora na sobreposição entre o
-H9a e o H9c. Esta decomposição cobre **quatro das oito sequências CTC**, pois
-o terceiro termo — o H9a nos seus limiares compilados por padrão, sozinho —
-só foi medido nelas; a conclusão robusta é a direção e a ordem de grandeza do
-efeito, e não o valor central exato, dada a dispersão de −3,9 a +1,7 ponto
-percentual entre sequências. A interação negativa não é lida como limite
-informacional: é sobreposição de ação entre dois podadores que perguntam,
-ambos, se o nó pode ser encerrado — distinção confirmada por contraste com o
-H9d na Tabela 18, que compartilha informação idêntica à do H9c e ainda assim
-se soma.
+*Nota.* Redução de tempo na definição canônica e âncora libaom `cpu-used=0`.
+
+A interação é negativa em três das quatro sequências e na média. Isso indica que
+cerca de 12% do ganho potencial evapora na sobreposição entre o H9a e o H9c.
+
+Esta decomposição cobre **quatro das oito sequências CTC**, uma vez que o
+terceiro termo — o H9a nos seus limiares compilados por padrão, sozinho — só foi
+medido nelas. A conclusão robusta é, portanto, a direção e a ordem de grandeza
+do efeito, e não o valor central exato, dada a dispersão de −3,9 a +1,7 ponto
+percentual entre sequências.
+
+A interação negativa não é lida como limite informacional. Ela é sobreposição de
+ação entre dois podadores que perguntam, ambos, se o nó pode ser encerrado. A
+distinção é confirmada por contraste com o H9d na Tabela 18, que compartilha
+informação idêntica à do H9c e ainda assim se soma.
 
 > **Procedência.** Linhas `h9adef`, `h9ciso_tau90`, `ml_balanced` de
 > `results/benchmark/fase6/raw_results.csv` (verificado por `Glob`).
@@ -443,18 +495,21 @@ teste), com os modelos treinados nas dez sequências restantes.
 | 64 | 48.000 | 3,0 | 0,864 | 0,865 |
 | **Agregado** | **792.840** | **10,2** | **0,890** | **0,902** |
 
-*Nota.* O rótulo binário é positivo quando a partição ótima pertence ao
-conjunto estendido (`HORZ_A`, `HORZ_B`, `VERT_A`, `VERT_B`, `HORZ_4`,
-`VERT_4`) e negativo em qualquer outro caso; a base de positivos é a fração
-de nós com rótulo positivo naquele nível, e não coincide com a prevalência
-de qualquer forma isolada. A coluna de 36 atributos usa apenas o vetor
-pré-busca do H9a; a de 39 acrescenta o bloco E, o custo de taxa-distorção
-real do `PARTITION_NONE`, disponível de graça no ponto de inserção pós-NONE
-— este é o vetor levado ao codificador. Estes valores foram lidos das
-tabelas já publicadas em `docs/RESULTADOS_H9d_predizibilidade.md` §2 e §2.1;
-não existe, no repositório, um CSV estruturado equivalente, apenas o arquivo
-de execução `run.log`, o que está registrado como lacuna em
-`A2_TABELAS_E_FIGURAS.md §3`.
+*Nota.* O rótulo binário é positivo quando a partição ótima pertence ao conjunto
+estendido (`HORZ_A`, `HORZ_B`, `VERT_A`, `VERT_B`, `HORZ_4`, `VERT_4`), e
+negativo em qualquer outro caso. A base de positivos é a fração de nós com
+rótulo positivo naquele nível, e não coincide com a prevalência de qualquer
+forma isolada.
+
+A coluna de 36 atributos usa apenas o vetor pré-busca do H9a. A de 39 acrescenta
+o bloco E — o custo de taxa-distorção real do `PARTITION_NONE` —, disponível sem
+custo adicional no ponto de inserção pós-NONE. É este o vetor levado ao
+codificador.
+
+Estes valores foram lidos das tabelas já publicadas em
+`docs/RESULTADOS_H9d_predizibilidade.md` §2 e §2.1. Não existe, no repositório,
+CSV estruturado equivalente, apenas o arquivo de execução `run.log`, o que está
+registrado como lacuna em `A2_TABELAS_E_FIGURAS.md §3`.
 
 > **Procedência.** `docs/RESULTADOS_H9d_predizibilidade.md` §2 e §2.1;
 > `R4_h9d.md` §4.2. Modelos: `results/models/h9d_predictability/students.pt`
@@ -480,18 +535,22 @@ botão de limiar do próprio H9a —, para comparação direta.
 | H9a + H9d (calibração PL10, implantado) | +0,586 | 18,74 | 1,238× | **0,0179** |
 | Botão de limiar do H9a (segmento P_rect → A3), referência | — | — | — | 0,063 |
 
-*Nota.* Redução de tempo na definição canônica; âncora libaom `cpu-used=0`.
-O preço é a razão entre a diferença de taxa BD e a diferença de redução de
-tempo contra a base declarada em cada linha; a linha do H9a equilibrado é a
-própria base e não tem preço marginal associado. A terceira linha não é um
-ponto de operação codificado, e sim a inclinação do segmento entre os dois
-pontos frozen do H9a (equilibrado e agressivo) na mesma grade CTC, tomada
-como referência do custo do único botão alternativo de que o usuário já
-dispõe; o valor de 0,063 pp/pp é o estimador por interpolação por sequência,
-e a média das médias sobre as oito sequências dá 0,0606 pp/pp — os dois
-estimadores concordam a cerca de 4% e não devem ser somados nem misturados na
-mesma leitura. O H9d compra tempo por cerca de um terço do preço do botão de
-limiar, ou seja, aproximadamente 3,5 vezes mais barato.
+*Nota.* Redução de tempo na definição canônica e âncora libaom `cpu-used=0`.
+
+O preço é a razão entre a diferença de taxa BD e a diferença de redução de tempo
+contra a base declarada em cada linha. A linha do H9a equilibrado é a própria
+base e não tem preço marginal associado.
+
+A terceira linha não é um ponto de operação codificado. Ela é a inclinação do
+segmento entre os dois pontos congelados do H9a — o equilibrado e o agressivo —
+na mesma grade CTC, tomada como referência do custo do único botão alternativo
+de que o usuário já dispõe. O valor de 0,063 pp/pp é o estimador por
+interpolação por sequência, ao passo que a média das médias sobre as oito
+sequências dá 0,0606 pp/pp. Os dois estimadores concordam a cerca de 4%, mas não
+devem ser somados nem misturados na mesma leitura.
+
+O H9d compra tempo por cerca de um terço do preço do botão de limiar, ou seja,
+aproximadamente 3,5 vezes mais barato.
 
 > **Procedência.** `results/benchmark/fase6/{bdrate_average.csv,
 > bdrate_per_seq.csv, tables.tex}` (linhas `ml_balanced` e `ml_bal_h9d`,
@@ -519,26 +578,31 @@ própria base do H9a correspondente.
 | Agressiva | PL10 | +0,006 | +0,17 | 0,0329 |
 | Agressiva | PL20 | +0,017 | +0,65 | 0,0258 |
 
-*Nota.* Redução de tempo na definição canônica; âncora libaom `cpu-used=0`;
-os valores marginais são a diferença entre cada configuração empilhada e a
-sua própria base (equilibrada ou agressiva), não contra a âncora nativa
-diretamente. Os quatro pontos foram recalculados nesta auditoria a partir de
+*Nota.* Redução de tempo na definição canônica e âncora libaom `cpu-used=0`. Os
+valores marginais são a diferença entre cada configuração empilhada e a sua
+própria base, equilibrada ou agressiva, e não contra a âncora nativa
+diretamente.
+
+Os quatro pontos foram recalculados nesta auditoria a partir de
 `results/benchmark/fase6/bdrate_average.csv`, que já reúne as quatro
 configurações agregadas (`ml_bal_h9d`, `ml_bal_h9d_pl20`, `ml_aggr_h9d`,
-`ml_aggr_h9d_pl20`) — não foi necessário recalcular a taxa BD a partir do
-CSV bruto por codificação, pois a agregação já está disponível e os quatro
+`ml_aggr_h9d_pl20`). Não foi necessário recalcular a taxa BD a partir do CSV
+bruto por codificação, uma vez que a agregação já está disponível e os quatro
 valores de preço batem, à quarta casa decimal, os já redigidos em prosa em
-`R4_h9d.md §4.7`. O valor marginal do H9d **desaba** conforme a base do H9a
-fica agressiva — de +1,02 pp sobre a base equilibrada para +0,17 pp sobre a
-agressiva, abaixo da resolução temporal medida do arranjo (~0,46 pp) —, o que
-não é apresentado como resultado negativo isolado, mas como evidência de que
-a disjunção de ação que sustenta a soma **depende do ponto de operação**, e
-não é propriedade absoluta da alavanca. Os quatro pontos desta tabela
-figuram, sem exceção, como **dominados** na fronteira global consolidada na
-Tabela 20; esta dominância não contradiz a contribuição do H9d, pois a base
-do H9a sobre a qual ele age já é dominada pelo mesmo conjunto de
-configurações, de modo que o H9d herda a posição do H9a e a melhora
-marginalmente dentro dela, sem perder posição alguma.
+`R4_h9d.md` §4.7.
+
+O valor marginal do H9d **desaba** conforme a base do H9a fica agressiva: de
++1,02 pp sobre a base equilibrada para +0,17 pp sobre a agressiva, abaixo da
+resolução temporal medida do arranjo (~0,46 pp). Isso não é apresentado como
+resultado negativo isolado. É evidência de que a disjunção de ação que sustenta
+a soma **depende do ponto de operação**, e não é propriedade absoluta da
+alavanca.
+
+Os quatro pontos desta tabela figuram, sem exceção, como **dominados** na
+fronteira global consolidada na Tabela 20. Esta dominância não contradiz a
+contribuição do H9d, uma vez que a base do H9a sobre a qual ele age já é
+dominada pelo mesmo conjunto de configurações. O H9d herda, deste modo, a
+posição do H9a e a melhora marginalmente dentro dela, sem perder posição alguma.
 
 > **Procedência.** `results/benchmark/fase6/{raw_results.csv,
 > bdrate_average.csv}` (verificado por `Glob`; 128 linhas somadas nas quatro
@@ -589,27 +653,31 @@ construída sobre apenas três sequências.
 | H9a equilibrado, substituição em `cpu-used=3` | 3,866 | 73,09 | 3,754× | não dominado |
 | H9a agressivo, substituição em `cpu-used=3` | 4,347 | 77,30 | 4,465× | não dominado |
 
-*Nota.* Âncora libaom `cpu-used=0`; taxa BD sobre PSNR-Y; redução de tempo na
-definição canônica. Dominância de Pareto verificada nas duas dimensões
-simultaneamente (menor taxa BD **e** maior redução de tempo); a coluna de
-status reproduz o campo `dominated_by` do artefato de origem, vazio nos
-pontos não dominados. As três configurações do H9a equilibrado e agressivo
-empilhadas com o H9d figuram nesta fronteira e são, sem exceção,
-**dominadas**: a base do H9a sobre a qual o H9d atua já é dominada pelo mesmo
-conjunto de configurações que domina o par empilhado, de modo que o H9d não
-perde posição alguma — ele herda a posição do H9a e a melhora marginalmente
-dentro dela —, e esta dominância **não contradiz** o resultado marginal do
-H9d, medido corretamente como contribuição sobre uma base fixa e contra a
-curva de limiares do próprio H9a, e não como posição na fronteira global.
-Nenhum ponto de aprendizado de máquina domina a rede convolucional nativa: os
-presets `cpu-used=1` e `cpu-used=2` permanecem não dominados, com o H9c a
-τ=0,95 colado ao primeiro em taxa BD e tempo menores nos dois eixos — um
-empate técnico, sem dominância em direção alguma. A fronteira mistura
-configurações medidas em campanhas distintas (`fase6`, `fase6_swap`,
-`fase6_swap_h9c`), todas contra a mesma âncora e grade de quantização, mas
-não na mesma janela contínua de execução; diferenças de tempo inferiores à
-resolução pareada de ~0,46 pp pedem cautela adicional, e o empate técnico
-citado acima está nessa faixa.
+*Nota.* Âncora libaom `cpu-used=0`, taxa BD sobre PSNR-Y e redução de tempo na
+definição canônica. A dominância de Pareto é verificada nas duas dimensões
+simultaneamente: menor taxa BD **e** maior redução de tempo. A coluna de status
+reproduz o campo `dominated_by` do artefato de origem, vazio nos pontos não
+dominados.
+
+As configurações do H9a empilhadas com o H9d figuram nesta fronteira e são, sem
+exceção, **dominadas**. A base do H9a sobre a qual o H9d atua já é dominada pelo
+mesmo conjunto de configurações que domina o par empilhado. O H9d não perde,
+portanto, posição alguma: ele herda a posição do H9a e a melhora marginalmente
+dentro dela. Esta dominância **não contradiz** o resultado marginal do H9d, que
+é medido como contribuição sobre uma base fixa e contra a curva de limiares do
+próprio H9a, e não como posição na fronteira global.
+
+Nenhum ponto de aprendizado de máquina domina a rede convolucional nativa. Os
+*presets* `cpu-used=1` e `cpu-used=2` permanecem não dominados. O H9c a τ=0,95
+fica colado ao primeiro, com taxa BD e tempo menores nos dois eixos — um empate
+técnico, sem dominância em direção alguma.
+
+Uma ressalva de comparabilidade acompanha a fronteira. Ela mistura configurações
+medidas em campanhas distintas (`fase6`, `fase6_swap`, `fase6_swap_h9c`), todas
+contra a mesma âncora e grade de quantização, mas não na mesma janela contínua
+de execução. Diferenças de tempo inferiores à resolução pareada de ~0,46 pp
+pedem, deste modo, cautela adicional, e o empate técnico citado acima está nessa
+faixa.
 
 > **Procedência.** `results/benchmark/fase6_analysis/pareto_frontier.csv`
 > (execução de 2026-07-29, verificada por leitura direta: 24 configurações,
@@ -635,19 +703,23 @@ Resultados em que a evidência correspondente é apresentada pela primeira vez.
 | 2 | O contexto de taxa-distorção barato não supera o podador nativo na média da grade CTC, mas preenche a granularidade fina de baixo regime de aceleração | H9c a τ=0,95 entrega 0,160% de taxa BD a 12,61% de redução de tempo, e a τ=0,90, 0,172% a 13,59%, no vão de 0% a 32,59% que a escada nativa deixa descoberto entre `cpu-used=0` e `cpu-used=1` | Resultados §2.4 e §6 (Tabelas 12 e 20) |
 | 3 | Alavancas de poda se somam na medida em que os conjuntos de candidatos que atacam são disjuntos, e não em função da informação que compartilham | O H9d soma +1,02 pp de redução de tempo sobre o H9a com informação idêntica à do H9c, que somara apenas +0,26 pp; a interação medida entre H9a e H9c é negativa em −1,9 pp na média de quatro sequências | Resultados §3.5 e §4.9 (Tabelas 16 e 18) |
 
-*Nota.* Esta tabela não introduz número novo: reúne, sem alteração, valores
-já tabulados nas Tabelas 9, 12, 16, 18 e 20. A Conclusão 3 é apresentada na
-sua forma corrigida: a não-aditividade das duas primeiras alavancas de poda
-**não é um limite informacional**, e sim sobreposição de ação — os dois
-podadores perguntam, ambos, se o nó pode ser encerrado, e por isso caçam os
-mesmos blocos de conteúdo liso —, conforme a retratação R8 de
-`A3_RETRATACOES_E_LACUNAS.md`. A disjunção de ação que explica por que o H9d
-escapa desta sobreposição **não é propriedade absoluta da alavanca**: ela
-depende do ponto de operação em que os dois podadores efetivamente rodam,
-conforme a retratação R9 do mesmo documento, e desaba quando a base do H9a
-fica agressiva (Tabela 19). A Conclusão 2 usa os números da fronteira
-recomposta em 2026-07-29 (Tabela 20), e não os valores anteriores de três
-sequências (0,21% a 0,23% de taxa BD), superados pela retratação R24.
+*Nota.* Esta tabela não introduz número novo. Ela reúne, sem alteração, valores
+já tabulados nas Tabelas 9, 12, 16, 18 e 20.
+
+A Conclusão 3 é apresentada na sua forma corrigida. A não-aditividade das duas
+primeiras alavancas de poda **não é um limite informacional**, e sim
+sobreposição de ação: os dois podadores perguntam, ambos, se o nó pode ser
+encerrado, e por isso caçam os mesmos blocos de conteúdo liso. Assim determina a
+retratação R8 de `A3_RETRATACOES_E_LACUNAS.md`.
+
+A disjunção de ação que explica por que o H9d escapa dessa sobreposição **não é
+propriedade absoluta da alavanca**. Ela depende do ponto de operação em que os
+dois podadores efetivamente rodam, conforme a retratação R9 do mesmo documento,
+e desaba quando a base do H9a fica agressiva (Tabela 19).
+
+A Conclusão 2 usa os números da fronteira recomposta em 2026-07-29 (Tabela 20),
+e não os valores anteriores de três sequências (0,21% a 0,23% de taxa BD),
+superados pela retratação R24.
 
 > **Procedência.** `docs/RESULTADOS_fronteira_pareto_global.md` §4;
 > `docs/SINTESE_resultados_metodologia.md` §6; `A3_RETRATACOES_E_LACUNAS.md`
