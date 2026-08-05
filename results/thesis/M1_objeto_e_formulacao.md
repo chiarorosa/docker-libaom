@@ -27,10 +27,12 @@ O conjunto de formas candidatas por nó é amplo. O codificador avalia
 `PARTITION_NONE` (o bloco não dividido), `PARTITION_SPLIT` (a divisão quadrada
 em quatro), as duas formas retangulares `PARTITION_HORZ` e `PARTITION_VERT`, as
 quatro formas assimétricas do tipo AB (`HORZ_A`, `HORZ_B`, `VERT_A` e `VERT_B`)
-e as duas formas 4-way de proporção 4:1 (`HORZ_4` e `VERT_4`), o que totaliza
-**dez formas de partição por nó**. Então, o espaço de busca cresce
-combinatoriamente com a profundidade da árvore, pois cada nó que escolhe a
-divisão quadrada instancia quatro novos nós com o mesmo leque de candidatos.
+e as duas formas 4-way de proporção 4:1 (`HORZ_4` e `VERT_4`). São, ao todo,
+**dez formas de partição por nó**.
+
+O espaço de busca cresce, deste modo, combinatoriamente com a profundidade da
+árvore. Cada nó que escolhe a divisão quadrada instancia quatro novos nós com o
+mesmo leque de candidatos.
 
 A busca está implementada na função recursiva `av1_rd_pick_partition`, que
 concentra o fluxo de controle da decisão. Nesta função, os candidatos são
@@ -64,28 +66,32 @@ substituição da busca: os candidatos que sobrevivem à poda continuam sendo
 avaliados pelo próprio critério de taxa-distorção do codificador, o que preserva
 a validade do fluxo de bits gerado.
 
-Duas formas de poda são distinguidas ao longo de todo o texto, pois a diferença
-entre elas é estrutural e não de grau. **Podar antes da busca** significa decidir
-no início do nó, quando nenhuma avaliação de taxa-distorção foi paga; neste
-caso, o alcance é máximo, uma vez que um acerto elimina a subárvore inteira,
-inclusive a própria avaliação de `PARTITION_NONE`, mas a decisão é tomada sem
-que um único número de taxa-distorção tenha sido observado. **Podar durante a
-busca** significa decidir depois de o codificador já ter avaliado
-`PARTITION_NONE`, dispondo, então, da taxa, da distorção e do custo RD reais
-desta avaliação; neste caso, a informação é substancialmente mais rica, mas o
-alcance é estruturalmente limitado, pois o custo do `PARTITION_NONE` já foi pago
-e jamais é recuperado.
+Duas formas de poda são distinguidas ao longo de todo o texto, uma vez que a
+diferença entre elas é estrutural, e não de grau.
 
-A decisão de particionamento é, por natureza, uma decisão de taxa-distorção, e
-esta constatação é o que orienta o projeto dos atributos apresentado na Seção 4.
-O codificador escolhe a forma de partição que minimiza o custo lagrangiano que
-combina distorção e taxa, e não qualquer propriedade fotométrica do bloco. Então,
-a informação capaz de elevar o limite de desempenho de um podador aprendido é a
-informação que a própria decisão utiliza — o contexto de particionamento da
-vizinhança já codificada, a força de quantização e a posição no quadro —, e boa
-parte dela é de custo desprezível, pois já está residente na memória do
-codificador no momento da decisão. Esta é a hipótese central que reorientou a
-investigação, depois de sucessivas tentativas no domínio de pixels.
+**Podar antes da busca** significa decidir no início do nó, quando nenhuma
+avaliação de taxa-distorção foi paga. O alcance é máximo, pois um acerto elimina
+a subárvore inteira, inclusive a própria avaliação de `PARTITION_NONE`. Em
+contrapartida, a decisão é tomada sem que um único número de taxa-distorção
+tenha sido observado.
+
+**Podar durante a busca** significa decidir depois de o codificador já ter
+avaliado `PARTITION_NONE`, dispondo, então, da taxa, da distorção e do custo RD
+reais dessa avaliação. A informação é substancialmente mais rica, ao passo que o
+alcance é estruturalmente limitado: o custo do `PARTITION_NONE` já foi pago e
+jamais é recuperado.
+
+A decisão de particionamento é, por natureza, uma decisão de taxa-distorção. É
+essa constatação que orienta o projeto dos atributos apresentado na Seção 4. O
+codificador escolhe a forma de partição que minimiza o custo lagrangiano que
+combina distorção e taxa, e não qualquer propriedade fotométrica do bloco.
+
+Por conseguinte, a informação capaz de elevar o limite de desempenho de um
+podador aprendido é a informação que a própria decisão utiliza: o contexto de
+particionamento da vizinhança já codificada, a força de quantização e a posição
+no quadro. Boa parte dela é de custo desprezível, uma vez que já está residente
+na memória do codificador no momento da decisão. Esta é a hipótese central que
+reorientou a investigação, depois de sucessivas tentativas no domínio de pixels.
 
 > **Procedência.** `docs/SINTESE_resultados_metodologia.md` §1;
 > `docs/PLANO_H9_contribuicao_tese.md` §2 e §3 (hipótese H9 e blocos de
@@ -99,40 +105,46 @@ investigação, depois de sucessivas tentativas no domínio de pixels.
 ## 1.3 Decomposição do custo de busca por família de candidatos
 
 A viabilidade de qualquer podador depende de onde o tempo de busca está de fato
-alocado, e esta distribuição foi medida antes de qualquer experimento de
-codificação. Utilizando a instrumentação nativa `CONFIG_COLLECT_PARTITION_STATS`
+alocado. Esta distribuição foi medida antes de qualquer experimento de
+codificação. Utilizou-se a instrumentação nativa `CONFIG_COLLECT_PARTITION_STATS`
 do libaom, que registra os microssegundos gastos em cada candidato de cada nó,
-foram medidos **875.317 nós** de decisão sobre as três sequências do conjunto de
-teste reservado, em codificação intraquadro com `cpu-used=0`. O tempo de
-trabalho local de um nó foi definido como a soma dos candidatos não recursivos,
-excluindo deliberadamente a coluna da divisão quadrada, cujo temporizador
-engloba a recursão e contabilizaria o mesmo trabalho múltiplas vezes. Deste
-modo, os percentuais de custo apresentados a seguir têm por denominador os
-**nove candidatos não recursivos** — o `PARTITION_NONE`, as duas retangulares,
-as quatro AB e as duas 4-way —, e não as dez formas do enum. Esta distinção deve
-acompanhar toda citação destes valores, pois as duas contagens convivem no
-trabalho: dez é o número de formas que o codificador pode escolher e que o
-modelo prediz, e nove é a base sobre a qual o custo de busca local é medido.
+sobre **875.317 nós** de decisão das três sequências do conjunto de teste
+reservado, em codificação intraquadro com `cpu-used=0`.
+
+O tempo de trabalho local de um nó foi definido como a soma dos candidatos não
+recursivos. A coluna da divisão quadrada foi deliberadamente excluída, uma vez
+que o seu temporizador engloba a recursão e contabilizaria o mesmo trabalho
+várias vezes. Os percentuais apresentados a seguir têm, deste modo, por
+denominador os **nove candidatos não recursivos**: o `PARTITION_NONE`, as duas
+retangulares, as quatro AB e as duas 4-way. Não são as dez formas do enum.
+
+Esta distinção deve acompanhar toda citação destes valores, pois as duas
+contagens convivem no trabalho. Dez é o número de formas que o codificador pode
+escolher e que o modelo prediz. Nove é a base sobre a qual o custo de busca
+local é medido.
 
 A decomposição agregada mostra que o custo se distribui em três blocos de
 tamanho comparável. O `PARTITION_NONE` consome **30,1%** do tempo de busca
 local, as duas formas retangulares consomem **35,6%**, as quatro formas AB
-consomem **20,4%** e as duas formas 4-way consomem **13,9%**. Deste modo, as
-**partições estendidas — as AB somadas às 4-way — consomem 34,3% do tempo de
-busca local**, com variação de 28,9% a 41,3% entre as três sequências, e as
-formas retangulares somadas às estendidas atingem 69,9%. Individualmente,
-nenhuma forma estendida ultrapassa 7,22% do tempo, o que explica por que este
-custo passou despercebido em análises que examinavam candidatos isolados.
+consomem **20,4%** e as duas formas 4-way consomem **13,9%**.
 
-O custo das partições estendidas concentra-se quase inteiramente nos blocos
-grandes, o que restringe o alcance útil de um podador desta família. Nos blocos
-de 8×8 amostras estas formas não se aplicam e o custo é nulo; em 16×16 amostras
-representam **8,7%** do tempo local; em 32×32 e 64×64 amostras representam,
-respectivamente, **50,0%** e **51,0%**; e em 128×128 amostras, **35,3%**. Além
-disso, a medição de tempo de parede confirma a decomposição por temporizador: ao
+As **partições estendidas — as AB somadas às 4-way — consomem, portanto, 34,3%
+do tempo de busca local**, com variação de 28,9% a 41,3% entre as três
+sequências. As formas retangulares somadas às estendidas atingem 69,9%.
+Individualmente, contudo, nenhuma forma estendida ultrapassa 7,22% do tempo, o
+que explica por que este custo passou despercebido em análises que examinavam
+candidatos isolados.
+
+O custo das partições estendidas concentra-se quase todo nos blocos grandes, o
+que restringe o alcance útil de um podador desta família. Nos blocos de 8×8
+amostras estas formas não se aplicam e o custo é nulo. Em 16×16 amostras elas
+representam **8,7%** do tempo local; em 32×32 e 64×64 amostras, respectivamente
+**50,0%** e **51,0%**; em 128×128 amostras, **35,3%**.
+
+A medição de tempo de parede confirma a decomposição por temporizador. Ao
 desligar todas as partições estendidas em codificações reais das três sequências
 de teste, obteve-se aceleração média de **1,431×** ao custo de **+0,89%** de
-taxa BD, ou seja, cerca de 0,03 ponto percentual de taxa BD por cada 1% de tempo
+taxa BD. São cerca de 0,03 ponto percentual de taxa BD por 1% de tempo
 economizado — o perfil de candidatos caros e raramente decisivos que favorece um
 podador seletivo.
 
@@ -150,7 +162,7 @@ podador seletivo.
 ## 1.4 O espaço de projeto dos podadores — duas dimensões ortogonais
 
 As soluções investigadas nesta tese são frequentemente lidas como níveis
-sucessivos de sofisticação de uma mesma ideia, e esta leitura é incorreta. Elas
+sucessivos de sofisticação de uma mesma ideia. Esta leitura é incorreta. Elas
 ocupam pontos distintos de um plano definido por **duas dimensões
 independentes**: *quando* o podador age, o que determina que informação já foi
 paga, e *o quê* o podador poda, o que determina quais candidatos deixam de ser
@@ -159,22 +171,27 @@ composição entre soluções, apresentados no Capítulo de Resultados.
 
 A primeira dimensão é o ponto de enganche no fluxo de controle de
 `av1_rd_pick_partition`. O gancho `av1_prune_partitions_before_search` executa
-antes de qualquer avaliação e caracteriza a poda pré-busca; o gancho
+antes de qualquer avaliação e caracteriza a poda pré-busca. O gancho
 `av1_prune_after_none` executa imediatamente após a avaliação de
-`PARTITION_NONE` e caracteriza a poda pós-NONE. A segunda dimensão é a ação: um
-podador pode comprometer o nó com o `PARTITION_NONE` e encerrar a descida, pode
-restringir a busca apenas à divisão quadrada, pode encerrar a busca de forma
-binária depois do `PARTITION_NONE`, ou pode agir seletivamente sobre um
-subconjunto de candidatos, como as partições estendidas.
+`PARTITION_NONE` e caracteriza a poda pós-NONE.
 
-As duas dimensões são ortogonais, e é justamente por isso que duas soluções
-podem partilhar o mesmo gancho e o mesmo vetor de atributos e ainda assim
-produzir ganhos que se somam: o que as distingue é a ação, ou seja, o conjunto
-de candidatos que cada uma retira da busca. Por outro lado, duas soluções cujas
-ações se sobrepõem competem pelo mesmo tempo economizável, e a composição rende
-menos que a soma das partes. Esta distinção entre sobreposição de informação e
-sobreposição de ação é uma contribuição metodológica desta tese, e organiza toda
-a apresentação dos resultados de composição.
+A segunda dimensão é a ação. Um podador pode comprometer o nó com o
+`PARTITION_NONE` e encerrar a descida; pode restringir a busca apenas à divisão
+quadrada; pode encerrar a busca de forma binária depois do `PARTITION_NONE`; ou
+pode agir seletivamente sobre um subconjunto de candidatos, como as partições
+estendidas.
+
+As duas dimensões são ortogonais. É justamente por isso que duas soluções podem
+partilhar o mesmo gancho e o mesmo vetor de atributos e ainda assim produzir
+ganhos que se somam: o que as distingue é a ação, ou seja, o conjunto de
+candidatos que cada uma retira da busca.
+
+Duas soluções cujas ações se sobrepõem, em contrapartida, competem pelo mesmo
+tempo economizável, e a composição rende menos que a soma das partes. Esta
+distinção
+entre sobreposição de informação e sobreposição de ação é uma contribuição
+metodológica desta tese, e organiza toda a apresentação dos resultados de
+composição.
 
 > **Procedência.** `docs/SINTESE_resultados_metodologia.md` §2.8 (formalização
 > das duas dimensões, tabela comparativa e nota de nomenclatura);
@@ -196,24 +213,28 @@ compressão é a taxa BD calculada sobre esta métrica; a métrica de custo é o
 tempo de parede, reportado como redução percentual de tempo e como aceleração.
 
 Dois conjuntos experimentais são utilizados, com funções distintas e
-deliberadamente não intercambiáveis. As **dezesseis sequências UVG em resolução
-4K** foram particionadas por sequência, sem vazamento, em dez sequências de
-treino, três de validação (HoneyBee, FlowerPan e Lips) e três de teste reservado
-(Jockey, RaceNight e RiverBank), fixadas *a priori*; este conjunto valida e
-caracteriza a contribuição, provando que o ganho é atribuível ao modelo. As
-**oito sequências da Classe A1 das condições comuns de teste** (do inglês
+deliberadamente não intercambiáveis.
+
+As **dezesseis sequências UVG em resolução 4K** foram particionadas por
+sequência, sem vazamento, em dez de treino, três de validação (HoneyBee,
+FlowerPan e Lips) e três de teste reservado (Jockey, RaceNight e RiverBank),
+fixadas *a priori*. Este conjunto valida e caracteriza a contribuição, provando
+que o ganho é atribuível ao modelo.
+
+As **oito sequências da Classe A1 das condições comuns de teste** (do inglês
 *Common Test Conditions* – CTC) da AOM, em 4K e 10 bits, com quinze quadros
 conforme a especificação, produzem os resultados finais comparáveis à
 literatura.
 
-Os ***presets*** **nativos do codificador** são a referência de comparação, pois
-constituem o botão de velocidade que o usuário do libaom já possui, e qualquer
-heurística proposta precisa justificar-se contra eles. Sob a definição canônica
-de redução de tempo adotada neste texto, o *preset* `cpu-used=1` entrega 32,59%
-de redução de tempo a +0,449% de taxa BD, o `cpu-used=2` entrega 42,72% a
-+0,536%, e o `cpu-used=3` entrega 67,94% a +2,722%. Deste modo, a escada de
-*presets* é discreta e esparsa, e a granularidade fina entre degraus é uma das
-lacunas que esta tese investiga.
+Os ***presets*** **nativos do codificador** são a referência de comparação, uma
+vez que constituem o botão de velocidade que o usuário do libaom já possui.
+Qualquer heurística proposta precisa justificar-se contra eles.
+
+Sob a definição canônica de redução de tempo adotada neste texto, o *preset*
+`cpu-used=1` entrega 32,59% de redução de tempo a +0,449% de taxa BD; o
+`cpu-used=2` entrega 42,72% a +0,536%; e o `cpu-used=3` entrega 67,94% a
++2,722%. A escada de *presets* é, deste modo, discreta e esparsa, e a
+granularidade fina entre degraus é uma das lacunas que esta tese investiga.
 
 > **Procedência.** `docs/INVENTARIO_solucoes.md` §0 (âncora, definição canônica
 > de redução de tempo, partições congeladas e escada de portões) e §1 (valores
