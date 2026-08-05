@@ -275,11 +275,29 @@ codificador e a solução que o utiliza.
 
 | Bloco | Conteúdo | Nº de atributos | Momento de disponibilidade | Utilizado por |
 |---|---|--:|---|---|
-| A | Descritores de luminância do bloco e do seu contexto hierárquico: variância global e por quadrante, dispersão e heterogeneidade entre quadrantes, gradiente horizontal e vertical e sua orientação, perfis de linha e de coluna, aresta mais forte, densidade de arestas fortes, nível DC, quantização normalizada, contraste com o bloco-pai de dimensão 2n×2n e com os três blocos-irmãos, posição na unidade de 64 px | 24 | Pré-busca | pixels24; H9a; H9c/H9d |
+| A | Descritores de luminância do bloco e do seu contexto hierárquico — variância global e por quadrante, dispersão e heterogeneidade entre quadrantes, gradiente horizontal e vertical e sua orientação, perfis de linha e de coluna, aresta mais forte, densidade de arestas fortes e nível DC —, o contraste de variância com o bloco-pai de dimensão 2n×2n e com os três blocos-irmãos, acrescidos de dois descritores que não derivam de luminância: o índice de quantização normalizado e a posição do nó na unidade de 64 px | 24 | Pré-busca | pixels24; H9a; H9c/H9d |
 | B | Vizinhança de particionamento causal: disponibilidade dos vizinhos acima e à esquerda, larguras e alturas em log2 dos blocos já decididos nessas direções, granularidade relativa da vizinhança e sua anisotropia | 8 | Pré-busca | H9a; H9c/H9d |
-| C | Quantização e posição: passo de quantização normalizado, posição normalizada de linha e de coluna no quadro, profundidade do nó | 4 | Pré-busca | H9a; H9c/H9d |
+| C | Quantização e posição: passo de dequantização do coeficiente DC em escala quadrática normalizada — `log1p(dc_q²/256)`, distinto do índice de quantização normalizado do bloco A —, posição normalizada de linha e de coluna **no quadro**, profundidade do nó | 4 | Pré-busca | H9a; H9c/H9d |
 | D | Proxy de resíduo intraquadro: SATD de Hadamard do bloco-fonte, sem predição | 2 | Pré-busca | nenhum dos dois (só H9b, avaliado fora do codificador) |
 | E | Custo de taxa-distorção real de `PARTITION_NONE`: `log1p` da taxa, da distorção e do custo RD | 3 | Pós-`PARTITION_NONE` | H9c/H9d |
+
+**Nota sobre a composição do bloco A.** O rótulo "bloco de pixels" é
+consagrado no código e nos documentos deste projeto, mas descreve vinte e dois
+dos vinte e quatro atributos, não os vinte e quatro. Dois não derivam de
+luminância alguma: o índice de quantização normalizado (`q_norm`, índice 17,
+igual a `qindex/255`), que pertence conceitualmente ao bloco C e permanece em
+A apenas porque o vetor de pixels foi congelado antes da introdução dos demais
+blocos, e a posição do nó na unidade de 64 px (`pos_r`, `pos_c`, índices 22 e
+23), que é endereço geométrico dentro do superbloco e não conteúdo nem estado
+do codificador. Cabe ainda distinguir duas coisas que a leitura apressada
+confunde: o contraste com o bloco-pai e com os blocos-irmãos é **aritmética
+sobre luminância** num suporte espacial maior — a variância do bloco de
+2n×2n que contém o nó e a dos três quadrantes coirmãos —, e **não** a partição
+que esses blocos escolheram; a informação sobre o que a vizinhança decidiu é o
+bloco B, medido em separado. O que unifica os vinte e quatro não é, portanto, a
+natureza do dado, e sim a sua disponibilidade: todos estão computáveis antes de
+a busca de taxa-distorção do nó começar, propriedade que é a condição de
+implantação do podador pré-busca.
 
 **Nota.** O bloco E só existe depois que o codificador avaliou
 `PARTITION_NONE` para o nó corrente, o que o torna estruturalmente

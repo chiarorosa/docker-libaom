@@ -14,18 +14,36 @@ cujas fórmulas o lado C espelha com paridade verificada.
 
 O vetor completo possui quarenta e um atributos, organizados em cinco blocos
 rotulados no próprio código que os produz. O bloco **A**, com **vinte e quatro
-atributos** (índices 0 a 23), é composto integralmente por descritores de
-luminância: variância global e por quadrante, dispersão e heterogeneidade entre
-quadrantes, energia de gradiente horizontal e vertical e sua orientação, perfis
-de somas de linhas e de colunas, aresta mais forte, densidade de arestas fortes,
-nível DC, quantização normalizada, contexto hierárquico do bloco-pai de dimensão
-2n×2n, contraste com os três blocos-irmãos e posição dentro da unidade de 64 px.
+atributos** (índices 0 a 23), reúne os descritores de luminância do bloco e do
+seu contexto hierárquico — variância global e por quadrante, dispersão e
+heterogeneidade entre quadrantes, energia de gradiente horizontal e vertical e
+sua orientação, perfis de somas de linhas e de colunas, aresta mais forte,
+densidade de arestas fortes e nível DC —, o contexto hierárquico do bloco-pai de
+dimensão 2n×2n e o contraste com os três blocos-irmãos, acrescidos de dois
+descritores que não derivam de luminância: o índice de quantização normalizado e
+a posição do nó dentro da unidade de 64 px. O rótulo "bloco de pixels", usado no
+código e nos demais documentos, descreve portanto vinte e dois destes vinte e
+quatro atributos. O índice de quantização normalizado (`q_norm`, índice 17,
+igual a `qindex/255`) pertence conceitualmente ao bloco C e permanece em A por
+razão histórica, uma vez que o vetor de pixels foi congelado antes da
+introdução dos blocos seguintes e realocá-lo romperia a paridade com o lado C;
+a posição na unidade de 64 px (`pos_r`, `pos_c`, índices 22 e 23) é endereço
+geométrico dentro do superbloco, que permite ao modelo distinguir os nós de
+borda, onde o contexto causal está truncado. Convém ainda separar o contraste
+hierárquico do contexto de vizinhança: o contraste com o pai e com os irmãos é
+aritmética sobre luminância num suporte espacial maior, e não a partição que
+esses blocos escolheram — esta última é o bloco B. O traço comum aos vinte e
+quatro não é a natureza do dado, e sim o instante em que está disponível: todos
+são computáveis antes de a busca de taxa-distorção do nó começar.
 O bloco **B**, com **oito atributos** (24 a 31), carrega a vizinhança de
 particionamento causal: disponibilidade dos vizinhos acima e à esquerda, larguras
 e alturas em log2 dos blocos já decididos nessas direções, granularidade relativa
 da vizinhança e sua anisotropia. O bloco **C**, com **quatro atributos** (32 a
-35), reúne quantização e posição: `log1p(dc_q²/256)`, posição normalizada de
-linha e de coluna no quadro, e a profundidade do nó.
+35), reúne quantização e posição: `log1p(dc_q²/256)`, que é o passo de
+dequantização efetivo do coeficiente DC e não se confunde com o índice de
+quantização normalizado alojado no bloco A; a posição normalizada de linha e de
+coluna **no quadro**, distinta da posição na unidade de 64 px; e a profundidade
+do nó.
 
 O bloco **D**, com **dois atributos**, e o bloco **E**, com **três atributos**,
 completam o vetor. O bloco E é o custo de taxa-distorção real da partição
