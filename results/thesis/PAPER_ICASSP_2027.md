@@ -133,6 +133,8 @@ sequências UVG 4K, quatro pontos de quantização.
 | teste reservado | Jockey, RaceNight, RiverBank (3) | 5,32 | 1,91 |
 | **total** | **16** | **26,97** | **10,07** |
 
+O total da coluna de amostras é a soma das três parcelas arredondadas, e por isso registra 26,97 milhões, ao passo que a contagem exata do conjunto, citada no parágrafo anterior, é de 26,98 milhões. A diferença é de arredondamento, e não de contagem.
+
 > **Nota de procedência.** Dado de origem: `results/dataset_h9/manifest.csv`
 > (64 linhas). Script: `src/scripts/partition_dataset/rebuild_manifest_stats.py`.
 > Fonte: `results/thesis/M2_instrumentacao_e_dataset.md` §2.4; partição
@@ -716,6 +718,12 @@ trabalho que a posição deveria ocupar]`
 
 ## Conformidade
 
+> **Apêndice interno de trabalho — NÃO faz parte da submissão.** Esta seção
+> existe para auditoria interna do texto contra as retratações e lacunas
+> registradas na tese de origem, e deve ser removida antes de qualquer envio.
+> Ela é o único ponto deste arquivo em que decisões editoriais e a existência
+> de outros trabalhos derivados da mesma tese são mencionadas.
+
 Esta seção declara a aderência deste artigo às retratações e às lacunas
 registradas em `results/thesis/A3_RETRATACOES_E_LACUNAS.md`, e lista os
 marcadores `[completar: ...]` pendentes no corpo do texto.
@@ -731,9 +739,9 @@ marcadores `[completar: ...]` pendentes no corpo do texto.
   documentada de estabelecer a cota; declara a cota inferior no `pixels24`
   e a cota superior genuína apenas no oráculo, com a cota do domínio de
   pixels não medida (Seção 4).
-- **R3** (sobreajuste na seleção do modelo substituto). O artigo não é
-  citado; nenhuma alegação de sobreajuste do checkpoint do ConvNeXt aparece
-  no texto.
+- **R3** (sobreajuste na seleção do modelo substituto). A alegação não é
+  reproduzida: nenhuma afirmação de sobreajuste na escolha do ponto de
+  verificação do modelo substituto aparece no texto.
 - **R4** (composição disjunta entre H9a e `pixels24`). O artigo declara
   explicitamente que `pixels24` é o bloco A do H9a, que vinte e quatro dos
   trinta e seis atributos do H9a são descritores de luminância, e que o
