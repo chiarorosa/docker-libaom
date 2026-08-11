@@ -38,15 +38,33 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Patch  # noqa: E402
 
-# --- paleta categorica validada, atribuida em ordem fixa de slot -------------
-# Slots 1..4 do tema padrao (modo claro). A ordem NAO e ciclada: cada familia
-# recebe um slot fixo, e a cor segue a entidade, nunca a sua posicao no ranque.
+# --- paleta categorica sobria, VALIDADA antes de ser adotada -----------------
+# Quatro tons profundos — azul-aco, vinho, violeta e verde-mata — escolhidos por
+# leitura academica sobria, e nao pelo tema de abertura (verde-agua e amarelo),
+# que e mais vivo e cujos dois tons claros ficavam abaixo de 3:1 contra a
+# superficie. A ordem NAO e ciclada: cada familia tem slot fixo, e a cor segue a
+# entidade, nunca a sua posicao no ranque.
+#
+# LIMITE MEDIDO DA SOBRIEDADE: dessaturar mais nao e possivel. Ha um piso de
+# croma (0,10 em OKLCH) abaixo do qual a cor le como cinza, e paletas mais
+# apagadas — Tol muted, seaborn deep, cinza-ardosia — foram testadas e
+# REPROVARAM nesse piso ou no de distincao. Esta e a versao mais sobria entre as
+# que passam em todas as verificacoes.
+#
+# Validador (modo claro, superficie #fcfcfb, pares adjacentes):
+#   faixa de luminosidade  PASSA  os quatro dentro de L 0,43-0,77
+#   piso de croma          PASSA  os quatro >= 0,10
+#   separacao sob DCV      PASSA  pior par adjacente dE 13,5 (protan); tritan 7,4
+#   piso de visao normal   PASSA  pior par adjacente dE 21,1
+#   contraste x superficie PASSA  os quatro >= 3:1 (nenhum exige alivio)
+# Reproduzir:
+#   node validate_palette.js "#25599f,#9b2d4f,#4a3aa7,#1a6b33" --mode light
 SERIES = [
-    # (rotulo, chave em pools(), cor slot, textura para o modo impressao)
-    ("PARTITION_NONE", "NONE", "#2a78d6", ""),
-    ("Retangulares",   "RECT", "#eb6834", "///"),
-    ("AB",             "AB",   "#1baf7a", "\\\\\\"),
-    ("4-way",          "4WAY", "#eda100", "..."),
+    # (rotulo em ingles, chave em pools(), cor slot, textura para impressao)
+    ("PARTITION_NONE", "NONE", "#25599f", ""),
+    ("Rectangular",    "RECT", "#9b2d4f", "///"),
+    ("AB",             "AB",   "#4a3aa7", "\\\\\\"),
+    ("4-way",          "4WAY", "#1a6b33", "..."),
 ]
 
 SURFACE = "#fcfcfb"    # superficie do grafico (tambem o vao entre segmentos)
@@ -79,9 +97,13 @@ def label_ink(fill):
     return SURFACE if contraste_claro >= contraste_escuro else INK
 
 
-def br(valor, casas=1):
-    """Formata numero com virgula decimal, como exige o texto em portugues."""
-    return f"{valor:.{casas}f}".replace(".", ",")
+def num(valor, casas=1):
+    """As figuras dos artigos sao em INGLES, logo o separador decimal e o ponto.
+    O texto em portugues dos capitulos usa virgula; os dois nao se misturam."""
+    return f"{valor:.{casas}f}"
+
+# Rotulo da linha agregada — em ingles, como todo texto plotado.
+AGG_LABEL = "Aggregate"
 
 DEFAULT_INPUTS = [
     ("Jockey",    "results/benchmark/partstats/part_timing_t1.csv"),
@@ -115,7 +137,7 @@ def collect(inputs):
 
     G = pools(grand)
     glocal = G["local"]
-    rows.append(("Agregado", total_nodes,
+    rows.append((AGG_LABEL, total_nodes,
                  {k: 100.0 * G[k] / glocal for k in
                   ("NONE", "RECT", "AB", "4WAY", "ABFW")}))
 
@@ -158,13 +180,13 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
         tinta = label_ink(cor)
         for yi, (v, l0) in enumerate(zip(vals, left)):
             if v >= 7.0:
-                ax1.text(l0 + v / 2, yi, br(v), ha="center", va="center",
+                ax1.text(l0 + v / 2, yi, num(v), ha="center", va="center",
                          fontsize=7.5, color=tinta, weight="bold", zorder=4)
         left = [a + b for a, b in zip(left, vals)]
 
     # A mensagem da figura: o total das estendidas, anotado no fim da barra.
     for yi, r in enumerate(rows):
-        ax1.text(101.5, yi, f"AB+4-way  {br(r[2]['ABFW'])}%",
+        ax1.text(101.5, yi, f"AB+4-way  {num(r[2]['ABFW'])}%",
                  va="center", ha="left", fontsize=8, color=INK_2)
 
     ax1.set_yticks(list(y))
@@ -172,11 +194,11 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
     ax1.invert_yaxis()
     ax1.set_xlim(0, 100)
     ax1.set_xticks([0, 25, 50, 75, 100])
-    ax1.set_xlabel("% do tempo de busca local do nó (nove candidatos não recursivos)",
+    ax1.set_xlabel("% of node-local search time (nine non-recursive candidates)",
                    fontsize=8, color=INK_2)
     style_axis(ax1)
     for lbl in ax1.get_yticklabels():
-        if lbl.get_text() == "Agregado":
+        if lbl.get_text() == AGG_LABEL:
             lbl.set_weight("bold")
 
     handles = [Patch(facecolor=c, edgecolor=SURFACE, linewidth=0.8,
@@ -197,7 +219,7 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
         ax2.barh(yi, v, height=0.6, color=c, edgecolor=SURFACE,
                  linewidth=0.8, zorder=3,
                  hatch=(hatch_por_familia[s[2]] if textura else None))
-        ax2.text(v + 0.25, yi, f"{br(v, 2)}%", va="center", ha="left",
+        ax2.text(v + 0.25, yi, f"{num(v, 2)}%", va="center", ha="left",
                  fontsize=7.5, color=INK_2)
 
     maior = max(vals)
@@ -205,8 +227,9 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
     ax2.set_yticklabels(nomes)
     ax2.invert_yaxis()
     ax2.set_xlim(0, maior * 1.35)
-    ax2.set_xlabel("% do tempo de busca local, por forma estendida isolada "
-                   f"(maior isolada: {br(maior, 2)}%)", fontsize=8, color=INK_2)
+    ax2.set_xlabel("% of node-local search time, per individual extended shape "
+                   f"(largest single shape: {num(maior, 2)}%)",
+                   fontsize=8, color=INK_2)
     style_axis(ax2)
 
     fig.savefig(out_path, bbox_inches="tight", facecolor=SURFACE)
@@ -241,13 +264,13 @@ def main():
     csv_path = os.path.join(args.out_dir, "figura1_dados.csv")
     with open(csv_path, "w", newline="") as f:
         w = csv.writer(f)
-        w.writerow(["painel", "categoria", "nos", "pct_tempo_local"])
+        w.writerow(["panel", "category", "nodes", "pct_node_local_time"])
         for label, n, p in rows:
             for nome, chave, _c, _h in SERIES:
-                w.writerow(["familias", f"{label}/{nome}", n, f"{p[chave]:.2f}"])
-            w.writerow(["familias", f"{label}/AB+4-way", n, f"{p['ABFW']:.2f}"])
+                w.writerow(["families", f"{label}/{nome}", n, f"{p[chave]:.2f}"])
+            w.writerow(["families", f"{label}/AB+4-way", n, f"{p['ABFW']:.2f}"])
         for nome, v, fam in shapes:
-            w.writerow(["formas_estendidas", nome, n_total, f"{v:.2f}"])
+            w.writerow(["extended_shapes", nome, n_total, f"{v:.2f}"])
     print(f"  gravado: {csv_path}")
 
     print("\nConferir antes de usar no artigo: os valores do agregado devem "
