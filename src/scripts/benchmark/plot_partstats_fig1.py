@@ -59,6 +59,30 @@ BASELINE = "#c3c2b7"
 # Vao de 2 px entre segmentos empilhados, expresso em pontos (2 px @ 96 dpi).
 GAP_PT = 1.5
 
+
+def _rel_lum(hexcolor):
+    """Luminancia relativa WCAG de uma cor hexadecimal."""
+    def chan(c):
+        c = c / 255.0
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    r, g, b = (int(hexcolor[i:i + 2], 16) for i in (1, 3, 5))
+    return 0.2126 * chan(r) + 0.7152 * chan(g) + 0.0722 * chan(b)
+
+
+def label_ink(fill):
+    """Escolhe entre tinta clara e escura pelo MAIOR contraste sobre o
+    preenchimento — calculado, e nunca estimado a olho. A regra de alivio exige
+    rotulo legivel, e branco sobre o amarelo do slot 4 fica em torno de 2,2:1."""
+    lum = _rel_lum(fill)
+    contraste_claro = 1.05 / (lum + 0.05)
+    contraste_escuro = (lum + 0.05) / 0.05
+    return SURFACE if contraste_claro >= contraste_escuro else INK
+
+
+def br(valor, casas=1):
+    """Formata numero com virgula decimal, como exige o texto em portugues."""
+    return f"{valor:.{casas}f}".replace(".", ",")
+
 DEFAULT_INPUTS = [
     ("Jockey",    "results/benchmark/partstats/part_timing_t1.csv"),
     ("RaceNight", "results/benchmark/partstats_racenight/part_timing.csv"),
@@ -131,15 +155,16 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
                  hatch=(hatch if textura else None), zorder=3)
         # Rotulo direto dentro do segmento: a regra de alivio exige rotulo
         # visivel, pois aqua e amarelo ficam abaixo de 3:1 na superficie clara.
+        tinta = label_ink(cor)
         for yi, (v, l0) in enumerate(zip(vals, left)):
             if v >= 7.0:
-                ax1.text(l0 + v / 2, yi, f"{v:.1f}", ha="center", va="center",
-                         fontsize=7.5, color=SURFACE, weight="bold", zorder=4)
+                ax1.text(l0 + v / 2, yi, br(v), ha="center", va="center",
+                         fontsize=7.5, color=tinta, weight="bold", zorder=4)
         left = [a + b for a, b in zip(left, vals)]
 
     # A mensagem da figura: o total das estendidas, anotado no fim da barra.
     for yi, r in enumerate(rows):
-        ax1.text(101.5, yi, f"AB+4-way  {r[2]['ABFW']:.1f}%",
+        ax1.text(101.5, yi, f"AB+4-way  {br(r[2]['ABFW'])}%",
                  va="center", ha="left", fontsize=8, color=INK_2)
 
     ax1.set_yticks(list(y))
@@ -147,7 +172,7 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
     ax1.invert_yaxis()
     ax1.set_xlim(0, 100)
     ax1.set_xticks([0, 25, 50, 75, 100])
-    ax1.set_xlabel("% do tempo de busca local do no (nove candidatos nao recursivos)",
+    ax1.set_xlabel("% do tempo de busca local do nó (nove candidatos não recursivos)",
                    fontsize=8, color=INK_2)
     style_axis(ax1)
     for lbl in ax1.get_yticklabels():
@@ -172,7 +197,7 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
         ax2.barh(yi, v, height=0.6, color=c, edgecolor=SURFACE,
                  linewidth=0.8, zorder=3,
                  hatch=(hatch_por_familia[s[2]] if textura else None))
-        ax2.text(v + 0.25, yi, f"{v:.2f}%", va="center", ha="left",
+        ax2.text(v + 0.25, yi, f"{br(v, 2)}%", va="center", ha="left",
                  fontsize=7.5, color=INK_2)
 
     maior = max(vals)
@@ -181,7 +206,7 @@ def draw(rows, shapes, out_path, textura=False, titulo_n=None):
     ax2.invert_yaxis()
     ax2.set_xlim(0, maior * 1.35)
     ax2.set_xlabel("% do tempo de busca local, por forma estendida isolada "
-                   f"(maior isolada: {maior:.2f}%)", fontsize=8, color=INK_2)
+                   f"(maior isolada: {br(maior, 2)}%)", fontsize=8, color=INK_2)
     style_axis(ax2)
 
     fig.savefig(out_path, bbox_inches="tight", facecolor=SURFACE)
