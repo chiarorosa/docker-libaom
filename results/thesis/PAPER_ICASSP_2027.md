@@ -1,4 +1,4 @@
-# Attribution Before Acceleration: A Regret-Weighted Oracle Sieve for Learned AV1 Intra-Partition Pruning
+# Neural-Network Partition Pruners for AV1 Intra Coding over Compact Luma Descriptors and Low-Cost Causal Context
 
 **[completar: nomes dos autores, afiliação e financiamento, conforme exigido pelo CFP]**
 
