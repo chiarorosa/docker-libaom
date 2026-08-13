@@ -141,6 +141,23 @@ mesma cobertura de sequências, o que não está medido; apresentar o contraste 
 de quatro sequências, o que o inverte; ou substituir o argumento numérico pela interação
 medida e pelo colapso sobre a base agressiva, ambos já disponíveis.
 
+### 4.1 Estado — contraste corrigido
+
+A terceira via foi adotada no texto do LASCAS na mesma data desta auditoria. A razão entre
+magnitudes foi retirada do resumo e das Seções I, VII e IX, e substituída pelo **contraste
+de sinal** entre as duas composições que consomem entrada idêntica: interação medida de
+−1,9 ponto percentual, na composição do podador binário com o pré-busca, contra marginal de
++1,02 ponto percentual do podador seletivo. A assimetria entre as duas medições — quatro
+sequências sobre a base de limiares padrão, contra oito sequências sobre o ponto equilibrado
+implantado — passou a ser declarada explicitamente na Seção VII do artigo, com o registro de
+que uma comparação pareada entre os dois podadores não foi executada. O valor de 0,26 ponto
+percentual não aparece mais em passagem alguma do artigo, à exceção do apêndice interno de
+conformidade, que documenta a retratação.
+
+Permanece não medido, e é a via que fecharia a questão de forma definitiva: o marginal do
+podador binário e o do podador seletivo sobre a **mesma** base do H9a e as **mesmas** oito
+sequências da grade CTC.
+
 ## 5. Limitações desta auditoria
 
 1. A taxa BD **não** foi recalculada; foi conferida contra `bdrate_average.csv` e
