@@ -97,6 +97,18 @@ Valores recalculados por sequência do ponto equilibrado: FoodMarket2 12,35; Noc
 21,26; Neon1224 21,93. A afirmação de continuidade precisa ser reescrita, ou sustentada
 por uma varredura de τ sobre a grade CTC, cujo custo é de aproximadamente 160 codificações.
 
+### 3.4 Estado — não conformidades corrigidas
+
+As quatro não conformidades de §3.2 e a alegação de continuidade de §3.3 foram corrigidas
+no texto do LASCAS na mesma data desta auditoria: os números medidos sobre o UVG foram
+removidos do corpo, a restrição de escopo foi declarada nas Seções V e VIII, a Figura 2 foi
+respecificada sobre dados exclusivamente de CTC, e a Tabela I, a Figura 1 e as estatísticas
+offline das Seções III e IV passaram a identificar o conjunto de dados de origem. O ISCAS
+recebeu a mesma declaração de escopo nas Seções II e V, sem remoção de resultado algum.
+
+Permanece pendente o alinhamento do resumo em inglês do LASCAS, que ainda cita a faixa de
+12%–22% como intervalo contínuo.
+
 ## 4. Achado independente da restrição: o marginal de +0,26 pp do H9c
 
 O contraste central do LASCAS — o H9d soma +1,02 ponto percentual onde o H9c somara
