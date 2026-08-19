@@ -128,9 +128,10 @@ with a Bj{\o}ntegaard delta bitrate (BD-BR) of 0.586\%.
 The basic unit of the AV1 partitioning is the superblock, which has 128$\times$128
 or 64$\times$64 pixels, and the structure that subdivides it is called partition
 tree \cite{han2021}. AV1 allows ten partition types at each node \cite{chen2018},
-which Fig. \ref{fig_snp}(a) organizes into the four families used throughout this
-paper: the two structural decisions, PARTITION\_NONE, which codes the node
-undivided, and PARTITION\_SPLIT, the quad-tree split into four square sub-blocks;
+which Fig. \ref{fig_shapes} organizes into the four families used throughout this
+paper: the two structural decisions, PARTITION\_NONE, hereafter NONE, which
+codes the node undivided, and PARTITION\_SPLIT, the quad-tree split into four
+square sub-blocks;
 the two rectangular shapes, PARTITION\_HORZ and PARTITION\_VERT; the four
 asymmetric AB shapes, HORZ\_A, HORZ\_B, VERT\_A and VERT\_B, combining one
 rectangular half with two square sub-blocks; and the two 4-way shapes, HORZ\_4
@@ -139,39 +140,33 @@ called the extended partitions.
 
 \begin{figure}[!t]
   \centering
-  % Replace with: \includegraphics[width=\columnwidth]{fig_snp}
-  % Two stacked panels in one vector figure, English labels, 8 pt type, height
-  % not exceeding 1.6 in, the value the page layout was set with.
-  % (a) the ten partition shapes as block subdivisions in four labelled rows
-  %     (structural / rectangular / AB / 4-way), each row annotated with its
-  %     share of local search time: 30.1, 35.6, 20.4 and 13.9 percent.
-  % (b) the search of one node, left to right: first-stage pruner with three
-  %     outgoing actions (commit to PARTITION_NONE / quad-tree split only /
-  %     rectangular off) -> PARTITION_NONE evaluation -> second-stage pruner
-  %     with two outgoing actions (evaluate or skip the extended partitions)
-  %     -> remaining candidates.
-  \framebox[\columnwidth]{\rule{0pt}{1.6in}}
-  \caption{(a) Partition shapes evaluated at a node of the AV1 partition tree,
-  grouped into the four families used in this work and annotated with the share
-  of local search time each family consumes; (b) SNP-AV1 flowchart.}
-  \label{fig_snp}
+  % Replace with: \includegraphics[width=\columnwidth]{fig_shapes}
+  % One vector figure, English labels, 8 pt type, height not exceeding 1.5 in.
+  % The ten partition shapes drawn as block subdivisions in four labelled rows
+  % (structural / rectangular / AB / 4-way), each row annotated with its share
+  % of local search time: 30.1, 35.6, 20.4 and 13.9 percent.
+  \framebox[\columnwidth]{\rule{0pt}{1.5in}}
+  \caption{The ten partition shapes evaluated at a node of the AV1 partition
+  tree, grouped into the four families used in this work and annotated with the
+  share of local search time each family consumes.}
+  \label{fig_shapes}
 \end{figure}
 
 The evaluation order inside a node is fixed and defines which information has
-already been paid at each point of the flow: PARTITION\_NONE first, then the
+already been paid at each point of the flow: NONE first, then the
 quad-tree split, then the rectangular shapes, and finally the extended partitions. A
 pruner acting before the first evaluation is blind to any rate-distortion number,
-and one acting after PARTITION\_NONE has the measured rate, distortion and RD
+and one acting after NONE has the measured rate, distortion and RD
 cost of the undivided candidate, at the price of never saving the cost of
 producing them.
 
-The cost distribution in Fig. \ref{fig_snp}(a) was measured with the native
+The cost distribution in Fig. \ref{fig_shapes} was measured with the native
 partition timing instrumentation of libaom over 875{,}317 decision nodes of the
 4K dataset described in Section \ref{sec_data}, at \texttt{cpu-used=0}, taking as
 local work the sum of the nine non-recursive candidates of a node. The main
 conclusion when observing it is that the cost splits into three blocks of
 comparable size, and that the six extended shapes are one of them, consuming
-34.3\% of the local search time against 30.1\% of PARTITION\_NONE and 35.6\% of
+34.3\% of the local search time against 30.1\% of NONE and 35.6\% of
 the rectangular shapes. It is important to emphasize that no single extended
 shape exceeds 7.22\% of that time, which explains why this cost went unnoticed in
 analyses examining candidates in isolation. It also concentrates in the large
@@ -192,12 +187,33 @@ All-Intra (AI) encoder configuration.
 
 The Stacked Neural Pruners for AV1 (SNP-AV1) is a fast decision algorithm
 composed of two neural pruners inserted at two distinct stages of the search of a
-node, as shown in Fig. \ref{fig_snp}(b), removing candidates progressively as
+node, as shown in Fig. \ref{fig_snp}, removing candidates progressively as
 stronger evidence becomes available.
+
+\begin{figure}[!t]
+  \centering
+  % Replace with: \includegraphics[width=\columnwidth]{fig_snp}
+  % One vector figure, English labels, 8 pt type, height not exceeding 1.8 in.
+  % Top band: the search of one node, left to right, with the two insertion
+  %   points marked as the only modified stages -- pre-search pruner (three
+  %   outgoing actions: commit to NONE / quad-tree split only / rectangular
+  %   off) -> NONE evaluation -> post-NONE pruner (two outgoing actions:
+  %   evaluate or skip the extended partitions) -> remaining candidates ->
+  %   recursion into the quad-tree split.
+  % Bottom band: the per-level bank behind each insertion point, one network
+  %   selected by the size of the node being decided (64, 32 and 16 pixels),
+  %   with the topologies 36-64-32-3 for the pre-search pruner and 39-64-32-2
+  %   for the post-NONE one; the 8-pixel level is terminal and has no network.
+  \framebox[\columnwidth]{\rule{0pt}{1.8in}}
+  \caption{Insertion points of the two pruners in the search of a node of the
+  AV1 partition tree, and the bank of networks behind each of them, one per
+  node size.}
+  \label{fig_snp}
+\end{figure}
 
 The two stages are not two levels of sophistication of the same idea. The first
 acts before any evaluation, so its reach is maximal, since a correct commitment
-removes the whole subtree, including the evaluation of PARTITION\_NONE itself,
+removes the whole subtree, including the evaluation of NONE itself,
 which is the only cost no later pruner can save; in exchange, it decides blind to
 rate-distortion. The second acts afterwards, so its information is richer, at the
 price of a structurally limited reach. This is what makes them complementary
@@ -224,7 +240,7 @@ luma descriptors require only arithmetic linear in the area of the node, so all
 selected attributes are natively available during encoding, ensuring zero
 computational overhead for attribute extraction. The second stage reads these
 thirty-six plus three that exist only afterwards, the logarithm of the rate, of
-the distortion and of the RD cost measured for PARTITION\_NONE, which is why it
+the distortion and of the RD cost measured for NONE, which is why it
 is better informed and can never act earlier.
 
 \subsection{Dataset Construction}
@@ -234,7 +250,7 @@ The reference software libaom v3.10.0 was instrumented under a compile-time guar
 to record, at every node of the intra-frame partition search, the ground-truth
 decision taken by the encoder itself, together with the luma samples, the causal
 context, the quantization state, the position and the rate-distortion result of
-PARTITION\_NONE. The guard is necessary because a binary that writes to disk at
+NONE. The guard is necessary because a binary that writes to disk at
 every node cannot be the one that measures wall-clock acceleration; with it
 disabled, the build is verified byte-identical to the untouched reference tree.
 
@@ -280,17 +296,13 @@ into the first linear layer at export time, so the encoder feeds raw attributes
 and the weight layout matches what the native inference routine expects, which
 dispenses with any new inference code in C and ensures that the models execute
 natively within the encoding pipeline; this parity was verified over 192 random
-vectors, with a maximum difference of $1.35 \times 10^{-7}$. The outputs are also
-well calibrated, which is what makes thresholding them meaningful: over
-1{,}816{,}393 reserved-test decision nodes the expected calibration error of the
-first stage is 0.0112, and the second attains an area under the receiver
-operating characteristic curve of 0.902.
+vectors, with a maximum difference of $1.35 \times 10^{-7}$.
 
 \subsection{Pruning Policies and Encoder Integration}
 
 The first-stage pruner applies three actions in cascade. If the probability of
 the undivided class exceeds $\tau_{\mathrm{none}}$, all splits are disabled and
-the node is decided as PARTITION\_NONE, which cuts the whole subtree without
+the node is decided as NONE, which cuts the whole subtree without
 evaluating any candidate; this is the primary lever of time savings. Otherwise,
 if the probability of the split class exceeds $\tau_{\mathrm{split}}$, the shape
 candidates are skipped and the search recurses only into the four sub-blocks.
@@ -304,7 +316,7 @@ and 0.40.
 
 The second-stage pruner marks the node to skip the extended partitions when the
 estimated probability falls below a threshold kept per node size, leaving
-PARTITION\_NONE, the quad-tree split and the rectangular shapes untouched. The
+NONE, the quad-tree split and the rectangular shapes untouched. The
 per-level choice is experimental, since the values that discard the same fraction
 of true winners differ widely: the deployed calibration uses 0.0910, 0.1031 and
 0.0144 at the 16, 32 and 64-pixel levels, a stronger one 0.1776, 0.1627
@@ -329,16 +341,28 @@ The developed solution was evaluated using the libaom v3.10.0 AV1 reference
 software, following the AOM Common Test Conditions (CTC) \cite{ctc} and under the
 AI encoder configuration. The eight 4K sequences of the CTC Class A1 test set are
 BoxingPractice, Crosswalk, FoodMarket2, Neon1224, NocturneDance, PierSeaSide,
-Tango and TimeLapse, all at 3840$\times$2160, 10 bits and 4:2:0, from the XIPH
-repository. The first 15 frames of each were encoded, as
+Tango and TimeLapse, all at 3840$\times$2160, 10 bits and 4:2:0
+\cite{xipha1}. The first 15 frames of each were encoded, as
 the CTC specifies for the AI scenario, at CQ 20, 32, 43 and 55, against the
 unmodified libaom at \texttt{cpu-used=0} as anchor. The BD-BR \cite{bjontegaard}
 is computed over the luma peak signal-to-noise ratio; a negative BD-BR denotes a
 coding efficiency gain, so all values here, being positive, are losses. The time
-savings (TS) express the wall-clock time saved relative to the anchor, averaged
-over the CQ values and the sequences. All BD-BR and TS
-results come from this grid; the figures of Section \ref{sec_method} are
-distribution and classification statistics of the UVG dataset.
+savings (TS) express the wall-clock time saved relative to the anchor. Writing
+$t_{\mathrm{cfg}}(s,q)$ and $t_{\mathrm{anc}}(s,q)$ for the encoding times of the
+evaluated configuration and of the anchor on sequence $s$ at quality point $q$,
+over the sequence set $S$ and the quality set $Q$,
+
+\begin{equation}
+\mathrm{TS} = \frac{1}{|S|} \sum_{s \in S} \frac{1}{|Q|} \sum_{q \in Q}
+\left( 1 - \frac{t_{\mathrm{cfg}}(s,q)}{t_{\mathrm{anc}}(s,q)} \right),
+\label{eq_ts}
+\end{equation}
+
+reported as a percentage. The ratio is taken per quality point before any
+average, so the four points weigh equally and the result is not dominated by the
+most expensive one. All BD-BR and TS results come from this grid; the figures of
+Section \ref{sec_method} are distribution and classification statistics of the
+UVG dataset.
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.3}
@@ -378,6 +402,62 @@ operating point: over the aggressive base it falls below the measurement
 resolution, because a loosened undivided threshold commits the nodes so early
 that they never reach the second pruner.
 
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.15}
+\caption{Per-Sequence Results of the Two Deployed Operating Points Against the
+libaom v3.10.0 Anchor at \upshape cpu-used=0}
+\label{tab_seq}
+\centering
+\begin{tabular}{lcccc}
+\hline
+ & \multicolumn{2}{c}{\textbf{Balanced}} & \multicolumn{2}{c}{\textbf{Aggressive}} \\
+\textbf{Sequence} & \textbf{BD-BR} & \textbf{TS} & \textbf{BD-BR} & \textbf{TS} \\
+\hline
+BoxingPractice & 0.662\% & 20.33\% & 1.560\% & 31.97\% \\
+Crosswalk & 0.534\% & 20.53\% & 1.145\% & 35.08\% \\
+FoodMarket2 & 0.609\% & 14.14\% & 1.386\% & 26.74\% \\
+Neon1224 & 0.685\% & 22.00\% & 1.427\% & 33.05\% \\
+NocturneDance & 0.168\% & 13.78\% & 1.209\% & 30.79\% \\
+PierSeaSide & 0.458\% & 17.47\% & 1.403\% & 26.03\% \\
+Tango & 1.139\% & 22.89\% & 2.206\% & 38.80\% \\
+TimeLapse & 0.433\% & 18.78\% & 0.934\% & 31.00\% \\
+\hline
+\textbf{Average} & \textbf{0.586\%} & \textbf{18.74\%} & \textbf{1.409\%} & \textbf{31.68\%} \\
+\hline
+\end{tabular}
+\end{table}
+
+Table \ref{tab_seq} opens the two deployed points per sequence, and what it
+exposes is content dispersion, not a swept range. At the balanced point the time
+savings run from 13.78\% on NocturneDance to 22.89\% on Tango and the BD-BR from
+0.168\% to 1.139\%, so the extremes of the two axes do not fall on the same
+content. Read as time bought per point of coding efficiency ceded, NocturneDance
+is the most favourable sequence of the set and Tango the least, with a median
+near 35 points of time savings per point of BD-BR. Tango yields the most time at
+both calibrations and FoodMarket2 is among the two lowest at both, which
+indicates that the thresholds move the operating point without substantially
+changing which content the solution finds room in.
+
+\begin{figure}[!t]
+  \centering
+  % Replace with: \includegraphics[width=\columnwidth]{fig_space}
+  % One vector figure, English labels, 8 pt type, height not exceeding 1.9 in.
+  % Operating space measured on the CTC Class A1 grid: x axis time savings in
+  % percent from 0 to 70, y axis BD-BR in percent from 0 to 3; further right
+  % and lower is better, and the origin is the anchor at cpu-used=0.
+  % Series 1: the six SNP-AV1 points of Table I, joined by a line inside each
+  %   calibration family (balanced and aggressive).
+  % Series 2: the native preset ladder, cpu-used=1, 2 and 3, joined by a line
+  %   and labelled at each rung.
+  % Shade the time-savings interval between the anchor and the first preset
+  %   rung to mark the region the ladder does not cover.
+  \framebox[\columnwidth]{\rule{0pt}{1.9in}}
+  \caption{Operating space measured over the CTC Class A1 4K sequences: the six
+  SNP-AV1 points of Table \ref{tab_ctc} and the native preset ladder, against
+  the libaom v3.10.0 anchor at \texttt{cpu-used=0}.}
+  \label{fig_space}
+\end{figure}
+
 The preset rows of Table \ref{tab_ctc} must be qualified before any number is
 read, because the two arms do not have the same scope: a preset is a global
 switch, and moving from \texttt{cpu-used=0} to 1 enables dozens of heuristics
@@ -389,10 +469,11 @@ than the
 balanced deployed point, 32.59\% against 18.74\%, at a lower BD-BR of 0.449\%
 against 0.586\%, and it also dominates the aggressive point, so no operating
 point of SNP-AV1 dominates the ladder on both axes. What the ladder does not
-offer is granularity: it jumps from \texttt{cpu-used=0} straight to roughly
-32.6\%, and SNP-AV1 delivers six measured operating points inside that void,
-three of them between 17.72\% and 19.81\%, obtained by threshold alone, without
-retraining or recompiling.
+offer is granularity, and Fig. \ref{fig_space} is where that reading becomes
+visible: the preset curve jumps from \texttt{cpu-used=0} straight to roughly
+32.6\%, and the six measured points of SNP-AV1 populate that void, three of them
+between 17.72\% and 19.81\%, obtained by threshold alone, without retraining or
+recompiling.
 
 The overhead is reported rather than omitted: the complete path of SNP-AV1,
 attribute extraction and inference together, and that of the native learned
@@ -480,6 +561,8 @@ Brazilian research support agencies CNPq and FAPERGS.
 \bibitem{adamw} I. Loshchilov and F. Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. Int. Conf. Learn. Represent. (ICLR)}, May 2019, pp. 1--18.
 
 \bibitem{ctc} X. Zhao \emph{et al.}, ``AOM common test conditions v9.0,'' Alliance for Open Media, Codec Working Group, doc. CWG-G082, Mar. 2026.
+
+\bibitem{xipha1} Xiph.Org Foundation. \emph{AOM CTC Test Set, Class A1 (4K)}. [Online]. Available: \url{https://media.xiph.org/video/aomctc/test_set/a1_4k/}
 
 \bibitem{bjontegaard} G. Bj{\o}ntegaard, ``Calculation of average PSNR differences between RD-curves,'' Video Coding Experts Group (VCEG), doc. VCEG-M33, Mar. 2001.
 
