@@ -60,3 +60,7 @@ results/dataset_new/
 logs/
 # PID files of detached campaigns -- meaningless once the run ends.
 *.pid
+
+# Artigos de referencia usados so para calibrar estilo de escrita (PDFs do IEEE
+# Xplore, baixados sob licenca institucional). Ficam no disco, fora do repositorio.
+results/thesis/IEEE_Conference_Template/writing_style_ViTech*/

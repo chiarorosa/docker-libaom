@@ -1,26 +1,20 @@
-# CLAUDE.md — Normas IEEE e padrão de escrita ViTech
+# CLAUDE.md — Normas IEEE e padrão de escrita do grupo
 
 Escopo: este arquivo governa **todo texto de artigo/tese produzido neste diretório e todo texto
 destinado a submissão IEEE**. As regras da Parte A são normativas (violá-las causa rejeição
-editorial); as da Parte B são o padrão de escrita do Video Technology Research Group (ViTech/UFPel),
-destilado dos artigos em `writing_style_ViTech(...)/` e de cumprimento obrigatório.
+editorial); as da Parte B são o padrão de escrita acadêmica do grupo, de cumprimento obrigatório.
 
 Precedência: `CLAUDE.md` da raiz do projeto → este arquivo → convenções gerais. Onde a *call for
-papers* de uma conferência específica divergir do template genérico (p. ex. ICIP numera seções em
-arábico, SBCCI rotula "Keywords" em vez de "Index Terms"), **a instrução da conferência vence** — e
+papers* de uma conferência específica divergir do template genérico (algumas numeram seções em
+arábico, outras rotulam "Keywords" em vez de "Index Terms"), **a instrução da conferência vence** — e
 só ela; nada mais é negociável.
 
-Fontes desta especificação:
+Fontes normativas da Parte A:
 - `conference_101719.tex` + `IEEEtran.cls` — template oficial de conferência IEEE.
 - `IEEEtran_HOWTO.pdf` (Michael Shell, v1.8b+) — manual normativo da classe.
-- `writing_style_ViTech(Video_Technology_Research_Group_UFPel)/` — corpus de estilo:
-  - **GM-RF** (ICIP 2022) — conferência 5 páginas, ML + AV1 intra.
-  - **Direction-Based Fast Mode Decision** (SBCCI 2022) — conferência, heurística + hardware.
-  - **DM-FIFS** (IEEE TCSI-I 2026) — periódico, ML + AV1 IFS.
 
-> O corpus ViTech é **fonte de forma, não de conteúdo**. Nenhum número, sequência de vídeo,
-> resultado ou afirmação desses artigos pode ser reaproveitado como dado. Conteúdo derivado da tese
-> sai exclusivamente de `results/thesis/`.
+> A Parte B especifica **forma, não conteúdo**. Conteúdo derivado da tese — números, hipóteses,
+> resultados, retratações — sai exclusivamente de `results/thesis/`.
 
 ---
 
@@ -157,7 +151,7 @@ Fontes desta especificação:
 - Rótulos de eixo com **palavras**, não símbolos: "Magnetization (A/m)", não "M" nem "A/m" sozinho.
   Unidade entre parênteses; nunca rotular eixo só com unidade nem com razão grandeza/unidade
   ("Temperature (K)", não "Temperature/K"). Rótulos em 8 pt.
-- Subfiguras: `subfig` com `caption=false,font=footnotesize`; a prática ViTech/IEEE dominante é
+- Subfiguras: `subfig` com `caption=false,font=footnotesize`; a prática IEEE dominante é
   descrever (a), (b), ... dentro da legenda principal em vez de dar legenda a cada subfigura.
 - Fontes embutidas e subsetadas, apenas Type 1 (vetorial).
 
@@ -220,7 +214,7 @@ Fontes desta especificação:
 
 ---
 
-# PARTE B — Padrão de escrita ViTech
+# PARTE B — Padrão de escrita do grupo
 
 ## B.0 Princípio
 
@@ -288,9 +282,8 @@ Presente do indicativo, alta densidade de citação, zero opinião. Descreve a f
 detalhe **exatamente** necessário para o método proposto ser compreensível — nem mais. Encerra com um
 **escopo explícito**, delimitando o que o trabalho toca e o que não toca:
 
-> *"This work is focused on reducing the number of modes evaluated inside this loop. Some intra-frame
-> prediction modes are not included in this loop, such as CfL, ... and therefore these four modes are
-> not focused on this work."*
+> `This work is focused on <o que o método ataca>. <Elementos vizinhos> are not included in
+> <o laço/etapa atacada>, such as <lista>, and therefore they are not focused on this work.`
 
 Esse fechamento de escopo é obrigatório. É ele que protege o artigo na revisão.
 
@@ -348,7 +341,7 @@ Itens obrigatórios, cada um em frase própria e verificável:
 - Toda observação de comportamento é seguida de explicação causal ou de hedge honesto:
   `This fact partly explains ...`, `This may be attributed to ...`, `likely attributed to ...`.
 - Toda comparação com a literatura declara antes a (in)comparabilidade do setup:
-  `it employs a different experimental setup, including an outdated version of libaom, a distinct set
+  `it employs a different experimental setup, including a different version of libaom, a distinct set
   of video sequences, and different CQ parameters. Consequently, a direct comparison ... is not fair.
   Therefore, highlighting this limitation, the results in [18] reported ...`
 - Overhead do próprio método é medido e reportado (`the two models spent 4.17% of the IFS execution
@@ -413,20 +406,20 @@ fast decision algorithm · skip / prune
 
 ## B.13 Números e métricas
 
-- BD-BR e TS com **duas casas decimais** no corpo e nas tabelas (`50.19%`, `7.41%`, `22.56%`); no
-  abstract e na conclusão é aceitável arredondar para leitura (`an average BDBR of 7% with an encoding
-  time reduction of 50%`) desde que o valor exato conste dos Resultados.
-- Ganhos relativos como razão: `10 times higher`, `7.3 times lower`, `nearly six times higher`.
+- BD-BR e TS com **duas casas decimais** no corpo e nas tabelas; no abstract e na conclusão é
+  aceitável arredondar para leitura (`an average BD-BR of 7% with an encoding time reduction of 50%`)
+  desde que o valor exato conste dos Resultados.
+- Ganhos relativos como razão: `X times higher`, `X.Y times lower`, `nearly N times higher`.
 - Média sempre acompanhada de desvio-padrão ou IC 95% quando houver dispersão relevante.
 - Sinal declarado: BD-BR negativo = ganho de eficiência (dizer isso explicitamente na primeira vez).
 - Nenhum número aparece no texto sem estar na tabela/figura correspondente, e vice-versa.
 
 ## B.14 Legendas e chamadas
 
-- Figura: frase nominal curta, sem ponto final quando é rótulo puro
-  (`Fig. 1. GM-RF Flowchart.` / `Fig. 4. Percentage of filter pairs usage by CQ and resolution.`).
-  Se a figura for adaptada, creditar: `Modified from [14].`
-- Tabela: título nominal capitalizado (`TABLE II — GROUPS OF INTRA-FRAME PREDICTION MODES`).
+- Figura: frase nominal curta, terminada em ponto
+  (`Fig. 1. <ACRÔNIMO> flowchart.` / `Fig. 4. Percentage of <grandeza> by CQ and resolution.`).
+  Se a figura for adaptada de terceiro, creditar: `Modified from [N].`
+- Tabela: título nominal capitalizado (`TABLE II — <SUBSTANTIVO> USED IN <ETAPA>`).
 - Toda figura e toda tabela é citada no texto **antes** de aparecer, e tem pelo menos um parágrafo que
   a interpreta. Figura sem leitura no texto é figura a ser removida.
 
@@ -439,7 +432,7 @@ fast decision algorithm · skip / prune
 - 1ª pessoa do singular; anglicismo em texto PT; tradução literal EN→PT.
 - Termo "professor/teacher" para modelos ou componentes de ML.
 - Citar artigos irmãos da mesma tese entre si — a aprovação dos pares não é garantida.
-- Reaproveitar dados, sequências ou resultados do corpus ViTech como se fossem deste trabalho.
+- Reaproveitar dado, sequência ou resultado alheio como se fosse deste trabalho.
 
 ---
 
