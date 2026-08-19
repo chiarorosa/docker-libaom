@@ -343,7 +343,16 @@ grid; the figures of Section \ref{sec_method} are distribution and classificatio
 statistics of the UVG dataset.
 
 Fig. \ref{fig_space} places the measured operating space of SNP-AV1 against the
-anchor and against the native speed presets. The balanced calibration delivers
+anchor and against the native speed presets, and it must be qualified before any
+number is read, because the two arms do not have the same scope. A preset is a
+global switch: moving from \texttt{cpu-used=0} to 1 turns on the native learned
+partition pruner of libaom, which is off at the anchor, and with it dozens of
+further heuristics spread over every other coding stage, of which the partition
+search is only one. SNP-AV1 acts inside that single stage and adds nothing
+anywhere else. The preset curve therefore answers whether the speed knob already
+suffices, and does not rank partition-search techniques.
+
+Under that reading, the balanced calibration delivers
 time savings of 17.72\%, 18.74\% and 19.81\% at a BD-BR of 0.568\%, 0.586\% and
 0.651\%, and the aggressive one 31.51\%, 31.68\% and 32.16\% at 1.403\%, 1.409\%
 and 1.420\%; inside each family the three points differ only in how much of the
@@ -402,13 +411,7 @@ calibrations.
   \label{fig_space}
 \end{figure}
 
-The preset curve of Fig. \ref{fig_space} must be qualified before any number is
-read, because the two arms do not have the same scope: a preset is a global
-switch, and moving from \texttt{cpu-used=0} to 1 enables dozens of heuristics
-across the whole encoder, of which the partition search is only one, whereas
-SNP-AV1 acts inside that single stage. That curve therefore answers whether the
-speed knob already suffices, and does not rank partition-search techniques.
-Under that reading, the ladder measures 32.59\%, 42.72\% and 67.94\% of time
+Under the same reading, the ladder measures 32.59\%, 42.72\% and 67.94\% of time
 savings at a BD-BR of 0.449\%, 0.536\% and 2.722\% for \texttt{cpu-used} 1, 2
 and 3, so its first rung alone already dominates every point of SNP-AV1 on both
 axes. What the ladder does not offer is granularity: it jumps from the anchor
