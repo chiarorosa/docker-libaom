@@ -111,10 +111,10 @@ encoder, so a direct and fair comparison is not possible. None of these works
 explore learned pruning of the AV1 intra-frame partition search itself.
 
 This paper presents SNP-AV1, which is not another speed preset but a learned
-complexity-reduction layer confined to the partition search, replacing specific
-parts of the exhaustive exploration by neural decisions at two complementary
-moments of the rate-distortion optimization and leaving every other encoding
-stage untouched. The main strategy is to remove candidates progressively as
+layer for computational effort reduction confined to the partition search,
+replacing specific parts of the exhaustive exploration by neural decisions at two
+complementary moments of the rate-distortion optimization and leaving every other
+encoding stage untouched. The main strategy is to remove candidates progressively as
 stronger evidence becomes available: the first stage
 decides how much of the tree deserves to be opened at all, from causal context
 whose extraction cost is negligible, and the second whether the most expensive
@@ -417,7 +417,7 @@ of BD-BR, at a total overhead below 0.32\%. No operating point
 dominates the native preset ladder on both axes, since \texttt{cpu-used=1}
 delivers 32.59\% at a BD-BR of 0.449\%, although that preset reconfigures the
 whole encoder while SNP-AV1 acts only inside the partition search, where it
-delivers complexity control at a granularity the ladder does not offer.
+delivers encoding time reduction at a granularity the ladder does not offer.
 
 \section*{Acknowledgment}
 
