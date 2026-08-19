@@ -1,0 +1,11 @@
+series,point,config,bd_rate_pct,ts_pct
+SNP-AV1 balanced,"balanced, first stage only",ml_balanced,0.5676,17.7238
+SNP-AV1 balanced,"balanced, deployed",ml_bal_h9d,0.5858,18.7390
+SNP-AV1 balanced,"balanced, strong stage 2",ml_bal_h9d_pl20,0.6508,19.8115
+SNP-AV1 aggressive,"aggressive, first stage only",ml_aggr,1.4032,31.5127
+SNP-AV1 aggressive,"aggressive, deployed",ml_aggr_h9d,1.4088,31.6827
+SNP-AV1 aggressive,"aggressive, strong stage 2",ml_aggr_h9d_pl20,1.4199,32.1605
+libaom presets,cpu-used=1,native_cpu1,0.4487,32.5943
+libaom presets,cpu-used=2,native_cpu2,0.5360,42.7223
+libaom presets,cpu-used=3,native_cpu3,2.7221,67.9445
+anchor,libaom v3.10.0 cpu-used=0,anchor,0.0000,0.0000
