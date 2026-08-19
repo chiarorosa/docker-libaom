@@ -395,10 +395,14 @@ three of them between 17.72\% and 19.81\%, obtained by threshold alone, without
 retraining or recompiling.
 
 The overhead is reported rather than omitted: the complete path of SNP-AV1,
-attribute extraction and inference together, costs 0.26\% to 0.32\% of the
-encoding time against 0.16\% to 0.21\% of the native learned pruner, so the time
+attribute extraction and inference together, and that of the native learned
+pruner both stay below one third of one percent of the encoding time, so the time
 savings come from the pruning decisions and not from the lightness of each
-inference. Finally, no quantitative comparison with the AV1 works of Section
+inference. It is worth noting, however, that this operating region is reached by
+six deliberately shallow networks of 27{,}759 parameters in total, trained under
+a fixed budget of 30 epochs and without any architecture or hyperparameter
+search, so the margin still available from a larger model or a longer training
+schedule remains unexplored and is a concrete direction for future work. Finally, no quantitative comparison with the AV1 works of Section
 \ref{sec_intro} is offered, because none of them acts on the partition search:
 they target the intra prediction mode decision or the circuit, under different
 libaom versions and sequence sets, so their numbers measure a different tool and
