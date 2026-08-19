@@ -1,7 +1,5 @@
 \documentclass[conference]{IEEEtran}
-% \IEEEoverridecommandlockouts
-% Only needed for \thanks (paper-specific funding). The group boilerplate goes in
-% \section*{Acknowledgment}, so this stays commented out (CLAUDE.md A.1, A.3).
+% \IEEEoverridecommandlockouts   % uncomment only if \thanks is needed
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algorithmic}
@@ -10,9 +8,6 @@
 \usepackage{xcolor}
 \usepackage{url}
 \interdisplaylinepenalty=2500
-
-% LASCAS 2027: 5 pages total -- 4 of technical content plus 1 optional page for
-% additional references. Technical content must end on page 4.
 
 \begin{document}
 
@@ -147,19 +142,17 @@ ratio. The AB and the 4-way families are jointly called the extended partitions.
 
 \begin{figure}[!t]
   \centering
-  % PLACEHOLDER -- replace with \includegraphics[width=\columnwidth]{fig_snp}
-  % One figure, two stacked panels, vector PDF, English labels, sober academic
-  % palette, 8 pt labels. Total height about 2.3 in.
-  % (a) the ten shapes drawn as block subdivisions in four labelled rows
+  % Replace with: \includegraphics[width=\columnwidth]{fig_snp}
+  % Two stacked panels in one vector figure, English labels, 8 pt type, height
+  % not exceeding 1.6 in, the value the page layout was set with.
+  % (a) the ten partition shapes as block subdivisions in four labelled rows
   %     (structural / rectangular / AB / 4-way), each row annotated with its
-  %     share of the local search time: 30.1 percent for PARTITION_NONE, 35.6 for
-  %     rectangular, 20.4 for AB, 13.9 for 4-way. Generator to adapt:
-  %     src/scripts/benchmark/plot_partstats_fig1.py
+  %     share of local search time: 30.1, 35.6, 20.4 and 13.9 percent.
   % (b) the search of one node, left to right: first-stage pruner with three
   %     outgoing actions (commit to PARTITION_NONE / square split only /
-  %     rectangular off) -> PARTITION_NONE evaluation -> second-stage pruner with
-  %     two outgoing actions (evaluate or skip the extended partitions) ->
-  %     remaining candidates.
+  %     rectangular off) -> PARTITION_NONE evaluation -> second-stage pruner
+  %     with two outgoing actions (evaluate or skip the extended partitions)
+  %     -> remaining candidates.
   \framebox[\columnwidth]{\rule{0pt}{1.6in}}
   \caption{(a) Partition shapes evaluated at a node of the AV1 partition tree,
   grouped into the four families used in this work and annotated with the share
@@ -492,52 +485,3 @@ Brazilian research support agencies CNPq and FAPERGS.
 \end{thebibliography}
 
 \end{document}
-
-% =====================================================================
-% LASCAS 2027 BUDGET -- verified by compilation (TeX Live 2023, IEEEtran.cls
-% from this directory). Everything below \end{document} is ignored by LaTeX.
-%
-% Measured: 5 pages, 0 errors, 0 overfull boxes, 0 LaTeX warnings.
-%   pages 1-4 : technical content, Acknowledgment complete on page 4
-%   page  5   : references (24 entries) only
-% This is exactly the CFP limit, with no slack. Two consequences:
-%
-% 1. THE FIGURE MUST NOT EXCEED 1.6 in OF COLUMN HEIGHT. The placeholder
-%    \framebox is set to that value and the layout was measured with it. A
-%    taller figure pushes the Acknowledgment onto page 5 and breaks the limit.
-%
-% 2. Any text added anywhere has to be paid for by removing text elsewhere.
-%
-% FIGURE -- specified, not produced. Generate in the av1_bench container with
-% venv-ml, in English, sober academic palette, vector PDF, 8 pt labels, one
-% figure with two stacked panels, total height <= 1.6 in:
-%   (a) the ten partition shapes as block subdivisions in four labelled rows
-%       (structural / rectangular / AB / 4-way), each row annotated with its
-%       share of local search time (30.1 / 35.6 / 20.4 / 13.9 percent).
-%       Generator to adapt: src/scripts/benchmark/plot_partstats_fig1.py
-%   (b) the search of one node, left to right: first-stage pruner with three
-%       outgoing actions (commit to PARTITION_NONE / square split only /
-%       rectangular off) -> PARTITION_NONE evaluation -> second-stage pruner
-%       with two outgoing actions (evaluate or skip the extended partitions)
-%       -> remaining candidates.
-%
-% CUT FROM THE 8-PAGE VERSION (preserved at commit 57b30c3, useful for the
-% thesis chapter or a journal submission):
-%   - Table I (search-cost decomposition) -- folded into figure panel (a)
-%   - Table III (per-sequence results) and the whole per-sequence analysis,
-%     including the 12.35-22.89 percent spread and the two strict Pareto wins
-%     on FoodMarket2 and Tango
-%   - the separate "Comparison with Related Works" subsection
-%   - the class-weighting ablation (recall 0.022 -> 0.361, ECE 0.021 -> 0.174)
-%   - the 32.3 h extraction cost and the dataset class-imbalance breakdown
-%   - the per-class precision at the deployed thresholds (97.2 / 98.4 percent)
-%   - the two-dimensional H9a x H9d frontier (four configurations, cost ratios
-%     1.52x to 3.38x)
-% =====================================================================
-%
-% ALSO REMOVED, by author decision (not for space):
-%   - GM-RF (Rosa et al., ICIP 2022) as citation and as the quantitative
-%     comparison in Section IV. The paper now carries no self-citation, and
-%     Section IV states instead that no comparable number exists in the
-%     literature, because no published work acts on the AV1 partition search.
-% =====================================================================
