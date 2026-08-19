@@ -50,7 +50,7 @@ for AV1 (SNP-AV1), a machine-learning solution for the AV1 intra-frame partition
 search applying two neural networks at two distinct points of the search. The
 first reads thirty-six attributes of low-cost causal context and decides, before
 any rate-distortion evaluation is paid, whether the node is committed to the
-undivided partition, whether the search recurses only on the square split, or
+undivided partition, whether the search recurses only on the quad-tree split, or
 whether the rectangular candidates are discarded. The second adds the measured
 rate, distortion and rate-distortion cost of the undivided candidate, and decides
 whether the four AB and the two 4-way shapes are evaluated at all. Experimental
@@ -91,7 +91,7 @@ One of the largest individual costs of AV1 intra-frame coding is the block
 partitioning decision. Every superblock is submitted to a recursive search that,
 at each node of the partition tree, evaluates the rate-distortion (RD) cost
 \cite{sullivan1998} of ten candidate shapes and keeps the cheapest one,
-descending recursively whenever the square split wins. It is exhaustive by
+descending recursively whenever the quad-tree split wins. It is exhaustive by
 construction, since the encoder only knows which shape is best after actually
 coding the block under each of them, and in the reference software libaom
 \cite{libaom} this regime is what the highest quality preset,
@@ -106,7 +106,7 @@ prediction, so their target is the circuit and not the encoder search, and
 \cite{kim2019} applies decision trees to AV1 inter-prediction. Learning-based
 partitioning solutions do exist for VVC \cite{saldanha2022,he2021,chen2019}, and
 their concept can all be adapted to work with the AV1 coding tools, but they were
-designed for the quadtree with nested multi-type tree and evaluated on another
+designed for the quad-tree with nested multi-type tree and evaluated on another
 encoder, so a direct and fair comparison is not possible. None of these works
 explore learned pruning of the AV1 intra-frame partition search itself.
 
@@ -130,11 +130,12 @@ or 64$\times$64 pixels, and the structure that subdivides it is called partition
 tree \cite{han2021}. AV1 allows ten partition types at each node \cite{chen2018},
 which Fig. \ref{fig_snp}(a) organizes into the four families used throughout this
 paper: the two structural decisions, PARTITION\_NONE, which codes the node
-undivided, and PARTITION\_SPLIT, which divides it into four square quadrants; the
-two rectangular shapes, PARTITION\_HORZ and PARTITION\_VERT; the four asymmetric
-AB shapes, HORZ\_A, HORZ\_B, VERT\_A and VERT\_B, combining one rectangular half
-with two quadrants; and the two 4-way shapes, HORZ\_4 and VERT\_4, of 4:1 aspect
-ratio. The AB and the 4-way families are jointly called the extended partitions.
+undivided, and PARTITION\_SPLIT, the quad-tree split into four square sub-blocks;
+the two rectangular shapes, PARTITION\_HORZ and PARTITION\_VERT; the four
+asymmetric AB shapes, HORZ\_A, HORZ\_B, VERT\_A and VERT\_B, combining one
+rectangular half with two square sub-blocks; and the two 4-way shapes, HORZ\_4
+and VERT\_4, of 4:1 aspect ratio. The AB and the 4-way families are jointly
+called the extended partitions.
 
 \begin{figure}[!t]
   \centering
@@ -145,7 +146,7 @@ ratio. The AB and the 4-way families are jointly called the extended partitions.
   %     (structural / rectangular / AB / 4-way), each row annotated with its
   %     share of local search time: 30.1, 35.6, 20.4 and 13.9 percent.
   % (b) the search of one node, left to right: first-stage pruner with three
-  %     outgoing actions (commit to PARTITION_NONE / square split only /
+  %     outgoing actions (commit to PARTITION_NONE / quad-tree split only /
   %     rectangular off) -> PARTITION_NONE evaluation -> second-stage pruner
   %     with two outgoing actions (evaluate or skip the extended partitions)
   %     -> remaining candidates.
@@ -158,7 +159,7 @@ ratio. The AB and the 4-way families are jointly called the extended partitions.
 
 The evaluation order inside a node is fixed and defines which information has
 already been paid at each point of the flow: PARTITION\_NONE first, then the
-square split, then the rectangular shapes, and finally the extended partitions. A
+quad-tree split, then the rectangular shapes, and finally the extended partitions. A
 pruner acting before the first evaluation is blind to any rate-distortion number,
 and one acting after PARTITION\_NONE has the measured rate, distortion and RD
 cost of the undivided candidate, at the price of never saving the cost of
@@ -210,7 +211,7 @@ The attribute vector of the first stage has thirty-six entries in three blocks.
 Twenty-four are luma descriptors of the node and of its hierarchical context,
 covering variance overall and per quadrant, gradient energy and orientation, row
 and column profiles, edge strength and density, and the contrast against the
-2n$\times$2n parent and the three sibling quadrants. Eight carry the causal
+2n$\times$2n parent and the three sibling sub-blocks. Eight carry the causal
 partitioning neighborhood: availability of the above and left neighbors, their
 decided widths and heights in log2 units, and the granularity and anisotropy of
 that neighborhood. The last four carry the effective dequantization step of the
@@ -292,7 +293,7 @@ the undivided class exceeds $\tau_{\mathrm{none}}$, all splits are disabled and
 the node is decided as PARTITION\_NONE, which cuts the whole subtree without
 evaluating any candidate; this is the primary lever of time savings. Otherwise,
 if the probability of the split class exceeds $\tau_{\mathrm{split}}$, the shape
-candidates are skipped and the search recurses only into the four quadrants.
+candidates are skipped and the search recurses only into the four sub-blocks.
 Otherwise, if the probability of the remaining class falls below
 $\tau_{\mathrm{rest}}$, the rectangular candidates are disabled, which by
 dependency also disables the extended shapes. Otherwise the node proceeds to the
@@ -303,7 +304,7 @@ and 0.40.
 
 The second-stage pruner marks the node to skip the extended partitions when the
 estimated probability falls below a threshold kept per node size, leaving
-PARTITION\_NONE, the square split and the rectangular shapes untouched. The
+PARTITION\_NONE, the quad-tree split and the rectangular shapes untouched. The
 per-level choice is experimental, since the values that discard the same fraction
 of true winners differ widely: the deployed calibration uses 0.0910, 0.1031 and
 0.0144 at the 16, 32 and 64-pixel levels, a stronger one 0.1776, 0.1627
