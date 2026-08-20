@@ -198,9 +198,10 @@ node, as shown in Fig.~\ref{fig_snp}.
 The two stages are complementary rather than competing. The first acts before any
 evaluation, so a correct commitment removes the whole subtree, including the
 evaluation of NONE itself, the only cost no later pruner can save, in exchange
-for deciding blind to rate-distortion; the second is better informed but
-structurally limited in reach, and it aims at the extended family, which the
-first never targets, so the candidates they remove are disjoint and add up.
+for deciding blind to rate-distortion. The second is better informed but limited
+in reach: it aims at the extended family, which the first reaches only by
+disabling the rectangular shapes, and it acts where the first did not commit, so
+the two cuts add up.
 
 \subsection{Attribute Design}
 
@@ -219,8 +220,7 @@ pruner is consulted: the twelve neighborhood, quantization and position entries
 are a free read of state the native search already maintains, and the luma
 descriptors require only arithmetic linear in the area of the node. The second
 stage reads these thirty-six plus three that exist only afterwards, the logarithm
-of the rate, of the distortion and of the RD cost measured for NONE, which is why
-it is better informed and can never act earlier.
+of the rate, of the distortion and of the RD cost measured for NONE.
 
 \subsection{Dataset Construction}
 \label{sec_data}
@@ -258,8 +258,8 @@ Both stages use multilayer perceptrons, one per node size, trained independently
 for the 16$\times$16, 32$\times$32 and 64$\times$64 levels; the 8$\times$8 level
 is terminal and is not modeled. The topology, given in Fig.~\ref{fig_snp}, is
 common to all six networks and deliberately shallow: two hidden layers of 64 and
-32 units with rectified activation and a linear output layer, whose softmax gives
-the three class probabilities of the first stage and the two of the second. This
+32 rectified units and a linear output whose softmax gives three class
+probabilities in the first stage and two in the second. This
 amounts to 4{,}547 parameters per level in the first stage and 4{,}706 in the
 second, for 27{,}759 across the six deployed networks.
 
@@ -276,21 +276,23 @@ maximum difference of $1.35 \times 10^{-7}$.
 \subsection{Pruning Policies and Encoder Integration}
 
 The first-stage pruner applies three actions in cascade, drawn in
-Fig.~\ref{fig_snp}. If the probability of the undivided class exceeds
-$\tau_{\mathrm{none}}$, the node is decided as NONE and the whole subtree is cut
-without evaluating any other candidate; this is the primary lever of time
-savings. Otherwise, if the probability of the split class exceeds
-$\tau_{\mathrm{split}}$, the search recurses only into the four sub-blocks.
-Otherwise, if the probability of the remaining class falls below
-$\tau_{\mathrm{rest}}$, the rectangular candidates are disabled, and the
-extended ones with them by dependency; otherwise the node proceeds to the full
-search. Two operating points were frozen before the final campaign: the
+Fig.~\ref{fig_snp}, on the probabilities $p_{\mathrm{none}}$,
+$p_{\mathrm{split}}$ and $p_{\mathrm{rest}}$ of the undivided, split and
+remaining classes. If $p_{\mathrm{none}} > \tau_{\mathrm{none}}$, the node is
+decided as NONE and the whole subtree is cut without evaluating any other
+candidate; this is the primary lever of time savings. Otherwise, if
+$p_{\mathrm{split}} > \tau_{\mathrm{split}}$, NONE is skipped as well and the
+search recurses only into the four sub-blocks. Otherwise, if
+$p_{\mathrm{rest}} < \tau_{\mathrm{rest}}$, the rectangular candidates are
+disabled, and the extended ones with them by dependency; otherwise the node
+proceeds to the full search. Two operating points were frozen before the final campaign: the
 balanced one uses $\tau_{\mathrm{none}} = 0.95$, $\tau_{\mathrm{split}} = 0.90$
 and $\tau_{\mathrm{rest}} = 0.20$, the aggressive one 0.60, 0.85 and 0.40.
 
-The second-stage pruner marks the node to skip the extended partitions when the
-estimated probability falls below a threshold kept per node size, leaving NONE,
-the quad-tree split and the rectangular shapes untouched. The per-level choice is
+The second-stage pruner marks the node to skip the extended partitions when
+$p_{\mathrm{ext}}$, the estimated probability that an AB or a 4-way shape wins
+the node, falls below a threshold $\theta$ kept per node size, leaving NONE, the
+quad-tree split and the rectangular shapes untouched. The per-level choice is
 experimental, since the values that discard the same fraction of true winners
 differ widely: the deployed calibration uses 0.0910, 0.1031 and 0.0144 at the 16,
 32 and 64-pixel levels, a stronger one 0.1776, 0.1627 and 0.0321.
