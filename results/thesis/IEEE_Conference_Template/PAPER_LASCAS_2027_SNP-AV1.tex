@@ -192,9 +192,11 @@ node, as shown in Fig.~\ref{fig_snp}.
 \end{figure}
 
 The two stages are complementary rather than competing. The first acts before any
-evaluation, so a correct commitment removes the whole subtree, including the
-evaluation of NONE itself, the only cost no later pruner can save, in exchange
-for deciding blind to rate-distortion. The second is better informed but limited
+evaluation, so a correct commitment removes every competing candidate of the node
+and the whole subtree below it, and with that subtree the evaluation of NONE at
+every descendant, a cost no later pruner can save; when it commits to the
+quad-tree split instead, NONE is not evaluated at the node either. It pays for
+that reach by deciding blind to rate-distortion. The second is better informed but limited
 in reach: it aims at the extended family, which the first reaches only by
 disabling the rectangular shapes, and it acts where the first did not commit, so
 the two cuts add up.
@@ -217,6 +219,13 @@ are a free read of state the native search already maintains, and the luma
 descriptors require only arithmetic linear in the area of the node. The second
 stage reads these thirty-six plus three that exist only afterwards, the logarithm
 of the rate, of the distortion and of the RD cost measured for NONE.
+
+Every luma sample is brought to the eight-bit scale before any descriptor is
+computed, and the dequantization step is scaled in the same way, so no attribute
+distribution depends on the bit depth of the source. This is what allows models
+trained on eight-bit material to be deployed unchanged on the ten-bit evaluation
+sequences of Section~\ref{sec_results}, and it is a property of the attribute
+definition rather than a calibration.
 
 \subsection{Dataset Construction}
 \label{sec_data}
@@ -290,8 +299,10 @@ $p_{\mathrm{ext}}$, the estimated probability that an AB or a 4-way shape wins
 the node, falls below a threshold $\theta$ kept per node size, leaving NONE, the
 quad-tree split and the rectangular shapes untouched. The per-level choice is
 experimental, since the values that discard the same fraction of true winners
-differ widely: the deployed calibration uses 0.0910, 0.1031 and 0.0144 at the 16,
-32 and 64-pixel levels, a stronger one 0.1776, 0.1627 and 0.0321.
+differ widely: calibrated on the reserved sequences to lose a tenth of the nodes
+whose optimal shape is extended, the deployed thresholds are 0.0910, 0.1031 and
+0.0144 at the 16, 32 and 64-pixel levels, and a stronger calibration gives
+0.1776, 0.1627 and 0.0321.
 
 Both pruners were implemented in C inside libaom v3.10.0. The policy only removes
 candidates and never forces an illegal one, so SNP-AV1 is fully compliant with
@@ -330,6 +341,13 @@ keeps the four points equally weighted. All BD-BR and TS results come from this
 grid; the shares in Fig.~\ref{fig_shapes} were measured on the UVG corpus
 described in Section~\ref{sec_data} instead.
 
+Every configuration was encoded once over the full grid, and the run-to-run
+dispersion was quantified separately, by repeating the anchor, the first stage at
+the balanced thresholds and \texttt{cpu-used=1} five times on Crosswalk at the
+four quality points. The wall-clock time varies by less than 0.7\% and the TS
+derived from it by a standard deviation of 0.23 percentage points, which is the
+resolution against which the differences reported below are to be read.
+
 Fig.~\ref{fig_space} places the measured operating space of SNP-AV1 against the
 anchor and against the native speed presets, and it must be qualified before any
 number is read, because the two arms do not have the same scope. A preset is a
@@ -339,6 +357,17 @@ further heuristics spread over every other coding stage, of which the partition
 search is only one. SNP-AV1 acts inside that single stage and adds nothing
 anywhere else. The preset curve therefore answers whether the speed knob already
 suffices, and does not rank partition-search techniques.
+
+That native pruner is also architecturally distinct from the one proposed here,
+and the two are not interchangeable. It reads a luma window and the quantization
+step through a convolutional network shared by the whole superblock, without the
+causal partitioning context of the already decided neighbors, and its action is
+binary on the square axis: it either forces the quad-tree split or disables it.
+It is consulted before the search only, so no stage of it observes measured
+rate-distortion, and the extended partitions are never its target, being reached
+only by dependency when the rectangular shapes fall. The second pruner of
+SNP-AV1 has therefore no counterpart in the native mechanism, neither in the
+evidence it reads nor in the candidates it removes.
 
 Under that reading, the balanced calibration delivers
 time savings of 17.72\%, 18.74\% and 19.81\% at a BD-BR of 0.568\%, 0.586\% and
@@ -423,9 +452,9 @@ pruners at two distinct stages of the AV1 intra-frame partition search, reaching
 an average time savings of 18.74\% with a BD-BR of 0.59\%, and 32.16\% with
 1.42\% under a stronger calibration. The first pruner decides how much of the
 subtree is opened before any rate-distortion cost is paid and the second whether
-the extended partitions are evaluated; because the two candidate sets are
-disjoint, the second adds 1.02 percentage points of time savings for 0.018 of
-BD-BR. No operating point dominates the native preset ladder on both axes, but
+the extended partitions are evaluated; measured marginally over the first, on the
+residue of nodes it did not commit, the second adds 1.02 percentage points of
+time savings for 0.018 of BD-BR. No operating point dominates the native preset ladder on both axes, but
 that ladder reconfigures the whole encoder while SNP-AV1 acts only inside the
 partition search, at a granularity the presets do not offer.
 
