@@ -75,13 +75,13 @@ LINHAS = [
     ("gap",  0.050),
     ("c3",   0.225),   # p_rest  < tau_rest
     ("gap",  0.095),   # aqui volta o trilho de reencontro do estagio 1
-    ("none", 0.135),   # NONE e avaliado
+    ("none", 0.155),   # NONE e avaliado, duas linhas
     ("gap",  0.045),
     ("e2",   0.115),   # blocos de entrada do estagio 2
     ("gap",  0.070),
     ("c4",   0.225),   # p_ext < theta
     ("gap",  0.095),   # aqui volta o trilho do estagio 2
-    ("fim",  0.135),
+    ("fim",  0.115),   # uma linha so
     ("pad",  0.030),
 ]
 FIG_H_IN = sum(h for _, h in LINHAS)
@@ -95,13 +95,18 @@ for _nome, _h in LINHAS:
     _cursor -= _hn
 
 # --- grade horizontal --------------------------------------------------------
-X_SPINE   = 0.285          # eixo dos losangos e das caixas de processo
-MEIA_LOS  = 0.185          # meia-largura do losango
-X_ACAO_0  = 0.520          # caixas de consequencia, a direita do ramo "yes"
-X_ACAO_1  = 0.930
-X_TRILHO  = 0.962          # trilho vertical de reencontro
+# O eixo corre encostado a esquerda porque as linhas de losango nao tem nada
+# naquela margem: so as linhas de entrada precisam da coluna do nome. Isso
+# devolve quase um quinto de largura as caixas de consequencia, que eram o
+# ponto em que o texto encostava na borda.
+X_SPINE   = 0.265          # eixo dos losangos e das caixas de processo
+MEIA_LOS  = 0.200          # meia-largura do losango
+MEIA_PROC = 0.215          # meia-largura da caixa de processo
+X_ACAO_0  = 0.558          # caixas de consequencia, a direita do ramo "yes"
+X_ACAO_1  = 0.944
+X_TRILHO  = 0.974          # trilho vertical de reencontro
 X_NOME    = 0.020          # coluna do nome do podador, nas linhas de entrada
-X_ENT_0   = 0.260          # primeiro bloco de entrada
+X_ENT_0   = 0.280          # primeiro bloco de entrada
 X_ENT_1   = 0.996
 
 # --- textos ------------------------------------------------------------------
@@ -116,13 +121,15 @@ CONDICOES = {
     "c3": r"$p_{\mathrm{rest}} < \tau_{\mathrm{rest}}$",
     "c4": r"$p_{\mathrm{ext}} < \theta_{\mathrm{size}}$",
 }
+# As consequencias nomeiam as proprias formas em vez de parafrasea-las por
+# familia ("the rectangular candidates", "the extended ones"). Encurta as
+# frases quase pela metade, usa o vocabulario da Secao II e, sobretudo, torna
+# cada consequencia conferivel: o leitor conta as formas que sobraram.
 ACOES = {
-    "c1": "every candidate but NONE is disabled",
-    "c2": "NONE and the shape candidates are skipped;\n"
-          "the node recurses into SPLIT",
-    "c3": "the rectangular candidates are disabled,\n"
-          "and the extended ones with them",
-    "c4": "AB and 4-way are dropped from the node",
+    "c1": "only NONE is evaluated",
+    "c2": "only SPLIT: NONE, HORZ, VERT,\nAB and 4-way are skipped",
+    "c3": "HORZ and VERT off, and\nAB and 4-way by dependency",
+    "c4": "AB and 4-way off",
 }
 
 
@@ -180,9 +187,9 @@ def draw(out_path, p):
 
     def caixa_processo(chave, texto, cor):
         yc, h = Y[chave]
-        ax.add_patch(Rectangle((X_SPINE - MEIA_LOS, yc - h / 2), 2 * MEIA_LOS,
-                               h, facecolor=p["surface"], edgecolor=cor,
-                               linewidth=0.7, zorder=4))
+        ax.add_patch(Rectangle((X_SPINE - MEIA_PROC, yc - h / 2),
+                               2 * MEIA_PROC, h, facecolor=p["surface"],
+                               edgecolor=cor, linewidth=0.7, zorder=4))
         ax.text(X_SPINE, yc, texto, ha="center", va="center", fontsize=4.8,
                 color=p["ink"], linespacing=1.2, zorder=5)
         return yc, h
@@ -290,7 +297,7 @@ def draw(out_path, p):
     trilho(y_saidas, y_merge, y_none + h_none / 2)
 
     caixa_processo("none", "NONE is evaluated: its rate,\n"
-                           "distortion and RD cost known", p["ink_2"])
+                           "distortion and RD cost", p["ink_2"])
 
     # ---------------- estagio 2 ---------------------------------------------
     y_e2, h_e2, cx2 = fila_entrada(
@@ -307,8 +314,7 @@ def draw(out_path, p):
     y_merge2 = (yc4 - hc4 / 2 + y_fim + h_fim / 2) / 2
     trilho([yc4], y_merge2, y_fim + h_fim / 2)
 
-    caixa_processo("fim", "the candidates still enabled\nare evaluated",
-                   p["ink_2"])
+    caixa_processo("fim", "the enabled candidates are evaluated", p["ink_2"])
 
     fig.savefig(out_path, facecolor=p["surface"])
     if out_path.endswith(".pdf"):
@@ -323,13 +329,17 @@ def main():
     root = os.path.normpath(os.path.join(here, "..", "..", ".."))
     ap.add_argument("--out-dir",
                     default=os.path.join(root, "results", "thesis", "figuras"))
-    ap.add_argument("--variante", choices=sorted(PALETAS), default="cor")
+    ap.add_argument("--variante", choices=sorted(PALETAS) + ["ambas"],
+                    default="ambas")
     args = ap.parse_args()
 
     os.makedirs(args.out_dir, exist_ok=True)
-    sufixo = "" if args.variante == "cor" else "_" + args.variante
-    draw(os.path.join(args.out_dir, "figura2_fluxograma%s.pdf" % sufixo),
-         PALETAS[args.variante])
+    sufixo = {"cor": "", "cinza": "_cinza"}
+    alvos = sorted(PALETAS) if args.variante == "ambas" else [args.variante]
+    for nome in alvos:
+        draw(os.path.join(args.out_dir,
+                          "figura2_fluxograma%s.pdf" % sufixo[nome]),
+             PALETAS[nome])
     print("\nDimensoes finais: %.3f x %.3f in "
           "(altura derivada das linhas, nao arbitrada)" % (COL_W_IN, FIG_H_IN))
 
