@@ -16,9 +16,13 @@ aborta em vez de gerar uma figura que contradiz o texto.
 CUIDADO METODOLOGICO, herdado do agregador: PARTITION_SPLIT fica FORA do
 denominador, porque o seu cronometro engloba a recursao e contabilizaria o
 trabalho dos nos descendentes varias vezes. O denominador sao os NOVE candidatos
-nao recursivos. A figura declara isso na nota de rodape: sem ela, o leitor
-concluiria do desenho que o split e barato, quando na verdade o custo dele e a
-subarvore inteira que ele abre.
+nao recursivos.
+
+A nota de rodape precisa dizer isso sem virar enigma. Nao basta anunciar que o
+SPLIT foi excluido: o leitor conclui que dividir e de graca. O custo dele
+EXISTE, so que aparece nos filhos, contabilizado como o tempo local DELES. Dai a
+redacao "SPLIT's cost is counted at its sub-blocks", que diz onde a conta foi
+parar, e nao apenas que ela saiu daqui.
 
 Paleta monocromatica, e nao por sobriedade apenas: um diagrama de formas nao
 carrega variavel categorica alguma, entao o matiz nao codificaria nada. As
@@ -207,8 +211,8 @@ def draw(out_path, agregado, maior):
         y_topo = y0 - GAP_LINHA
 
     ax.text(nx(X_ROTULO), ny(PAD_BOT + H_NOTA / 2),
-            "share of the local search time of a node; SPLIT is excluded,"
-            " since its cost is the subtree it opens", ha="left", va="center",
+            "share of the time a node spends on its own candidates;"
+            " SPLIT's cost is counted at its sub-blocks", ha="left", va="center",
             fontsize=4.9, color=MUTED, zorder=4)
 
     fig.savefig(out_path, facecolor=SURFACE)
