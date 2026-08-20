@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Figura 2 do artigo LASCAS 2027 — pontos de insercao dos dois podadores na
-busca de um no da arvore de particionamento do AV1, e o banco de redes por nivel
-atras de cada um deles.
+busca de um no da arvore de particionamento do AV1, e a rede implantada atras
+de cada um deles.
 
 Diferente das figuras 1 e 3, esta nao plota medicao: e um diagrama estrutural.
 Por isso NAO le artefato numerico, e sim declara em SPEC os fatos que desenha,
@@ -9,12 +9,18 @@ cada um com a sua procedencia no texto do artigo, para que uma mudanca de
 arquitetura obrigue a mexer aqui e nao passe despercebida.
 
 Faixa superior: a busca de um no na ordem de avaliacao nativa, da esquerda para
-a direita, com os dois podadores marcados como os UNICOS estagios inseridos. O
-podador de pre-busca decide antes de qualquer avaliacao; o pos-NONE decide
-depois que o custo do candidato indiviso ja foi medido.
+a direita, com os dois podadores marcados como os UNICOS estagios inseridos.
 
-Faixa inferior: o que ha atras de cada ponto de insercao — o vetor de atributos,
-o banco de tres redes selecionadas pelo tamanho do no, e a topologia.
+Faixa inferior, um cartao por ponto de insercao:
+  - o vetor de entrada como BARRA SEGMENTADA, em escala de atributos, de modo
+    que a barra do estagio 2 seja literalmente a do estagio 1 mais um segmento
+    destacado. E o que torna visivel o empilhamento, e por que o segundo
+    estagio nao pode agir antes: o segmento que ele acrescenta so existe depois
+    que NONE foi medido;
+  - a topologia e o banco de tres redes selecionadas pelo tamanho do no;
+  - as saidas COM O LIMIAR QUE AS GOVERNA, que e a politica implantada e o
+    conteudo mais reproduzivel do trabalho;
+  - o alcance maximo do podador, que sustenta o argumento de complementaridade.
 
 Uso (dentro do conteiner):
     build/venv-ml/bin/python src/scripts/benchmark/plot_pruner_insertion_fig2.py \
@@ -46,7 +52,7 @@ matplotlib.rcParams.update({
 })
 
 COL_W_IN = 252.0 / 72.27   # \columnwidth do IEEEtran [conference], em polegadas
-FIG_H_IN = 1.42            # teto acordado com o enquadramento de 4+1 paginas
+FIG_H_IN = 1.54
 
 # --- paleta: os mesmos slots das figuras 1 e 3 -------------------------------
 C_S1    = "#25599f"   # azul-aco — podador de pre-busca
@@ -59,21 +65,25 @@ NATIVE  = "#b9b7ae"   # contorno dos estagios nativos, que a solucao nao toca
 TINT_1  = "#e6edf6"   # preenchimento tenue dos blocos inseridos
 TINT_2  = "#eae7f5"
 
+# Rampa monocromatica de cada acento, para os segmentos do vetor de entrada. Os
+# tres primeiros segmentos usam a rampa; o quarto, exclusivo do estagio 2, usa o
+# acento cheio, para que a diferenca entre os dois vetores salte a vista.
+RAMPA_1 = ["#dbe4f2", "#c2d0e8", "#a9bcde"]
+RAMPA_2 = ["#e0dcf0", "#cbc5e6", "#b6aedb"]
+
 # --- os fatos desenhados, com procedencia ------------------------------------
-# Ordem de avaliacao dentro do no: Secao II do artigo, "NONE first, then the
-# quad-tree split, then the rectangular shapes, and finally the extended
-# partitions". Topologias e contagem de acoes: Secoes III-C e III-D.
+# Ordem de avaliacao dentro do no: Secao II, "NONE first, then the quad-tree
+# split, then the rectangular shapes, and finally the extended partitions".
+# Composicao do vetor de atributos: Secao III-A. Topologia, contagem de
+# parametros e dobra da padronizacao: Secao III-C. Acoes e limiares: Secao III-D.
 SPEC = {
-    "ordem_nativa":   ["NONE", "SPLIT", "HORZ\nVERT", "AB +\n4-way"],
-    "topologia_s1":   "36–64–32–3",
-    "topologia_s2":   "39–64–32–2",
     "niveis":         ["64", "32", "16"],
     "nivel_terminal": "8",
-    # Alcance maximo de cada podador, Secao III-D. O de pre-busca chega ao
-    # limite quando compromete o no como NONE, o que corta a subarvore inteira;
-    # o pos-NONE nunca passa da familia estendida.
-    "alcance_s1":     "reach: up to the whole subtree",
-    "alcance_s2":     "reach: the AB and 4-way family only",
+    "parametros":     "27,759",
+    # (rotulo, numero de atributos) na ordem em que o vetor os carrega.
+    "blocos_s1":      [("luma descriptors", 24), ("causal context", 8),
+                       ("qp and position", 4)],
+    "bloco_extra_s2": ("log RD of NONE", 3),
 }
 
 
@@ -91,13 +101,13 @@ def draw(out_path):
         coordenadas de dados: o eixo tem aspecto desigual, e um circulo em
         coordenadas de dados sairia elipse."""
         ax.plot([x], [y], marker="o", markersize=7.0, color=cor,
-                markeredgecolor="none", zorder=5, clip_on=False)
+                markeredgecolor="none", zorder=6, clip_on=False)
         ax.text(x, y, num, ha="center", va="center", fontsize=4.8,
-                color=SURFACE, weight="bold", zorder=6)
+                color=SURFACE, weight="bold", zorder=7)
 
     # ---------------- faixa superior: o percurso de um no -------------------
     # Larguras somam 0,85; as cinco folgas de 0,028 recebem as setas.
-    Y0, H = 0.715, 0.245
+    Y0, H = 0.765, 0.225
     caixas = [
         # (x0, largura, rotulo, cor da borda, preenchimento, cor do texto, inserido)
         (0.005, 0.175, "pre-search\npruner", C_S1, TINT_1, C_S1, True),
@@ -113,10 +123,9 @@ def draw(out_path):
                                edgecolor=borda,
                                linewidth=(0.8 if inserido else 0.6), zorder=3))
         ax.text(x0 + w / 2, Y0 + H / 2, rotulo, ha="center", va="center",
-                fontsize=6.2, color=tinta, linespacing=1.2,
+                fontsize=6.6, color=tinta, linespacing=1.2,
                 weight=("bold" if inserido else "normal"), zorder=4)
 
-    # Setas entre estagios consecutivos, na folga de 0,028.
     for (x0, w, *_), (x1, *_) in zip(caixas, caixas[1:]):
         ax.annotate("", xy=(x1 - 0.003, Y0 + H / 2),
                     xytext=(x0 + w + 0.003, Y0 + H / 2),
@@ -126,59 +135,115 @@ def draw(out_path):
 
     # A recursao vai dentro da propria caixa do SPLIT: um arco de retorno aqui
     # invadiria a faixa inferior, e a informacao cabe em uma palavra.
-    ax.text(0.554 + 0.130 / 2, Y0 + 0.052, "(recurses)", ha="center",
+    ax.text(0.554 + 0.130 / 2, Y0 + 0.046, "(recurses)", ha="center",
             va="center", fontsize=4.8, color=MUTED, style="italic", zorder=4)
 
     # Distintivo no canto superior DIREITO: a esquerda ele encostaria no rotulo
     # de duas linhas, que e centralizado e ocupa quase toda a largura da caixa.
     for (x0, w, *_), num, cor in ((caixas[0], "1", C_S1), (caixas[2], "2", C_S2)):
-        distintivo(x0 + w - 0.020, Y0 + H - 0.048, num, cor)
+        distintivo(x0 + w - 0.020, Y0 + H - 0.042, num, cor)
 
-    # ---------------- faixa inferior: o que ha atras de cada ponto ----------
-    PY0, PH = 0.075, 0.575
+    # ---------------- faixa inferior: a rede atras de cada ponto ------------
+    PY0, PH = 0.305, 0.430          # o cartao
+    BAR_Y0, BAR_H = 0.668, 0.052    # barra do vetor de entrada
+    Y_LEGENDA = 0.628
+    Y_TOPOLOGIA = 0.545
+    Y_CHIPS, CHIP_H = 0.446, 0.100
+    Y_ALCANCE = 0.330
+    # Escala unica para as duas barras: 0,0093 de largura por atributo. E ela
+    # que faz os tres primeiros segmentos coincidirem entre os dois cartoes.
+    POR_ATRIBUTO = 0.0093
+
     paineis = [
-        (0.005, C_S1, "1", "36 attributes, causal context only",
-         "topology " + SPEC["topologia_s1"] + ", three actions",
-         SPEC["alcance_s1"]),
-        (0.513, C_S2, "2", "39 attributes, adding the RD of NONE",
-         "topology " + SPEC["topologia_s2"] + ", two actions",
-         SPEC["alcance_s2"]),
+        dict(px=0.005, cor=C_S1, rampa=RAMPA_1, num="1",
+             blocos=SPEC["blocos_s1"], extra=None,
+             legenda="24 luma $\\cdot$ 8 causal context $\\cdot$ 4 qp/position",
+             topologia="36–64–32–3",
+             chips=[("NONE", r"$p\,{\geq}\,\tau_{\mathrm{none}}$"),
+                    ("SPLIT", r"$p\,{\geq}\,\tau_{\mathrm{split}}$"),
+                    ("rest", r"$p\,{<}\,\tau_{\mathrm{rest}}$")],
+             alcance="reach: up to the whole subtree"),
+        dict(px=0.513, cor=C_S2, rampa=RAMPA_2, num="2",
+             blocos=SPEC["blocos_s1"], extra=SPEC["bloco_extra_s2"],
+             legenda="the same 36, plus 3 log RD terms of NONE",
+             topologia="39–64–32–2",
+             chips=[("skip AB + 4-way", r"$p\,{<}\,\theta$ per node size"),
+                    ("evaluate them", "otherwise")],
+             alcance="reach: the AB and 4-way family only"),
     ]
-    LINHAS_Y = (0.560, 0.435, 0.310, 0.180)
 
-    for px, cor, num, linha1, linha3, linha4 in paineis:
+    for p in paineis:
+        px, cor = p["px"], p["cor"]
         # Regua colorida na borda esquerda: e ela, com o distintivo, que liga o
-        # painel ao bloco inserido la em cima, sem um conector atravessando a
+        # cartao ao bloco inserido la em cima, sem um conector atravessando a
         # figura.
         ax.add_patch(Rectangle((px, PY0), 0.006, PH, facecolor=cor,
                                edgecolor="none", zorder=3))
-        distintivo(px + 0.030, LINHAS_Y[0], num, cor)
-
         tx = px + 0.058
-        ax.text(tx, LINHAS_Y[0], linha1, ha="left", va="center",
-                fontsize=5.8, color=INK, zorder=4)
 
-        # Banco de redes: uma por tamanho de no, desenhado como banco.
-        ax.text(tx, LINHAS_Y[1], "networks by node size:", ha="left",
-                va="center", fontsize=5.8, color=INK_2, zorder=4)
-        bx = px + 0.325
+        # -- vetor de entrada, em escala de atributos ---------------------
+        bx = tx
+        for (_, n), tom in zip(p["blocos"], p["rampa"]):
+            ax.add_patch(Rectangle((bx, BAR_Y0), n * POR_ATRIBUTO, BAR_H,
+                                   facecolor=tom, edgecolor=SURFACE,
+                                   linewidth=0.5, zorder=4))
+            bx += n * POR_ATRIBUTO
+        if p["extra"] is not None:
+            _, n = p["extra"]
+            ax.add_patch(Rectangle((bx, BAR_Y0), n * POR_ATRIBUTO, BAR_H,
+                                   facecolor=cor, edgecolor=SURFACE,
+                                   linewidth=0.5, zorder=4))
+            bx += n * POR_ATRIBUTO
+        ax.text(bx + 0.012, BAR_Y0 + BAR_H / 2,
+                f"= {sum(n for _, n in p['blocos']) + (p['extra'][1] if p['extra'] else 0)}",
+                ha="left", va="center", fontsize=5.2, color=INK, zorder=5)
+        ax.text(tx, Y_LEGENDA, p["legenda"], ha="left", va="center",
+                fontsize=5.0, color=MUTED, zorder=4)
+        distintivo(px + 0.030, BAR_Y0 + BAR_H / 2, p["num"], cor)
+
+        # -- topologia e banco de redes por nivel -------------------------
+        ax.text(tx, Y_TOPOLOGIA, p["topologia"], ha="left", va="center",
+                fontsize=5.8, color=INK, zorder=4)
+        ax.text(px + 0.190, Y_TOPOLOGIA, "by node size:", ha="left",
+                va="center", fontsize=5.2, color=INK_2, zorder=4)
+        bx = px + 0.344
         for nivel in SPEC["niveis"]:
-            ax.add_patch(Rectangle((bx, LINHAS_Y[1] - 0.048), 0.044, 0.096,
+            ax.add_patch(Rectangle((bx, Y_TOPOLOGIA - 0.042), 0.038, 0.084,
                                    facecolor=SURFACE, edgecolor=cor,
                                    linewidth=0.6, zorder=4))
-            ax.text(bx + 0.022, LINHAS_Y[1], nivel, ha="center", va="center",
-                    fontsize=5.4, color=cor, zorder=5)
-            bx += 0.051
+            ax.text(bx + 0.019, Y_TOPOLOGIA, nivel, ha="center", va="center",
+                    fontsize=5.2, color=cor, zorder=5)
+            bx += 0.044
 
-        ax.text(tx, LINHAS_Y[2], linha3, ha="left", va="center",
-                fontsize=5.8, color=INK_2, zorder=4)
-        ax.text(tx, LINHAS_Y[3], linha4, ha="left", va="center",
+        # -- saidas, cada uma com o limiar que a governa ------------------
+        n_chips = len(p["chips"])
+        folga = 0.020
+        largura = (0.424 - folga * (n_chips - 1)) / n_chips
+        cx = tx
+        for rotulo, porta in p["chips"]:
+            ax.add_patch(Rectangle((cx, Y_CHIPS - CHIP_H / 2), largura, CHIP_H,
+                                   facecolor=SURFACE, edgecolor=cor,
+                                   linewidth=0.5, zorder=4))
+            ax.text(cx + largura / 2, Y_CHIPS + 0.020, rotulo, ha="center",
+                    va="center", fontsize=5.2, color=INK, zorder=5)
+            ax.text(cx + largura / 2, Y_CHIPS - 0.022, porta, ha="center",
+                    va="center", fontsize=4.6, color=cor, zorder=5)
+            cx += largura + folga
+
+        ax.text(tx, Y_ALCANCE, p["alcance"], ha="left", va="center",
                 fontsize=5.8, color=cor, zorder=4)
 
-    ax.text(0.5, 0.012,
-            f"the {SPEC['nivel_terminal']}$\\times${SPEC['nivel_terminal']}"
+    # ---------------- notas comuns aos dois cartoes -------------------------
+    # A dobra da padronizacao e a razao de o codificador alimentar atributos
+    # crus e de nao ter sido preciso escrever inferencia nova em C.
+    ax.text(0.5, 0.195, "standardization is folded into the first linear layer,"
+            " so the encoder feeds raw attributes", ha="center", va="center",
+            fontsize=5.0, color=INK_2, zorder=4)
+    ax.text(0.5, 0.072, f"{SPEC['parametros']} parameters across the six"
+            " deployed networks $\\cdot$ the "
+            f"{SPEC['nivel_terminal']}$\\times${SPEC['nivel_terminal']}"
             " level is terminal and carries no network",
-            ha="center", va="bottom", fontsize=5.2, color=MUTED,
+            ha="center", va="center", fontsize=4.6, color=MUTED,
             style="italic", zorder=4)
 
     fig.savefig(out_path, facecolor=SURFACE)
