@@ -78,7 +78,9 @@ FIG_H_IN = 1.54            # teto medido: 1,62 empurra o Agradecimento a pag. 5
 #   kept_*    celula ainda avaliada;
 #   cut_*     celula removida, uma cor por podador na variante de cor e uma so
 #             na monocromatica, onde a identidade vem do bloco e do distintivo;
-#   rampa_*   os tres primeiros segmentos do vetor de entrada.
+#   rampa     os tres primeiros segmentos do vetor de entrada, IDENTICA nos
+#             dois podadores: sao literalmente os mesmos 36 atributos, e so o
+#             quarto segmento, em s2, distingue o vetor do segundo estagio.
 PALETAS = {
     "cor": dict(
         surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
@@ -88,8 +90,7 @@ PALETAS = {
         cut_f={"s1": "#8ba5cd", "s2": "#9d94ca"},
         cut_e={"s1": "#25599f", "s2": "#4a3aa7"},
         cut_legenda="#94a0c0",
-        rampa_s1=["#dbe4f2", "#c2d0e8", "#a9bcde"],
-        rampa_s2=["#e0dcf0", "#cbc5e6", "#b6aedb"],
+        rampa=["#dbe4f2", "#c2d0e8", "#a9bcde"],
     ),
     "cinza": dict(
         surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
@@ -99,8 +100,7 @@ PALETAS = {
         cut_f={"s1": "#6b6a65", "s2": "#6b6a65"},
         cut_e={"s1": "#6b6a65", "s2": "#6b6a65"},
         cut_legenda="#6b6a65",
-        rampa_s1=["#e2e1dc", "#c7c5be", "#a9a7a0"],
-        rampa_s2=["#e2e1dc", "#c7c5be", "#a9a7a0"],
+        rampa=["#e2e1dc", "#c7c5be", "#a9a7a0"],
     ),
 }
 
@@ -224,7 +224,7 @@ def draw(out_path, p):
     for b in BLOCOS:
         chave = b["chave"]
         cor = p[chave]
-        rampa = p["rampa_s1" if chave == "s1" else "rampa_s2"]
+        rampa = p["rampa"]
 
         # -- linha de especificacao: identidade, vetor de entrada, topologia --
         y = b["y_spec"]
@@ -284,7 +284,7 @@ def draw(out_path, p):
             fontsize=5.2, color=p["ink_2"], zorder=4)
 
     bx = 0.014
-    chave_vetor = list(zip(SPEC["blocos_s1"], p["rampa_s1"])) + \
+    chave_vetor = list(zip(SPEC["blocos_s1"], p["rampa"])) + \
         [(SPEC["bloco_extra_s2"], p["s2"])]
     for (rotulo, n), tom in chave_vetor:
         ax.add_patch(Rectangle((bx, 0.089), 0.024, 0.038, facecolor=tom,
