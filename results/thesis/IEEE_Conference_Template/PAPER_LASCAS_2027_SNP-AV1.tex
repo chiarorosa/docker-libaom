@@ -126,7 +126,7 @@ with a Bj{\o}ntegaard delta bitrate (BD-BR) of 0.586\%.
 The basic unit of the AV1 partitioning is the superblock, which has 128$\times$128
 or 64$\times$64 pixels, and the structure that subdivides it is called partition
 tree \cite{han2021}. AV1 allows ten partition types at each node \cite{chen2018},
-which Fig. \ref{fig_shapes} organizes into the four families used throughout this
+which Fig.~\ref{fig_shapes} organizes into the four families used throughout this
 paper: the two structural decisions, PARTITION\_NONE, hereafter NONE, which
 codes the node undivided, and PARTITION\_SPLIT, the quad-tree split into four
 square sub-blocks;
@@ -158,7 +158,7 @@ and one acting after NONE has the measured rate, distortion and RD
 cost of the undivided candidate, at the price of never saving the cost of
 producing them.
 
-The cost distribution in Fig. \ref{fig_shapes} was measured with the native
+The cost distribution in Fig.~\ref{fig_shapes} was measured with the native
 partition timing instrumentation of libaom over 875{,}317 decision nodes of the
 4K dataset described in Section \ref{sec_data}, at \texttt{cpu-used=0}, taking as
 local work the sum of the nine non-recursive candidates of a node. It splits into
@@ -182,7 +182,7 @@ exclusively under the All-Intra (AI) encoder configuration.
 
 The Stacked Neural Pruners for AV1 (SNP-AV1) is a fast decision algorithm
 composed of two neural pruners inserted at two distinct stages of the search of a
-node, as shown in Fig. \ref{fig_snp}.
+node, as shown in Fig.~\ref{fig_snp}.
 
 \begin{figure}[!t]
   \centering
@@ -190,8 +190,8 @@ node, as shown in Fig. \ref{fig_snp}.
   % 3.487 x 1.54 in, the exact column width, so the inclusion below is 1:1.
   \includegraphics[width=\columnwidth]{fig2_insertion_points}
   \caption{Insertion points of the two pruners in the search of a node of the
-  AV1 partition tree, and the bank of networks behind each of them, one per
-  node size.}
+  AV1 partition tree, and the effect of every action of the policy on the
+  stages of that node.}
   \label{fig_snp}
 \end{figure}
 
@@ -256,7 +256,7 @@ out data leakage.
 
 Both stages use multilayer perceptrons, one per node size, trained independently
 for the 16$\times$16, 32$\times$32 and 64$\times$64 levels; the 8$\times$8 level
-is terminal and is not modeled. The topology, given in Fig. \ref{fig_snp}, is
+is terminal and is not modeled. The topology, given in Fig.~\ref{fig_snp}, is
 common to all six networks and deliberately shallow: two hidden layers of 64 and
 32 units with rectified activation and a linear output layer, whose softmax gives
 the three class probabilities of the first stage and the two of the second. This
@@ -275,16 +275,16 @@ maximum difference of $1.35 \times 10^{-7}$.
 
 \subsection{Pruning Policies and Encoder Integration}
 
-The first-stage pruner applies three actions in cascade. If the probability of
-the undivided class exceeds $\tau_{\mathrm{none}}$, all splits are disabled and
-the node is decided as NONE, cutting the whole subtree without evaluating any
-candidate; this is the primary lever of time savings. Otherwise, if the
-probability of the split class exceeds $\tau_{\mathrm{split}}$, the shape
-candidates are skipped and the search recurses only into the four sub-blocks.
+The first-stage pruner applies three actions in cascade, drawn in
+Fig.~\ref{fig_snp}. If the probability of the undivided class exceeds
+$\tau_{\mathrm{none}}$, the node is decided as NONE and the whole subtree is cut
+without evaluating any other candidate; this is the primary lever of time
+savings. Otherwise, if the probability of the split class exceeds
+$\tau_{\mathrm{split}}$, the search recurses only into the four sub-blocks.
 Otherwise, if the probability of the remaining class falls below
-$\tau_{\mathrm{rest}}$, the rectangular candidates are disabled, which by
-dependency also disables the extended shapes; otherwise the node proceeds to the
-full search. Two operating points were frozen before the final campaign: the
+$\tau_{\mathrm{rest}}$, the rectangular candidates are disabled, and the
+extended ones with them by dependency; otherwise the node proceeds to the full
+search. Two operating points were frozen before the final campaign: the
 balanced one uses $\tau_{\mathrm{none}} = 0.95$, $\tau_{\mathrm{split}} = 0.90$
 and $\tau_{\mathrm{rest}} = 0.20$, the aggressive one 0.60, 0.85 and 0.40.
 
@@ -332,7 +332,7 @@ keeps the four points equally weighted. All BD-BR and TS results come from this
 grid; the figures of Section \ref{sec_method} are distribution and classification
 statistics of the UVG dataset.
 
-Fig. \ref{fig_space} places the measured operating space of SNP-AV1 against the
+Fig.~\ref{fig_space} places the measured operating space of SNP-AV1 against the
 anchor and against the native speed presets, and it must be qualified before any
 number is read, because the two arms do not have the same scope. A preset is a
 global switch: moving from \texttt{cpu-used=0} to 1 turns on the native learned
@@ -380,7 +380,7 @@ TimeLapse & 0.433\% & 18.78\% & 0.934\% & 31.00\% \\
 \end{tabular}
 \end{table}
 
-Table \ref{tab_seq} opens the two deployed points per sequence, and what it
+Table~\ref{tab_seq} opens the two deployed points per sequence, and what it
 exposes is content dispersion, not a swept range: at the balanced point the time
 savings run from 13.78\% on NocturneDance to 22.89\% on Tango and the BD-BR from
 0.168\% to 1.139\%, so the extremes of the two axes do not fall on the same
