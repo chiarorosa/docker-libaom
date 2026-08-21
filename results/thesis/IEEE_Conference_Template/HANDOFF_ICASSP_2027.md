@@ -1,4 +1,4 @@
-# HANDOFF — artigo ICASSP 2027 (RPP)
+# HANDOFF — artigo ICASSP 2027 (atribuição de perda RD)
 
 > **Arquivo temporário de retomada.** Registra onde o trabalho parou em 2026-08-20 e o que
 > falta para escrever o artigo. Apagar quando o `.tex` estiver submetido.
@@ -24,10 +24,22 @@ páginas com texto e figuras e empurrar as referências inteiras para a 5ª.
 Variante longa, se a diagramação pedir corpo: *... Over Compact, Deep, and Causal
 Representations*.
 
-**Sem acrônimo no título — decidido.** O LASCAS abre com acrônimo porque entrega um
-sistema; este artigo entrega uma medição, e prefixo de acrônimo sinaliza solução, o que
-desalinha com o escopo offline já na primeira linha. **RPP — Representation Probe for
-Partitioning** continua sendo o nome do protocolo, apresentado na Seção III.
+**Sem acrônimo algum — decidido em 2026-08-21, e isso substitui a decisão anterior.**
+O LASCAS abre com acrônimo porque entrega um sistema; este artigo entrega uma medição, e
+prefixo de acrônimo sinaliza solução. A primeira versão manteve **RPP — Representation Probe
+for Partitioning** como nome do protocolo na Seção III, e isso foi retirado: o título fala em
+*atribuição de perda de taxa-distorção* e o nome falava em *sondagem de representações*, duas
+metáforas para o mesmo objeto, e a seção precisava abrir negando o que o próprio nome sugeria
+(*"não é uma solução de codificador"*). O protocolo é chamado de **"the attribution protocol"**
+ou **"the protocol"**, e o título carrega a identidade.
+
+*Desvio consciente da Parte B, a registrar:* a B.1 quer o acrônimo no título da seção do
+método, a B.2 tem a fórmula `This paper presents the <Nome> (<ACRÔNIMO>)` e a B.10 abre com
+`This paper presented <ACRÔNIMO>`. As três estão escritas para artigo de solução; aqui a
+contribuição é nomeada descritivamente.
+
+*Nos artefatos o nome permanece* — `rpp_ladder.py`, `RPP_SUBSETS`, `results/models/rpp_ladder/`
+e `oracle_regret_rpp/`. São nomes internos e não foram renomeados; não confundir com o texto.
 
 *Títulos descartados, com o motivo (não reabrir):* `Causal Encoder State Outperforms Deep
 Pixel Representations...` — **atribuía o número errado**: quem bate a ConvNeXt por 4,1× é o
@@ -156,7 +168,7 @@ a perda às representações, não afirma magnitude absoluta.
 - **II. The Partition Decision in AV1** — dez formas, ordem fixa de avaliação e, o ponto
   próprio deste artigo, **que informação já foi paga em cada instante**. Fecha com
   delimitação de escopo (intra, `cpu-used=0`, ação NONE-commit isolada).
-- **III. RPP: Representations and Measurement Protocol**
+- **III. Proposed Attribution Protocol**
   - III-A as representações, declaradas por **acesso à informação**, não por arquitetura.
   - III-B o protocolo: política fixa, varredura de τ, modelo de custo `candidatos × n²`,
     `regret_abs(n) = none_rdcost(n) − RD_subtree(n) ≥ 0` normalizado — equação numerada.
@@ -176,7 +188,7 @@ a perda às representações, não afirma magnitude absoluta.
 
 ## 6. O que falta — a fazer amanhã
 
-1. ~~**Escrever o `.tex`**~~ — **FEITO em 2026-08-21.** `PAPER_ICASSP_2027_RPP.tex`,
+1. ~~**Escrever o `.tex`**~~ — **FEITO em 2026-08-21.** `PAPER_ICASSP_2027_RD_ATTRIBUTION.tex`,
    compilado no contêiner `latex_build` (monta `results/` em `/work`). 5 páginas: as 4
    técnicas fecham na Conclusão e a 5ª abre no Acknowledgment, contendo só agradecimento,
    ética e as 26 referências, como a CFP exige. Zero `Overfull`. Balanceamento da última
@@ -312,8 +324,7 @@ recodificar uma única vez. Um estudo assim é impraticável com BD-BR.
 referências, agradecimento e ética); nenhum `Overfull`; nenhuma referência indefinida;
 `\label` sempre depois de `\caption`; legenda de figura abaixo e de tabela acima; nenhum
 pacote de margem ou fonte; equações dentro da coluna e sem `eqnarray`; citações agrupadas em
-`\cite{a,b,c}`; sem matemática no título, no *abstract* e nos *index terms*; AV1 e RPP
-redefinidos no corpo; colunas da última página equalizadas à mão; `Fig. N`, `Table N` e
+`\cite{a,b,c}`; sem matemática no título, no *abstract* e nos *index terms*; AV1 redefinido no corpo; colunas da última página equalizadas à mão; `Fig. N`, `Table N` e
 `\eqref` nas chamadas. *Abstract* com **248 palavras**, dentro da faixa de 150–250 da B.2.
 
 **Pendente, e só resolvível quando as figuras existirem:** figuras vetoriais para *line art*

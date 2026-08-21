@@ -46,13 +46,12 @@ through a recursive search that evaluates ten partition shapes per node, and
 learned pruners are the dominant strategy to shorten that search. Every such
 pruner couples the quality of the source that scores a node with the
 aggressiveness of the policy acting on that score, so the reported time savings do
-not identify which information carries the decision. This paper presents the
-Representation Probe for Partitioning (RPP), an offline attribution protocol for
-AV1 intra partitioning that reads the rate-distortion loss of competing
-representations at matched search-cost reduction. RPP fixes one pruning policy,
-sweeps its confidence threshold, and charges each forced decision the overhead
-recorded by an exhaustive reference search, so that representations are compared
-at the same amount of work skipped. Experimental results over 3.81 million
+not identify which information carries the decision. This paper presents an
+offline attribution protocol for AV1 intra partitioning that reads the
+rate-distortion loss of competing representations at matched search-cost
+reduction. The protocol fixes one pruning policy, sweeps its confidence threshold,
+and charges each forced decision the overhead recorded by an exhaustive reference
+search, so that representations are compared at the same amount of work skipped. Experimental results over 3.81 million
 held-out decision nodes show that twenty-four compact descriptors reduce the loss
 of isolated block variance by 7.0 times, that eight causal partitioning columns
 reduce it by a further 1.60 times, and that four quantization and position columns
@@ -112,9 +111,9 @@ their own choosing, and none of these works separates the quality of the scoring
 source from the aggressiveness of the policy, nor measures which information is
 decisive for the partition choice.
 
-This paper presents the Representation Probe for Partitioning (RPP), an offline
-attribution protocol for AV1 intra partitioning. The main strategy of this
-solution is to hold the pruning policy and the amount of skipped search work
+This paper presents an offline attribution protocol for AV1 intra partitioning.
+The main strategy of this work is to hold the pruning policy and the amount of
+skipped search work
 fixed, and to vary only what a representation is allowed to see, so that the
 resulting difference in rate-distortion loss is attributable to information access
 alone. Under this protocol, compact descriptors outperform a high-capacity
@@ -170,11 +169,10 @@ partition node, and the pre-search instant addressed in this work.}
 \label{fig_timeline}
 \end{figure}
 
-\section{Proposed RPP Protocol}
+\section{Proposed Attribution Protocol}
 
-RPP is a measurement protocol, not an encoder solution. It compares
-representations by what they are allowed to see, under one fixed policy and at a
-matched amount of skipped search work.
+The proposed protocol compares representations by what they are allowed to see,
+under one fixed pruning policy and at a matched amount of skipped search work.
 
 \subsection{Representations Declared by Information Access}
 
@@ -417,7 +415,7 @@ choices was resolved in favor of the deep arm.
 
 \section{Conclusions}
 
-This paper presented RPP, an offline attribution protocol that measures the
+This paper presented an offline attribution protocol that measures the
 rate-distortion loss of competing representations of the AV1 intra partition
 decision at matched search-cost reduction, reaching the conclusion that the causal
 state of the encoding process carries decision information that luminance alone
