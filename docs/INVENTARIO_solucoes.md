@@ -64,14 +64,18 @@ equivalente), com no-op byte-idêntico garantido quando desligado.
 
 ## 2. Família A — domínio de pixels (luma como entrada)
 
-**Estado da família: FECHADA, cinco tentativas independentes negativas.** Nenhuma via de
-pixels aprendida de ponta a ponta foi implantada.
+**Estado da família: FECHADA, cinco vias não implantadas / quatro hipóteses refutadas.**
+Nenhuma via de pixels aprendida de ponta a ponta foi implantada. A hipótese do alvo de
+*regret* foi **confirmada fracamente**, não refutada — ver
+[`RESULTADOS_auditoria_convnext_corpus.md`](RESULTADOS_auditoria_convnext_corpus.md) e
+[`RESULTADOS_rpp_escada_informacional.md`](RESULTADOS_rpp_escada_informacional.md) §4.8;
+aquela via não avançou por permanecer 4,1× atrás da representação compacta.
 
 | Config | BD-rate | TS% | Speedup | Impl. C | Portão | UVG val/test | Enc. UVG | Enc. CTC |
 |---|--:|--:|--:|:--:|---|---|:--:|:--:|
 | **ConvNeXt substituto (CE)** — replay H8, τ 0,90/0,90/0,20 | −0,11% | ~2,4–3,3 | 1,02× | **não** (replay pelo gancho, sem inferência conv. em C) | mediu teto; **não é cota superior** (perde p/ `pixels24`) | teste | 1 (Jockey) | — |
 | ConvNeXt substituto — sweep H8 agressivo | até +1,62% | — | até 1,29× | não | idem | teste | 1 | — |
-| **ConvNeXt com alvo de *regret*** (α=3) | — | — | — | não | **refutado no crivo A5** (pior que CE em toda a faixa, 1,06–3,80×) | val+teste (6 seqs) | 0 | — |
+| **ConvNeXt com alvo de *regret*** (α=3) | — | — | — | não | **retratado 20/08**: o "refutado, pior que CE em 1,06–3,80×" era artefato de confundimento de corpus; sob controle real é **melhor** que a CE de 10% em diante. Não implantado por permanecer 4,1× atrás da representação compacta | val+teste (6 seqs) | 0 | — |
 | **`pixels24`** (estudante MLP de 24 atributos, era H7) | ver §2.1 | — | — | sim (era H7, substituído pelo H9a) | Gate 2: 10–19% de redução de custo | val+teste | 3 | — |
 | **GNN / Approach B** — não-causal | — | — | — | não | fura o oráculo (+28 pp) mas **não é causal** | val+teste | 0 | — |
 | **GNN / Approach B** — *deployable* pixel-only | ~1,5% @ TS casado | — | — | não (replay H8) | **Gate 5 refuta**: H9a domina ~2× em BD em todo o sweep de τ | teste | 1 (Jockey, 5 qd) | — |
@@ -107,17 +111,31 @@ codificação da família; **2 quadros, 1 sequência** — a limitação que mot
 
 | modelo | `reg_frac` | leitura |
 |---|--:|---|
-| `variance` | 0,0573 | piso |
-| `convnext_regret` | 0,0219 | pior que a CE |
-| `convnext_ce` | 0,0207 | 28,1 M parâmetros sobre pixels crus |
-| `pixels24` | 0,0121 | **melhor modelo de pixels medido** |
-| `H9a` | 0,0036 | o implantado |
+| aleatório | 0,5166 | piso |
+| `variance` (grade densa) | 0,0374 | heurística barata |
+| ConvNeXt-CE, fusão 256 | 0,0294 | capacidade dobrada **piora** |
+| ConvNeXt-CE (α=0), corpus correto | 0,0272 | 28,1 M parâmetros sobre pixels crus |
+| ConvNeXt com alvo de *regret* (α=3) | 0,0219 | **melhor braço profundo**; 4,1× atrás de A |
+| A+C (28 col) | 0,0064 | não se separa de A |
+| A (24 col, bloco de pixels) | 0,0053 | **melhor modelo de pixels medido** |
+| A+B+C (36 col) | 0,0040 | o vetor implantado |
+| **A+B (32 col)** | **0,0033** | **domina A+B+C em toda a fronteira** |
 
-> **Nota de composição (auditoria de 26/07).** `pixels24` **é o bloco A do próprio H9a**;
-> 24 dos 36 atributos do H9a são descritores de luma. A leitura correta não é "contexto RD
-> vence pixels", e sim: descritores manuais compactos vencem a CNN profunda, e os 12
-> atributos de vizinhança/quantização/posição agregam 3,4× **sobre** eles. Ver
-> `RESULTADOS_auditoria_dominio_pixels.md`.
+> **Tabela vigente desde 2026-08-20**, de `results/models/oracle_regret_rpp/`, sob receita
+> de treino fixa, 3 sementes por degrau e grade densa de τ para a variância. A versão
+> anterior — variância 0,0573, `convnext_ce` 0,0207, `pixels24` 0,0121, `H9a` 0,0036 —
+> está superada por três defeitos: interpolação da curva da variância, confundimento de
+> procedimento de treino entre `pixels24` (destilado) e `H9a` (direto), e ausência de
+> decomposição dos 12 atributos causais. Ver `RESULTADOS_rpp_escada_informacional.md`.
+>
+> **Nota de composição (auditoria de 26/07, corrigida em 20/08).** `pixels24` **é o bloco
+> A do próprio H9a**; **21** das 36 colunas do H9a são descritores de luma — e não 24, uma
+> vez que o bloco A abriga também o índice de quantização e duas coordenadas de posição. A
+> leitura correta não é "contexto RD vence pixels", e sim: descritores manuais compactos
+> vencem a CNN profunda por 4,1×, e são as **8 colunas de vizinhança causal de
+> particionamento** que agregam 1,60× **sobre** eles — as 4 de quantização, posição e
+> profundidade nada agregam. Ver `RESULTADOS_auditoria_dominio_pixels.md` e
+> `RESULTADOS_rpp_escada_informacional.md`.
 
 ---
 

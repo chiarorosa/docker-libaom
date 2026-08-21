@@ -66,6 +66,13 @@ Retornos marginais no crivo A5, em `cost_red` casado de 25% (fonte:
 | `convnext_ce` (+28,1 M parâmetros sobre pixels crus) | 0,0207 | **0,6× (pior)** |
 | `H9a` (`pixels24` + 12 de vizinhança/quant/posição) | 0,0036 | **3,4×** |
 
+> **[TABELA SUPERADA 2026-08-20 — não citar.]** Interpolação da curva da variância,
+> confundimento de procedimento de treino (`pixels24` destilado contra `H9a` direto) e
+> ausência de decomposição dos 12 atributos causais. A tabela vigente está em
+> [`RESULTADOS_rpp_escada_informacional.md`](RESULTADOS_rpp_escada_informacional.md) §3:
+> variância 0,0374 → A 0,0053 (**7,0×**) → A+B 0,0033 (**1,60×**), com o ConvNeXt em
+> 0,0219 e o bloco C sem contribuição.
+
 A leitura correta **não** é "contexto RD vence pixels". É:
 
 > No domínio de pixels, **descritores manuais compactos vencem uma rede convolucional
@@ -174,7 +181,8 @@ e foram o que motivou a auditoria que expôs os achados §2–§4.
 A, `pixels24`, variância, ConvNeXt — lê **exclusivamente o bloco-fonte**. Nenhum lê a
 **borda a partir da qual o codificador vai de fato extrapolar**. A evidência da própria tese
 aponta para esse eixo: o bloco B (forma de partição dos vizinhos) comprou 3,4× sobre
-`pixels24` (§2.1). O bloco D' é o mesmo eixo — vizinhança — com os *pixels* do vizinho em
+`pixels24` (§2.1) — **1,60× na remedição de 20/08, que isolou B de C e mostrou que é B, e
+só B, que compra**. O bloco D' é o mesmo eixo — vizinhança — com os *pixels* do vizinho em
 vez da sua *forma*.
 
 **Atributos** (`features_intrapred.py`), 3 colunas: `pred_avail`, `log_satd_resid`,
@@ -270,9 +278,15 @@ codificador para ler vizinhos **reconstruídos**.
 **Consequência para o capítulo.** O achado §3 (especificação ≠ implementação) permanece
 válido e deve ser registrado: a tese testou uma coisa e relatou outra. Mas a hipótese
 original, agora testada, **também não se sustenta** — o que fecha o domínio de pixels por
-uma via a mais, em vez de reabri-lo. A família de pixels encerra com cinco tentativas
-independentes negativas: ConvNeXt-CE, ConvNeXt-regret, GNN/Approach B, bloco D (fonte) e
-bloco D' (vizinhos).
+uma via a mais, em vez de reabri-lo. A família de pixels encerra com cinco vias **não
+implantadas**: ConvNeXt-CE, ConvNeXt-regret, GNN/Approach B, bloco D (fonte) e bloco D'
+(vizinhos).
+
+> **Correção de contagem (2026-08-20).** Dessas cinco, apenas **quatro** correspondem a
+> hipóteses refutadas. A do alvo de *regret* foi **confirmada fracamente** sob ablação
+> controlada — ver [`RESULTADOS_auditoria_convnext_corpus.md`](RESULTADOS_auditoria_convnext_corpus.md).
+> Aquela via não avançou por permanecer 4,1× atrás da representação compacta, e não por
+> a hipótese ter caído.
 
 ---
 

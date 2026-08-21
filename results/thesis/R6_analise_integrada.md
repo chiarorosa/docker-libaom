@@ -379,10 +379,14 @@ Cinco vias foram encerradas nos seus critérios de decisão, cada uma com result
 negativo medido, e cada uma delimitando por medição uma região do espaço de
 soluções que deixa de ser conjectura.
 
-O domínio de pixels fecha com cinco tentativas independentes negativas — o modelo
+O domínio de pixels fecha com cinco vias que não foram implantadas — o modelo
 substituto convolucional por entropia cruzada e por perda de otimalidade (do
 inglês *regret*), a rede de grafos estrutural e as duas variantes do bloco de
 atributos D. Nenhuma delas compete com o contexto de taxa-distorção barato do H9a.
+Registre-se que **quatro** delas correspondem a hipóteses refutadas: a do alvo de
+perda de otimalidade foi, sob ablação controlada, confirmada fracamente, e a sua
+via não avançou por permanecer 4,1 vezes atrás da representação compacta, e não
+por a hipótese ter caído.
 
 A reformulação por regressão da perda de otimalidade foi refutada na validação:
 entregou 0,00% de redução de custo a risco casado, contra 51,73% do classificador
@@ -397,8 +401,9 @@ substitutos.
 > **Procedência.** `docs/INVENTARIO_solucoes.md` §7 (resumo por família) e §1
 > (âncora e presets nativos); `results/thesis/00_PLANO_capitulos.md` §2;
 > `docs/RESULTADOS_H9d_CTC.md` §2 e §4; `results/thesis/R5_resultados_negativos.md`
-> §5.5; `results/thesis/A3_RETRATACOES_E_LACUNAS.md` R15 (as cinco tentativas
-> independentes negativas do domínio de pixels).
+> §5.5; `results/thesis/A3_RETRATACOES_E_LACUNAS.md` R15 (as cinco vias não
+> implantadas do domínio de pixels, das quais quatro correspondem a hipóteses
+> refutadas); `docs/RESULTADOS_rpp_escada_informacional.md` §4.8 e §4.9.
 
 ---
 

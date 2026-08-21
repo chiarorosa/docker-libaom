@@ -81,13 +81,30 @@ Ele reúne capacidade elevada, acesso à luminância bruta e possibilidade de
 execução exata dentro do codificador por reinjeção de probabilidades
 pré-computadas, sem custo computacional algum de inferência convolucional em C.
 
-Duas medições retiraram esse papel. A primeira foi uma ablação controlada do
-objetivo de treino — a mesma arquitetura e a mesma dimensão de fusão de 128
-canais, alterando somente a perda para uma entropia cruzada ponderada por nó com
-peso `1 + α·regret_rel`, com `α = 3` e normalização por nível pelo percentil 95 —
-que **piorou** o modelo em toda a faixa avaliada, ainda que objetivo e métrica de
-avaliação estivessem alinhados. A segunda foi a constatação de que dobrar a
-dimensão de fusão altera a perda de validação em apenas **0,16%**, o que
+Duas medições retiraram esse papel, e a primeira delas precisou ser refeita.
+
+A ablação do objetivo de treino, tal como originalmente registrada, alterava
+apenas a perda para uma entropia cruzada ponderada por nó com peso
+`1 + α·regret_rel`, `α = 3` e normalização por nível pelo percentil 95, e
+concluía que o alvo de perda de otimalidade **piorava** o modelo em toda a faixa.
+Auditoria posterior dos argumentos gravados nos pontos de controle mostrou que
+aquela comparação **não era controlada**: o braço de entropia cruzada fora
+treinado sobre um conjunto de dados distinto — quatro sequências, um único ponto
+de quantização e dois quadros, com duas das seis sequências da vara de avaliação
+contaminadas —, e diferiam também taxa de aprendizado, decaimento, épocas, lote e
+parada antecipada.
+
+Refeita com corpus, escalonamento e critério de seleção idênticos, fazendo
+`α = 0` degenerar o peso em entropia cruzada pura, a ablação **inverte-se**: o
+alvo de perda de otimalidade é melhor em todos os pontos de 10% de redução de
+custo em diante. O que retira o papel de cota superior não é, portanto, o
+objetivo de treino. É a magnitude absoluta: mesmo o melhor braço profundo medido
+permanece 4,1 vezes atrás da representação compacta de vinte e quatro colunas,
+com 2.062 vezes mais parâmetros.
+
+A segunda medição sobrevive, reforçada. Dobrar a dimensão de fusão de 128 para
+256 piora a perda de validação em **1,0%** sob entropia cruzada e corpus correto
+— o registro anterior media 0,16%, mas entre dois braços de `α = 3` —, o que
 estabelece que a capacidade não é a restrição.
 
 O modelo substituto permanece, deste modo, no arcabouço como **instrumento de
@@ -102,14 +119,23 @@ com perda de otimalidade nula, que limita qualquer podador.
 > por nível, máscara de legalidade) e `train.py` (perda mascarada, alvos suaves
 > geométricos, ponderação por frequência inversa, critério de seleção);
 > `docs/SINTESE_resultados_metodologia.md` §3; `docs/ANDAMENTO_tese.md` §1.2 e
-> §1.3; `docs/RESULTADOS_convnext_regret.md` §1, §1.1 e §4 (ablação de objetivo,
-> dimensão de fusão e correção de registro sobre a seleção do ponto de
-> verificação). Artefatos: `results/models/surrogate_real/{surrogate_best.pt,
-> metrics.csv}` e `results/models/surrogate_regret/`. Scripts:
-> `train.py`, `train_surrogate_regret.py`. *Lacuna:* [completar: confirmação, a
-> partir do ponto de verificação `surrogate_best.pt`, da taxa de aprendizado, do
-> tamanho do lote e do decaimento de peso efetivamente utilizados, hoje
-> conhecidos apenas como valores padrão do script].
+> §1.3; `docs/RESULTADOS_auditoria_convnext_corpus.md` §1 a §4 (corpus do braço
+> de entropia cruzada, contaminação da vara, degeneração do peso em `α = 0` e
+> controle de capacidade); `docs/RESULTADOS_rpp_escada_informacional.md` §4.7 e
+> §4.8 (razão de 4,1× e inversão do resultado de objetivo);
+> `docs/RESULTADOS_convnext_regret.md` §4 (correção de registro sobre a seleção
+> do ponto de verificação; as §1 e §2 daquele documento estão superadas pela nota
+> do seu cabeçalho). Artefatos: `results/models/surrogate_real/{surrogate_best.pt,
+> metrics.csv}`, `results/models/surrogate_regret/`,
+> `results/models/surrogate_ce_h9/` e `results/models/surrogate_ce_h9_f256/`.
+> Scripts: `train.py`, `train_surrogate_regret.py`.
+>
+> *Lacuna encerrada.* A lacuna anteriormente registrada aqui — confirmar, a partir
+> do ponto de verificação, a taxa de aprendizado, o tamanho do lote e o decaimento
+> de peso do `surrogate_real` — foi resolvida pela leitura da chave `args` do
+> próprio ponto de verificação: taxa de 1×10⁻³, lote de 128, decaimento de 0,01,
+> trinta épocas, semente 0. A mesma leitura expôs o defeito de corpus tratado na
+> auditoria citada acima.
 
 ---
 
@@ -534,8 +560,11 @@ texturizado, cujo custo é elevado, é indefensável.
 O crivo reporta a fração de sobrecarga de taxa-distorção — a soma das perdas de
 otimalidade normalizada pelo custo total — ao longo de uma fronteira de redução
 de custo, o que evita comparar soluções em extremos opostos das suas faixas. Ele
-foi aplicado a **792.840 nós de decisão** das seis sequências de validação e
-teste, com os modelos treinados nas dez restantes.
+foi aplicado, na sua execução vigente, a **3.808.703 nós de decisão** das seis
+sequências de validação e teste, com os modelos treinados nas dez restantes. A
+execução original do crivo cobria 792.840 nós e não continha as pernas
+convolucionais; os resultados que a citam permanecem válidos no seu escopo, mas a
+hierarquia do domínio de pixels sai da execução completa.
 
 Duas propriedades desta simulação são carregadas como ressalva até o fim do
 texto.
@@ -604,7 +633,7 @@ modelos competitivos.
 
 Os resultados obtidos por cada um destes desenhos são apresentados no próximo
 capítulo, incluindo as cinco vias encerradas com resultado negativo no conjunto
-do trabalho — contagem geral do projeto, e não as cinco tentativas independentes
+do trabalho — contagem geral do projeto, e não as cinco vias não implantadas
 específicas do domínio de pixels.
 
 > **Procedência.** Consolidação das notas das Seções 6.1 a 6.10; nenhum valor

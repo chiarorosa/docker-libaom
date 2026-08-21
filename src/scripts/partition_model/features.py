@@ -219,6 +219,22 @@ H9_SUBSETS = {
     "H9c": list(range(41)),        # + E (ceiling)
 }
 
+# RPP information ladder. Every rung is trained with ONE fixed recipe and
+# differs only in which columns of the 36-wide H9a vector it sees, so the
+# verdict falls on information and not on capacity or on training procedure.
+# This is why "A" is re-trained here instead of reusing student_real, which is
+# a DISTILLED artifact (distill.py from surrogate_real) and would confound the
+# feature set with the training objective.
+#   A  0..23   21 luma descriptors + q_norm (17) + pos_r/pos_c (22,23)
+#   B  24..31  causal partitioning neighborhood
+#   C  32..35  effective dequant step, frame position, node depth
+RPP_SUBSETS = {
+    "A": list(range(24)),
+    "A_B": list(range(32)),
+    "A_C": list(range(24)) + list(range(32, 36)),
+    "A_B_C": list(range(36)),
+}
+
 # BLOCK_SIZE (av1/common/enums.h) -> (width_px, height_px).
 _BSIZE_PX = {
     0: (4, 4), 1: (4, 8), 2: (8, 4), 3: (8, 8), 4: (8, 16), 5: (16, 8),

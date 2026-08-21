@@ -1,0 +1,40 @@
+train pkls: 40 (['Beauty', 'Bosphorus', 'CityAlley', 'FlowerFocus', 'FlowerKids', 'ReadySetGo', 'ShakeNDry', 'SunBath', 'Twilight', 'YachtRide'])
+collected 120000 superblocks in 11.0 min
+[A_s0 dim 64] n=120000 feats=24 train-acc=0.781
+[A_s0 dim 32] n=424579 feats=24 train-acc=0.726
+[A_s0 dim 16] n=1316179 feats=24 train-acc=0.845
+[A_s1 dim 64] n=120000 feats=24 train-acc=0.780
+[A_s1 dim 32] n=424579 feats=24 train-acc=0.726
+[A_s1 dim 16] n=1316179 feats=24 train-acc=0.845
+[A_s2 dim 64] n=120000 feats=24 train-acc=0.778
+[A_s2 dim 32] n=424579 feats=24 train-acc=0.727
+[A_s2 dim 16] n=1316179 feats=24 train-acc=0.845
+[A_B_s0 dim 64] n=120000 feats=32 train-acc=0.814
+[A_B_s0 dim 32] n=424579 feats=32 train-acc=0.734
+[A_B_s0 dim 16] n=1316179 feats=32 train-acc=0.847
+[A_B_s1 dim 64] n=120000 feats=32 train-acc=0.815
+[A_B_s1 dim 32] n=424579 feats=32 train-acc=0.734
+[A_B_s1 dim 16] n=1316179 feats=32 train-acc=0.848
+[A_B_s2 dim 64] n=120000 feats=32 train-acc=0.816
+[A_B_s2 dim 32] n=424579 feats=32 train-acc=0.733
+[A_B_s2 dim 16] n=1316179 feats=32 train-acc=0.847
+[A_C_s0 dim 64] n=120000 feats=28 train-acc=0.785
+[A_C_s0 dim 32] n=424579 feats=28 train-acc=0.730
+[A_C_s0 dim 16] n=1316179 feats=28 train-acc=0.846
+[A_C_s1 dim 64] n=120000 feats=28 train-acc=0.784
+[A_C_s1 dim 32] n=424579 feats=28 train-acc=0.730
+[A_C_s1 dim 16] n=1316179 feats=28 train-acc=0.845
+[A_C_s2 dim 64] n=120000 feats=28 train-acc=0.784
+[A_C_s2 dim 32] n=424579 feats=28 train-acc=0.728
+[A_C_s2 dim 16] n=1316179 feats=28 train-acc=0.844
+[A_B_C_s0 dim 64] n=120000 feats=36 train-acc=0.817
+[A_B_C_s0 dim 32] n=424579 feats=36 train-acc=0.736
+[A_B_C_s0 dim 16] n=1316179 feats=36 train-acc=0.849
+[A_B_C_s1 dim 64] n=120000 feats=36 train-acc=0.816
+[A_B_C_s1 dim 32] n=424579 feats=36 train-acc=0.735
+[A_B_C_s1 dim 16] n=1316179 feats=36 train-acc=0.847
+[A_B_C_s2 dim 64] n=120000 feats=36 train-acc=0.817
+[A_B_C_s2 dim 32] n=424579 feats=36 train-acc=0.735
+[A_B_C_s2 dim 16] n=1316179 feats=36 train-acc=0.848
+Saved -> /workspace/results/models/rpp_ladder (12 bundles)
+Training accuracy is reported for provenance only; the ladder is adjudicated by oracle_regret.py, not by per-node accuracy.

@@ -28,8 +28,9 @@ a ponta foi implantada no codificador.
 A primeira solução investigada consistiu em um modelo substituto convolucional
 do tipo ConvNeXt, com cabeças por nível espelhando a hierarquia de
 particionamento do AV1, do qual foi destilado um modelo estudante de perceptrone
-de múltiplas camadas sobre vinte e quatro descritores manuais de luminância,
-designado `pixels24` e executado no codificador pela função nativa
+de múltiplas camadas sobre as vinte e quatro colunas manuais do bloco A — vinte e
+uma de luminância, mais quantização e posição, conforme a auditoria de composição
+da Seção 1.6 —, designado `pixels24` e executado no codificador pela função nativa
 `av1_nn_predict`. Esta era de pixels produziu a primeira curva de operação real
 do trabalho, medida na sequência Jockey do conjunto de teste reservado, em
 codificação intraquadro com `cpu-used=0` e quatro pontos de quantização
@@ -202,49 +203,71 @@ passo que um dano médio por poda permaneceria elevado sob poda escassa.
 
 A grandeza é lida a **redução de custo casada**, de modo que todos os candidatos
 sejam comparados no mesmo ponto de operação. A avaliação cobre **seis
-sequências** do conjunto de validação e de teste reservado e **792.840 nós de
+sequências** do conjunto de validação e de teste reservado e **3.808.703 nós de
 decisão**, contra os modelos treinados nas dez sequências restantes.
 
+> **Correção de registro.** Versões anteriores desta seção citavam 792.840 nós de
+> decisão ao lado desta hierarquia. Aquela contagem é a da execução original do
+> crivo, que não possuía as pernas convolucionais; a hierarquia com ConvNeXt vem
+> de execução posterior, sobre a vara completa de 3.808.703 nós. O mesmo
+> parágrafo confirmava a ordenação a 30% com valores da execução de 792.840 nós,
+> misturando duas medições sob uma única contagem. Todos os valores abaixo saem
+> agora de uma **execução única**, `results/models/oracle_regret_rpp/`.
+
 A hierarquia medida a 25% de redução de custo, na qual o menor valor é o melhor,
-é a seguinte: **variância 0,0573; ConvNeXt com alvo de perda de otimalidade
-0,0219; ConvNeXt com entropia cruzada 0,0207; `pixels24` 0,0121; e H9a 0,0036**.
+é a seguinte: **variância 0,0374; ConvNeXt com entropia cruzada 0,0272; ConvNeXt
+com alvo de perda de otimalidade 0,0219; vinte e quatro colunas compactas 0,0053;
+e as mesmas vinte e quatro mais a vizinhança causal de particionamento 0,0033**.
 
 Os ganhos marginais entre passos sucessivos são igualmente informativos.
-Acrescentar os vinte e três descritores manuais restantes à variância isolada
-compra **4,7×**. Acrescentar 28,1 milhões de parâmetros convolucionais sobre
-pixels crus rende **0,6×**, ou seja, **piora**. Acrescentar os doze atributos de
-vizinhança, quantização e posição ao `pixels24` compra **3,4×**.
+Acrescentar as vinte e três colunas manuais restantes à variância isolada compra
+**7,0×**. Acrescentar 28,1 milhões de parâmetros convolucionais sobre pixels
+crus rende **0,2×**, ou seja, **piora**, ainda que o modelo profundo disponha de
+2.062 vezes mais parâmetros. Acrescentar as oito colunas de vizinhança causal de
+particionamento compra **1,60×**, e esta é a única adição de contexto que
+compra alguma coisa: as quatro colunas de quantização efetiva, posição no quadro
+e profundidade **não acrescentam informação decisória**, e pioram o resultado
+sempre que somadas à vizinhança.
 
-A mesma ordenação se reproduz no ponto de 30% de redução de custo, com H9a em
-0,006, `pixels24` em 0,015, variância em 0,060 e pontuação aleatória em 0,612.
-Isso confirma que a hierarquia não é artefato de um ponto de operação isolado.
+A mesma ordenação se reproduz nos pontos de 20% e de 30% de redução de custo, o
+que confirma que a hierarquia não é artefato de um ponto de operação isolado.
 
 Esta hierarquia é o enunciado que a tese sustenta a respeito do domínio de
 pixels, e ela é incompatível com qualquer leitura de que a informação disponível
-nos pixels se esgotaria na variância: o `pixels24` supera a variância por 4,7×
-nesta métrica.
+nos pixels se esgotaria na variância: as vinte e quatro colunas compactas superam
+a variância por 7,0× nesta métrica.
 
-Duas ressalvas são declaradas e devem acompanhar a hierarquia em toda leitura.
+Três ressalvas são declaradas e devem acompanhar a hierarquia em toda leitura.
 
-A primeira é de amostragem. A grade de limiares da variância salta de 6,14% para
-39,46% de redução de custo, de modo que **todos os valores intermediários da sua
-curva são interpolados através de um único vão**. A razão medida contra os
-modelos de pixels repousa, portanto, sobre esta interpolação.
+A primeira é de amostragem, e foi **sanada por remedição**. A grade de limiares
+original da variância saltava de 6,14% para 39,46% de redução de custo, de modo
+que todos os valores intermediários da sua curva eram interpolados através de um
+único vão. Uma grade própria de vinte e seis limiares fechou o vão, e o ponto de
+τ igual a 0,980 entrega 25,20% de redução medida. A leitura anterior, de 0,0573,
+**superestimava a variância em 1,53 vez** por efeito exclusivo da interpolação.
 
-A segunda é de escopo. O crivo **não adjudica**: no único par com verdade de
-codificação limpa ele diverge do codificador. A sua função declarada é eliminar
-candidatos inferiores antes do custo caro de codificação, e não coroar
-vencedores.
+A segunda é de procedimento, e também foi sanada. Os degraus desta hierarquia são
+agora treinados por **receita única** — mesma topologia, mesmo número de épocas,
+mesma taxa de aprendizado, mesma amostragem —, variando apenas o subconjunto de
+colunas, com três sementes por degrau. A hierarquia anterior comparava um braço
+destilado de vinte e quatro colunas contra um braço de entropia cruzada direta de
+trinta e seis, e o procedimento de treino sozinho valia de 2,0 a 2,4 vezes.
+
+A terceira é de escopo, e **permanece**. O crivo **não adjudica**: no único par
+com verdade de codificação limpa ele diverge do codificador. A sua função
+declarada é eliminar candidatos inferiores antes do custo caro de codificação, e
+não coroar vencedores.
 
 > **Procedência.** `docs/RESULTADOS_oraculo_regret.md` §2 a §4 (definição da
-> fração de perda de otimalidade, extensão do conjunto e fronteira por redução
-> de custo);
-> `docs/RESULTADOS_convnext_regret.md` §2 e §5 (hierarquia a 25% e ganhos
-> marginais) e §3 (ressalva da amostragem da curva da variância);
-> `docs/INVENTARIO_solucoes.md` §2.2. Artefatos:
-> `results/models/oracle_regret/{report,ranking.csv,frontier.csv}` e
-> `results/models/oracle_regret_convnext/`. Script:
-> `src/scripts/partition_model/oracle_regret.py`.
+> fração de perda de otimalidade e do modelo de custo de busca);
+> `docs/RESULTADOS_rpp_escada_informacional.md` §3 e §4 (fronteira única, escada
+> sob receita fixa, grade densa da variância e valores por semente);
+> `docs/RESULTADOS_auditoria_convnext_corpus.md` (corpus dos braços profundos);
+> `docs/INVENTARIO_solucoes.md` §2.2. Artefato:
+> `results/models/oracle_regret_rpp/{report,ranking.csv,frontier.csv}`, execução
+> única de onde saem todos os valores desta seção; os artefatos superados
+> `results/models/oracle_regret/` e `oracle_regret_convnext/` são preservados.
+> Scripts: `src/scripts/partition_model/oracle_regret.py` e `rpp_ladder.py`.
 
 ---
 
@@ -258,29 +281,44 @@ seu fracasso é, ele próprio, um resultado da tese. Três medições independen
 sustentam.
 
 A primeira é a da hierarquia da Seção 1.4. O modelo substituto de 28,1 milhões de
-parâmetros sobre pixels crus **perde para o `pixels24`**, um perceptrone de
-múltiplas camadas sobre vinte e quatro atributos manuais extraídos da **mesma
-luminância**, por 0,0207 contra 0,0121 a 25% de redução de custo, ou seja, cerca
-de 1,7×. Um modelo batido por outro cujo acesso à informação é estritamente
-menor, e que ele poderia em princípio representar internamente, **não estabelece
-cota superior alguma**: o resultado enuncia algo a respeito do treino realizado,
-e não a respeito dos pixels.
+parâmetros sobre pixels crus **perde para o braço de vinte e quatro colunas**, um
+perceptrone de múltiplas camadas sobre colunas manuais das quais vinte e uma são
+extraídas da **mesma luminância** e as três restantes são o índice de quantização
+e a posição no superbloco, que a rede também recebe pelo seu plano constante de
+quantização — por 0,0219 contra 0,0053 a 25% de redução de custo, ou seja,
+**4,1×**, com 2.062 vezes mais parâmetros. Um modelo batido por outro cujo acesso
+à informação é estritamente menor, e que ele poderia em princípio representar
+internamente, **não estabelece cota superior alguma**: o resultado enuncia algo a
+respeito do treino realizado, e não a respeito dos pixels.
 
-A segunda é a do retreino com o alvo correto. O modelo substituto original fora
-treinado com entropia cruzada sobre rótulos duros, ou seja, otimizando acurácia
-por nó — quando a própria tese já havia estabelecido que acurácia por nó é mau
-substituto do compromisso entre taxa BD e tempo.
+A segunda é a do objetivo de treino, e ela **inverteu-se por remedição**. O
+enunciado anterior desta tese era o de que o retreino contra a perda de
+otimalidade, com peso `1 + α·regret_rel` e `α = 3`, teria piorado o modelo em
+toda a faixa, por fatores de 1,06× a 3,80×, e que a refutação seria forte por
+estarem alinhados objetivo de treino e métrica de avaliação.
 
-O retreino contra a perda de otimalidade, com peso `1 + α·regret_rel` e `α = 3`,
-mantendo arquitetura, largura de fusão e todo o caminho a jusante inalterados,
-**piorou o modelo em toda a faixa**, por fatores de 1,06× a 3,80×. A piora foi
-**maior justamente na região conservadora** que um podador implantável ocuparia.
-A refutação é forte porque objetivo de treino e métrica de avaliação estavam
-alinhados: era o caso mais favorável possível à hipótese.
+Aquela comparação era confundida. Auditoria dos argumentos gravados nos pontos de
+controle estabeleceu que o braço de entropia cruzada fora treinado sobre um
+conjunto de dados distinto — quatro sequências, um único ponto de quantização e
+dois quadros —, com duas das seis sequências da vara de avaliação contaminadas,
+ao passo que o braço de perda de otimalidade fora treinado sobre o conjunto
+canônico com a partição correta. Mudavam corpus, taxa de aprendizado, decaimento,
+número de épocas, tamanho de lote e parada antecipada, e não apenas o objetivo.
 
-A terceira é a da capacidade. Dobrar a largura de fusão de 128 para 256 altera a
-perda ponderada de validação de 0,9250 para 0,9235, isto é, **0,16%**, o que
-indica que a restrição não é de capacidade de modelo.
+A ablação foi refeita com corpus, escalonamento e critério de seleção idênticos,
+fazendo `α = 0` degenerar o peso em entropia cruzada pura. Sob esse controle, o
+alvo de perda de otimalidade é **melhor** que a entropia cruzada em todos os
+pontos de 10% de redução de custo em diante, com 0,0219 contra 0,0272 a 25%. A
+hipótese de que o alvo de perda de otimalidade levanta o teto do domínio de
+pixels foi, portanto, **confirmada fracamente, e não refutada**: ela levanta o
+teto, mas não o suficiente para que a via de pixels compita com a representação
+compacta, que continua 4,1 vezes à frente.
+
+A terceira é a da capacidade, e ela **sobrevive à remedição, reforçada**. Sob
+entropia cruzada e corpus correto, dobrar a largura de fusão de 128 para 256
+piora a perda de validação de 0,895092 para 0,903984, isto é, **1,0%**. O
+registro anterior media 0,16% de diferença, mas o fazia entre dois braços de
+`α = 3`. A largura maior não apenas deixa de ajudar: ela atrapalha.
 
 Cabe ainda registrar a correção de um erro de registro anterior. Alegou-se que o
 ponto de controle do modelo substituto original teria sido colhido em
@@ -291,26 +329,38 @@ selecionado. Ele é apenas fraco em termos absolutos.
 
 O registro honesto do que a tese possui é, deste modo, o seguinte. Há uma **cota
 inferior** do domínio de pixels, dada pelo melhor desempenho observado, que é o
-do `pixels24`. E há uma **cota superior genuína apenas no oráculo**: a decisão de
-taxa-distorção ótima de perda de otimalidade nula, que limita qualquer podador, e
-não apenas os de pixels.
+do braço de vinte e quatro colunas. E há uma **cota superior genuína apenas no
+oráculo**: a decisão de taxa-distorção ótima de perda de otimalidade nula, que
+limita qualquer podador, e não apenas os de pixels.
 
 A cota superior do domínio de pixels permanece **não medida**. O modelo
 substituto convolucional permanece no arcabouço como instrumento de diagnóstico e
 como a tentativa documentada de estabelecê-la.
 
-> **Procedência.** `docs/RESULTADOS_convnext_regret.md` §1 (método do retreino e
-> remoção do confundidor de capacidade), §2 (piora de 1,06× a 3,80×), §2.2
-> (derrota para o `pixels24`) e §4 (correção do registro sobre a seleção do ponto
-> de controle); `docs/ANDAMENTO_tese.md` §1.3 (cota inferior no `pixels24`, cota
-> superior genuína apenas no oráculo);
-> `docs/SINTESE_resultados_metodologia.md` §3 (refino final de 2026-07-26).
-> Artefatos: `results/models/surrogate_regret/`,
-> `results/models/surrogate_real/metrics.csv` e
-> `results/models/oracle_regret_convnext/`. Scripts:
+Cabe, por fim, registrar uma consequência da remedição sobre uma decisão de
+escopo. A opção por não levar o braço de perda de otimalidade ao codificador fora
+justificada pelo argumento de que ele passaria o critério de decisão sem superar
+a sua própria linha de base, o que tornaria o custo de replay injustificado. Esse
+argumento **cai**, uma vez que ele supera a linha de base. A decisão é
+reenquadrada, como no caso análogo da regressão de perda de otimalidade, em
+**assimetria de custo experimental, e não implicação lógica** — e permanece bem
+fundamentada por outra via, a de que a reprodução das decisões do substituto no
+codificador já mediu aceleração de apenas 1,02× a 1,03×.
+
+> **Procedência.** `docs/RESULTADOS_auditoria_convnext_corpus.md` §1 a §4
+> (corpus, contaminação da vara, degeneração do peso em `α = 0` e controle de
+> capacidade); `docs/RESULTADOS_rpp_escada_informacional.md` §3 e §4.7 a §4.9
+> (fronteira única, razão de 4,1× e inversão do resultado de objetivo);
+> `docs/RESULTADOS_convnext_regret.md` (documento superado, com nota de correção
+> no cabeçalho) §4 (correção do registro sobre a seleção do ponto de controle);
+> `docs/ANDAMENTO_tese.md` §1.3 (cota superior genuína apenas no oráculo).
+> Artefatos: `results/models/surrogate_ce_h9/`,
+> `results/models/surrogate_ce_h9_f256/`, `results/models/surrogate_regret/`,
+> `results/models/surrogate_real/{metrics.csv,surrogate_best.pt}` e
+> `results/models/oracle_regret_rpp/`. Scripts:
 > `src/scripts/partition_model/train_surrogate_regret.py` e
 > `src/scripts/partition_model/oracle_regret.py::score_surrogate`. A correção de
-> registro incide sobre o commit `0122b53`.
+> registro sobre a seleção do ponto de controle incide sobre o commit `0122b53`.
 
 ---
 
@@ -320,12 +370,18 @@ A leitura da hierarquia da Seção 1.4 exige uma auditoria de composição, uma 
 que os dois conjuntos de atributos comparados **não são disjuntos**.
 
 O layout do vetor está rotulado no próprio código de extração. Os índices 0 a 23
-constituem o bloco A, de descritores de luminância. Os índices 24 a 31
+constituem o bloco A, rotulado como bloco de pixels. Os índices 24 a 31
 constituem o bloco B, de contexto de particionamento da vizinhança. Os índices 32
 a 35 constituem o bloco C, de quantização e posição.
 
-Como o H9a é definido como a união dos blocos A, B e C, segue que **vinte e
-quatro dos seus trinta e seis atributos são descritores de luminância** —
+O rótulo do bloco A é, contudo, mais largo do que o seu conteúdo, e a diferença
+importa. Das suas vinte e quatro colunas, **vinte e uma derivam de luminância**;
+as outras três são o índice de quantização normalizado (`q_norm`, índice 17) e as
+duas coordenadas de posição do nó dentro da unidade de 64 px (índices 22 e 23),
+conforme `features.py:53-61`.
+
+Como o H9a é definido como a união dos blocos A, B e C, segue que **vinte e uma
+das suas trinta e seis colunas são descritores de luminância** —
 variância global e por quadrante, gradientes horizontal e vertical, orientação,
 densidade de bordas e contraste com o bloco-pai e com os irmãos. Segue também que
 **o H9a não contém grandeza alguma de custo de taxa-distorção**, pois estas
@@ -336,30 +392,53 @@ A consequência é que o enunciado corrente "o contexto de taxa-distorção venc
 pixels" **é falso**, e seria derrubado por qualquer avaliador que abrisse o
 arquivo de extração de atributos.
 
-O enunciado correto, e verificável, é duplo. No domínio de pixels, **descritores
-manuais compactos de luminância vencem uma rede convolucional profunda sobre
-pixels crus**, por cerca de 1,7×. E **doze atributos causais de vizinhança,
-quantização e posição, de custo praticamente nulo por já estarem residentes na
-memória do codificador, acrescentam 3,4× sobre eles**. A solução implantada é,
-portanto, majoritariamente um modelo de pixels ao qual foi acrescentado contexto
-causal barato.
+O enunciado correto, e verificável, é triplo. No domínio de pixels, **descritores
+manuais compactos vencem uma rede convolucional profunda sobre pixels crus**, por
+**4,1×**, com 2.062 vezes menos parâmetros. **As oito colunas de vizinhança
+causal de particionamento, de custo praticamente nulo por já estarem residentes
+na memória do codificador, acrescentam 1,60× sobre eles.** E **as quatro colunas
+de quantização efetiva, posição no quadro e profundidade não acrescentam
+informação decisória**: somadas ao bloco A elas não se separam dele, com o dobro
+da dispersão entre sementes, e somadas ao bloco B pioram o resultado de forma
+consistente, com as três sementes de A+B superando as três de A+B+C. A solução
+implantada é, portanto, majoritariamente um modelo de pixels ao qual foi
+acrescentado contexto causal barato — e o seu vetor de trinta e seis colunas não
+é, offline, o melhor dos quatro subconjuntos medidos.
+
+Cabe registrar que estes números substituem os anteriores, de 1,7× e 3,4×, e por
+que substituem. Aqueles comparavam um braço destilado de vinte e quatro colunas
+contra um braço de entropia cruzada direta de trinta e seis, de modo que o
+procedimento de treino entrava na conta junto com os atributos — e ele sozinho
+vale de 2,0 a 2,4 vezes. A escada atual fixa a receita e varia apenas o
+subconjunto de colunas, com três sementes por degrau.
+
+Cabe acrescentar uma precisão que fortalece o segundo enunciado. Como o índice de
+quantização normalizado **já reside no bloco A**, o retorno de 1,60× das oito
+colunas não pode ser atribuído ao modelo passar a dispor da quantização: ela
+estava disponível dos dois lados da comparação. O mesmo vale para a rede
+convolucional, cuja entrada inclui um plano constante de quantização. E o achado
+sobre o bloco C confirma-o por outra via: quando a quantização é acrescentada de
+novo, agora na forma do passo de dequantização efetivo, ela nada compra.
 
 Este enunciado é mais forte que o anterior, e não mais fraco. Ele converte um
 resultado negativo sobre redes convolucionais em um resultado positivo sobre
-**onde a informação está**: na vizinhança causal já codificada, e não na
-capacidade de representação sobre o bloco-fonte.
+**onde a informação está**: nas decisões de particionamento já tomadas pela
+vizinhança causal, e não na capacidade de representação sobre o bloco-fonte nem
+no estado de quantização e posição do codificador.
 
 A mesma leitura é corroborada pelo critério de decisão offline da fase seguinte.
 A ação isolada de comprometimento com o `PARTITION_NONE` rende de 10% a 19% de
 redução de custo com o `pixels24` e de 16% a 25% com o H9a. É, portanto, um ganho
-**marginal sobre** os vinte e quatro descritores de luminância, e não um ganho
-**competitivo contra** eles. Estes intervalos são lidos de uma varredura de
+**marginal sobre** as vinte e quatro colunas do bloco A, e não um ganho
+**competitivo contra** elas. Estes intervalos são lidos de uma varredura de
 limiares pela regra de risco casado: para cada subconjunto, toma-se a linha cujo
 `split_lost` fica imediatamente abaixo de cada patamar de risco declarado.
 
 > **Procedência.** `docs/RESULTADOS_auditoria_dominio_pixels.md` §2, §2.1 e §2.2
 > (layout do vetor, `pixels24` como bloco A e releitura da hierarquia) e §7
 > (correções de registro aplicadas em quatro documentos);
+> `docs/RESULTADOS_rpp_escada_informacional.md` §4.2 a §4.6 (confundidor de
+> treino, separação por semente dos blocos B e C, e a escada corrigida);
 > `docs/RESULTADOS_convnext_regret.md` §5 (nota de correção de 2026-07-26);
 > `docs/RASTREABILIDADE.md` §5.3 (redução de custo por subconjunto e nota de
 > composição). Fonte auditada: `src/scripts/partition_model/features.py:53–61`,
@@ -421,11 +500,18 @@ registrado, sem ser perseguido, um resíduo delimitado: o positivo em 32 amostra
 e o fato de que o nível de 64 amostras é **invisível a este crivo**, uma vez que
 ali a disponibilidade offline do atributo é de 0,0%.
 
-Com este veredito, a família fecha com **cinco tentativas independentes
-negativas**: o modelo substituto convolucional com entropia cruzada, o modelo
-substituto convolucional com alvo de perda de otimalidade, a decisão estruturada por rede de
-grafos do Approach B, o bloco D sobre o bloco-fonte e o bloco D' de
-predizibilidade intra a partir dos vizinhos.
+Com este veredito, a família fecha com **cinco vias de pixels que não foram
+implantadas**: o modelo substituto convolucional com entropia cruzada, o mesmo
+modelo com alvo de perda de otimalidade, a decisão estruturada por rede de grafos
+do Approach B, o bloco D sobre o bloco-fonte e o bloco D' de predizibilidade
+intra a partir dos vizinhos.
+
+A contagem de **hipóteses refutadas**, contudo, é de **quatro**, e a distinção é
+obrigatória. A hipótese de que o alvo de perda de otimalidade levantaria o teto
+do domínio de pixels **não foi refutada**: sob ablação controlada, ela se
+confirma, ainda que fracamente, conforme a Seção 1.5. Aquela via não foi
+implantada porque o teto que ela levanta permanece 4,1 vezes atrás da
+representação compacta, e não porque a hipótese tenha caído.
 
 > **Procedência.** `docs/RESULTADOS_auditoria_dominio_pixels.md` §3 (divergência
 > entre especificação e implementação do bloco D), §6 (atributos, convenção do
@@ -457,23 +543,28 @@ do defeito de luminância nula, e as suas conclusões não podem ser invocadas. 
 política casada, um limiar de variância trivial supera o modelo estudante de
 pixels nos cinco níveis de aceleração medidos de um experimento de uma sequência
 e duas imagens. E o modelo substituto convolucional, longe de estabelecer a cota
-superior do domínio, perde para um perceptrone sobre vinte e quatro atributos
-extraídos da mesma luminância.
+superior do domínio, perde para um perceptrone sobre vinte e quatro colunas do
+bloco A, das quais vinte e uma são extraídas da mesma luminância que ele recebe
+crua.
 
 O conjunto destes negativos não conduz a uma conclusão de impossibilidade. Conduz
 a uma reorientação precisa da pergunta.
 
 A decisão de particionamento é, por definição, uma decisão de taxa-distorção. A
 hierarquia medida indica que o que separa o melhor podador dos demais não é
-capacidade de representação sobre o bloco-fonte, e sim **doze atributos causais
-de vizinhança, quantização e posição, de custo praticamente nulo** — que a
-própria busca nativa já consulta e que a memória do codificador já contém no
-momento da decisão. É esta constatação, e não uma preferência de arquitetura, que
-motiva e justifica a virada investigada nas seções seguintes.
+capacidade de representação sobre o bloco-fonte, e sim **oito colunas de
+vizinhança causal de particionamento, de custo praticamente nulo** — as decisões
+que os blocos acima e à esquerda já tomaram, que a própria busca nativa já
+consulta e que a memória do codificador já contém no momento da decisão. A
+decomposição da Seção 1.6 é precisa quanto a isso: das doze colunas de contexto
+causal, são as oito de vizinhança que compram o ganho, e as quatro de
+quantização, posição e profundidade nada acrescentam. É esta constatação, e não
+uma preferência de arquitetura, que motiva e justifica a virada investigada nas
+seções seguintes.
 
 A solução que materializa esta virada — o H9a, um podador pré-busca por contexto
 de taxa-distorção barato, cujo vetor de trinta e seis atributos contém, ele
-próprio, os vinte e quatro descritores de luminância aqui caracterizados — é
+próprio, as vinte e quatro colunas do bloco A aqui caracterizadas — é
 apresentada na próxima seção, com a sua curva de operação no conjunto de teste
 reservado, a sua ablação de atribuição e os seus resultados sob protocolo das
 condições comuns de teste.

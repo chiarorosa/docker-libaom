@@ -490,7 +490,7 @@ deste capítulo.
 
 Duas soluções positivas foram, deste modo, apresentadas. O estudo produziu também
 cinco vias encerradas com resultado negativo no conjunto do trabalho — contagem
-geral do projeto, e não as cinco tentativas específicas do domínio de pixels —,
+geral do projeto, e não as cinco vias específicas do domínio de pixels —,
 que não sobreviveram aos seus critérios de decisão.
 
 Estas vias não são descarte. São resultado, e carregam valor metodológico próprio,

@@ -1,0 +1,23 @@
+dispositivo: cuda | alpha=0.0 | selecao por perda ponderada de validacao
+[data] cache train -> /workspace/results/models/_cache_regret/regret_train_8f79d1d2e037.npz
+[data] cache val -> /workspace/results/models/_cache_regret/regret_val_d265e041e114.npz
+escalas de regret (p95) por nivel: {64: 0.605535, 32: 0.542323, 16: 0.306358}
+epoca  0  treino 0.95269  val 1.02295  (279s)  -> melhor, salvo
+epoca  1  treino 0.83375  val 0.93954  (279s)  -> melhor, salvo
+epoca  2  treino 0.78608  val 0.92522  (278s)  -> melhor, salvo
+epoca  3  treino 0.76228  val 0.91289  (278s)  -> melhor, salvo
+epoca  4  treino 0.74403  val 0.90537  (278s)  -> melhor, salvo
+epoca  5  treino 0.72767  val 0.90700  (144s)
+epoca  6  treino 0.71056  val 0.90398  (113s)  -> melhor, salvo
+epoca  7  treino 0.69230  val 0.90886  (112s)
+epoca  8  treino 0.67141  val 0.92822  (109s)
+epoca  9  treino 0.64669  val 0.92538  (109s)
+epoca 10  treino 0.61686  val 0.95328  (109s)
+epoca 11  treino 0.58143  val 0.98008  (109s)
+epoca 12  treino 0.53727  val 1.01515  (109s)
+epoca 13  treino 0.48677  val 1.08669  (109s)
+epoca 14  treino 0.42809  val 1.17305  (109s)
+parada antecipada: 8 epocas sem melhora
+
+SURROGATE_REGRET_DONE  melhor val_wloss=0.903984 na epoca 6 -> /workspace/results/models/surrogate_ce_h9_f256/surrogate_regret_best.pt
+Proximo passo (o portao): aplicar o crivo A5 (oracle_regret.py) a este modelo contra variancia e pixels24/H9a.

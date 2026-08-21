@@ -1,5 +1,20 @@
 # ConvNeXt com alvo de *regret* — hipótese REFUTADA, e a família de pixels fechada
 
+> **Correção de registro (2026-08-20) — leia antes da §1.** A alegação da §1 de que
+> *"o que NÃO muda, deliberadamente"* seria apenas o objetivo **é falsa**. Auditoria dos
+> argumentos gravados nos checkpoints mostra que o `convnext_ce` (`surrogate_real`) foi
+> treinado em `results/dataset` — 4 sequências, `cq32` único, 2 quadros — com
+> `train_seqs=None` e `val_seqs=['Jockey']`, ao passo que o `convnext_regret` foi treinado
+> em `dataset_h9` com o split canônico 10/3/3. Mudam corpus, taxa de aprendizado,
+> decaimento, épocas, lote e parada antecipada, além do objetivo. Pior: **duas das seis
+> sequências da vara held-out estão contaminadas** para o `convnext_ce` (HoneyBee entrou no
+> seu treino; Jockey selecionou o seu ponto de verificação). A razão de 1,06×–3,80× da §2
+> **não é atribuível ao objetivo**. A ablação controlada foi refeita com `--alpha 0`, que
+> degenera o peso em entropia cruzada pura sob tudo o mais idêntico, e o achado colateral
+> da §2.2 foi remedido na fronteira única. Ver
+> [`RESULTADOS_auditoria_convnext_corpus.md`](RESULTADOS_auditoria_convnext_corpus.md) e
+> `results/models/oracle_regret_rpp/`.
+
 **Data:** 2026-07-26
 **Pergunta.** A tese usa o ConvNeXt substituto como **teto do domínio de pixels**, e dele
 extrai a afirmação de que *"os pixels saturam na variância"*. Esse modelo foi treinado com

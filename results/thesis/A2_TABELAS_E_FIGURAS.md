@@ -198,20 +198,23 @@ foi localizado está listado, sem exceção, na Seção 4.
   ponderado por custo de taxa-distorção real, medida a 25% e a 30% de redução
   de custo casada, sobre seis sequências do conjunto de validação e de teste
   reservado.
-- **Colunas.** subconjunto (variância; ConvNeXt com alvo de perda de
-  otimalidade; ConvNeXt com entropia cruzada; `pixels24`; H9a; pontuação
-  aleatória, como piso) — fração de perda de otimalidade a 25% de `cost_red`
-  — fração de perda de otimalidade a 30% de `cost_red`.
-- **Linhas.** seis, uma por subconjunto, ordenadas da pior para a melhor.
-- **Dado de origem.** `results/models/oracle_regret/frontier.csv` (colunas
-  `pruner,tau,cost_red,split_lost,reg_abs,reg_rel,reg_frac_pct,...`,
-  conferido) e `results/models/oracle_regret_convnext/frontier.csv`, ambos
-  verificados por `Glob`.
-- **Script.** `src/scripts/partition_model/oracle_regret.py`. Requer filtrar,
-  em cada arquivo, a linha de `cost_red` mais próxima de 25 e de 30 por
-  `pruner`, pois a grade de `tau` não cai exatamente nesses valores para todo
-  subconjunto — mesmo procedimento de interpolação/seleção usado para redigir
-  a Seção 1.4 em prosa.
+- **Colunas.** subconjunto — número de colunas de atributos — fração de perda
+  de otimalidade a 25% de `cost_red` — a 30% de `cost_red`.
+- **Linhas.** nove, ordenadas da pior para a melhor: pontuação aleatória
+  (piso); variância isolada; ConvNeXt com entropia cruzada; ConvNeXt com
+  entropia cruzada e fusão 256; ConvNeXt com alvo de perda de otimalidade;
+  A+C; A; A+B+C; A+B.
+- **Dado de origem.** `results/models/oracle_regret_rpp/frontier.csv`, execução
+  única (colunas `pruner,tau,cost_red,split_lost,reg_abs,reg_rel,reg_frac_pct,
+  ...`). Os degraus de atributos entram como **média das três sementes**
+  `RPP_<degrau>_s{0,1,2}`. Os artefatos anteriores,
+  `results/models/oracle_regret/frontier.csv` e `oracle_regret_convnext/`, estão
+  superados e **não devem ser concatenados**: cobrem varas de tamanhos
+  distintos.
+- **Script.** `src/scripts/partition_model/oracle_regret.py` e `rpp_ladder.py`.
+  Requer interpolar linearmente `reg_frac_pct` em `cost_red` a 25 e a 30 por
+  `pruner`, pois a grade de `tau` não cai exatamente nesses valores — mesmo
+  procedimento usado para redigir a Seção 1.4 em prosa.
 
 #### Tabela 10 — Redução de custo de busca por subconjunto de atributos (Tabela 2.1 no texto-fonte)
 
@@ -519,14 +522,17 @@ de leitura visual.
 - **Legenda.** A Figura 2 apresenta a fração de perda de otimalidade de cada
   subconjunto de atributos avaliado no crivo ponderado por custo de
   taxa-distorção real, a 25% de redução de custo casada, em escala
-  logarítmica, evidenciando a distância entre a variância isolada e o H9a.
+  logarítmica, evidenciando a distância entre a variância isolada, a rede
+  convolucional profunda e a representação compacta.
 - **Tipo de gráfico.** Barras verticais, ordenadas do maior para o menor
-  valor de fração de perda de otimalidade, com eixo logarítmico.
-- **Eixos e séries.** Eixo horizontal: subconjunto de atributos (variância;
-  ConvNeXt-perda de otimalidade; ConvNeXt-CE; `pixels24`; H9a). Eixo vertical
+  valor de fração de perda de otimalidade, com eixo logarítmico. Os quatro
+  degraus de atributos levam barra de erro com a amplitude das três sementes.
+- **Eixos e séries.** Eixo horizontal: subconjunto (variância; ConvNeXt-CE;
+  ConvNeXt-CE fusão 256; ConvNeXt-α3; A+C; A; A+B+C; A+B). Eixo vertical
   (log): fração de perda de otimalidade (%) a `cost_red` = 25%.
-- **Dado de origem.** `results/models/oracle_regret/frontier.csv` e
-  `results/models/oracle_regret_convnext/frontier.csv`.
+- **Dado de origem.** `results/models/oracle_regret_rpp/frontier.csv`, execução
+  única. **Não** concatenar os artefatos superados `oracle_regret/` e
+  `oracle_regret_convnext/`, que cobrem varas de tamanhos distintos.
 - **Esboço de script.**
   ```python
   import pandas as pd

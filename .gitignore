@@ -19,13 +19,15 @@ opsnr.stt
 # build_regret_targets.py. Excluded as a DIRECTORY, so nothing inside can be
 # re-included; that is intended here.
 results/models/_cache_regret/
-# Exclusion 2 -- the two ConvNeXt surrogates, 112.6 MB EACH. GitHub hard-rejects
+# Exclusion 2 -- the ConvNeXt surrogates, 108-113 MB EACH. GitHub hard-rejects
 # any file above 100 MB, so committing these does not merely bloat the repo, it
 # makes `git push` fail. They belong in the Zenodo deposit alongside the dataset,
 # not in git. Everything else under surrogate_*/ (metrics.csv, config, curves) is
-# versioned.
+# versioned. The rpp_ladder bundles are MLPs of a few KB and stay in git.
 results/models/surrogate_real/surrogate_best.pt
 results/models/surrogate_regret/surrogate_regret_best.pt
+results/models/surrogate_ce_h9/surrogate_regret_best.pt
+results/models/surrogate_ce_h9_f256/surrogate_regret_best.pt
 .venv-ml/
 
 # Dataset payloads are huge (dataset_h9 ~31 GB of .pkl) and reproducible from the

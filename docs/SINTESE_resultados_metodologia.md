@@ -322,10 +322,17 @@ casado (ex.: a 1,3×, ML 1,39% BD vs variância 0,76%). Como a variância é **u
 >   pixels24 < H9a** — o ConvNeXt de 28,1 M de parâmetros sobre pixels crus
 >   **perde para o `pixels24`**, um MLP sobre 24 atributos manuais derivados da
 >   *mesma* luma (0,0207 contra 0,0121 em `cost_red` 25%, ~1,7×);
+>   **[REMEDIDO 2026-08-20]** sob receita de treino fixa e grade densa, a razão é
+>   de **4,1×** (0,0219 contra 0,0053) — ver `RESULTADOS_rpp_escada_informacional.md`;
 > - treiná-lo com o alvo de **regret** (o objetivo correto, nunca antes aplicado a
 >   pixels) **piorou-o** em toda a faixa, 1,06× a 3,80×;
+>   **[RETRATADO 2026-08-20]** aquela comparação era confundida por corpus, lr,
+>   decaimento, épocas, lote e parada; sob controle real (`--alpha 0`), o alvo de
+>   *regret* é **melhor** em todos os pontos de 10% em diante — ver
+>   `RESULTADOS_auditoria_convnext_corpus.md`;
 > - e **capacidade não é a restrição**: dobrar `fusion_dim` muda a perda de
->   validação em 0,16%.
+>   validação em 0,16%. **[REMEDIDO 2026-08-20]** sob α=0 e corpus correto, dobrar
+>   a fusão **piora** em 1,0% (0,895092 → 0,903984); o enunciado sobrevive.
 >
 > **Consequência conceitual:** o ConvNeXt **não pode ser reportado como
 > "referência de limite superior" do domínio de pixels.** Um modelo que é batido
@@ -864,7 +871,8 @@ speedup agregado; média das sequências). Ver §4–§6 para as tabelas por cen
 | **Solução 5 — H9d** (poda de AB/4-way pós-NONE) | ✅ **concluído** (2026-07-25/27) — **positivo e implantado**; CTC + fronteira 2D (96 encodes); inerte sobre a base agressiva | `RESULTADOS_H9d_*.md`, §5-quater |
 | Bloco 7 — E1/E4, E3, decomposição, E2 | ✅ **concluído** (2026-07-25/26) — confound em 8/8; joelho de τ em 60–70; **σ do TS medido: ±0,23 pp** | `RESULTADOS_BLOCO7_E1_E4.md`, `..._E3_DEC_E2.md` |
 | B3 — sinal direcional (HORZ vs VERT) | ✅ **concluído** (2026-07-26) — **negativo no portão**: acurácia plana (+0,3 pp pareado); nunca chegou a C | `RESULTADOS_modelagem_B3_horz_vert.md §7` |
-| ConvNeXt com alvo de *regret* | ✅ **concluído** (2026-07-26) — **refutado**: piorou 1,06–3,80×; o ConvNeXt **não é teto de pixels** | `RESULTADOS_convnext_regret.md` |
+| ConvNeXt com alvo de *regret* | ⚠️ **retratado** (2026-08-20) — o veredito de 2026-07-26 ("refutado, piorou 1,06–3,80×") era artefato de confundimento de corpus; sob controle real o alvo de *regret* é **melhor**. O ConvNeXt continua **não sendo teto de pixels**, agora por 4,1× | `RESULTADOS_auditoria_convnext_corpus.md`; `RESULTADOS_rpp_escada_informacional.md` |
+| Escada informacional RPP (A / A+B / A+C / A+B+C) | ✅ **concluído** (2026-08-20) — receita fixa, 3 sementes, grade densa da variância; **o bloco B carrega o sinal (1,60×) e o bloco C nada acrescenta**; A+B domina A+B+C em toda a fronteira | `RESULTADOS_rpp_escada_informacional.md` |
 | Auditoria do domínio de pixels + portão D' | ✅ **concluído** (2026-07-26) — o H9a **é** majoritariamente pixels; D' **não passa** (5º negativo) | `RESULTADOS_auditoria_dominio_pixels.md` |
 | **Fronteira Pareto global com o H9d** | ✅ **recomposta para `cpu-used=0`** (2026-07-29) — reexecução do script, sem codificação nova; 24 configurações, 15 não-dominadas; H9d figura e é dominado, sem contradizer o marginal. **Pendente** nos níveis `cpu-used` 1 a 3 (~192 codificações) | `docs/RESULTADOS_fronteira_pareto_global.md`, ver §6 |
 | **E5 — ablação de atribuição no codificador** | ✅ **concluído** (2026-07-28) — 144 encodes, 2 seqs de validação. 1ª comparação a **tempo casado** da tese: o H9a vence a variância por 4,6× e 1,85×. Portão estrito (≥2 de 3) **não** atingido — 1 de 2 | `RESULTADOS_E5_ablacao_validacao.md` |

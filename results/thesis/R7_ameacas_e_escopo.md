@@ -322,10 +322,15 @@ demonstrado por medição direta, em vez de inferido de apenas dois pontos.
 ### 7.3.3 O par `pixels24` e variância sem árbitro no codificador
 
 Permanece aberta a discordância entre duas medições. De um lado, o crivo offline,
-que mede o conjunto de vinte e quatro atributos de luminância superando a
-variância por um fator de 4,7 vezes sobre seis sequências e 792 840 nós de
-decisão. De outro, a ablação original de dois quadros numa única sequência, em que
-a variância empata ou supera este mesmo conjunto.
+que mede o conjunto de vinte e quatro colunas do bloco A superando a variância
+por um fator de **7,0 vezes** sobre seis sequências e **3.808.703 nós de
+decisão**, sob receita de treino fixa e grade densa de limiares. De outro, a
+ablação original de dois quadros numa única sequência, em que a variância empata
+ou supera este mesmo conjunto.
+
+Cabe registrar que a remedição **agravou** a discordância em vez de a atenuar: a
+razão medida pelo crivo subiu de 4,7 para 7,0 vezes, ao mesmo tempo em que a
+ablação de codificação que a contradiz permanece intocada.
 
 O experimento E5 não a arbitra. O braço aprendido que ele mede é o estudante de
 trinta e seis atributos do H9a, e não o conjunto de vinte e quatro atributos de

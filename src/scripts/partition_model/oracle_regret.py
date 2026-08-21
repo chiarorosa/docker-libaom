@@ -60,8 +60,23 @@ from model import PartitionSurrogate  # noqa: E402
 
 # Ordem de apresentação (piso -> teto), família implantável primeiro.
 DISPLAY_ORDER = ["random", "variance", "pixels24", "convnext_ce",
+                 "convnext_ce_h9", "convnext_ce_h9_f256",
                  "convnext_regret", "H9a", "H9a_b1", "H9a_cw",
                  "H9c", "regret", "GNN", "GNN_causal"]
+DISPLAY_ORDER += ["RPP_{}_s{}".format(r, s)
+                  for r in ("A", "A_B", "A_C", "A_B_C") for s in range(8)]
+
+# A grade de tau compartilhada é inadequada para a variância. Como o seu
+# P(NONE)=exp(-var/1000) concentra toda a faixa útil em (0,97; 0,99), na grade
+# comum a curva salta de 6,14% para 39,46% de redução de custo casada: TODO
+# valor entre eles -- inclusive os 25% em que a escada da tese é lida -- era
+# interpolado através de um único vão. A grade densa abaixo converte esses
+# pontos de interpolados em medidos. Nenhum outro braço precisa disso, pois
+# todos já têm pontos de operação densos na faixa lida.
+VARIANCE_TAUS = [0.50, 0.60, 0.70, 0.75, 0.80, 0.85, 0.90, 0.93, 0.95,
+                 0.960, 0.965, 0.970, 0.972, 0.974, 0.976, 0.978, 0.980,
+                 0.982, 0.984, 0.986, 0.988, 0.990, 0.992, 0.995, 0.998,
+                 0.999]
 
 # Chão-de-verdade real medido no encoder (menor BD = vencedor), com fonte e
 # uma flag de confiabilidade do próprio chão.
@@ -152,7 +167,12 @@ def collect(entries, per_pkl=None):
     return sbs, total_none_rd
 
 
-def score_student(sbs, bundle, device, feat_key, width):
+def score_student(sbs, bundle, device, feat_key, width, cols=None):
+    """`cols` selects an arbitrary column subset of the stored vector instead
+    of the leading `width` prefix. The prefix form covers A (0..23) and A+B
+    (0..31) because those are contiguous; A+C is not, and needs the gather."""
+    if cols is not None:
+        width = len(cols)
     nets = {}
     for dim, _ in MODEL_LEVELS:
         if dim in bundle["students"]:
@@ -164,7 +184,9 @@ def score_student(sbs, bundle, device, feat_key, width):
                if key[0] == dim]
         if not idx:
             continue
-        feats = np.stack([sbs[si]["nodes"][key][feat_key][:width]
+        feats = np.stack([(sbs[si]["nodes"][key][feat_key][cols] if cols
+                           is not None else
+                           sbs[si]["nodes"][key][feat_key][:width])
                           for si, key in idx])
         with torch.no_grad():
             p = F.softmax(nets[dim](torch.tensor(
@@ -321,6 +343,9 @@ def main(argv):
     ap.add_argument("--per-pkl", type=int, default=0, help="cap SB/pkl (0=todos)")
     ap.add_argument("--canonical-cost", type=float, default=30.0,
                     help="cost_red do ponto de triagem (dentro do alcance de todos)")
+    ap.add_argument("--rpp-seeds", nargs="+", type=int, default=[0, 1, 2],
+                    help="seeds of the RPP ladder bundles to score, if "
+                         "results/models/rpp_ladder/ exists")
     ap.add_argument("--out-dir",
                     default="/workspace/results/models/oracle_regret")
     args = ap.parse_args(argv)
@@ -344,10 +369,10 @@ def main(argv):
 
     curves = {}
 
-    def run(name, scorer):
+    def run(name, scorer, taus_override=None):
         try:
             scorer()
-            curves[name] = sweep(sbs, taus, total_rd)
+            curves[name] = sweep(sbs, taus_override or taus, total_rd)
             print("  [ok] {}".format(name), flush=True)
         except Exception as ex:
             print("  [pulado] {}: {}".format(name, ex), flush=True)
@@ -355,14 +380,44 @@ def main(argv):
             clear_probs(sbs)
 
     run("random", lambda: score_random(sbs))
-    run("variance", lambda: sp.score_with_variance(sbs))
+    run("variance", lambda: sp.score_with_variance(sbs), VARIANCE_TAUS)
     run("pixels24", lambda: score_student(
         sbs, load("student_real/students.pt"), device, "feat", 24))
+    # RPP information ladder: one fixed recipe, several seeds, differing only
+    # in the column subset. Scored here so every rung shares the held-out bar,
+    # the policy and the cost model with the arms above.
+    lad = os.path.join(args.models_dir, "rpp_ladder")
+    if os.path.isdir(lad):
+        for rung in ("A", "A_B", "A_C", "A_B_C"):
+            for seed in sorted(args.rpp_seeds):
+                tag = "{}_s{}".format(rung, seed)
+                if not os.path.exists(os.path.join(lad, tag, "students.pt")):
+                    continue
+                run("RPP_" + tag,
+                    lambda tag=tag, rung=rung: score_student(
+                        sbs, load("rpp_ladder/{}/students.pt".format(tag)),
+                        device, "feat", 0,
+                        cols=featmod.RPP_SUBSETS[rung]))
     # Os dois ConvNeXt na MESMA vara: o teto de pixels como foi treinado (CE
     # sobre rotulos duros) e o retreinado com alvo de regret. Sem o primeiro
     # aqui, um ganho do segundo nao seria atribuivel ao objetivo.
     run("convnext_ce", lambda: score_surrogate(
         sbs, load("surrogate_real/surrogate_best.pt"), device))
+    # `surrogate_real` acima NAO e um teste justo do dominio de pixels, e os
+    # seus proprios args o denunciam: dataset_dir=results/dataset (4 sequencias,
+    # cq32 unico, 2 quadros) com val_seqs=['Jockey'] e train_seqs=None, ou seja,
+    # treinado em Beauty/HoneyBee/Bosphorus -- e HoneyBee esta nesta vara
+    # held-out. Alem do vazamento, o orcamento de treino e ~30x menor que o dos
+    # bracos tabulares e o canal de quantizacao foi CONSTANTE no treino.
+    # Os dois bracos abaixo corrigem isso: mesmo corpus (dataset_h9), mesmo
+    # split 10/3/3, mesmo escalonamento do braco de regret, com alpha=0
+    # degenerando o peso `1+alpha*regret_rel` em entropia cruzada pura. So
+    # assim o par CE x regret isola o OBJETIVO, e so assim o braco profundo
+    # testa de fato a hipotese "pixels crus + capacidade bastam".
+    run("convnext_ce_h9", lambda: score_surrogate(
+        sbs, load("surrogate_ce_h9/surrogate_regret_best.pt"), device))
+    run("convnext_ce_h9_f256", lambda: score_surrogate(
+        sbs, load("surrogate_ce_h9_f256/surrogate_regret_best.pt"), device))
     run("convnext_regret", lambda: score_surrogate(
         sbs, load("surrogate_regret/surrogate_regret_best.pt"), device))
     run("H9a", lambda: score_student(

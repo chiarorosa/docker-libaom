@@ -79,17 +79,30 @@ uma implantação real dos 28,1 milhões de parâmetros do modelo substituto.
 A Tabela 9 apresenta a fração de perda de otimalidade (do inglês *regret*) de
 cada subconjunto de atributos avaliado no crivo ponderado por custo de
 taxa-distorção real, medida a 25% e a 30% de redução de custo casada, sobre
-seis sequências do conjunto de validação e de teste reservado e 792.840 nós de
-decisão, ordenada do pior para o melhor subconjunto.
+seis sequências do conjunto de validação e de teste reservado e **3.808.703 nós
+de decisão**, ordenada do pior para o melhor subconjunto. Todos os valores saem
+de uma **execução única** do crivo, `results/models/oracle_regret_rpp/`, sob
+receita de treino fixa e com grade densa de limiares para a variância. Os quatro
+degraus de atributos são média de **três sementes**.
 
-| subconjunto de atributos | fração de perda de otimalidade a 25% de `cost_red` | fração de perda de otimalidade a 30% de `cost_red` |
-|---|--:|--:|
-| Pontuação aleatória (piso) | [completar: valor a 25% de `cost_red` não registrado em nenhum documento do projeto] | 0,612 |
-| Variância | 0,0573 | 0,060 |
-| ConvNeXt com alvo de perda de otimalidade | 0,0219 | [completar: valor a 30% de `cost_red` não registrado em nenhum documento do projeto] |
-| ConvNeXt com entropia cruzada | 0,0207 | [completar: valor a 30% de `cost_red` não registrado em nenhum documento do projeto] |
-| `pixels24` | 0,0121 | 0,015 |
-| **H9a** | **0,0036** | **0,006** |
+| subconjunto de atributos | colunas | a 25% de `cost_red` | a 30% de `cost_red` |
+|---|--:|--:|--:|
+| Pontuação aleatória (piso) | — | 0,5166 | 0,6342 |
+| Variância isolada | 1 | 0,0374 | 0,0555 |
+| ConvNeXt com entropia cruzada | 28,1 M par. | 0,0272 | 0,0442 |
+| ConvNeXt com entropia cruzada, fusão 256 | 28,1 M par. | 0,0294 | 0,0444 |
+| ConvNeXt com alvo de perda de otimalidade | 28,1 M par. | 0,0219 | 0,0379 |
+| A + C (quantização, posição, profundidade) | 28 | 0,0064 | 0,0122 |
+| A (bloco de pixels) | 24 | 0,0053 | 0,0091 |
+| A + B + C (vetor livre completo) | 36 | 0,0040 | 0,0078 |
+| **A + B (vizinhança causal de particionamento)** | **32** | **0,0033** | **0,0069** |
+
+*Nota de superação.* Uma versão anterior desta tabela reportava variância 0,0573,
+`pixels24` 0,0121 e H9a 0,0036, com 792.840 nós, e deixava quatro células por
+completar. Aquela versão misturava duas execuções do crivo, interpolava a curva
+da variância através de um único vão de limiares e comparava um braço destilado
+contra um braço de entropia cruzada direta. As lacunas foram fechadas e os três
+defeitos, removidos — ver `docs/RESULTADOS_rpp_escada_informacional.md` §2 e §4.
 
 *O que é a métrica.* A fração de perda de otimalidade é uma divisão. Em cima,
 o sobrecusto de taxa-distorção das podas feitas. Embaixo, o custo de
@@ -699,7 +712,7 @@ Resultados em que a evidência correspondente é apresentada pela primeira vez.
 
 | # | conclusão | enunciado | número central | seção de origem |
 |:--:|---|---|---|---|
-| 1 | Nenhuma via de pixels compete com o contexto de taxa-distorção barato | Na hierarquia medida no crivo ponderado por perda de otimalidade, o H9a supera o `pixels24` por 3,4× em fração de perda de otimalidade a 25% de redução de custo casada (0,0036 contra 0,0121), e o `pixels24` supera a variância isolada por 4,7× | Resultados §1.4 (Tabela 9) |
+| 1 | Nenhuma via de pixels compete com a representação compacta, e o que a separa é a vizinhança causal de particionamento | Na hierarquia medida no crivo ponderado por perda de otimalidade, sob receita de treino fixa e grade densa de limiares, a 25% de redução de custo casada: as vinte e quatro colunas compactas superam a variância isolada por 7,0× (0,0053 contra 0,0374) e o melhor ConvNeXt por 4,1× (contra 0,0219, com 2.062× mais parâmetros); acrescentar as oito colunas de vizinhança causal compra 1,60× (0,0033), e as quatro de quantização, posição e profundidade nada compram | Resultados §1.4 e §1.6 (Tabela 9) |
 | 2 | O contexto de taxa-distorção barato não supera o podador nativo na média da grade CTC, mas preenche a granularidade fina de baixo regime de aceleração | H9c a τ=0,95 entrega 0,160% de taxa BD a 12,61% de redução de tempo, e a τ=0,90, 0,172% a 13,59%, no vão de 0% a 32,59% que a escada nativa deixa descoberto entre `cpu-used=0` e `cpu-used=1` | Resultados §2.4 e §6 (Tabelas 12 e 20) |
 | 3 | Alavancas de poda se somam na medida em que os conjuntos de candidatos que atacam são disjuntos, e não em função da informação que compartilham | O H9d soma +1,02 pp de redução de tempo sobre o H9a com informação idêntica à do H9c, que somara apenas +0,26 pp; a interação medida entre H9a e H9c é negativa em −1,9 pp na média de quatro sequências | Resultados §3.5 e §4.9 (Tabelas 16 e 18) |
 

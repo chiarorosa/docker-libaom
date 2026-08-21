@@ -42,7 +42,7 @@ redução de tempo de parede nesta tabela.
 | subconjunto de atributos | 0,5% | 1% | 2% |
 |---|---:|---:|---:|
 | variância | 0 | 0 | 0 |
-| `pixels24` (bloco A, vinte e quatro descritores de luminância) | 10,1 | 15,3 | 18,9 |
+| `pixels24` (bloco A, vinte e quatro colunas: vinte e uma de luminância, mais quantização e posição) | 10,1 | 15,3 | 18,9 |
 | **H9a (A + vizinhança + quantização/posição, trinta e seis atributos)** | **15,7** | **20,1** | **24,9** |
 | H9c (cota superior, custo RD real do `PARTITION_NONE`) | 33,0 | 33,0 | 39,7 |
 

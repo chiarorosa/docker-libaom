@@ -152,7 +152,7 @@ treino em GPU enquanto o E5 roda** — ele mede tempo de parede.
 | ordem | trabalho | tipo | portão |
 |---|---|---|---|
 | ~~1~~ | ~~**B3 Etapa 1**~~ — **ENCERRADO 2026-07-26, portão não atingido** | offline/GPU | acurácia direcional plana (+0,3 pp em controle pareado); recall subiu de ~42% para ~47%, insuficiente. Negativo medido em `RESULTADOS_modelagem_B3_horz_vert.md §7` |
-| ~~2~~ | ~~**ConvNeXt** — retreino com alvo de *regret*~~ — **ENCERRADO 2026-07-26, hipótese refutada** | offline/GPU | o retreino **piorou** o modelo em toda a faixa (1,06× a 3,80×, pior na região conservadora). Hierarquia medida: H9a < pixels24 < convnext_ce < convnext_regret < variância. `RESULTADOS_convnext_regret.md` |
+| ~~2~~ | ~~**ConvNeXt** — retreino com alvo de *regret*~~ — **RETRATADO 2026-08-20: a hipótese NÃO foi refutada** | offline/GPU | o veredito de 2026-07-26 ("piorou 1,06× a 3,80×") era artefato de confundimento — o braço de CE fora treinado em `results/dataset` (4 seqs, cq32, 2 quadros) com 2 das 6 seqs da vara contaminadas. Sob controle real (`--alpha 0`, mesmo corpus e escalonamento), o alvo de *regret* é **melhor** de 10% em diante. `RESULTADOS_auditoria_convnext_corpus.md` |
 | ~~3~~ | ~~**Fronteira do H9d** — PL20×P_rect, PL10×A3, PL20×A3 no CTC~~ — **CONCLUÍDA 2026-07-27** | encodes | 96 encodes; os 4 pontos batem o knob de τ (1,52–3,38×) e o implantado é o melhor. **Achado novo:** o H9d é **inerte sobre a base agressiva** (+0,17 pp de TS, 1/8 seqs acima da resolução) → a aditividade **depende do ponto de operação**. `SINTESE §5-quater` |
 | ~~4~~ | ~~ramos que passarem nos portões (B3 Etapas 2–4; replay H8)~~ — **VAZIO**: nenhum ramo passou. O B3 parou na Etapa 1 e o replay H8 do `convnext_regret` foi dispensado (medir no codificador um modelo já pior offline que seu antecessor não se justifica) | ambos | — |
 | ~~5~~ | ~~**E5** — ablação da CB-1 nas seqs de validação~~ — **CONCLUÍDO 28/07** | encodes | 144 encodes, 2 seqs. **1ª comparação a tempo casado** da tese: o `ml` vence a variância por 4,6× e 1,85× na FlowerPan. Portão estrito (≥2 de 3) **não** atingido — 1 de 2, HoneyBee cortada por escopo. `RESULTADOS_E5_ablacao_validacao.md` |
@@ -213,16 +213,31 @@ trabalho de GPU, não de re-codificação da UVG.
 > | `convnext_ce` (+28,1 M de parâmetros sobre pixels crus) | 0,0207 | **0,6× (pior)** |
 > | `H9a` (`pixels24` + 12 de vizinhança/quant/posição) | 0,0036 | **3,4×** |
 >
-> Ou seja: **os pixels não saturam na variância** — o `pixels24` a bate por 4,7×. A
-> auditoria de 26/07 acrescentou a releitura que faltava: o próprio H9a **é**
-> majoritariamente um modelo de pixels (24 dos seus 36 atributos), de modo que o
-> enunciado correto **não** é "contexto RD vence pixels", e sim: **descritores manuais
-> compactos de luma vencem uma rede convolucional profunda sobre pixels crus, e 12
-> atributos causais de vizinhança/quantização/posição, de custo ~zero, acrescentam
-> 3,4× sobre eles**. O que ficou refutado, com cinco tentativas independentes, é a
-> alegação mais estreita e mais segura: **nenhuma via adicional no domínio de pixels
-> compete com esse conjunto**. Ver `RESULTADOS_convnext_regret.md §5` e
-> `RESULTADOS_auditoria_dominio_pixels.md §2.1`.
+> **[SUPERADA 2026-08-20 — não citar esta tabela.]** Ela carrega três defeitos:
+> a curva da variância era interpolada através de um único vão (superestimava em
+> 1,53×); `pixels24` era **destilado** e `H9a` treinado direto, de modo que o
+> procedimento de treino entrava na conta (vale 2,0–2,4×); e os 12 atributos causais
+> nunca haviam sido separados. A tabela vigente, sob receita fixa, 3 sementes e grade
+> densa, está em `RESULTADOS_rpp_escada_informacional.md` §3:
+>
+> | passo | `reg_frac` @ 25% | ganho marginal |
+> |---|--:|--:|
+> | variância (grade densa) | 0,0374 | — |
+> | A — 24 colunas compactas | 0,0053 | **7,0×** |
+> | ConvNeXt, melhor dos dois objetivos | 0,0219 | **0,2× (pior)**, com 2.062× mais parâmetros |
+> | A+B — +8 de vizinhança causal | 0,0033 | **1,60×** |
+> | A+C — +4 de quant./posição/profundidade | 0,0064 | sem separação de A |
+> | A+B+C — as 36 colunas | 0,0040 | pior que A+B |
+>
+> Ou seja: **os pixels não saturam na variância** — as 24 colunas a batem por 7,0×. E
+> o enunciado correto **não** é "contexto RD vence pixels", e sim: **descritores
+> manuais compactos vencem uma rede convolucional profunda sobre pixels crus, e são
+> as 8 colunas de vizinhança causal de particionamento — não as de quantização,
+> posição e profundidade — que acrescentam 1,60× sobre eles**. O que continua
+> estabelecido é a alegação mais estreita e mais segura: **nenhuma via adicional no
+> domínio de pixels compete com esse conjunto**. Ver
+> `RESULTADOS_rpp_escada_informacional.md`, `RESULTADOS_auditoria_convnext_corpus.md`
+> e `RESULTADOS_auditoria_dominio_pixels.md §2.1`.
 >
 > **Resta uma ressalva viva:** a ablação de atribuição original (CB-1) continua sendo
 > de **2 quadros numa sequência**, e é ela que o **E5** repõe no codificador. O crivo
@@ -295,10 +310,11 @@ negativo numa contribuição positiva. A sequência:
    variância isolada.
 2. **Por que esse negativo tem valor** *(reenquadrado 2026-07-26)*. A leitura
    original — "a informação presente nos pixels satura numa estatística trivial" —
-   **não se sustenta** e foi substituída pela **hierarquia medida** no crivo A5:
-   **variância < convnext_regret < convnext_ce < pixels24 < H9a**. O negativo que
-   a tese de fato sustenta é mais estreito e mais seguro: **nenhuma via de pixels
-   compete com contexto RD**, em quatro tentativas independentes. Ver
+   **não se sustenta** e foi substituída pela **hierarquia medida** no crivo A5.
+   *(Reordenada 2026-08-20, sob receita fixa e grade densa:* **aleatória <
+   variância < ConvNeXt-CE < ConvNeXt-α3 < A+C < A < A+B+C < A+B**, do pior para o
+   melhor.*)* O negativo que a tese de fato sustenta é mais estreito e mais seguro:
+   **nenhuma via de pixels compete com contexto causal barato**. Ver
    `RESULTADOS_convnext_regret.md §5` e `SINTESE §2` (refinos de 20/07 e 26/07).
 3. **A virada positiva (hipótese H9).** O particionamento do AV1 é, por definição,
    uma decisão de **taxa-distorção (RD)**. Logo, o sinal capaz de elevar o limite é
@@ -361,9 +377,11 @@ Medido no crivo A5, porém, ele **perde para o `pixels24`** — um MLP sobre 24
 atributos manuais extraídos da *mesma* luma, que ele poderia em princípio
 representar. Um modelo batido por outro com acesso estritamente menor à informação
 **não estabelece cota superior alguma**; o resultado enuncia algo sobre o nosso
-treino, não sobre os pixels. Some-se que treiná-lo com o alvo de *regret*
-**piorou-o** (1,06× a 3,80×) e que dobrar a largura de fusão muda a validação em
-0,16% — capacidade não é a restrição.
+treino, não sobre os pixels. Some-se que dobrar a largura de fusão **piora** a
+validação em 1,0% (0,895092 → 0,903984, sob α=0 e corpus correto) — capacidade não
+é a restrição. **[RETRATADO 2026-08-20]** a alegação de que o alvo de *regret* o
+teria piorado em 1,06×–3,80× cai: sob controle real ele é **melhor** de 10% em
+diante. Ver `RESULTADOS_auditoria_convnext_corpus.md`.
 
 O ConvNeXt permanece no arcabouço como **instrumento de diagnóstico** e como a
 tentativa documentada de estabelecer o teto; **não** como o teto. A tese tem uma

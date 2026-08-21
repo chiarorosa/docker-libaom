@@ -495,7 +495,7 @@ de sê-lo.
 ## 5.6 Encaminhamento
 
 As cinco vias encerradas nesta seção são a contagem geral do projeto — e não as
-cinco tentativas independentes do domínio de pixels, apresentadas na Seção 1. Elas
+cinco vias não implantadas do domínio de pixels, apresentadas na Seção 1. Elas
 delimitam, por medição, o que o problema de particionamento intraquadro **não**
 admite, ao passo que as duas soluções positivas apresentadas nas Seções 2 e 4
 delimitam o que ele admite.

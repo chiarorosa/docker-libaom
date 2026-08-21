@@ -19,11 +19,12 @@ seu contexto hierárquico — variância global e por quadrante, dispersão e
 heterogeneidade entre quadrantes, energia de gradiente horizontal e vertical e
 sua orientação, perfis de somas de linhas e de colunas, aresta mais forte,
 densidade de arestas fortes e nível DC —, o contexto hierárquico do bloco-pai de
-dimensão 2n×2n e o contraste com os três blocos-irmãos, acrescidos de dois
-descritores que não derivam de luminância: o índice de quantização normalizado e
-a posição do nó dentro da unidade de 64 px. O rótulo "bloco de pixels", usado no
-código e nos demais documentos, descreve portanto vinte e dois destes vinte e
-quatro atributos. O índice de quantização normalizado (`q_norm`, índice 17,
+dimensão 2n×2n e o contraste com os três blocos-irmãos, acrescidos de **três
+colunas que não derivam de luminância**: o índice de quantização normalizado e as
+duas coordenadas da posição do nó dentro da unidade de 64 px. O rótulo "bloco de
+pixels", usado no código e nos demais documentos, descreve portanto **vinte e uma
+destas vinte e quatro colunas** — os índices 0 a 16 e 18 a 21 de
+`features.py:53-61`. O índice de quantização normalizado (`q_norm`, índice 17,
 igual a `qindex/255`) pertence conceitualmente ao bloco C e permanece em A por
 razão histórica, uma vez que o vetor de pixels foi congelado antes da
 introdução dos blocos seguintes e realocá-lo romperia a paridade com o lado C;
@@ -112,29 +113,55 @@ literalmente o bloco A do H9a**.
 Os dois braços comparados na etapa de validação de sinal e no crivo A5 **não são
 conjuntos disjuntos** — um contém o outro. Toda comparação entre `pixels24` e H9a
 mede, portanto, o retorno dos **doze atributos adicionais** de vizinhança de
-particionamento, quantização e posição **sobre** os vinte e quatro descritores de
-luminância. Jamais o retorno de um domínio de informação contra outro.
+particionamento, quantização e posição **sobre** as vinte e quatro colunas do
+bloco A. Jamais o retorno de um domínio de informação contra outro.
 
-A consequência é uma releitura da hierarquia medida no crivo A5, em `cost_red`
-casado de 25%. A variância isolada atinge `reg_frac` de 0,0573. O `pixels24`,
-acrescentando vinte e três descritores de luminância, atinge 0,0121 — um ganho de
-4,7×. O `convnext_ce`, acrescentando 28,1 milhões de parâmetros sobre pixels
-crus, atinge 0,0207, isto é, 0,6×, o que significa piora. O H9a, acrescentando os
-doze atributos de vizinhança, quantização e posição, atinge 0,0036 — um ganho de
-3,4×.
+A consequência é uma releitura da hierarquia, hoje medida em execução única do
+crivo sob receita de treino fixa e grade densa de limiares, em `cost_red` casado
+de 25%. A variância isolada atinge `reg_frac` de 0,0374. O bloco A, acrescentando
+vinte e três colunas manuais, atinge 0,0053 — um ganho de **7,0×**. O ConvNeXt,
+acrescentando 28,1 milhões de parâmetros sobre pixels crus, atinge 0,0219, isto
+é, **0,2×**, o que significa piora. Acrescentar ao bloco A as **oito colunas de
+vizinhança causal de particionamento** leva a 0,0033 — um ganho de **1,60×**. E
+acrescentar as **quatro colunas de quantização efetiva, posição no quadro e
+profundidade** não compra nada: sobre o bloco A elas não se separam dele, e sobre
+o bloco B pioram o resultado, com o subconjunto de trinta e duas colunas
+dominando o de trinta e seis em toda a fronteira.
+
+Estes valores substituem os anteriores — variância em 0,0573, `pixels24` em
+0,0121 e H9a em 0,0036, com ganhos de 4,7× e 3,4× —, e a razão da substituição é
+dupla. A curva da variância era interpolada através de um único vão de limiares,
+o que a superestimava em 1,53 vez; e os dois braços comparados diferiam também no
+procedimento de treino, uma vez que o `pixels24` era destilado e o H9a treinado
+diretamente, diferença que sozinha vale de 2,0 a 2,4 vezes.
 
 A leitura correta não é a de que contexto de taxa-distorção vence pixels. É a de
 que descritores manuais compactos vencem uma rede convolucional profunda sobre
 pixels crus, e a de que o que separa o conjunto campeão do restante não é
-capacidade de modelo, e sim contexto causal de vizinhança.
+capacidade de modelo, e sim especificamente **a vizinhança causal de
+particionamento** — não o estado de quantização e posição do codificador.
 
 Registre-se, com o mesmo rigor, que **o podador implantado é majoritariamente um
-modelo de pixels**, uma vez que vinte e quatro dos seus trinta e seis atributos
-são descritores de luminância. Registre-se também que ele **não contém grandeza
-alguma de custo de taxa-distorção**, pois estas existem apenas no bloco E.
+modelo de pixels**, uma vez que vinte e uma das suas trinta e seis colunas são
+descritores de luminância — e não vinte e quatro, como documentos anteriores
+registravam, uma vez que o bloco A abriga também o índice de quantização e as
+duas coordenadas de posição no superbloco. Registre-se também que ele **não
+contém grandeza alguma de custo de taxa-distorção**, pois estas existem apenas no
+bloco E.
+
+Esta precisão tem consequência direta sobre a leitura do ganho dos doze atributos
+causais: como o índice de quantização **já estava** no bloco A, o que eles
+acrescentam não pode ser atribuído ao modelo descobrir a quantização. A
+decomposição por bloco confirma-o de forma independente, uma vez que o bloco C,
+que reintroduz a quantização sob a forma do passo de dequantização efetivo, nada
+compra.
 
 > **Procedência.** `docs/RESULTADOS_auditoria_dominio_pixels.md` §2, §2.1 e §7;
-> `features.py:204,216`; `docs/RESULTADOS_convnext_regret.md` §2;
+> `features.py:53-61,204,216`;
+> `docs/RESULTADOS_rpp_escada_informacional.md` §3 e §4.2 a §4.6 (fronteira
+> única, confundidor de treino e decomposição dos blocos B e C);
+> `docs/RESULTADOS_convnext_regret.md` §2 (superado pela nota de correção do seu
+> cabeçalho);
 > `docs/SINTESE_resultados_metodologia.md` §2.5, convenção de nomenclatura de
 > "contexto RD".
 
