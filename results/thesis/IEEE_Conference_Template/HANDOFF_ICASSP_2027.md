@@ -191,7 +191,8 @@ a perda às representações, não afirma magnitude absoluta.
 1. ~~**Escrever o `.tex`**~~ — **FEITO em 2026-08-21.** `PAPER_ICASSP_2027_RD_ATTRIBUTION.tex`,
    compilado no contêiner `latex_build` (monta `results/` em `/work`). 5 páginas: as 4
    técnicas fecham na Conclusão e a 5ª abre no Acknowledgment, contendo só agradecimento,
-   ética e as 26 referências, como a CFP exige. Zero `Overfull`. Balanceamento da última
+   e as 25 referências, como a CFP permite. A declaração de conformidade ética foi
+   **removida por decisão do autor em 21/08** — a CFP a admite na 5ª página, não a exige. Zero `Overfull`. Balanceamento da última
    página por `IEEEtriggeratref{18}` — **reconferir se a lista de referências mudar**.
    As figuras estão reservadas como `ramebox` com o propósito escrito dentro, marcadas
    `% TODO`; Fig. 1 com 3,1 cm e Fig. 2 com 4,8 cm de altura reservada.
@@ -202,7 +203,7 @@ a perda às representações, não afirma magnitude absoluta.
    - Fig. 2 — curvas de perda de otimalidade × redução de custo casada, eixo y logarítmico,
      com barra de amplitude das sementes nos degraus. É a figura que carrega o artigo.
 3. **Checklist da Parte C** do `CLAUDE.md`, compilar e conferir a paginação (4 técnicas + 5ª
-   só de referências, financiamento e ética).
+   só de referências e financiamento).
 4. **Commit + push.**
 
 ## 7. Armadilhas a não repetir
@@ -321,7 +322,7 @@ recodificar uma única vez. Um estudo assim é impraticável com BD-BR.
 ## 10. Estado da Parte C do checklist (verificado em 2026-08-21)
 
 **Cumprido e verificado por compilação:** limite de páginas (4 técnicas + 5ª só de
-referências, agradecimento e ética); nenhum `Overfull`; nenhuma referência indefinida;
+referências e agradecimento); nenhum `Overfull`; nenhuma referência indefinida;
 `\label` sempre depois de `\caption`; legenda de figura abaixo e de tabela acima; nenhum
 pacote de margem ou fonte; equações dentro da coluna e sem `eqnarray`; citações agrupadas em
 `\cite{a,b,c}`; sem matemática no título, no *abstract* e nos *index terms*; AV1 redefinido no corpo; colunas da última página equalizadas à mão; `Fig. N`, `Table N` e
