@@ -289,9 +289,9 @@ the AOM Common Test Conditions \cite{ctc} at
 \texttt{cpu-used=0}, which enables the full rate-distortion search and therefore
 makes the recorded decisions optimal by construction.
 
-The corpus comprises sixteen UVG sequences \cite{uvg} at 4K resolution
-(3840$\times$2160), 8 bits and 4:2:0 chroma subsampling, obtained from the XIPH
-repository \cite{xipha1}. Each sequence was encoded at four quantization points
+The corpus comprises sixteen sequences of the UVG dataset \cite{uvg} at 4K
+resolution (3840$\times$2160), 8 bits and 4:2:0 chroma subsampling. Each sequence
+was encoded at four quantization points
 (\texttt{cq-level} 20, 32, 43, and 55) over five frames sampled uniformly along
 the whole clip, since consecutive frames are nearly identical under All-Intra. The
 resulting dataset holds 26.98 million samples, of which 10.07 million are decision
@@ -498,9 +498,7 @@ Brazilian research support agencies CNPq and FAPERGS.
 
 \bibitem{ctc} X. Zhao \emph{et al.}, ``AOM common test conditions v9.0,'' Alliance for Open Media, Codec Working Group, doc. CWG-G082, Mar. 2026.
 
-\bibitem{uvg} A. Mercat, M. Viitanen, and J. Vanne, ``UVG dataset: 50/120fps 4K sequences for video codec analysis and development,'' in \emph{Proc. 11th ACM Multimedia Syst. Conf. (MMSys)}, Jun. 2020, pp. 297--302.
-
-\bibitem{xipha1} Xiph.Org Foundation. \emph{AOM CTC Test Set, Class A1 (4K)}. [Online]. Available: \url{https://media.xiph.org/video/aomctc/test_set/a1_4k/}
+\bibitem{uvg} A. Mercat, M. Viitanen, and J. Vanne, ``UVG dataset: 50/120fps 4K sequences for video codec analysis and development,'' in \emph{Proc. ACM Multimedia Syst. Conf.}, Istanbul, Turkey, Jun. 2020. [Online]. Available: \url{https://ultravideo.fi/dataset.html}
 
 \bibitem{bjontegaard} G. Bj{\o}ntegaard, ``Calculation of average PSNR differences between RD-curves,'' Video Coding Experts Group (VCEG), doc. VCEG-M33, Mar. 2001.
 
