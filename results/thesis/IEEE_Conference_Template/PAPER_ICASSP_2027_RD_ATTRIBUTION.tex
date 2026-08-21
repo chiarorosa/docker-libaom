@@ -128,11 +128,11 @@ carries decision information that luminance does not provide.
 
 \section{Intra Partition Search in AV1}
 
-AV1 encodes each frame as a grid of super blocks of 64$\times$64 samples, and each
-super block is recursively divided by a search over a quad-tree of square nodes of
-64, 32, 16, and 8 samples. At every node the encoder may evaluate ten partition
-shapes, organized in four groups: the undivided block, the quaternary split, the
-two rectangular shapes, and the six extended shapes.
+AV1 encodes each frame as a grid of super blocks of 64$\times$64 samples, each
+recursively divided by a search over a quad-tree of square nodes of 64, 32, 16,
+and 8 samples. At every node the encoder may evaluate ten partition shapes,
+organized in four groups: the undivided block, the quaternary split, the two
+rectangular shapes, and the six extended shapes.
 
 The evaluation order inside a node is fixed. The undivided candidate is evaluated
 first and produces a complete rate-distortion cost; the quaternary split follows,
@@ -140,10 +140,10 @@ and opening it triggers the recursion into the four children; the rectangular
 shapes come next, and the extended shapes last.
 
 This order defines when each kind of information becomes available, the property
-this work exploits. Before the search of a node begins, the encoder
-already holds the source luminance of the block, the frame quantization index, the
-position of the node, and the partition decisions of the causal neighbors above
-and to the left, but it does not yet hold any rate-distortion cost for the current
+this work exploits. Before the search of a node begins, the encoder already holds
+the source luminance of the block, the frame quantization index, the position of
+the node, and the partition decisions of the causal neighbors above and to the
+left, but it does not yet hold any rate-distortion cost for the current
 node. Fig.~\ref{fig_timeline} summarizes this timeline.
 
 The action studied in this paper is the earliest one available: committing the
@@ -248,19 +248,25 @@ c(n) = k_{n}\,n^{2}, \quad k_{n} = 9 \ \mathrm{for} \ n \in \{64,32,16\},
 that is, the number of shape candidates a full search would evaluate, weighted by
 the area of the block. The cost reduction $\Delta(\tau)$ is the percentage
 difference between the work performed by the policy, accumulated with
-\eqref{eqn_cost}, and the work of the full search. It is a counted quantity and not wall-clock time, and it is not an
-estimate of wall-clock time either.
+\eqref{eqn_cost}, and the work of the full search. It is a counted quantity and
+not wall-clock time, nor an estimate of it.
 
-The rate-distortion loss of a representation at a threshold $\tau$ is
+Summing \eqref{eqn_regret} over the committed nodes gives the loss the pruning
+incurred,
 \begin{equation}
 L(\tau) = 100 \, \frac{\sum_{n \in P(\tau)} r(n)}{\sum_{n \in N}
 J_{\mathrm{none}}(n)},
 \label{eqn_loss}
 \end{equation}
-where $P(\tau)$ is the set of committed nodes and $N$ is the set of all decision
-nodes. The denominator is accumulated before any threshold is fixed and stays
-constant along the sweep, which is the condition for $L$ to be readable as a
-frontier, since it tends to zero as pruning tends to zero.
+where $P(\tau)$ is the set of nodes committed at threshold $\tau$ and $N$ is the
+set of all decision nodes. The denominator is accumulated before any threshold is
+fixed and stays constant along the sweep, so $L$ tends to zero as pruning tends to
+zero.
+
+Lowering $\tau$ prunes more, which raises $\Delta$ and $L$ together. Each
+representation is therefore a curve rather than a point, and representations are
+compared by reading their curves at the same cost reduction. The reference reading
+in this paper is $\Delta = 25\%$, one quarter of the shape evaluations skipped.
 
 Two properties of $L$ restrict its reading, and they are stated before any number
 is reported. First, the denominator aggregates the undivided costs of the three
@@ -272,15 +278,14 @@ serves as reference to later blocks, a propagation absent here. Consequently, no
 conversion factor between $L$ and the Bj\o ntegaard delta bitrate
 \cite{bjontegaard} is postulated, and $L$ is used strictly in an ordinal regime,
 in which every ratio is taken between representations read at the same operating
-point. Each representation therefore yields a curve rather than a point, and the
-reference reading in this paper is $\Delta = 25\%$.
+point.
 
 \subsection{Dataset and Experimental Setup}
 
-The reference labels were extracted from the libaom v3.10.0 reference software
-\cite{libaom}, instrumented under a compile-time guard so that the production
-binary remains byte-identical to the original. The encoder was configured for
-All-Intra following the AOM Common Test Conditions \cite{ctc} at
+The reference labels were extracted from libaom v3.10.0 \cite{libaom},
+instrumented under a compile-time guard so that the production binary remains
+byte-identical to the original. The encoder was configured for All-Intra following
+the AOM Common Test Conditions \cite{ctc} at
 \texttt{cpu-used=0}, which enables the full rate-distortion search and therefore
 makes the recorded decisions optimal by construction.
 
@@ -328,8 +333,8 @@ The representations were evaluated with the protocol of Section III over the six
 held-out sequences and 3\,808\,703 decision nodes, under the All-Intra
 configuration of libaom v3.10.0 at \texttt{cpu-used=0}. Table~\ref{tab_frontier}
 reports the loss $L$ of \eqref{eqn_loss} at five matched cost reductions, in units
-of $10^{-3}$ percent of the aggregated undivided cost, where lower is better, and
-Fig.~\ref{fig_frontier} shows the corresponding frontiers.
+of $10^{-3}$ percent, where lower is better, and Fig.~\ref{fig_frontier} shows the
+corresponding frontiers.
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.3}
@@ -401,10 +406,10 @@ capacity suffice. In its most favorable configuration it reaches 21.9 units at
 parameters against the 11\,337 of the three networks of rung A, a factor of 2481.
 Doubling the fusion width degrades the result rather than improving it, at 29.4
 against 27.2 units under the same objective. This may be attributed to the
-information that is missing rather than to the capacity that is available, since
-the deep arm reads the same pixels as rung A and the gap is not closed by
-capacity, whereas eight columns of encoder state close a further factor of 1.60
-with 4291 parameters per level. It is important to emphasize that the deep arm is
+information that is missing rather than to the capacity available: the deep arm
+reads the same pixels as rung A and the gap is not closed by capacity, whereas
+eight columns of encoder state close a further factor of 1.60 with 4291
+parameters per level. It is important to emphasize that the deep arm is
 therefore not an upper bound of the pixel domain, since a model outperformed by
 another with strictly smaller information access establishes no performance
 ceiling. The only genuine upper bound here is the reference search itself, whose
@@ -415,8 +420,7 @@ protocol is ordinal, as established in Section III-B, so none of these values
 converts into a Bj\o ntegaard delta bitrate or predicts what an encoder would
 deliver. The three seeds provide an amplitude and not a confidence interval. The
 objective ablation of the deep arm covers two objectives, and the strength of the
-cost weighting was not swept. The comparison is nevertheless conservative, since
-every one of these choices was resolved in favor of the deep arm.
+cost weighting was not swept.
 
 \section{Conclusions}
 
