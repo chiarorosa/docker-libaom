@@ -3,6 +3,8 @@
 > **Arquivo temporário de retomada.** Registra onde o trabalho parou em 2026-08-20 e o que
 > falta para escrever o artigo. Apagar quando o `.tex` estiver submetido.
 > Commit de referência: `ec1d919` em `ml-partition-dev` (já empurrado).
+> **Ler a §9 antes de escrever qualquer coisa** — é a explicação que passou no teste cego
+> e a régua do rumo do artigo.
 
 ---
 
@@ -16,9 +18,24 @@ referências**, mais uma **5ª página opcional contendo apenas** referências,
 agradecimentos de financiamento e declaração de conformidade ética. A tática é ocupar as 4
 páginas com texto e figuras e empurrar as referências inteiras para a 5ª.
 
-**Nome escolhido:** **RPP — Representation Probe for Partitioning**.
-**Título escolhido (forma de achado):** *Causal Encoder State Outperforms Deep Pixel
-Representations in AV1 Intra Partition Decisions*.
+**Título escolhido (2026-08-21, definitivo):**
+*Rate-Distortion Loss Attribution for AV1 Intra Partition Decisions*.
+
+Variante longa, se a diagramação pedir corpo: *... Over Compact, Deep, and Causal
+Representations*.
+
+**Sem acrônimo no título — decidido.** O LASCAS abre com acrônimo porque entrega um
+sistema; este artigo entrega uma medição, e prefixo de acrônimo sinaliza solução, o que
+desalinha com o escopo offline já na primeira linha. **RPP — Representation Probe for
+Partitioning** continua sendo o nome do protocolo, apresentado na Seção III.
+
+*Títulos descartados, com o motivo (não reabrir):* `Causal Encoder State Outperforms Deep
+Pixel Representations...` — **atribuía o número errado**: quem bate a ConvNeXt por 4,1× é o
+bloco A, que é ele próprio luminância; o estado causal vale 1,60×, e o título fundia os dois
+achados. `Luminance Is Not Sufficient for...` — correto, mas forma de proposição, e o ICASSP
+publica sintagma nominal. `Optimality-Loss Attribution...` — *optimality loss* é vocabulário
+nosso; *rate-distortion loss* é o termo que a literatura de predição de partição já usa para
+a mesma coisa.
 
 **Escopo decidido:** estritamente offline. **Nenhum** número de codificador (BD-BR ou
 redução de tempo) entra neste artigo — evita sobreposição com o artigo LASCAS em revisão e
@@ -101,6 +118,36 @@ redes de 36 colunas) · fusão 256 contra 128 = **1,08× pior**.
 **Não robusta:** A+C contra A — distribuições sobrepostas, dispersão dobrada. Enunciar como
 "C não acrescenta", nunca "C prejudica quando isolado".
 
+### 4.1 Como a grandeza entra na tabela — decidido em 2026-08-21
+
+**A normalização NÃO será refeita.** `reg_frac_pct = 100 · Σ reg_abs / Σ none_rd` fica como
+está.
+
+Existe um denominador melhor e ele é barato: o custo RD ótimo da vara,
+`Σ_superbloco [none_rd(raiz) − reg_abs(raiz)]`, que **não** conta a mesma área três vezes e
+faria a coluna ler como "acréscimo percentual sobre a codificação RD-ótima". Uma passagem só
+de denominador custa 20–40 min (lê os 24 pkls held-out, ~12 GB, sem features e sem pontuar
+modelo) e o CSV já traz `reg_abs`, então bastaria reescalar — a fronteira inteira, que levou
+2 h 35 min, não precisaria rodar de novo.
+
+**Foi descartado assim mesmo**, e o motivo é de propagação, não de compute: `reg_frac` é
+citado em **20 arquivos** de `results/thesis/` e `docs/`, e vários deles
+(`RESULTADOS_oraculo_regret`, `approachB`, `B1`, `B2`, `B4`) reportam `reg_frac` de execuções
+**diferentes**, as de 792.840 nós, que essa passagem não tocaria. O resultado seria duas
+normalizações convivendo sob o mesmo nome de grandeza — exatamente a classe de erro que já
+custou caro uma vez (ver §7). Reabrir isso exige refazer o denominador de *todas* as
+execuções citadas, não só a do ICASSP.
+
+**O que se faz em vez disso**, e resolve a confusão onde ela nasce, que é no texto:
+
+1. Declarar o denominador **explicitamente**, uma vez, antes do primeiro número (regra B.0).
+2. **Escalar a coluna da tabela para `10⁻³ %`**: a variância lê **37,4** e A+B lê **3,3**, sem
+   parede de zeros à esquerda. O dado não muda.
+3. Deixar a razão visível na tabela ou na legenda — **11,3×** entre variância e A+B a 25%.
+
+O título sobrevive a essa leitura porque *Attribution* é um uso **ordinal**: o artigo atribui
+a perda às representações, não afirma magnitude absoluta.
+
 ## 5. Estrutura acordada do artigo
 
 - **I. Introduction** — M1 a M8 do `CLAUDE.md` B.4. A lacuna (M6): os trabalhos existentes
@@ -113,6 +160,7 @@ redes de 36 colunas) · fusão 256 contra 128 = **1,08× pior**.
   - III-A as representações, declaradas por **acesso à informação**, não por arquitetura.
   - III-B o protocolo: política fixa, varredura de τ, modelo de custo `candidatos × n²`,
     `regret_abs(n) = none_rdcost(n) − RD_subtree(n) ≥ 0` normalizado — equação numerada.
+    **Redigir a partir da §9**, que é o esqueleto pronto desta subseção.
     Declarar que **não é tempo de parede**.
   - III-C dataset e partição, com declaração antivazamento.
   - III-D **a justiça do braço profundo** (princípio 3): corpus correto, sem vazamento,
@@ -166,3 +214,88 @@ Pela regra B.0 (a limitação vem **antes** do número):
 - Três sementes dão **amplitude**, não intervalo de confiança.
 - α = 0 e α = 3 são dois pontos; a curva em α não foi varrida.
 - A superioridade de A+B sobre A+B+C **não foi verificada no codificador**.
+
+---
+
+## 9. Explicação de referência — o artigo para quem chega pela primeira vez
+
+> **Por que isto está aqui.** Esta é a versão que sobreviveu ao teste cego: um leitor que não
+> conhece o projeto entende o propósito, o que foi medido, de onde vêm os números e por que
+> eles não são BD-BR. É o esqueleto da **Seção III-B** e a régua para não derivar do rumo.
+> Reler antes de escrever qualquer parágrafo de método. Está em português porque é material
+> de trabalho; o artigo é em inglês.
+
+### 9.1 O que o artigo quer descobrir
+
+Quando o AV1 codifica um quadro intra, ele decide como recortar cada superbloco de 64×64. Em
+cada nó dessa árvore ele testa até dez formas de partição e desce recursivamente. A
+`cpu-used=0` ele testa tudo, e por isso o recorte que ele escolhe é, por definição, o ótimo
+em taxa-distorção.
+
+A literatura de aceleração ataca isso do mesmo jeito há anos: treina um modelo que olha o
+bloco e decide parar cedo. Cada trabalho propõe um conjunto de atributos, uma arquitetura e
+um limiar, e reporta quanto tempo economizou. O que ninguém separou é **qual parte do ganho
+vem de o modelo enxergar melhor, e qual parte vem simplesmente de ele podar mais**. São
+coisas diferentes: dá para parecer melhor apenas sendo mais agressivo, ao custo de qualidade
+que a métrica de tempo não mostra.
+
+Este artigo não propõe acelerador nenhum. Ele pergunta: **que informação um modelo precisa
+ter, na frente dele, para decidir bem?** Pixels bastam? Capacidade de representação compensa
+a falta de informação? Ou existe informação que simplesmente não está na imagem?
+
+### 9.2 O que foi medido
+
+Uma única ação, isolada: no nó, comprometer-se com NONE — não partir — e não descer mais.
+
+Isso tem duas consequências mensuráveis. A primeira é **trabalho poupado**: todas as formas
+que não foram avaliadas naquele nó e em toda a subárvore abaixo dele. A segunda é
+**qualidade perdida**: se o ótimo era partir, o custo RD de codificar aquela região sobe.
+
+As duas saem do **mesmo registro**. O codificador instrumentado, rodando a busca completa uma
+vez, já anotou o custo RD de cada nó e de cada subárvore. A perda de um nó é
+`custo_RD(NONE no nó) − custo_RD(subárvore ótima)`, que é zero quando NONE já era o ótimo e
+positiva quando não era. **Nada é recodificado**: o estudo inteiro é um *replay*
+contrafactual sobre o log dessa busca exaustiva.
+
+### 9.3 De onde vem o "25%"
+
+Cada representação tem um limiar de confiança. Baixando o limiar, ela poda mais: economiza
+mais trabalho e perde mais qualidade. Cada representação, portanto, não é um ponto — é uma
+**curva**.
+
+Comparar duas curvas em pontos diferentes não diz nada. Então o protocolo varre o limiar de
+cada representação e lê todas elas **no mesmo ponto de trabalho poupado**. Vinte e cinco por
+cento é esse ponto de leitura: a configuração em que um quarto das avaliações de forma deixou
+de ser feita. A pergunta que a tabela responde é literalmente *"poupando exatamente o mesmo
+esforço, qual representação estraga menos a decisão?"*
+
+Nesse ponto, a variância do bloco — o atributo clássico — desperdiça **37,4** unidades da
+escala da tabela; as trinta e duas colunas compactas com contexto causal desperdiçam **3,3**.
+Onze vezes menos, com o mesmo esforço poupado. É esse contraste, e não o valor isolado, que
+carrega o artigo.
+
+### 9.4 Por que isso não é BD-BR × TS — o parágrafo que vem antes da primeira tabela
+
+A forma é a mesma — custo de qualidade contra economia de esforço — mas as duas grandezas são
+de natureza diferente, e isso tem de ser dito de uma vez.
+
+*Time savings* é relógio: mede-se codificando duas vezes e comparando durações, com toda a
+variação de máquina que isso traz. O eixo daqui é **contado, não cronometrado**: é o número de
+candidatos de forma que a busca deixou de avaliar, ponderado pela área. Não há segunda
+codificação, não há ruído de medição, e o número é exatamente reprodutível.
+
+*BD-BR* é diferença de taxa a qualidade igual, integrada sobre quatro pontos de quantização, e
+exige codificar tudo de novo com o podador ligado. O eixo daqui é o **acréscimo do custo
+Lagrangeano que a própria busca já calculou**, lido do registro. Ele diz quanta otimalidade a
+decisão jogou fora, não quantos bits o arquivo final ganhou.
+
+A consequência pragmática, sem rodeio: **estes números não convertem em BD-BR e não devem ser
+lidos como tal**. São sistematicamente menores, por dois motivos — o denominador agrega os
+custos dos três níveis da árvore, que recobrem a mesma área da imagem, e a medição cobre uma
+única ação de poda, não uma cadeia completa de codificação. Servem para **ordenar**
+representações sob esforço casado, que é a pergunta do artigo, e não para prever o que um
+codificador entregaria.
+
+Essa limitação é a contrapartida do que o método dá em troca: comparar dezenas de
+representações sobre 3,8 milhões de nós reais, com a mesma política e o mesmo esforço, sem
+recodificar uma única vez. Um estudo assim é impraticável com BD-BR.
