@@ -1,0 +1,508 @@
+\documentclass[conference]{IEEEtran}
+% \IEEEoverridecommandlockouts   % uncomment only if \thanks is needed
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+\interdisplaylinepenalty=2500
+
+\begin{document}
+
+\title{Rate-Distortion Loss Attribution for AV1\\ Intra Partition Decisions}
+
+\author{\IEEEauthorblockN{Pablo Rosa}
+\IEEEauthorblockA{\textit{Video Technology Research Group (ViTech)} \\
+\textit{Federal University of Pelotas} \\
+Pelotas, Brazil \\
+pablo.rosa@inf.ufpel.edu.br}
+\and
+\IEEEauthorblockN{Daniel Palomino}
+\IEEEauthorblockA{\textit{Video Technology Research Group (ViTech)} \\
+\textit{Federal University of Pelotas} \\
+Pelotas, Brazil \\
+dpalomino@inf.ufpel.edu.br}
+\and
+\IEEEauthorblockN{Marcelo Porto}
+\IEEEauthorblockA{\textit{Video Technology Research Group (ViTech)} \\
+\textit{Federal University of Pelotas} \\
+Pelotas, Brazil \\
+porto@inf.ufpel.edu.br}
+\and
+\IEEEauthorblockN{Luciano Agostini}
+\IEEEauthorblockA{\textit{Video Technology Research Group (ViTech)} \\
+\textit{Federal University of Pelotas} \\
+Pelotas, Brazil \\
+agostini@inf.ufpel.edu.br}
+}
+
+\maketitle
+
+\begin{abstract}
+The AOMedia Video 1 (AV1) codec decides how to split each intra-frame super block
+through a recursive search that evaluates ten partition shapes per node, and
+learned pruners are the dominant strategy to shorten that search. Every such
+pruner couples the quality of the source that scores a node with the
+aggressiveness of the policy acting on that score, so the reported time savings do
+not identify which information carries the decision. This paper presents the
+Representation Probe for Partitioning (RPP), an offline attribution protocol for
+AV1 intra partitioning that reads the rate-distortion loss of competing
+representations at matched search-cost reduction. RPP fixes one pruning policy,
+sweeps its confidence threshold, and charges each forced decision the overhead
+recorded by an exhaustive reference search, so that representations are compared
+at the same amount of work skipped. Experimental results over 3.81 million
+held-out decision nodes show that twenty-four compact descriptors reduce the loss
+of isolated block variance by 7.0 times, that eight causal partitioning columns
+reduce it by a further 1.60 times, and that four quantization and position columns
+add nothing. A ConvNeXt with 28.1 million parameters reading raw pixels stays 4.1
+times behind the compact descriptors, which hold 2481 times fewer parameters, and
+doubling its fusion width makes it worse. The protocol is ordinal and does not
+convert into Bjontegaard delta bitrate. To the best of the authors' knowledge,
+this is the first work to attribute rate-distortion loss to information access in
+AV1 partitioning under matched cost.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Video coding, AV1, intra-frame partitioning, feature representation, model
+capacity, machine learning.
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Video traffic keeps its position as the dominant share of Internet usage, and the
+proportion of users consuming online video every month has remained above ninety
+percent since 2022 \cite{statista}. Two families of codecs answer that demand: the
+standardization path produced High Efficiency Video Coding \cite{hevc} and
+Versatile Video Coding \cite{vvc}, both developed jointly by ISO/IEC MPEG and
+ITU-T VCEG, while the Alliance for Open Media released the AOMedia Video 1 (AV1)
+in 2018 as an open and royalty-free codec \cite{av1site}, drawing on VP9, Thor,
+and Daala.
+
+AV1 follows the hybrid block-based coding flow, combining intra-frame and
+inter-frame prediction, transforms, quantization, in-loop filters, and entropy
+coding, and it introduced new tools at every one of those stages
+\cite{han2021,chen2018}. Among them, the partition structure was extended to ten
+shapes per node, against the four of VP9. That coding efficiency is paid for in
+computational effort, and comparative studies report AV1 encoding times far above
+those of its competitors \cite{grois2016,layek2017}, with the gap widening at the
+highest quality configuration.
+
+Inside intra-frame coding, the recursive partition search is the single most
+expensive stage at that configuration. The search visits a quad-tree of square
+nodes, evaluates up to ten shapes at each one through full rate-distortion
+optimization \cite{sullivan1998}, and descends into every node it does not
+resolve, so the cost grows with the number of nodes rather than with the
+difficulty of the content.
+
+Several works attack this cost with learned decisions. In AV1, tool selection
+guided by user priority and by coding efficiency was proposed in
+\cite{xu2020,xu2021}, a fast intra mode decision based on the accuracy of a
+rate-distortion model in \cite{jeong2019}, and decision trees for inter prediction
+in \cite{kim2019}. The same problem in Versatile Video Coding was addressed with
+light gradient boosting \cite{saldanha2022}, random forests \cite{he2021}, and
+variance and gradient heuristics \cite{chen2019}, while dedicated hardware
+architectures targeted the AV1 intra prediction modes \cite{correa2020,netto2022}.
+These works can be classified as coding-efficiency oriented
+\cite{jeong2019,xu2021,saldanha2022,he2021,chen2019}, hardware oriented
+\cite{correa2020,netto2022}, or aimed at a different coding stage
+\cite{xu2020,kim2019}. All of them report time savings obtained under a policy of
+their own choosing, and none of these works separates the quality of the scoring
+source from the aggressiveness of the policy, nor measures which information is
+decisive for the partition choice.
+
+This paper presents the Representation Probe for Partitioning (RPP), an offline
+attribution protocol for AV1 intra partitioning. The main strategy of this
+solution is to hold the pruning policy and the amount of skipped search work
+fixed, and to vary only what a representation is allowed to see, so that the
+resulting difference in rate-distortion loss is attributable to information access
+alone. Under this protocol, compact descriptors outperform a high-capacity
+convolutional model reading raw pixels, and the causal partitioning neighborhood
+carries decision information that luminance does not provide.
+
+\section{Intra Partition Search in AV1}
+
+AV1 encodes each frame as a grid of super blocks of 64$\times$64 samples, and each
+super block is recursively divided by a search over a quad-tree of square nodes of
+64, 32, 16, and 8 samples. At every node the encoder may evaluate ten partition
+shapes, organized in four groups: the undivided block, the quaternary split, the
+two rectangular shapes, and the six extended shapes.
+
+The evaluation order inside a node is fixed. The undivided candidate is evaluated
+first and produces a complete rate-distortion cost; the quaternary split follows,
+and opening it triggers the recursion into the four children; the rectangular
+shapes come next, and the extended shapes last.
+
+This order defines when each kind of information becomes available, which is the
+property this work exploits. Before the search of a node begins, the encoder
+already holds the source luminance of the block, the frame quantization index, the
+position of the node, and the partition decisions of the causal neighbors above
+and to the left, but it does not yet hold any rate-distortion cost for the current
+node. Fig.~\ref{fig_timeline} summarizes this timeline.
+
+The action studied in this paper is the earliest one available: committing the
+node to the undivided shape before any rate-distortion evaluation is paid, and
+therefore skipping every remaining candidate of the node and the whole subtree
+below it. This single action has two measurable consequences, the search work that
+is no longer performed and the rate-distortion cost that is lost whenever the
+discarded subtree was the optimal choice.
+
+This work is focused on that commitment at the pre-search insertion point of the
+intra-frame partition tree. Inter-frame prediction, transform type selection,
+quantization, in-loop filters, and entropy coding are not included in the loop
+attacked here, and therefore they are not focused on this work. Blocks of
+8$\times$8 samples are terminal leaves whose reference label is invariably the
+undivided shape, and they are excluded from modeling while kept in the cost
+accounting.
+
+\begin{figure}[!t]
+\centering
+% TODO: replace by fig1_information_timeline.pdf, generated last in av1_bench.
+\framebox[0.98\columnwidth]{\rule{0pt}{3.6cm}%
+\parbox{0.86\columnwidth}{\centering\footnotesize
+PLACEHOLDER --- information-availability timeline inside one node: causal context
+and source luminance available before the search; undivided cost available after
+the first candidate; subtree costs available only after the recursion. The
+pre-search instant is marked.}}
+\caption{Information available to a pruner at each instant of the search of a
+partition node, and the pre-search instant addressed in this work.}
+\label{fig_timeline}
+\end{figure}
+
+\section{Proposed RPP Protocol}
+
+RPP is a measurement protocol, not an encoder solution. It compares
+representations by what they are allowed to see, under one fixed policy and at a
+matched amount of skipped search work.
+
+\subsection{Representations Declared by Information Access}
+
+The representations are declared by information access rather than by
+architecture. The first is the isolated variance of the block, the
+classical descriptor of partition heuristics. The second, denoted A, is a
+twenty-four column vector of compact luminance descriptors of the block and of its
+hierarchical context: variance and its per-quadrant dispersion, gradient energy
+and orientation, row and column profiles, edge statistics, direct-current level,
+and the contrast against the parent and sibling blocks. Three of those columns do
+not derive from luminance, namely the normalized quantization index and the two
+coordinates of the node inside the 64-sample unit.
+
+Block B adds eight columns of causal partitioning neighborhood: availability of
+the above and left neighbors, their already decided widths and heights in
+logarithmic scale, the relative granularity of the neighborhood, and its
+anisotropy. Block C adds four columns of effective quantization and position,
+namely the dequantization step of the direct-current coefficient, the normalized
+position within the frame, and the depth of the node. Four rungs are built from
+these blocks, namely A, A+B, A+C, and A+B+C, the last one holding thirty-six
+columns. All of these columns are natively available during encoding at the
+pre-search instant, ensuring zero computational overhead for feature extraction.
+
+The remaining representation is the deep pixel arm, a multi-level convolutional
+model of the ConvNeXt family \cite{convnext} that mirrors the partition hierarchy.
+Its input is a two-channel tensor of 64$\times$64 samples, formed by the
+super-block luminance and a constant quantization plane. Three stages of the trunk
+are merged top-down, so that each cell of the resulting map holds both its
+immediate neighborhood and the context of the whole super block, and per-level
+heads read average poolings of it. This arm is present as a test of the hypothesis
+that raw pixels plus representation capacity suffice, and not as an architectural
+baseline. A random scorer is included as a control.
+
+The four rungs are multilayer perceptrons with two hidden layers of 64 and 32
+rectified units, one network per block size, trained with hard-label cross entropy
+and AdamW \cite{adamw} at a learning rate of $1 \times 10^{-3}$, batches of 4096
+samples, and a fixed budget of 30 epochs. Every rung is trained with this one
+recipe and differs only in which columns it reads, which is what makes the verdict
+fall on information rather than on capacity or on training procedure. Each rung is
+trained with three seeds and the reported value is their mean.
+
+\subsection{Policy, Cost Model, and Loss}
+
+The policy is fixed for every representation. A node $n$ is committed to the
+undivided shape whenever the score assigned to that class exceeds a confidence
+threshold $\tau$, in which case the node contributes only the cost of its
+undivided candidate and the recursion stops; otherwise the node is evaluated in
+full and the search descends. The rate-distortion loss charged to a committed node
+is the overhead of that commitment against the optimal subtree, as recorded by the
+exhaustive reference search,
+\begin{equation}
+r(n) = J_{\mathrm{none}}(n) - J^{*}(n),
+\label{eqn_regret}
+\end{equation}
+where $J_{\mathrm{none}}(n)$ is the rate-distortion cost of the undivided
+candidate and $J^{*}(n)$ is the cost of the optimal subtree rooted at $n$. By
+construction $r(n) \geq 0$, and it is zero whenever the undivided shape already
+was the reference decision. No encoding is repeated, since the whole protocol is a
+counterfactual replay over the log of one exhaustive search.
+
+The search work of a node of dimension $n$ is counted analytically as
+\begin{equation}
+c(n) = k_{n}\,n^{2}, \quad k_{n} = 9 \ \mathrm{for} \ n \in \{64,32,16\},
+\ k_{8} = 4,
+\label{eqn_cost}
+\end{equation}
+that is, the number of shape candidates a full search would evaluate, weighted by
+the area of the block. The cost reduction $\Delta(\tau)$ is the percentage
+difference between the work performed by the policy and the work of the full
+search. It is a counted quantity and not wall-clock time, and it is not an
+estimate of wall-clock time either.
+
+The rate-distortion loss of a representation at a threshold $\tau$ is
+\begin{equation}
+L(\tau) = 100 \, \frac{\sum_{n \in P(\tau)} r(n)}{\sum_{n \in N}
+J_{\mathrm{none}}(n)},
+\label{eqn_loss}
+\end{equation}
+where $P(\tau)$ is the set of committed nodes and $N$ is the set of all decision
+nodes. The denominator is accumulated before any threshold is fixed and stays
+constant along the sweep, which is the condition for $L$ to be readable as a
+frontier, since it tends to zero as pruning tends to zero.
+
+Two properties of $L$ restrict its reading, and they are stated before any number
+is reported. First, the denominator aggregates the undivided costs of the three
+hierarchy levels, which cover the same image area, so it is systematically larger
+than the cost of coding the frame and $L$ is systematically smaller than any
+efficiency loss observable in the encoder. Second, the replay discounts recorded
+values, whereas pruning inside the encoder also alters the reconstruction that
+serves as reference to later blocks, a propagation absent here. Consequently, no
+conversion factor between $L$ and the Bj\o ntegaard delta bitrate
+\cite{bjontegaard} is postulated, and $L$ is used strictly in an ordinal regime,
+in which every ratio is taken between representations read at the same operating
+point. Each representation therefore yields a curve rather than a point, and the
+reference reading in this paper is $\Delta = 25\%$.
+
+\subsection{Dataset and Experimental Setup}
+
+The reference labels were extracted from the libaom v3.10.0 reference software
+\cite{libaom}, instrumented under a compile-time guard so that the production
+binary remains byte-identical to the original. The encoder was configured for
+All-Intra following the AOM Common Test Conditions \cite{ctc} at
+\texttt{cpu-used=0}, which enables the full rate-distortion search and therefore
+makes the recorded decisions optimal by construction.
+
+The corpus comprises sixteen UVG sequences \cite{uvg} at 4K resolution
+(3840$\times$2160), 8 bits and 4:2:0 chroma subsampling, obtained from the XIPH
+repository \cite{xipha1}. Each sequence was encoded at four quantization points
+(\texttt{cq-level} 20, 32, 43, and 55) over five frames sampled uniformly along
+the whole clip, since consecutive frames are nearly identical under All-Intra. The
+resulting dataset holds 26.98 million samples, of which 10.07 million are decision
+nodes. The split is made by sequence and was frozen before any measurement, with
+ten sequences for training, three for validation, and three for the reserved test
+set. No video
+sequence was reused across the training, testing, or evaluation datasets, thus
+avoiding data leakage and overfitting. All results reported here are measured on
+the six held-out sequences, which contribute 226\,447 super blocks and
+3\,808\,703 decision nodes. The models were implemented in PyTorch \cite{pytorch}.
+
+\subsection{Fair Treatment of the Deep Arm}
+
+Since the deep arm carries the hypothesis that raw pixels plus capacity suffice, a
+negative result on it is only meaningful if the arm was treated fairly, and three
+measures were taken. First, it was retrained on the same corpus and under the same
+split as the rungs, after an audit of an earlier checkpoint showed that it had
+been trained on a smaller corpus with a single quantization point and with two of
+the six held-out sequences contaminated. Second, capacity was controlled by
+doubling the fusion width from 128 to 256 channels, and the wider model is 1.0\%
+worse in validation loss, which establishes that capacity is not the binding
+constraint.
+
+Third, the training objective was ablated. A cost-sensitive cross entropy
+weighting each node by $1 + \alpha\,\hat{r}(n)$, with $\hat{r}$ the normalized
+loss of \eqref{eqn_regret}, was compared against plain cross entropy, obtained by
+setting $\alpha = 0$. Under identical corpus, schedule, and selection criterion,
+the cost-sensitive objective at $\alpha = 3$ is better at every operating point
+from 10\% of cost reduction onward, and it is the deep result discussed in
+Section~\ref{sec_results}. This inverts a conclusion previously drawn by the
+authors from an uncontrolled comparison, so the value reported here is the most
+favorable one measured for the deep arm.
+
+\section{Results and Discussion}
+\label{sec_results}
+
+The representations were evaluated with the protocol of Section III over the six
+held-out sequences and 3\,808\,703 decision nodes, under the All-Intra
+configuration of libaom v3.10.0 at \texttt{cpu-used=0}. Table~\ref{tab_frontier}
+reports the loss $L$ of \eqref{eqn_loss} at five matched cost reductions, in units
+of $10^{-3}$ percent of the aggregated undivided cost, where lower is better, and
+Fig.~\ref{fig_frontier} shows the corresponding frontiers.
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.3}
+\caption{Rate-Distortion Loss at Matched Cost Reduction, in Units of
+\upshape{$10^{-3}$} Percent of the Aggregated Undivided Cost}
+\label{tab_frontier}
+\centering
+\begin{tabular}{lrrrrr}
+\hline
+\textbf{Representation} & \textbf{10\%} & \textbf{15\%} & \textbf{20\%}
+& \textbf{25\%} & \textbf{30\%} \\
+\hline
+Random control & 196.3 & 298.9 & 406.6 & 516.6 & 634.2 \\
+Variance & 4.3 & 12.7 & 25.0 & 37.4 & 55.5 \\
+ConvNeXt, plain CE & 6.5 & 10.5 & 16.4 & 27.2 & 44.2 \\
+ConvNeXt, width 256 & 7.5 & 12.2 & 19.4 & 29.4 & 44.4 \\
+ConvNeXt, cost-sensitive & 5.4 & 8.0 & 14.0 & 21.9 & 37.9 \\
+A (24 columns) & 0.5 & 1.3 & 2.8 & 5.3 & 9.1 \\
+A+C (28 columns) & 0.5 & 1.2 & 2.7 & 6.4 & 12.2 \\
+A+B+C (36 columns) & 0.2 & 0.6 & 1.8 & 4.0 & 7.8 \\
+A+B (32 columns) & \textbf{0.2} & \textbf{0.5} & \textbf{1.5} & \textbf{3.3}
+& \textbf{6.9} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[!t]
+\centering
+% TODO: replace by fig2_frontier.pdf, generated last in av1_bench.
+\framebox[0.98\columnwidth]{\rule{0pt}{5.4cm}%
+\parbox{0.86\columnwidth}{\centering\footnotesize
+PLACEHOLDER --- rate-distortion loss versus matched cost reduction, logarithmic
+vertical axis, one curve per representation, with seed-amplitude bars on the four
+rungs.}}
+\caption{Rate-distortion loss as a function of matched search-cost reduction. Bars
+on the rungs show the amplitude over three training seeds.}
+\label{fig_frontier}
+\end{figure}
+
+The main conclusion when observing Table~\ref{tab_frontier} is that the ordering
+of the representations is preserved across the whole range, so it is not an
+artifact of one operating point. At 25\%, isolated variance loses 37.4
+units while the twenty-four compact columns of rung A lose 5.3, a reduction of 7.0
+times, against the 516.6 units of the random control. This is the largest single
+gain in the table, and it contradicts any reading in which the information
+available in the pixel domain would be exhausted by variance.
+
+Adding the eight causal partitioning columns to rung A lowers the loss from 5.3 to
+3.3 units, a further reduction of 1.60 times. The separation is robust to
+initialization, since the worst of the three seeds of A+B, at 3.6, is still better
+than the best of the three seeds of A, at 4.9. This is the central result of this
+work, because those eight columns describe the partition choices of the already
+coded neighbors and are not computable from the luminance of the block under any
+transformation. The information they carry is therefore produced by the encoding
+process itself.
+
+Conversely, the four columns of effective quantization, frame position, and node
+depth add nothing. Rung A+C reaches 6.4 units against 5.3 for rung A at 25\%, and
+its seed amplitude is 4.5 units against 0.8 for rung A, so the two distributions
+overlap and the statement supported by the data is that block C does not add
+information while destabilizing the fit. Once combined with the causal columns the
+effect is no longer ambiguous, as A+B reaches 3.3 units against 4.0 for A+B+C, all
+nine pairwise seed comparisons agree, and Fig.~\ref{fig_frontier} shows A+B
+dominating A+B+C across the entire frontier. The thirty-six column vector is therefore not the offline optimum,
+although this superiority of A+B has not been verified inside the encoder.
+
+The deep arm does not support the hypothesis that raw pixels plus representation
+capacity suffice. In its most favorable configuration it reaches 21.9 units at
+25\%, which is 4.1 times worse than rung A, although it holds 28\,128\,638
+parameters against the 11\,337 of the three networks of rung A, a factor of 2481.
+Doubling the fusion width degrades the result rather than improving it, at 29.4
+against 27.2 units under the same objective. This may be attributed to the
+information that is missing rather than to the capacity that is available, since
+the deep arm reads the same pixels as rung A and the gap is not closed by
+capacity, whereas eight columns of encoder state close a further factor of 1.60
+with 4291 parameters per level. It is important to emphasize that the deep arm is
+therefore not an upper bound of the pixel domain, since a model outperformed by
+another with strictly smaller information access establishes no performance
+ceiling. The only genuine upper bound here is the reference search itself, whose
+loss is zero by construction.
+
+Three limitations qualify these results and are reported as part of them. The
+protocol is ordinal, as established in Section III-B, so none of these values
+converts into a Bj\o ntegaard delta bitrate or predicts what an encoder would
+deliver. The three seeds provide an amplitude and not a confidence interval. The
+objective ablation of the deep arm covers two points, $\alpha = 0$ and
+$\alpha = 3$, and the curve in $\alpha$ was not swept. The comparison is
+nevertheless conservative in the direction that matters, since every one of these
+choices was resolved in favor of the deep arm.
+
+\section{Conclusions}
+
+This paper presented RPP, an offline attribution protocol that measures the
+rate-distortion loss of competing representations of the AV1 intra partition
+decision at matched search-cost reduction, reaching the conclusion that the causal
+state of the encoding process carries decision information that luminance alone
+does not provide. The protocol holds the pruning policy and the training recipe
+fixed and varies only the information a representation may read, charging every
+forced decision the overhead recorded by an exhaustive reference search. It was
+evaluated over 3.81 million held-out decision nodes of sixteen UVG 4K sequences
+encoded with libaom v3.10.0. Twenty-four compact descriptors
+improve on isolated variance by 7.0 times, eight causal partitioning columns
+improve on those by a further 1.60 times, and four quantization and position
+columns add nothing. A ConvNeXt with 28.1 million parameters reading raw pixels
+remains 4.1 times behind the compact descriptors, and doubling its width makes it
+worse, so capacity is not the binding constraint. Besides, to the best of the
+authors' knowledge, this is the first work to attribute rate-distortion loss to
+information access in AV1 partitioning.
+
+\section*{Acknowledgment}
+
+This study was financed in part by the Coordena\c{c}\~ao de Aperfei\c{c}oamento de
+Pessoal de N\'ivel Superior -- Brasil (CAPES) -- Finance Code 001, and also by the
+Brazilian research support agencies CNPq and FAPERGS.
+
+\section*{Compliance with Ethical Standards}
+
+This work is a computational study over publicly available video sequences and
+does not involve human participants or animals. The authors declare that they have
+no conflict of interest.
+
+% Manual column equalization of the last page (IEEE requirement): forces the
+% column break before this reference. Recheck if the reference list changes.
+\IEEEtriggeratref{18}
+\begin{thebibliography}{00}
+
+\bibitem{statista} Statista. (2025). \emph{Share of Internet Users Watching Online Videos Every Month From 1st Quarter 2022 to 3rd Quarter 2024}. [Online]. Available: \url{https://www.statista.com/statistics/1489445/online-video-viewers-worldwide-quarterly/}
+
+\bibitem{hevc} ITU-T. (2013). \emph{H.265: High Efficiency Video Coding}. [Online]. Available: \url{https://www.itu.int/rec/t-rec-h.265}
+
+\bibitem{vvc} ITU-T. (2020). \emph{H.266: Versatile Video Coding}. [Online]. Available: \url{https://www.itu.int/rec/t-rec-h.266}
+
+\bibitem{av1site} Alliance for Open Media. (2019). \emph{AV1 Video Codec}. [Online]. Available: \url{https://aomedia.org/av1}
+
+\bibitem{han2021} J. Han \emph{et al.}, ``A technical overview of AV1,'' \emph{Proc. IEEE}, vol. 109, no. 9, pp. 1435--1462, Sep. 2021.
+
+\bibitem{chen2018} Y. Chen \emph{et al.}, ``An overview of core coding tools in the AV1 video codec,'' in \emph{Proc. Picture Coding Symp. (PCS)}, Jun. 2018, pp. 41--45.
+
+\bibitem{grois2016} D. Grois, T. Nguyen, and D. Marpe, ``Coding efficiency comparison of AV1/VP9, H.265/MPEG-HEVC, and H.264/MPEG-AVC encoders,'' in \emph{Proc. Picture Coding Symp. (PCS)}, Dec. 2016, pp. 1--5.
+
+\bibitem{layek2017} M. A. Layek \emph{et al.}, ``Performance analysis of H.264, H.265, VP9 and AV1 video encoders,'' in \emph{Proc. 19th Asia-Pacific Netw. Oper. Manage. Symp. (APNOMS)}, Sep. 2017, pp. 322--325.
+
+\bibitem{sullivan1998} G. J. Sullivan and T. Wiegand, ``Rate-distortion optimization for video compression,'' \emph{IEEE Signal Process. Mag.}, vol. 15, no. 6, pp. 74--90, Nov. 1998.
+
+\bibitem{xu2020} M. Xu and B. Jeon, ``Selection of intra prediction tools for fast AV1 encoding,'' in \emph{Proc. IEEE Int. Symp. Broadband Multimedia Syst. Broadcast. (BMSB)}, Oct. 2020, pp. 1--4.
+
+\bibitem{xu2021} M. Xu and B. Jeon, ``User-priority based AV1 coding tool selection,'' \emph{IEEE Trans. Broadcast.}, vol. 67, no. 3, pp. 736--745, Sep. 2021.
+
+\bibitem{jeong2019} J. Jeong, G. Gankhuyag, and Y.-H. Kim, ``A fast intra mode decision based on accuracy of rate distortion model for AV1 intra encoding,'' in \emph{Proc. 34th Int. Tech. Conf. Circuits/Syst., Comput. Commun. (ITC-CSCC)}, Jun. 2019, pp. 1--3.
+
+\bibitem{kim2019} J. Kim, S. Blasi, A. S. Dias, M. Mrak, and E. Izquierdo, ``Fast inter-prediction based on decision trees for AV1 encoding,'' in \emph{Proc. IEEE Int. Conf. Acoust., Speech Signal Process. (ICASSP)}, May 2019, pp. 1627--1631.
+
+\bibitem{saldanha2022} M. Saldanha, G. Sanchez, C. Marcon, and L. Agostini, ``Configurable fast block partitioning for VVC intra coding using light gradient boosting machine,'' \emph{IEEE Trans. Circuits Syst. Video Technol.}, vol. 32, no. 6, pp. 3947--3960, Jun. 2022.
+
+\bibitem{he2021} Q. He, W. Wu, L. Luo, C. Zhu, and H. Guo, ``Random forest based fast CU partition for VVC intra coding,'' in \emph{Proc. IEEE Int. Symp. Broadband Multimedia Syst. Broadcast. (BMSB)}, Aug. 2021, pp. 1--4.
+
+\bibitem{chen2019} J. Chen, H. Sun, J. Katto, X. Zeng, and Y. Fan, ``Fast QTMT partition decision algorithm in VVC intra coding based on variance and gradient,'' in \emph{Proc. IEEE Vis. Commun. Image Process. (VCIP)}, Dec. 2019, pp. 1--4.
+
+\bibitem{correa2020} M. Corr\^ea, B. Zatt, D. Palomino, G. Corr\^ea, and L. Agostini, ``A high-throughput hardware architecture for AV1 non-directional intra modes,'' \emph{IEEE Trans. Circuits Syst. I, Reg. Papers}, vol. 67, no. 5, pp. 1481--1494, May 2020.
+
+\bibitem{netto2022} L. Netto, M. Corr\^ea, D. Palomino, L. Agostini, and G. Corr\^ea, ``Power-quality configurable hardware design for AV1 directional intra-frame prediction,'' \emph{IEEE Design Test}, vol. 39, no. 2, pp. 38--45, Apr. 2022.
+
+\bibitem{convnext} Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie, ``A ConvNet for the 2020s,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, Jun. 2022, pp. 11976--11986.
+
+\bibitem{adamw} I. Loshchilov and F. Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. Int. Conf. Learn. Represent. (ICLR)}, May 2019, pp. 1--18.
+
+\bibitem{pytorch} A. Paszke \emph{et al.}, ``PyTorch: An imperative style, high-performance deep learning library,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, Dec. 2019, pp. 8024--8035.
+
+\bibitem{libaom} Alliance for Open Media. \emph{AV1 Codec Library}, v3.10.0. [Online]. Available: \url{https://aomedia.googlesource.com/aom}
+
+\bibitem{ctc} X. Zhao \emph{et al.}, ``AOM common test conditions v9.0,'' Alliance for Open Media, Codec Working Group, doc. CWG-G082, Mar. 2026.
+
+\bibitem{uvg} A. Mercat, M. Viitanen, and J. Vanne, ``UVG dataset: 50/120fps 4K sequences for video codec analysis and development,'' in \emph{Proc. 11th ACM Multimedia Syst. Conf. (MMSys)}, Jun. 2020, pp. 297--302.
+
+\bibitem{xipha1} Xiph.Org Foundation. \emph{AOM CTC Test Set, Class A1 (4K)}. [Online]. Available: \url{https://media.xiph.org/video/aomctc/test_set/a1_4k/}
+
+\bibitem{bjontegaard} G. Bj{\o}ntegaard, ``Calculation of average PSNR differences between RD-curves,'' Video Coding Experts Group (VCEG), doc. VCEG-M33, Mar. 2001.
+
+\end{thebibliography}
+
+\end{document}

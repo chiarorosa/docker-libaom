@@ -176,9 +176,13 @@ a perda às representações, não afirma magnitude absoluta.
 
 ## 6. O que falta — a fazer amanhã
 
-1. **Escrever o `.tex`** em `results/thesis/IEEE_Conference_Template/`, seguindo o
-   `CLAUDE.md` daquele diretório (Parte A normativa, Parte B de estilo). Reservar no texto
-   o espaço e o propósito das figuras, sem gerá-las ainda.
+1. ~~**Escrever o `.tex`**~~ — **FEITO em 2026-08-21.** `PAPER_ICASSP_2027_RPP.tex`,
+   compilado no contêiner `latex_build` (monta `results/` em `/work`). 5 páginas: as 4
+   técnicas fecham na Conclusão e a 5ª abre no Acknowledgment, contendo só agradecimento,
+   ética e as 26 referências, como a CFP exige. Zero `Overfull`. Balanceamento da última
+   página por `IEEEtriggeratref{18}` — **reconferir se a lista de referências mudar**.
+   As figuras estão reservadas como `ramebox` com o propósito escrito dentro, marcadas
+   `% TODO`; Fig. 1 com 3,1 cm e Fig. 2 com 4,8 cm de altura reservada.
 2. **Gerar as figuras por último**, no contêiner `av1_bench` com `build/venv-ml`, em inglês
    e paleta acadêmica sóbria. Duas previstas:
    - Fig. 1 — linha do tempo de disponibilidade de informação dentro do nó. **Desenho
@@ -299,3 +303,21 @@ codificador entregaria.
 Essa limitação é a contrapartida do que o método dá em troca: comparar dezenas de
 representações sobre 3,8 milhões de nós reais, com a mesma política e o mesmo esforço, sem
 recodificar uma única vez. Um estudo assim é impraticável com BD-BR.
+
+---
+
+## 10. Estado da Parte C do checklist (verificado em 2026-08-21)
+
+**Cumprido e verificado por compilação:** limite de páginas (4 técnicas + 5ª só de
+referências, agradecimento e ética); nenhum `Overfull`; nenhuma referência indefinida;
+`\label` sempre depois de `\caption`; legenda de figura abaixo e de tabela acima; nenhum
+pacote de margem ou fonte; equações dentro da coluna e sem `eqnarray`; citações agrupadas em
+`\cite{a,b,c}`; sem matemática no título, no *abstract* e nos *index terms*; AV1 e RPP
+redefinidos no corpo; colunas da última página equalizadas à mão; `Fig. N`, `Table N` e
+`\eqref` nas chamadas. *Abstract* com **248 palavras**, dentro da faixa de 150–250 da B.2.
+
+**Pendente, e só resolvível quando as figuras existirem:** figuras vetoriais para *line art*
+com fontes Type 1 embutidas; rótulos de eixo com palavras e unidade entre parênteses, a 8 pt.
+Ao trocar cada `\framebox` pelo `\includegraphics`, **recompilar e reconferir a paginação** —
+o texto foi ajustado com folga de poucas linhas, e uma figura mais alta que a reserva empurra
+a Conclusão para a 5ª página, o que viola a CFP.
