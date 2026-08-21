@@ -191,7 +191,7 @@ a perda às representações, não afirma magnitude absoluta.
 1. ~~**Escrever o `.tex`**~~ — **FEITO em 2026-08-21.** `PAPER_ICASSP_2027_RD_ATTRIBUTION.tex`,
    compilado no contêiner `latex_build` (monta `results/` em `/work`). 5 páginas: as 4
    técnicas fecham na Conclusão e a 5ª abre no Acknowledgment, contendo só agradecimento,
-   e as 25 referências, como a CFP permite. A declaração de conformidade ética foi
+   e as 26 referências, como a CFP permite. A declaração de conformidade ética foi
    **removida por decisão do autor em 21/08** — a CFP a admite na 5ª página, não a exige. Zero `Overfull`. Balanceamento da última
    página por `IEEEtriggeratref{18}` — **reconferir se a lista de referências mudar**.
    As figuras estão reservadas como `ramebox` com o propósito escrito dentro, marcadas
@@ -345,8 +345,8 @@ a Conclusão para a 5ª página, o que viola a CFP.
    **conceituando codificação de vídeo e perda de eficiência de codificação**, porque o objeto
    aqui é a perda de otimalidade e não a aceleração; um parágrafo de tráfego de Internet não
    sustenta nada do que vem depois. A referência `statista` foi **removida da bibliografia**
-   (referência não citada não pode ficar na lista), o que renumerou tudo — hoje são **25**
-   entradas. O parágrafo fecha em *"That degradation, and not encoding time, is the quantity
+   (referência não citada não pode ficar na lista). A bibliografia tem hoje **26** entradas,
+   contando a de aprendizado sensível a custo acrescentada em 21/08. O parágrafo fecha em *"That degradation, and not encoding time, is the quantity
    this work measures"*, que faz o serviço de enquadramento que o M1 pedia.
 3. **Movimento 5 do abstract sem taxa BD nem redução de tempo** — consequência do escopo
    offline (§1). No lugar entram as razões a custo casado.

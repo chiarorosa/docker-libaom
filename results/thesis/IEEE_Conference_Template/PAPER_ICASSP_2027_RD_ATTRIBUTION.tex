@@ -247,8 +247,8 @@ c(n) = k_{n}\,n^{2}, \quad k_{n} = 9 \ \mathrm{for} \ n \in \{64,32,16\},
 \end{equation}
 that is, the number of shape candidates a full search would evaluate, weighted by
 the area of the block. The cost reduction $\Delta(\tau)$ is the percentage
-difference between the work performed by the policy and the work of the full
-search. It is a counted quantity and not wall-clock time, and it is not an
+difference between the work performed by the policy, accumulated with
+\eqref{eqn_cost}, and the work of the full search. It is a counted quantity and not wall-clock time, and it is not an
 estimate of wall-clock time either.
 
 The rate-distortion loss of a representation at a threshold $\tau$ is
@@ -300,25 +300,26 @@ the six held-out sequences, which contribute 226\,447 super blocks and
 
 \subsection{Fair Treatment of the Deep Arm}
 
-Since the deep arm carries the hypothesis that raw pixels plus capacity suffice, a
-negative result on it is only meaningful if the arm was treated fairly, and three
-measures were taken. First, it was retrained on the same corpus and under the same
-split as the rungs, after an audit of an earlier checkpoint showed that it had
-been trained on a smaller corpus with a single quantization point and with two of
-the six held-out sequences contaminated. Second, capacity was controlled by
-doubling the fusion width from 128 to 256 channels, and the wider model is 1.0\%
-worse in validation loss, which establishes that capacity is not the binding
-constraint.
+The deep arm carries the hypothesis that raw pixels plus capacity suffice, so a
+negative result on it is only meaningful if the arm was given every advantage.
+Three measures were taken.
 
-Third, the training objective was ablated. A cost-sensitive cross entropy
-weighting each node by $1 + \alpha\,\hat{r}(n)$, with $\hat{r}$ the normalized
-loss of \eqref{eqn_regret}, was compared against plain cross entropy, obtained by
-setting $\alpha = 0$. Under identical corpus, schedule, and selection criterion,
-the cost-sensitive objective at $\alpha = 3$ is better at every operating point
-from 10\% of cost reduction onward, and it is the deep result discussed in
-Section~\ref{sec_results}. This inverts a conclusion previously drawn by the
-authors from an uncontrolled comparison, so the value reported here is the most
-favorable one measured for the deep arm.
+The first concerns the corpus. An audit of an earlier checkpoint revealed that
+this arm had been trained on a much smaller set, at a single quantization point
+and with two of the six held-out sequences present in training; that comparison
+was discarded, and the arm was retrained on the same corpus and the same split as
+the rungs. The second concerns capacity: the fusion width was doubled from 128 to
+256 channels, and the wider model turned out 1.0\% worse in validation loss, so
+capacity is not the binding constraint.
+
+The third concerns the training objective. A plain cross entropy and a
+cost-sensitive variant \cite{elkan}, which weights each node by the
+rate-distortion loss its misclassification would incur, were trained under
+identical corpus, schedule, and selection criterion. The cost-sensitive objective
+proved better at every operating point from 10\% of cost reduction onward, and it
+is the deep result discussed in Section~\ref{sec_results}. This inverts a
+conclusion previously drawn by the authors from an uncontrolled comparison, so the
+value reported for the deep arm is the most favorable one measured.
 
 \section{Results and Discussion}
 \label{sec_results}
@@ -413,10 +414,9 @@ Three limitations qualify these results and are reported as part of them. The
 protocol is ordinal, as established in Section III-B, so none of these values
 converts into a Bj\o ntegaard delta bitrate or predicts what an encoder would
 deliver. The three seeds provide an amplitude and not a confidence interval. The
-objective ablation of the deep arm covers two points, $\alpha = 0$ and
-$\alpha = 3$, and the curve in $\alpha$ was not swept. The comparison is
-nevertheless conservative, since every one of these choices was resolved in favor
-of the deep arm.
+objective ablation of the deep arm covers two objectives, and the strength of the
+cost weighting was not swept. The comparison is nevertheless conservative, since
+every one of these choices was resolved in favor of the deep arm.
 
 \section{Conclusions}
 
@@ -483,6 +483,8 @@ Brazilian research support agencies CNPq and FAPERGS.
 \bibitem{netto2022} L. Netto, M. Corr\^ea, D. Palomino, L. Agostini, and G. Corr\^ea, ``Power-quality configurable hardware design for AV1 directional intra-frame prediction,'' \emph{IEEE Design Test}, vol. 39, no. 2, pp. 38--45, Apr. 2022.
 
 \bibitem{convnext} Z. Liu, H. Mao, C.-Y. Wu, C. Feichtenhofer, T. Darrell, and S. Xie, ``A ConvNet for the 2020s,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, Jun. 2022, pp. 11976--11986.
+
+\bibitem{elkan} C. Elkan, ``The foundations of cost-sensitive learning,'' in \emph{Proc. 17th Int. Joint Conf. Artif. Intell. (IJCAI)}, Aug. 2001, pp. 973--978.
 
 \bibitem{adamw} I. Loshchilov and F. Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. Int. Conf. Learn. Represent. (ICLR)}, May 2019, pp. 1--18.
 
