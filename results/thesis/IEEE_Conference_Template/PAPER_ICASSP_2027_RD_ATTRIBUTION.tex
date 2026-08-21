@@ -128,9 +128,11 @@ carries decision information that luminance does not provide.
 
 \section{Intra Partition Search in AV1}
 
-AV1 encodes each frame as a grid of super blocks of 64$\times$64 samples, each
-recursively divided by a search over a quad-tree of square nodes of 64, 32, 16,
-and 8 samples. At every node the encoder may evaluate ten partition shapes,
+AV1 partitions each frame into super blocks whose size the encoder selects,
+128$\times$128 or 64$\times$64 samples; libaom selects 128$\times$128 above 720p,
+and therefore for every sequence used here. Each super block is recursively
+divided by a search over a quad-tree of square nodes that may descend to
+4$\times$4 samples. At every node the encoder may evaluate ten partition shapes,
 organized in four groups: the undivided block, the quaternary split, the two
 rectangular shapes, and the six extended shapes.
 
@@ -156,15 +158,18 @@ discarded subtree was the optimal choice.
 This work is focused on that commitment at the pre-search insertion point of the
 intra-frame partition tree. Inter-frame prediction, transform type selection,
 quantization, in-loop filters, and entropy coding are not included in the loop
-attacked here, and therefore they are not focused on this work. Blocks of
-8$\times$8 samples are terminal leaves whose reference label is invariably the
-undivided shape, and they are excluded from modeling while kept in the cost
-accounting.
+attacked here, and therefore they are not focused on this work. The decision at
+the 128$\times$128 root is also outside this scope: the protocol attaches at the
+four 64$\times$64 quadrants of each super block and models the 64, 32, and 16
+sample levels. Blocks of 8$\times$8 samples were never split in this corpus, no
+divided label appearing among 16.91 million of them, so 4$\times$4 nodes do not
+occur and 8$\times$8 is the effective leaf; they are excluded from modeling while
+kept in the cost accounting.
 
 \begin{figure}[!t]
 \centering
 % TODO: replace by fig1_information_timeline.pdf, generated last in av1_bench.
-\framebox[0.98\columnwidth]{\rule{0pt}{3.6cm}%
+\framebox[0.98\columnwidth]{\rule{0pt}{2.8cm}%
 \parbox{0.86\columnwidth}{\centering\footnotesize
 PLACEHOLDER --- information-availability timeline inside one node: causal context
 and source luminance available before the search; undivided cost available after
@@ -183,14 +188,13 @@ under one fixed pruning policy and at a matched amount of skipped search work.
 \subsection{Representations Declared by Information Access}
 
 The representations are declared by information access rather than by
-architecture. The first is the isolated variance of the block, the
-classical descriptor of partition heuristics. The second, denoted A, is a
-twenty-four column vector of compact luminance descriptors of the block and of its
-hierarchical context: variance and its per-quadrant dispersion, gradient energy
-and orientation, row and column profiles, edge statistics, direct-current level,
-and the contrast against the parent and sibling blocks. Three of those columns do
-not derive from luminance, namely the normalized quantization index and the two
-coordinates of the node inside the 64-sample unit.
+architecture. The first is the isolated variance of the block, the classical
+descriptor of partition heuristics. The second, denoted A, is a twenty-four column
+vector of compact luminance descriptors: second-order and gradient statistics of
+the block and of its quadrants, edge measures, and the contrast against its parent
+and sibling blocks. Three of those columns do not derive from luminance, namely
+the normalized quantization index and the two coordinates of the node inside the
+64-sample unit.
 
 Block B adds eight columns of causal partitioning neighborhood: availability of
 the above and left neighbors, their already decided widths and heights in
@@ -204,18 +208,18 @@ pre-search instant, ensuring zero computational overhead for feature extraction.
 
 The remaining representation is the deep pixel arm, a multi-level convolutional
 model of the ConvNeXt family \cite{convnext} that mirrors the partition hierarchy.
-Its input is a two-channel tensor of 64$\times$64 samples, formed by the
-super-block luminance and a constant quantization plane. Three stages of the trunk
-are merged top-down, so that each cell of the resulting map holds both its
-immediate neighborhood and the context of the whole super block, and per-level
-heads read average poolings of it. This arm is present as a test of the hypothesis
-that raw pixels plus representation capacity suffice, and not as an architectural
-baseline. A random scorer is included as a control.
+Its input is a two-channel tensor formed by the luminance of the 64$\times$64 unit
+and a constant quantization plane. Three stages of its trunk are merged top-down,
+so that each cell of the resulting map holds both local detail and the context of
+the whole unit, and per-level heads read average poolings of it. This arm is
+present as a test of the hypothesis that raw pixels plus representation capacity
+suffice, and not as an architectural baseline. A random scorer is included as a
+control.
 
 The four rungs are multilayer perceptrons with two hidden layers of 64 and 32
 rectified units, one network per block size, trained with hard-label cross entropy
-and AdamW \cite{adamw} at a learning rate of $1 \times 10^{-3}$, batches of 4096
-samples, and a fixed budget of 30 epochs. Every rung is trained with this one
+and AdamW \cite{adamw}, learning rate $1 \times 10^{-3}$, batches of 4096, and a
+fixed budget of 30 epochs. Every rung is trained with this one
 recipe and differs only in which columns it reads, which is what makes the verdict
 fall on information rather than on capacity or on training procedure. Each rung is
 trained with three seeds and the reported value is their mean.
@@ -234,9 +238,9 @@ r(n) = J_{\mathrm{none}}(n) - J^{*}(n),
 \label{eqn_regret}
 \end{equation}
 where $J_{\mathrm{none}}(n)$ is the rate-distortion cost of the undivided
-candidate and $J^{*}(n)$ is the cost of the optimal subtree rooted at $n$. By
-construction $r(n) \geq 0$, and it is zero whenever the undivided shape already
-was the reference decision. No encoding is repeated, since the whole protocol is a
+candidate and $J^{*}(n)$ is the cost of the optimal subtree rooted at $n$. It is
+non-negative by construction, and zero whenever the undivided shape already was
+the reference decision. No encoding is repeated, since the whole protocol is a
 counterfactual replay over the log of one exhaustive search.
 
 The search work of a node of dimension $n$ is counted analytically as
@@ -290,17 +294,21 @@ the AOM Common Test Conditions \cite{ctc} at
 makes the recorded decisions optimal by construction.
 
 The corpus comprises sixteen sequences of the UVG dataset \cite{uvg} at 4K
-resolution (3840$\times$2160), 8 bits and 4:2:0 chroma subsampling. Each sequence
+resolution (3840$\times$2160), 8 bits and 4:2:0 chroma subsampling. The
+restriction to 4K is deliberate. The search cost grows with the number of nodes,
+so this is the resolution at which the exhaustive partition search is most
+prohibitive, and it is also the regime in which libaom selects the
+128$\times$128 super block and therefore the deepest partition tree; averaging
+over resolutions would average over two different tree structures. Each sequence
 was encoded at four quantization points
 (\texttt{cq-level} 20, 32, 43, and 55) over five frames sampled uniformly along
 the whole clip, since consecutive frames are nearly identical under All-Intra. The
 resulting dataset holds 26.98 million samples, of which 10.07 million are decision
-nodes. The split is made by sequence and was frozen before any measurement, with
-ten sequences for training, three for validation, and three for the reserved test
-set. No video
+nodes. The split is by sequence and was frozen before any measurement: ten
+sequences for training, three for validation, three for the reserved test set. No video
 sequence was reused across the training, testing, or evaluation datasets, thus
 avoiding data leakage and overfitting. All results reported here are measured on
-the six held-out sequences, which contribute 226\,447 super blocks and
+the six held-out sequences, which contribute 226\,447 units of 64 samples and
 3\,808\,703 decision nodes. The models were implemented in PyTorch \cite{pytorch}.
 
 \subsection{Fair Treatment of the Deep Arm}
@@ -329,9 +337,9 @@ value reported for the deep arm is the most favorable one measured.
 \section{Results and Discussion}
 \label{sec_results}
 
-The representations were evaluated with the protocol of Section III over the six
-held-out sequences and 3\,808\,703 decision nodes, under the All-Intra
-configuration of libaom v3.10.0 at \texttt{cpu-used=0}. Table~\ref{tab_frontier}
+The representations were evaluated over the six held-out sequences and
+3\,808\,703 decision nodes, under the All-Intra configuration of libaom v3.10.0
+at \texttt{cpu-used=0}. Table~\ref{tab_frontier}
 reports the loss $L$ of \eqref{eqn_loss} at five matched cost reductions, in units
 of $10^{-3}$ percent, where lower is better, and Fig.~\ref{fig_frontier} shows the
 corresponding frontiers.
@@ -364,7 +372,7 @@ A+B (32 columns) & \textbf{0.2} & \textbf{0.5} & \textbf{1.5} & \textbf{3.3}
 \begin{figure}[!t]
 \centering
 % TODO: replace by fig2_frontier.pdf, generated last in av1_bench.
-\framebox[0.98\columnwidth]{\rule{0pt}{5.4cm}%
+\framebox[0.98\columnwidth]{\rule{0pt}{4.4cm}%
 \parbox{0.86\columnwidth}{\centering\footnotesize
 PLACEHOLDER --- rate-distortion loss versus matched cost reduction, logarithmic
 vertical axis, one curve per representation, with seed-amplitude bars on the four
@@ -385,11 +393,10 @@ available in the pixel domain would be exhausted by variance.
 Adding the eight causal partitioning columns to rung A lowers the loss from 5.3 to
 3.3 units, a further reduction of 1.60 times. The separation is robust to
 initialization, since the worst of the three seeds of A+B, at 3.6, is still better
-than the best of the three seeds of A, at 4.9. This is the central result of this
-work, because those eight columns describe the partition choices of the already
-coded neighbors and are not computable from the luminance of the block under any
-transformation. The information they carry is therefore produced by the encoding
-process itself.
+than the best of the three seeds of A, at 4.9. This is the central result: those eight columns
+describe the partition choices of the already coded neighbors, are not computable
+from the luminance of the block under any transformation, and therefore carry
+information produced by the encoding process itself.
 
 Conversely, the four columns of effective quantization, frame position, and node
 depth add nothing. Rung A+C reaches 6.4 units against 5.3 for rung A at 25\%, and
@@ -405,22 +412,21 @@ capacity suffice. In its most favorable configuration it reaches 21.9 units at
 25\%, which is 4.1 times worse than rung A, although it holds 28\,128\,638
 parameters against the 11\,337 of the three networks of rung A, a factor of 2481.
 Doubling the fusion width degrades the result rather than improving it, at 29.4
-against 27.2 units under the same objective. This may be attributed to the
-information that is missing rather than to the capacity available: the deep arm
-reads the same pixels as rung A and the gap is not closed by capacity, whereas
-eight columns of encoder state close a further factor of 1.60 with 4291
-parameters per level. It is important to emphasize that the deep arm is
-therefore not an upper bound of the pixel domain, since a model outperformed by
-another with strictly smaller information access establishes no performance
-ceiling. The only genuine upper bound here is the reference search itself, whose
-loss is zero by construction.
+against 27.2 units under the same objective. This may be attributed to missing
+information rather than to available capacity: the deep arm reads the same pixels
+as rung A, and eight columns of encoder state close a further factor of 1.60 with
+4291 parameters per level. The deep arm is therefore not an upper bound of the
+pixel domain, since a model outperformed by another with strictly smaller
+information access establishes no ceiling.
 
-Three limitations qualify these results and are reported as part of them. The
+Four limitations qualify these results and are reported as part of them. The
 protocol is ordinal, as established in Section III-B, so none of these values
 converts into a Bj\o ntegaard delta bitrate or predicts what an encoder would
 deliver. The three seeds provide an amplitude and not a confidence interval. The
 objective ablation of the deep arm covers two objectives, and the strength of the
-cost weighting was not swept.
+cost weighting was not swept. Finally, the corpus is 4K only, so whether the
+causal neighborhood carries the same weight where the super block is
+64$\times$64, and the tree is one level shallower, is not established here.
 
 \section{Conclusions}
 
@@ -429,17 +435,16 @@ rate-distortion loss of competing representations of the AV1 intra partition
 decision at matched search-cost reduction, reaching the conclusion that the causal
 state of the encoding process carries decision information that luminance alone
 does not provide. The protocol holds the pruning policy and the training recipe
-fixed and varies only the information a representation may read, charging every
-forced decision the overhead recorded by an exhaustive reference search. It was
+fixed and varies only the information a representation may read. It was
 evaluated over 3.81 million held-out decision nodes of sixteen UVG 4K sequences
 encoded with libaom v3.10.0. Twenty-four compact descriptors
 improve on isolated variance by 7.0 times, eight causal partitioning columns
 improve on those by a further 1.60 times, and four quantization and position
-columns add nothing. A ConvNeXt with 28.1 million parameters reading raw pixels
-remains 4.1 times behind the compact descriptors, and doubling its width makes it
-worse, so capacity is not the binding constraint. Besides, to the best of the
-authors' knowledge, this is the first work to attribute rate-distortion loss to
-information access in AV1 partitioning.
+columns add nothing. A ConvNeXt with 28.1 million parameters remains 4.1 times
+behind the compact descriptors, and doubling its width makes it worse, so capacity
+is not the binding constraint. Besides, to the best of the authors' knowledge,
+this is the first attribution of rate-distortion loss to information access in AV1
+partitioning.
 
 \section*{Acknowledgment}
 

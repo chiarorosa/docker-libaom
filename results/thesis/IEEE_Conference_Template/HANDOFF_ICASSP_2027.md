@@ -195,7 +195,9 @@ a perda às representações, não afirma magnitude absoluta.
    **removida por decisão do autor em 21/08** — a CFP a admite na 5ª página, não a exige. Zero `Overfull`. Balanceamento da última
    página por `IEEEtriggeratref{18}` — **reconferir se a lista de referências mudar**.
    As figuras estão reservadas como `ramebox` com o propósito escrito dentro, marcadas
-   `% TODO`; Fig. 1 com 3,1 cm e Fig. 2 com 4,8 cm de altura reservada.
+   `% TODO`; Fig. 1 com **2,8 cm** e Fig. 2 com **4,4 cm** de altura reservada — a folga
+   de texto acabou, então uma figura mais alta que a reserva empurra a Conclusão para a 5ª
+   página e viola a CFP.
 2. **Gerar as figuras por último**, no contêiner `av1_bench` com `build/venv-ml`, em inglês
    e paleta acadêmica sóbria. Duas previstas:
    - Fig. 1 — linha do tempo de disponibilidade de informação dentro do nó. **Desenho
@@ -350,3 +352,39 @@ a Conclusão para a 5ª página, o que viola a CFP.
    this work measures"*, que faz o serviço de enquadramento que o M1 pedia.
 3. **Movimento 5 do abstract sem taxa BD nem redução de tempo** — consequência do escopo
    offline (§1). No lugar entram as razões a custo casado.
+
+---
+
+## 12. Correção de fato sobre a estrutura de particionamento (21/08)
+
+O artigo dizia que o AV1 divide o quadro em superblocos de 64×64. **Está errado, e a
+correção tem consequência de escopo.**
+
+Verificado no código: `av1_select_sb_size()` em `src/aom/av1/encoder/encoder_utils.c` —
+com `--usage=2` (All-Intra), `cpu-used=0`, 4K, sem superres nem resize e sem `--sb-size`
+explícito no `build_dataset.py`, o fluxo cai no `return BLOCK_128X128`. O
+**superbloco era 128×128**. O dataset confirma: `label_histogram.csv` só tem
+`block_dim` 8, 16, 32 e 64.
+
+Portanto:
+
+- a árvore do AV1 desce até **4×4**, não até 8×8;
+- a instrumentação engancha nos **quatro quadrantes de 64×64** de cada superbloco, e a
+  **decisão do nó raiz de 128×128 está fora do escopo** — isso agora está declarado no
+  fecho da Seção II;
+- 8×8 é folha **empírica**, não estrutural: nenhum rótulo dividido entre 16,91 milhões de
+  amostras, de modo que nós de 4×4 não ocorrem neste corpus;
+- os 226.447 não são superblocos, são **unidades de 64 amostras** — o texto foi corrigido;
+- a entrada da ConvNeXt é a luminância da **unidade de 64×64**, não do superbloco.
+
+**Justificativa do recorte em 4K, acrescentada na Seção III-C** para não ser rebatida na
+banca: o custo da busca cresce com o número de nós, então é nesta resolução que a busca
+exaustiva é mais proibitiva; e é o regime em que o libaom seleciona o superbloco de
+128×128 e, portanto, a árvore mais profunda — de modo que **misturar resoluções seria
+mediar sobre duas estruturas de árvore distintas**. A contrapartida entra como quarta
+limitação nos Resultados: nada aqui estabelece se a vizinhança causal pesa o mesmo onde o
+superbloco é 64×64 e a árvore tem um nível a menos.
+
+**A tese não repete o erro** — `M2` e `M3` descrevem o corpus sem atribuir tamanho de
+superbloco. Mas vale conferir se algum documento afirma "superbloco de 64×64" antes da
+defesa.
