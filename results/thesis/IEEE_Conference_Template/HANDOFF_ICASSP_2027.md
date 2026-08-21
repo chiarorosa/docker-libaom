@@ -332,3 +332,20 @@ com fontes Type 1 embutidas; rótulos de eixo com palavras e unidade entre parê
 Ao trocar cada `\framebox` pelo `\includegraphics`, **recompilar e reconferir a paginação** —
 o texto foi ajustado com folga de poucas linhas, e uma figura mais alta que a reserva empurra
 a Conclusão para a 5ª página, o que viola a CFP.
+
+---
+
+## 11. Desvios conscientes da Parte B (não "corrigir" sem falar com o autor)
+
+1. **Sem acrônimo** — ver §1. Afeta B.1 (acrônimo no título da seção do método), B.2
+   movimento 3 e B.10 movimento 1.
+2. **M1 sem macrocontexto de demanda** — decidido pelo autor em 2026-08-21. A B.4 M1 pede
+   abertura por demanda de vídeo/tráfego com fonte citável (Cisco, Statista). O artigo abre
+   **conceituando codificação de vídeo e perda de eficiência de codificação**, porque o objeto
+   aqui é a perda de otimalidade e não a aceleração; um parágrafo de tráfego de Internet não
+   sustenta nada do que vem depois. A referência `statista` foi **removida da bibliografia**
+   (referência não citada não pode ficar na lista), o que renumerou tudo — hoje são **25**
+   entradas. O parágrafo fecha em *"That degradation, and not encoding time, is the quantity
+   this work measures"*, que faz o serviço de enquadramento que o M1 pedia.
+3. **Movimento 5 do abstract sem taxa BD nem redução de tempo** — consequência do escopo
+   offline (§1). No lugar entram as razões a custo casado.

@@ -51,8 +51,9 @@ offline attribution protocol for AV1 intra partitioning that reads the
 rate-distortion loss of competing representations at matched search-cost
 reduction. The protocol fixes one pruning policy, sweeps its confidence threshold,
 and charges each forced decision the overhead recorded by an exhaustive reference
-search, so that representations are compared at the same amount of work skipped. Experimental results over 3.81 million
-held-out decision nodes show that twenty-four compact descriptors reduce the loss
+search, so that representations are compared at the same amount of work skipped.
+Experimental results over 3.81 million held-out decision nodes show that
+twenty-four compact descriptors reduce the loss
 of isolated block variance by 7.0 times, that eight causal partitioning columns
 reduce it by a further 1.60 times, and that four quantization and position columns
 add nothing. A ConvNeXt with 28.1 million parameters reading raw pixels stays 4.1
@@ -70,14 +71,20 @@ capacity, machine learning.
 
 \section{Introduction}
 
-Video traffic keeps its position as the dominant share of Internet usage, and the
-proportion of users consuming online video every month has remained above ninety
-percent since 2022 \cite{statista}. Two families of codecs answer that demand: the
-standardization path produced High Efficiency Video Coding \cite{hevc} and
-Versatile Video Coding \cite{vvc}, both developed jointly by ISO/IEC MPEG and
-ITU-T VCEG, while the Alliance for Open Media released the AOMedia Video 1 (AV1)
-in 2018 as an open and royalty-free codec \cite{av1site}, drawing on VP9, Thor,
-and Daala.
+Video coding removes the spatial and statistical redundancy of a raw sequence so
+that it can be stored and transmitted at a small fraction of its original rate.
+Every coding choice trades bitrate against reconstruction fidelity, and encoders
+resolve that trade-off by rate-distortion optimization, selecting at each decision
+the candidate of lowest Lagrangian cost \cite{sullivan1998}. Coding efficiency is
+the fidelity obtained at a given rate, and it degrades whenever a decision is
+taken without evaluating the candidate that the full search would have selected.
+That degradation, and not encoding time, is the quantity this work measures.
+
+Two families of codecs pursue that efficiency. The standardization path produced
+High Efficiency Video Coding \cite{hevc} and Versatile Video Coding \cite{vvc},
+both developed jointly by ISO/IEC MPEG and ITU-T VCEG, while the Alliance for Open
+Media released the AOMedia Video 1 (AV1) in 2018 as an open and royalty-free codec
+\cite{av1site}, drawing on VP9, Thor, and Daala.
 
 AV1 follows the hybrid block-based coding flow, combining intra-frame and
 inter-frame prediction, transforms, quantization, in-loop filters, and entropy
@@ -90,9 +97,8 @@ highest quality configuration.
 
 Inside intra-frame coding, the recursive partition search is the single most
 expensive stage at that configuration. The search visits a quad-tree of square
-nodes, evaluates up to ten shapes at each one through full rate-distortion
-optimization \cite{sullivan1998}, and descends into every node it does not
-resolve, so the cost grows with the number of nodes rather than with the
+nodes, evaluates up to ten shapes at each one, and descends into every node it
+does not resolve, so the cost grows with the number of nodes rather than with the
 difficulty of the content.
 
 Several works attack this cost with learned decisions. In AV1, tool selection
@@ -106,15 +112,15 @@ architectures targeted the AV1 intra prediction modes \cite{correa2020,netto2022
 These works can be classified as coding-efficiency oriented
 \cite{jeong2019,xu2021,saldanha2022,he2021,chen2019}, hardware oriented
 \cite{correa2020,netto2022}, or aimed at a different coding stage
-\cite{xu2020,kim2019}. All of them report time savings obtained under a policy of
-their own choosing, and none of these works separates the quality of the scoring
-source from the aggressiveness of the policy, nor measures which information is
-decisive for the partition choice.
+\cite{xu2020,kim2019}. All of them report time savings under a policy of their
+own choosing, and none of these works separates the quality of the scoring source
+from the aggressiveness of the policy, nor measures which information is decisive
+for the partition choice.
 
 This paper presents an offline attribution protocol for AV1 intra partitioning.
 The main strategy of this work is to hold the pruning policy and the amount of
-skipped search work
-fixed, and to vary only what a representation is allowed to see, so that the
+skipped search work fixed, and to vary only what a representation is allowed to
+see, so that the
 resulting difference in rate-distortion loss is attributable to information access
 alone. Under this protocol, compact descriptors outperform a high-capacity
 convolutional model reading raw pixels, and the causal partitioning neighborhood
@@ -133,8 +139,8 @@ first and produces a complete rate-distortion cost; the quaternary split follows
 and opening it triggers the recursion into the four children; the rectangular
 shapes come next, and the extended shapes last.
 
-This order defines when each kind of information becomes available, which is the
-property this work exploits. Before the search of a node begins, the encoder
+This order defines when each kind of information becomes available, the property
+this work exploits. Before the search of a node begins, the encoder
 already holds the source luminance of the block, the frame quantization index, the
 position of the node, and the partition decisions of the causal neighbors above
 and to the left, but it does not yet hold any rate-distortion cost for the current
@@ -382,8 +388,7 @@ process itself.
 Conversely, the four columns of effective quantization, frame position, and node
 depth add nothing. Rung A+C reaches 6.4 units against 5.3 for rung A at 25\%, and
 its seed amplitude is 4.5 units against 0.8 for rung A, so the two distributions
-overlap and the statement supported by the data is that block C does not add
-information while destabilizing the fit. Once combined with the causal columns the
+overlap and block C does not add information while destabilizing the fit. Once combined with the causal columns the
 effect is no longer ambiguous, as A+B reaches 3.3 units against 4.0 for A+B+C, all
 nine pairwise seed comparisons agree, and Fig.~\ref{fig_frontier} shows A+B
 dominating A+B+C across the entire frontier. The thirty-six column vector is therefore not the offline optimum,
@@ -410,8 +415,8 @@ converts into a Bj\o ntegaard delta bitrate or predicts what an encoder would
 deliver. The three seeds provide an amplitude and not a confidence interval. The
 objective ablation of the deep arm covers two points, $\alpha = 0$ and
 $\alpha = 3$, and the curve in $\alpha$ was not swept. The comparison is
-nevertheless conservative in the direction that matters, since every one of these
-choices was resolved in favor of the deep arm.
+nevertheless conservative, since every one of these choices was resolved in favor
+of the deep arm.
 
 \section{Conclusions}
 
@@ -448,8 +453,6 @@ no conflict of interest.
 % column break before this reference. Recheck if the reference list changes.
 \IEEEtriggeratref{18}
 \begin{thebibliography}{00}
-
-\bibitem{statista} Statista. (2025). \emph{Share of Internet Users Watching Online Videos Every Month From 1st Quarter 2022 to 3rd Quarter 2024}. [Online]. Available: \url{https://www.statista.com/statistics/1489445/online-video-viewers-worldwide-quarterly/}
 
 \bibitem{hevc} ITU-T. (2013). \emph{H.265: High Efficiency Video Coding}. [Online]. Available: \url{https://www.itu.int/rec/t-rec-h.265}
 
