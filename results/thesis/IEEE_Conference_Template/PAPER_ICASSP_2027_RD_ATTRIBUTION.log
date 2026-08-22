@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.8.19)  22 AUG 2026 00:45
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.8.19)  22 AUG 2026 14:04
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -322,13 +322,30 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 131
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) [2]
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 2
-92.
+)
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 1
+35.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
-) [3] [4]
+)
+Underfull \hbox (badness 10000) in paragraph at lines 139--142
+[]\OT1/ptm/m/n/10 The eval-u-a-tion or-der in-side a node is fixed:
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 139--142
+\OT1/pcr/m/n/10 PARTITION_NONE \OT1/ptm/m/n/10 first, then \OT1/pcr/m/n/10 PART
+ITION_SPLIT\OT1/ptm/m/n/10 ,
+ []
+
+[2]
+Underfull \hbox (badness 10000) in paragraph at lines 238--245
+\OT1/ptm/m/n/10 where $\OML/cmm/m/it/10 J[]\OT1/cmr/m/n/10 (\OML/cmm/m/it/10 n\
+OT1/cmr/m/n/10 )$ \OT1/ptm/m/n/10 is the rate-distortion cost of
+ []
+
+[3] [4]
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -348,7 +365,7 @@ L3 programming layer <2024-01-22>
  ) 
 Here is how much of TeX's memory you used:
  4321 strings out of 476106
- 67066 string characters out of 5793933
+ 67074 string characters out of 5793933
  1943975 words of memory out of 5000000
  26288 multiletter control sequences out of 15000+600000
  596717 words of font info for 110 fonts, out of 8000000 for 9000
@@ -368,7 +385,7 @@ usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texli
 ve/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw
 /times/utmri8a.pfb>
-Output written on PAPER_ICASSP_2027_RD_ATTRIBUTION.pdf (5 pages, 188692 bytes).
+Output written on PAPER_ICASSP_2027_RD_ATTRIBUTION.pdf (5 pages, 187417 bytes).
 
 PDF statistics:
  96 PDF objects out of 1000 (max. 8388607)

@@ -131,14 +131,14 @@ carries decision information that luminance does not provide.
 AV1 partitions each frame into super blocks of 128$\times$128 samples, which the
 encoder may alternatively set to 64$\times$64 \cite{han2021}. Each super block is
 recursively divided by a search over a quad-tree of square nodes that may descend
-to 4$\times$4 samples. At every node the encoder may evaluate ten partition shapes,
-organized in four groups: the undivided block, the quaternary split, the two
-rectangular shapes, and the six extended shapes.
+to 4$\times$4 samples. At every node the encoder may evaluate ten partition
+shapes, organized in four groups: the undivided block \texttt{PARTITION\_NONE},
+the quaternary \texttt{PARTITION\_SPLIT}, the two rectangular shapes, and the six
+extended shapes, which comprise four AB shapes and two four-way shapes.
 
-The evaluation order inside a node is fixed. The undivided candidate is evaluated
-first and produces a complete rate-distortion cost; the quaternary split follows,
-and opening it triggers the recursion into the four children; the rectangular
-shapes come next, and the extended shapes last.
+The evaluation order inside a node is fixed: \texttt{PARTITION\_NONE} first, then
+\texttt{PARTITION\_SPLIT}, whose opening triggers the recursion into the four
+children, then the rectangular shapes, and the extended shapes last.
 
 This order defines when each kind of information becomes available, the property
 this work exploits. Before the search of a node begins, the encoder already holds
@@ -218,41 +218,40 @@ control.
 The four rungs are multilayer perceptrons with two hidden layers of 64 and 32
 rectified units, one network per block size, trained with hard-label cross entropy
 and AdamW \cite{adamw}, learning rate $1 \times 10^{-3}$, batches of 4096, and a
-fixed budget of 30 epochs. Every rung is trained with this one
-recipe and differs only in which columns it reads, which is what makes the verdict
-fall on information rather than on capacity or on training procedure. Each rung is
-trained with three seeds and the reported value is their mean.
+fixed budget of 30 epochs. Every rung shares this one recipe and differs only in
+which columns it reads, which is what makes the verdict fall on information rather
+than on capacity or on training procedure. Each rung is trained with three seeds
+and the reported value is their mean.
 
 \subsection{Policy, Cost Model, and Loss}
 
-The policy is fixed for every representation. A node $n$ is committed to the
-undivided shape whenever the score assigned to that class exceeds a confidence
-threshold $\tau$, in which case the node contributes only the cost of its
-undivided candidate and the recursion stops; otherwise the node is evaluated in
-full and the search descends. The rate-distortion loss charged to a committed node
-is the overhead of that commitment against the optimal subtree, as recorded by the
-exhaustive reference search,
+The policy is fixed for every representation. A node $n$ is committed to
+\texttt{PARTITION\_NONE} whenever the probability the model assigns to that class
+exceeds a confidence threshold $\tau$, in which case the node is charged only its
+own \texttt{PARTITION\_NONE} evaluation and the recursion stops; otherwise the
+node is evaluated in full and the search descends. The rate-distortion loss
+charged to a committed node is the overhead of that commitment against the
+partition the full search selected,
 \begin{equation}
 r(n) = J_{\mathrm{none}}(n) - J^{*}(n),
 \label{eqn_regret}
 \end{equation}
-where $J_{\mathrm{none}}(n)$ is the rate-distortion cost of the undivided
-candidate and $J^{*}(n)$ is the cost of the optimal subtree rooted at $n$. It is
-non-negative by construction, and zero whenever the undivided shape already was
-the reference decision. No encoding is repeated, since the whole protocol is a
-counterfactual replay over the log of one exhaustive search.
+where $J_{\mathrm{none}}(n)$ is the rate-distortion cost of
+\texttt{PARTITION\_NONE} and $J^{*}(n)$ is the cost of the partition the reference
+search chose for $n$. It is non-negative by construction, and zero whenever
+\texttt{PARTITION\_NONE} already was the reference decision. No encoding is
+repeated, since the whole protocol is a counterfactual replay over the log of one
+exhaustive search.
 
-The search work of a node of dimension $n$ is counted analytically as
-\begin{equation}
-c(n) = k_{n}\,n^{2}, \quad k_{n} = 9 \ \mathrm{for} \ n \in \{64,32,16\},
-\ k_{8} = 4,
-\label{eqn_cost}
-\end{equation}
-that is, the number of shape candidates a full search would evaluate, weighted by
-the area of the block. The cost reduction $\Delta(\tau)$ is the percentage
-difference between the work performed by the policy, accumulated with
-\eqref{eqn_cost}, and the work of the full search. It is a counted quantity and
-not wall-clock time, nor an estimate of it.
+Search work is counted analytically rather than timed. Each node is charged the
+number of shape candidates a full search would evaluate there, weighted by the
+area of the block: nine candidates for blocks of 64, 32, and 16 samples, and four
+for blocks of 8 samples, which admit neither the AB nor the four-way shapes.
+\texttt{PARTITION\_SPLIT} is not among the nine, since its cost is the recursion
+into the four children and is already charged there. The cost reduction
+$\Delta(\tau)$ is the percentage difference between the work performed by the
+policy and the work of the full search. It is a counted quantity and not
+wall-clock time, nor an estimate of it.
 
 Summing \eqref{eqn_regret} over the committed nodes gives the loss the pruning
 incurred,
@@ -262,26 +261,28 @@ J_{\mathrm{none}}(n)},
 \label{eqn_loss}
 \end{equation}
 where $P(\tau)$ is the set of nodes committed at threshold $\tau$ and $N$ is the
-set of all decision nodes. The denominator is accumulated before any threshold is
-fixed and stays constant along the sweep, so $L$ tends to zero as pruning tends to
-zero.
+set of all decision nodes of the four quantization points. The denominator is
+accumulated before any threshold is fixed and stays constant along the sweep, so
+$L$ tends to zero as pruning tends to zero.
+
+Three properties of $L$ restrict its reading, and they are stated before any
+number is reported. First, the denominator aggregates the
+\texttt{PARTITION\_NONE} costs of the three hierarchy levels, which cover the same
+image area, so it is systematically larger than the cost of coding the frame and
+$L$ is systematically smaller than any efficiency loss observable in the encoder.
+Second, the replay discounts recorded values, whereas pruning inside the encoder
+also alters the reconstruction that serves as reference to later blocks, a
+propagation absent here. Third, the sum runs over four quantization points, whose
+Lagrangian multipliers differ, so the aggregate is weighted toward the coarsest of
+them, where rate-distortion costs are largest. Consequently, no conversion factor
+between $L$ and the Bj\o ntegaard delta bitrate \cite{bjontegaard} is postulated,
+and $L$ is used strictly in an ordinal regime, in which every ratio is taken
+between representations read at the same operating point.
 
 Lowering $\tau$ prunes more, which raises $\Delta$ and $L$ together. Each
 representation is therefore a curve rather than a point, and representations are
 compared by reading their curves at the same cost reduction. The reference reading
-in this paper is $\Delta = 25\%$, one quarter of the shape evaluations skipped.
-
-Two properties of $L$ restrict its reading, and they are stated before any number
-is reported. First, the denominator aggregates the undivided costs of the three
-hierarchy levels, which cover the same image area, so it is systematically larger
-than the cost of coding the frame and $L$ is systematically smaller than any
-efficiency loss observable in the encoder. Second, the replay discounts recorded
-values, whereas pruning inside the encoder also alters the reconstruction that
-serves as reference to later blocks, a propagation absent here. Consequently, no
-conversion factor between $L$ and the Bj\o ntegaard delta bitrate
-\cite{bjontegaard} is postulated, and $L$ is used strictly in an ordinal regime,
-in which every ratio is taken between representations read at the same operating
-point.
+in this paper is $\Delta = 25\%$, one quarter of the search work skipped.
 
 \subsection{Dataset and Experimental Setup}
 
@@ -313,8 +314,8 @@ the six held-out sequences, which contribute 226\,447 units of 64 samples and
 \subsection{Fair Treatment of the Deep Arm}
 
 The deep arm carries the hypothesis that raw pixels plus capacity suffice, so a
-negative result on it is only meaningful if the arm was given every advantage.
-Three measures were taken.
+negative result on it only counts if the arm was given every advantage. Three
+measures were taken.
 
 The first concerns the corpus. An audit of an earlier checkpoint revealed that
 this arm had been trained on a much smaller set, at a single quantization point
@@ -418,14 +419,11 @@ as rung A, and eight columns of encoder state close a further factor of 1.60 wit
 pixel domain, since a model outperformed by another with strictly smaller
 information access establishes no ceiling.
 
-Four limitations qualify these results and are reported as part of them. The
-protocol is ordinal, as established in Section III-B, so none of these values
-converts into a Bj\o ntegaard delta bitrate or predicts what an encoder would
-deliver. The three seeds provide an amplitude and not a confidence interval. The
-objective ablation of the deep arm covers two objectives, and the strength of the
-cost weighting was not swept. Finally, the corpus is 4K only, so whether the
-causal neighborhood carries the same weight where the super block is
-64$\times$64, and the tree is one level shallower, is not established here.
+Three further limitations qualify these results. The three seeds provide an
+amplitude and not a confidence interval. The objective ablation of the deep arm
+covers two objectives, and the strength of the cost weighting was not swept. And
+the corpus is 4K only, so whether the causal neighborhood carries the same weight
+where the super block is 64$\times$64 is not established here.
 
 \section{Conclusions}
 

@@ -391,3 +391,33 @@ superbloco é 64×64 e a árvore tem um nível a menos.
 **A tese não repete o erro** — `M2` e `M3` descrevem o corpus sem atribuir tamanho de
 superbloco. Mas vale conferir se algum documento afirma "superbloco de 64×64" antes da
 defesa.
+
+---
+
+## 13. Revisão da Seção III-B pelo olhar do leitor de codificação (22/08)
+
+Cinco mudanças aplicadas, todas com o mesmo motivo: o que um leitor do ViTech tropeçaria.
+
+1. **Nove contra dez — era o defeito atacável.** A Seção II diz dez formas; o contador de
+   custo usa nove. O motivo estava só no código (`simulate_pruning.py`, `CANDS`): o
+   **`PARTITION_SPLIT` fica de fora**, porque o custo dele é a recursão nos filhos, já
+   cobrada lá. Contá-lo no nó seria contar duas vezes. Agora está dito no texto. **Não
+   remover essa oração.**
+2. **A equação do custo de busca foi cortada.** `c(n) = k·n²` é regra de contagem com dois
+   valores; virou uma frase, que já embute o item 1. Havia inversão de importância: `Δ` é o
+   eixo de todas as figuras e recebia prosa, enquanto o bookkeeping recebia número. Restam
+   **duas** equações, a perda por nó e a perda agregada — as duas se pagam.
+3. **A ressalva do denominador subiu** para logo depois da equação da perda. Antes vinha
+   dois parágrafos atrasada, e o leitor formava a objeção do recobrimento triplo antes de
+   encontrar a resposta.
+4. **Nomes de sintaxe do AV1** — `PARTITION_NONE` e `PARTITION_SPLIT` — no lugar de
+   "undivided shape" e "quaternary split". Para quem lê libaom, é mais rápido.
+5. **Terceira ressalva, nova e antes ausente:** o somatório percorre os **quatro pontos de
+   quantização**, cujos multiplicadores de Lagrange diferem, de modo que o agregado pende
+   para o mais grosseiro, onde os custos RD são maiores. Não invalida o regime ordinal, mas
+   é pergunta certa de banca de codificação. **Não foi quantificado** — exigiria uma
+   passagem sobre os pkls somando `none_rd` por CQ.
+
+Menores: "optimal subtree" virou linguagem de partição; `Δ = 25%` glosado como *"one
+quarter of the search work skipped"* e não "of the shape evaluations", que era impreciso
+por Δ ser ponderado por área.
