@@ -60,7 +60,8 @@ matplotlib.rcParams.update({
 })
 
 COL_W_IN = 252.0 / 72.27
-FIG_H_IN = 1.72            # reserva no .tex: 4,4 cm = 1,73 in
+FIG_H_IN = 1.55            # baixado de 1,72 na revisao, para a Conclusao caber
+                           # na pagina 4; o eixo e logaritmico e sobrava folga
 
 # --- o que entra, na ordem da Tabela I ---------------------------------------
 # `convnext_ce` NAO entra: e o braco legado, treinado noutro conjunto e com duas
