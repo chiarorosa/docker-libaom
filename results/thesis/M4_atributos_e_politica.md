@@ -126,7 +126,9 @@ vizinhança causal de particionamento** leva a 0,0033 — um ganho de **1,60×**
 acrescentar as **quatro colunas de quantização efetiva, posição no quadro e
 profundidade** não compra nada: sobre o bloco A elas não se separam dele, e sobre
 o bloco B pioram o resultado, com o subconjunto de trinta e duas colunas
-dominando o de trinta e seis em toda a fronteira.
+dominando o de trinta e seis **de 14,2% de redução de custo em diante**, com a
+vantagem crescendo com a agressividade da poda. Abaixo desse ponto a ordem se
+inverte, embora as duas fiquem a menos de 0,00005 ponto percentual uma da outra.
 
 Estes valores substituem os anteriores — variância em 0,0573, `pixels24` em
 0,0121 e H9a em 0,0036, com ganhos de 4,7× e 3,4× —, e a razão da substituição é

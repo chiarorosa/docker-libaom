@@ -365,14 +365,13 @@ A+B (32 columns) & \textbf{0.2} & \textbf{0.5} & \textbf{1.5} & \textbf{3.3}
 
 \begin{figure}[!t]
 \centering
-% TODO: replace by fig2_frontier.pdf, generated last in av1_bench.
-\framebox[0.98\columnwidth]{\rule{0pt}{4.4cm}%
-\parbox{0.86\columnwidth}{\centering\footnotesize
-PLACEHOLDER --- rate-distortion loss versus matched cost reduction, logarithmic
-vertical axis, one curve per representation, with seed-amplitude bars on the
-tabular ones.}}
-\caption{Rate-distortion loss as a function of matched search-cost reduction. Bars
-on the tabular representations show the amplitude over three training seeds.}
+% Grayscale variant. The color one is figura2_fronteira_perda.pdf, same geometry;
+% both from src/scripts/benchmark/plot_loss_frontier_icassp_fig2.py, which reads
+% frontier.csv and refuses to run if it disagrees with Table I.
+\includegraphics[width=\columnwidth]{fig2_loss_frontier}
+\caption{Rate-distortion loss against matched cost reduction, logarithmic
+vertical axis. Bars give the amplitude over three seeds. The random control of
+Table~\ref{tab_frontier} is omitted, as it alone spans a decade of the axis.}
 \label{fig_frontier}
 \end{figure}
 
@@ -396,10 +395,13 @@ Conversely, the four columns of effective quantization, frame position, and node
 depth add nothing. A+C reaches 6.4 units against 5.3 for A at 25\%, and
 its seed amplitude is 4.5 units against 0.8 for A, so the two distributions
 overlap and block C does not add information while destabilizing the fit. Once combined with the causal columns the
-effect is no longer ambiguous, as A+B reaches 3.3 units against 4.0 for A+B+C, all
-nine pairwise seed comparisons agree, and Fig.~\ref{fig_frontier} shows A+B
-dominating A+B+C across the entire frontier. The thirty-six column vector is therefore not the offline optimum,
-although this superiority of A+B has not been verified inside the encoder.
+effect is no longer ambiguous, as A+B reaches 3.3 units against 4.0 for A+B+C and
+all nine pairwise seed comparisons agree. Fig.~\ref{fig_frontier} places the
+crossover at 14.2\% of cost reduction: below it the two are within 0.05 units of
+each other and the order is reversed, and above it A+B leads by a margin that
+widens with pruning. The thirty-six column vector is therefore not the offline
+optimum in the regime the paper reads, although this superiority of A+B has not
+been verified inside the encoder.
 
 The deep arm does not support the hypothesis that raw pixels plus representation
 capacity suffice. In its most favorable configuration it reaches 21.9 units at

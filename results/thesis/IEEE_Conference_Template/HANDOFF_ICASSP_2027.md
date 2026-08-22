@@ -453,3 +453,24 @@ Esquema adotado, a manter:
 **Não trocar por "model"**: a tese do artigo é que a diferença não está no modelo e sim na
 informação, e chamar A e A+B de *models* empurra o leitor para a leitura arquitetural que o
 artigo quer negar. Nos artefatos de código a escada permanece (`rpp_ladder.py`), ver §1.
+
+---
+
+## 15. A figura 2 derrubou uma afirmação (22/08)
+
+Ao plotar a fronteira apareceu que **"A+B domina A+B+C em toda a fronteira" é falso**. O
+cruzamento está em **14,2%** de redução de custo: abaixo dele A+B+C é melhor, acima dele
+A+B lidera com margem que cresce com a poda.
+
+O erro nasceu do **arredondamento da Tabela I**: a 10% as duas leem 0,2 em unidades de
+10⁻³ %, quando são 0,235 contra 0,187. A tabela escondia a inversão, e a afirmação foi
+escrita a partir dela.
+
+Corrigido no artigo e propagado em `M4`, `A1_INDICE_evidencias` e `INVENTARIO_solucoes`.
+Enunciado correto, a usar daqui em diante: **A+B supera A+B+C de 14,2% de redução de custo
+em diante; abaixo disso a ordem se inverte, com as duas a menos de 0,05 unidade uma da
+outra.** A conclusão do artigo não muda — o ponto de leitura é 25%, e lá a separação é
+robusta nas nove comparações de semente.
+
+**Lição de método, a manter:** a figura serviu de auditoria da tabela. Vale desconfiar de
+qualquer afirmação de dominância extraída de valores arredondados.

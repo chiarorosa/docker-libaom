@@ -119,7 +119,7 @@ codificação da família; **2 quadros, 1 sequência** — a limitação que mot
 | A+C (28 col) | 0,0064 | não se separa de A |
 | A (24 col, bloco de pixels) | 0,0053 | **melhor modelo de pixels medido** |
 | A+B+C (36 col) | 0,0040 | o vetor implantado |
-| **A+B (32 col)** | **0,0033** | **domina A+B+C em toda a fronteira** |
+| **A+B (32 col)** | **0,0033** | **domina A+B+C de 14,2% de cost_red em diante** |
 
 > **Tabela vigente desde 2026-08-20**, de `results/models/oracle_regret_rpp/`, sob receita
 > de treino fixa, 3 sementes por degrau e grade densa de τ para a variância. A versão
