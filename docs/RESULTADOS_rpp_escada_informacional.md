@@ -139,8 +139,15 @@ que ele prejudique quando isolado.
 
 **4.5 C prejudica quando somado a B, e aí sim de forma consistente.** A+B marca 0,0033 e
 A+B+C marca 0,0040, com **as três sementes de A+B superando as três de A+B+C** e A+B+C
-exibindo dispersão nula. O subconjunto de trinta e duas colunas domina o de trinta e seis em
-todos os pontos da fronteira. O vetor implantado não é, offline, o melhor dos quatro.
+exibindo dispersão nula. O subconjunto de trinta e duas colunas domina o de trinta e seis
+**de 14,2% de redução de custo em diante**, e abaixo desse ponto a ordem se inverte, com as
+duas a menos de 0,00005 ponto percentual uma da outra. O vetor implantado não é, offline, o
+melhor dos quatro no regime lido.
+
+> **Correção de registro (2026-08-22).** Esta subseção afirmava dominância em **todos** os
+> pontos da fronteira. A afirmação vinha da tabela arredondada, em que A+B e A+B+C leem
+> ambas 0,0002 a 10% de redução de custo, quando são 0,000235 e 0,000187. O cruzamento foi
+> localizado ao gerar a Figura 2 do artigo ICASSP, que plota a fronteira contínua.
 
 **4.6 A escada corrigida.** Sob receita fixa e grade densa, a 25%: variância 0,0374 →
 A 0,0053 (**7,0×**) → A+B 0,0033 (**1,60×**). Os números anteriores, 4,7× e 3,4×, não se
