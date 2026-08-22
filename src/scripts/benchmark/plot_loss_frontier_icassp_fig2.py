@@ -22,10 +22,12 @@ Composicao:
   intervalo de confianca, e a legenda do artigo diz isso.
 
 Duas paletas, MESMA GEOMETRIA, como nos geradores do LASCAS:
-  cor   — familia tabular em azul-aco, familia profunda em violeta, referencias
-          em neutro;
-  cinza — a familia deixa de ser separada por matiz e passa a se-lo pelo tracado
-          e pelo marcador, que sobrevivem a impressao monocromatica.
+  cor   — a referencia em cinza, a familia profunda agrupada em tres tons de
+          laranja, e cada uma das quatro tabulares com matiz proprio, porque
+          elas ocupam uma faixa estreita do eixo e um matiz unico as tornava
+          ilegiveis umas sobre as outras;
+  cinza — o matiz da variante de cor vira luminancia, e tracado e marcador
+          continuam separando as nove curvas na impressao monocromatica.
 
 Uso (dentro do conteiner):
     build/venv-ml/bin/python \
@@ -96,21 +98,40 @@ TABELA_I = {
     "A+B":                      [0.2, 0.5, 1.5, 3.3, 6.9],
 }
 
+# Cor POR CURVA, e nao por familia. A familia tabular ocupa uma faixa estreita do
+# eixo — a 25% as quatro cabem entre 3,3 e 6,4 unidades —, e um matiz unico para
+# as quatro deixava o cruzamento de A+B com A+B+C ilegivel. Cada uma recebe agora
+# um matiz proprio, com boa dispersao de luminancia, e mantem o tracado e o
+# marcador como canal redundante: e isso que preserva a leitura em impressao
+# monocromatica acidental e sob daltonismo.
+# A familia profunda continua agrupada em laranja, em tres tons: ali o que
+# importa e que as tres estejam juntas e acima, nao qual e qual.
+CURVA_COR = {
+    "random control":           "#8a8880",
+    "variance":                 "#8a8880",   # referencia, fora da disputa
+    "ConvNeXt, plain CE":       "#bf6a1a",
+    "ConvNeXt, width 256":      "#d99441",
+    "ConvNeXt, cost-sensitive": "#8f4a10",
+    "A":                        "#2b7bba",   # azul medio
+    "A+C":                      "#46a08a",   # verde-azulado, o mais claro
+    "A+B+C":                    "#8a5fa8",   # violeta
+    "A+B":                      "#10375c",   # azul profundo, a protagonista
+}
+
 PALETAS = {
-    # Cinza para a referencia, azul para a familia tabular, laranja para a
-    # profunda. O par azul-laranja e o mais seguro sob daltonismo, e separa-se
-    # tambem em luminancia (0,30 contra 0,48), de modo que a figura sobrevive a
-    # uma impressao monocromatica acidental. A referencia fica em cinza porque
-    # nao esta em disputa: e a linha de base que as duas familias tentam bater.
     "cor": dict(
         surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
-        grade="#e3e1d9",
-        ref="#8a8880", deep="#bf6a1a", tab="#25599f",
+        grade="#e3e1d9", curva=CURVA_COR,
     ),
     "cinza": dict(
         surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
         grade="#e0ded7",
-        ref="#9b9992", deep="#6b6a65", tab="#141413",
+        curva={"random control": "#9b9992", "variance": "#9b9992",
+               "ConvNeXt, plain CE": "#6b6a65",
+               "ConvNeXt, width 256": "#8d8c86",
+               "ConvNeXt, cost-sensitive": "#55544f",
+               "A": "#4a4945", "A+C": "#7a7973",
+               "A+B+C": "#2b2a27", "A+B": "#141413"},
     ),
 }
 # Tracado e marcador por curva. Na variante monocromatica sao eles, e nao o
@@ -184,7 +205,7 @@ def draw(out_path, p, dados):
         if not plota:
             continue
         e = ESTILO[rotulo]
-        cor = p[fam]
+        cor = p["curva"][rotulo]
         y, lo, hi = curva(dados, chave, xs)
         ax.plot(xs, y, color=cor, linewidth=e["lw"], linestyle=e["ls"],
                 zorder=3, solid_capstyle="round")
@@ -217,7 +238,7 @@ def draw(out_path, p, dados):
 
     # Legenda em duas colunas, dentro do eixo: numa figura de coluna unica uma
     # caixa externa custaria mais altura do que a que a paginacao tem.
-    handles = [plt.Line2D([], [], color=p[f], linewidth=ESTILO[r]["lw"],
+    handles = [plt.Line2D([], [], color=p["curva"][r], linewidth=ESTILO[r]["lw"],
                           linestyle=ESTILO[r]["ls"],
                           marker=ESTILO[r]["marker"], markersize=2.4,
                           markeredgecolor="none")
