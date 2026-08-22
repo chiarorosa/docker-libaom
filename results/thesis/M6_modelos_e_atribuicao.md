@@ -100,7 +100,7 @@ alvo de perda de otimalidade é melhor em todos os pontos de 10% de redução de
 custo em diante. O que retira o papel de cota superior não é, portanto, o
 objetivo de treino. É a magnitude absoluta: mesmo o melhor braço profundo medido
 permanece 4,1 vezes atrás da representação compacta de vinte e quatro colunas,
-com 2.062 vezes mais parâmetros.
+com 2.481 vezes mais parâmetros.
 
 A segunda medição sobrevive, reforçada. Dobrar a dimensão de fusão de 128 para
 256 piora a perda de validação em **1,0%** sob entropia cruzada e corpus correto
@@ -192,6 +192,22 @@ ocultas de **64 e 32 unidades** com ativação retificada, e uma camada de saíd
 linear. O formato de pesos corresponde exatamente ao esperado pela rotina de
 inferência nativa do codificador, o que dispensa código de inferência novo algum
 em C.
+
+Desta topologia decorrem as contagens de parâmetros que sustentam as razões de
+capacidade citadas no Capítulo de Resultados. Por nível, `(n·64 + 64) + (64·32 +
+32) + (32·3 + 3)` dá **3.779** parâmetros para 24 entradas, **4.291** para 32 e
+**4.547** para 36; como há um modelo por tamanho de bloco, os totais das três
+redes são, respectivamente, **11.337**, **12.873** e **13.641**. Contra os
+**28.128.638** parâmetros do modelo substituto convolucional, as razões são
+**2.481×** para as vinte e quatro colunas, **2.185×** para trinta e duas e
+**2.062×** para trinta e seis.
+
+> **Correção de registro (2026-08-22).** Versões anteriores deste capítulo e da
+> Seção 1 do Capítulo de Resultados citavam **2.062×** ao lado da comparação com
+> as **vinte e quatro** colunas. Aquele valor é a razão contra as três redes de
+> **trinta e seis** colunas; a razão correta para a comparação enunciada é
+> **2.481×**, e foi propagada em `M6`, `R1`, `T_RESULTADOS` e nos documentos
+> operacionais correspondentes.
 
 O que distingue as variantes é o número de entradas e o número de saídas,
 conforme o ponto de enganche e a ação de cada uma. O estudante de pixels consome

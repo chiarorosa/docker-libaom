@@ -223,7 +223,7 @@ Os ganhos marginais entre passos sucessivos são igualmente informativos.
 Acrescentar as vinte e três colunas manuais restantes à variância isolada compra
 **7,0×**. Acrescentar 28,1 milhões de parâmetros convolucionais sobre pixels
 crus rende **0,2×**, ou seja, **piora**, ainda que o modelo profundo disponha de
-2.062 vezes mais parâmetros. Acrescentar as oito colunas de vizinhança causal de
+2.481 vezes mais parâmetros. Acrescentar as oito colunas de vizinhança causal de
 particionamento compra **1,60×**, e esta é a única adição de contexto que
 compra alguma coisa: as quatro colunas de quantização efetiva, posição no quadro
 e profundidade **não acrescentam informação decisória**, e pioram o resultado
@@ -286,7 +286,7 @@ perceptrone de múltiplas camadas sobre colunas manuais das quais vinte e uma s�
 extraídas da **mesma luminância** e as três restantes são o índice de quantização
 e a posição no superbloco, que a rede também recebe pelo seu plano constante de
 quantização — por 0,0219 contra 0,0053 a 25% de redução de custo, ou seja,
-**4,1×**, com 2.062 vezes mais parâmetros. Um modelo batido por outro cujo acesso
+**4,1×**, com 2.481 vezes mais parâmetros. Um modelo batido por outro cujo acesso
 à informação é estritamente menor, e que ele poderia em princípio representar
 internamente, **não estabelece cota superior alguma**: o resultado enuncia algo a
 respeito do treino realizado, e não a respeito dos pixels.
@@ -394,7 +394,7 @@ arquivo de extração de atributos.
 
 O enunciado correto, e verificável, é triplo. No domínio de pixels, **descritores
 manuais compactos vencem uma rede convolucional profunda sobre pixels crus**, por
-**4,1×**, com 2.062 vezes menos parâmetros. **As oito colunas de vizinhança
+**4,1×**, com 2.481 vezes menos parâmetros. **As oito colunas de vizinhança
 causal de particionamento, de custo praticamente nulo por já estarem residentes
 na memória do codificador, acrescentam 1,60× sobre eles.** E **as quatro colunas
 de quantização efetiva, posição no quadro e profundidade não acrescentam

@@ -149,7 +149,7 @@ sustentam: o primeiro repousava em interpolação e o segundo em confundimento d
 **4.7 O braço profundo perde por cerca de 4× a 5×, sob tratamento justo.** Com corpus
 correto, sem vazamento, capacidade dobrada e o melhor dos dois objetivos disponíveis, o
 ConvNeXt de 28,1 milhões de parâmetros marca 0,0219 contra 0,0053 do degrau A — **4,1× pior
-com 2.062× mais parâmetros**. Dobrar a largura de fusão piora (0,0294 contra 0,0272), o que
+com 2.481× mais parâmetros**. Dobrar a largura de fusão piora (0,0294 contra 0,0272), o que
 confirma que a capacidade não é a restrição.
 
 **4.8 A conclusão da tese sobre o alvo de perda de otimalidade se inverte.** Com corpus,

@@ -224,7 +224,7 @@ trabalho de GPU, não de re-codificação da UVG.
 > |---|--:|--:|
 > | variância (grade densa) | 0,0374 | — |
 > | A — 24 colunas compactas | 0,0053 | **7,0×** |
-> | ConvNeXt, melhor dos dois objetivos | 0,0219 | **0,2× (pior)**, com 2.062× mais parâmetros |
+> | ConvNeXt, melhor dos dois objetivos | 0,0219 | **0,2× (pior)**, com 2.481× mais parâmetros |
 > | A+B — +8 de vizinhança causal | 0,0033 | **1,60×** |
 > | A+C — +4 de quant./posição/profundidade | 0,0064 | sem separação de A |
 > | A+B+C — as 36 colunas | 0,0040 | pior que A+B |
