@@ -360,7 +360,10 @@ a Conclusão para a 5ª página, o que viola a CFP.
 O artigo dizia que o AV1 divide o quadro em superblocos de 64×64. **Está errado, e a
 correção tem consequência de escopo.**
 
-Verificado no código: `av1_select_sb_size()` em `src/aom/av1/encoder/encoder_utils.c` —
+**No texto do artigo o fato é atribuído a `han2021` (Han et al., "A technical overview of
+AV1"), por decisão do autor**, sem citar o limiar de 720p nem o código. A verificação
+interna, que sustenta a decisão de escopo mas não aparece no artigo, foi esta:
+`av1_select_sb_size()` em `src/aom/av1/encoder/encoder_utils.c` —
 com `--usage=2` (All-Intra), `cpu-used=0`, 4K, sem superres nem resize e sem `--sb-size`
 explícito no `build_dataset.py`, o fluxo cai no `return BLOCK_128X128`. O
 **superbloco era 128×128**. O dataset confirma: `label_histogram.csv` só tem

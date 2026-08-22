@@ -128,11 +128,10 @@ carries decision information that luminance does not provide.
 
 \section{Intra Partition Search in AV1}
 
-AV1 partitions each frame into super blocks whose size the encoder selects,
-128$\times$128 or 64$\times$64 samples; libaom selects 128$\times$128 above 720p,
-and therefore for every sequence used here. Each super block is recursively
-divided by a search over a quad-tree of square nodes that may descend to
-4$\times$4 samples. At every node the encoder may evaluate ten partition shapes,
+AV1 partitions each frame into super blocks of 128$\times$128 samples, which the
+encoder may alternatively set to 64$\times$64 \cite{han2021}. Each super block is
+recursively divided by a search over a quad-tree of square nodes that may descend
+to 4$\times$4 samples. At every node the encoder may evaluate ten partition shapes,
 organized in four groups: the undivided block, the quaternary split, the two
 rectangular shapes, and the six extended shapes.
 
@@ -297,9 +296,9 @@ The corpus comprises sixteen sequences of the UVG dataset \cite{uvg} at 4K
 resolution (3840$\times$2160), 8 bits and 4:2:0 chroma subsampling. The
 restriction to 4K is deliberate. The search cost grows with the number of nodes,
 so this is the resolution at which the exhaustive partition search is most
-prohibitive, and it is also the regime in which libaom selects the
-128$\times$128 super block and therefore the deepest partition tree; averaging
-over resolutions would average over two different tree structures. Each sequence
+prohibitive; and resolution also governs the super block size the encoder selects,
+so averaging over resolutions would average over different tree depths. Each
+sequence
 was encoded at four quantization points
 (\texttt{cq-level} 20, 32, 43, and 55) over five frames sampled uniformly along
 the whole clip, since consecutive frames are nearly identical under All-Intra. The
