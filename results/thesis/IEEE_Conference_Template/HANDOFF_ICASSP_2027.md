@@ -182,8 +182,13 @@ a perda às representações, não afirma magnitude absoluta.
 - **V. Conclusions** — fórmula B.10, sem número inédito.
 
 **Decisões de tratamento já tomadas:**
-- A inversão do objetivo (α=3 melhor que α=0) **entra** no artigo, em III-D, como prova de
-  tratamento justo.
+- A inversão do objetivo (α=3 melhor que α=0) **NÃO entra** no artigo — revisto em 22/08,
+  substitui a decisão anterior. Contratempo de processo não é achado. A III-D diz apenas
+  que os dois objetivos foram treinados sob corpus, escalonamento e critério idênticos,
+  que o sensível a custo vence de 10% em diante, e que o braço profundo é lido no melhor
+  dos dois. Pelo mesmo motivo saiu a auditoria do checkpoint contaminado: no lugar dela, a
+  afirmação positiva de que o braço foi treinado no mesmo corpus e sob a mesma partição
+  dos degraus. **A retratação permanece na tese**, em `M6` e `R7`, onde ela pertence.
 - Os **quatro** degraus entram na tabela, incluindo que **A+B domina A+B+C**.
 
 ## 6. O que falta — a fazer amanhã

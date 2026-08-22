@@ -315,24 +315,21 @@ the six held-out sequences, which contribute 226\,447 units of 64 samples and
 
 The deep arm carries the hypothesis that raw pixels plus capacity suffice, so a
 negative result on it only counts if the arm was given every advantage. Three
-measures were taken.
+controls were applied.
 
-The first concerns the corpus. An audit of an earlier checkpoint revealed that
-this arm had been trained on a much smaller set, at a single quantization point
-and with two of the six held-out sequences present in training; that comparison
-was discarded, and the arm was retrained on the same corpus and the same split as
-the rungs. The second concerns capacity: the fusion width was doubled from 128 to
-256 channels, and the wider model turned out 1.0\% worse in validation loss, so
-capacity is not the binding constraint.
+The first is exposure. The arm was trained on the same corpus and under the same
+split as the rungs, so no representation sees data that another does not. The
+second is capacity. The fusion width was doubled from 128 to 256 channels, and the
+wider model is 1.0\% worse in validation loss, so additional capacity does not
+help and capacity is not the binding constraint.
 
-The third concerns the training objective. A plain cross entropy and a
-cost-sensitive variant \cite{elkan}, which weights each node by the
-rate-distortion loss its misclassification would incur, were trained under
-identical corpus, schedule, and selection criterion. The cost-sensitive objective
-proved better at every operating point from 10\% of cost reduction onward, and it
-is the deep result discussed in Section~\ref{sec_results}. This inverts a
-conclusion previously drawn by the authors from an uncontrolled comparison, so the
-value reported for the deep arm is the most favorable one measured.
+The third is the training objective. A plain cross entropy and a cost-sensitive
+variant \cite{elkan}, which weights each node by the rate-distortion loss its
+misclassification would incur, were trained under identical corpus, schedule, and
+selection criterion. The cost-sensitive objective is better at every operating
+point from 10\% of cost reduction onward, and it is the one reported in
+Section~\ref{sec_results}, so the deep arm is read at the better of the two
+objectives measured.
 
 \section{Results and Discussion}
 \label{sec_results}
