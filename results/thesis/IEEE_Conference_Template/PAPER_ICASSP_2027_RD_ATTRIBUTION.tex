@@ -160,7 +160,7 @@ quantization, in-loop filters, and entropy coding are not included in the loop
 attacked here, and therefore they are not focused on this work. The decision at
 the 128$\times$128 root is also outside this scope: the protocol attaches at the
 four 64$\times$64 quadrants of each super block and models the 64, 32, and 16
-sample levels. Blocks of 8$\times$8 samples were never split in this corpus, no
+sample levels. Blocks of 8$\times$8 samples were never split in this dataset, no
 divided label appearing among 16.91 million of them, so 4$\times$4 nodes do not
 occur and 8$\times$8 is the effective leaf; they are excluded from modeling while
 kept in the cost accounting.
@@ -293,7 +293,7 @@ the AOM Common Test Conditions \cite{ctc} at
 \texttt{cpu-used=0}, which enables the full rate-distortion search and therefore
 makes the recorded decisions optimal by construction.
 
-The corpus comprises sixteen sequences of the UVG dataset \cite{uvg} at 4K
+The experiments use sixteen sequences of the UVG dataset \cite{uvg} at 4K
 resolution (3840$\times$2160), 8 bits and 4:2:0 chroma subsampling. The
 restriction to 4K is deliberate. The search cost grows with the number of nodes,
 so this is the resolution at which the exhaustive partition search is most
@@ -317,16 +317,17 @@ The deep arm carries the hypothesis that raw pixels plus capacity suffice, so a
 negative result on it only counts if the arm was given every advantage. Three
 controls were applied.
 
-The first is exposure. The arm was trained on the same corpus and under the same
-split as the tabular representations, so none sees data that another does not. The
+The first is exposure. The arm was trained on the same training and validation
+sets as the tabular representations, so none sees data that another does not. The
 second is capacity. The fusion width was doubled from 128 to 256 channels, and the
 wider model is 1.0\% worse in validation loss, so additional capacity does not
 help and capacity is not the binding constraint.
 
 The third is the training objective. A plain cross entropy and a cost-sensitive
 variant \cite{elkan}, which weights each node by the rate-distortion loss its
-misclassification would incur, were trained under identical corpus, schedule, and
-selection criterion. The cost-sensitive objective is better at every operating
+misclassification would incur, were trained on the same data with the same
+schedule and selection criterion. The cost-sensitive objective is better at every
+operating
 point from 10\% of cost reduction onward, and it is the one reported in
 Section~\ref{sec_results}, so the deep arm is read at the better of the two
 objectives measured.
@@ -419,7 +420,7 @@ information access establishes no ceiling.
 Three further limitations qualify these results. The three seeds provide an
 amplitude and not a confidence interval. The objective ablation of the deep arm
 covers two objectives, and the strength of the cost weighting was not swept. And
-the corpus is 4K only, so whether the causal neighborhood carries the same weight
+the dataset is 4K only, so whether the causal neighborhood carries the same weight
 where the super block is 64$\times$64 is not established here.
 
 \section{Conclusions}

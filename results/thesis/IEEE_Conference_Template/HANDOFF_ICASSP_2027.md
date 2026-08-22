@@ -442,6 +442,8 @@ Esquema adotado, a manter:
   braço profundo);
 - **indivíduo** → o rótulo nu: **A**, **A+B**, **A+C**, **A+B+C**;
 - **artefato treinado** → *networks* / *model*, e só onde parâmetros ou treino são o assunto;
+- **conjunto de dados** → *dataset*, *training set*, *validation set*, *test set*. **Nunca
+  "corpus"**: é vocabulário de PLN/LLM, não de aprendizado aplicado a codificação;
 - **procedimento de treino** → *training strategy*, sempre. Havia três nomes para isto —
   "recipe", "training procedure" e "training strategy" —; ficou só o último, que é o que a
   literatura IEEE de codificação usa.
