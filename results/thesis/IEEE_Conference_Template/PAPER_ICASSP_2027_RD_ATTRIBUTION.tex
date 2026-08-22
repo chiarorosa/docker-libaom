@@ -272,8 +272,8 @@ $\Delta(\tau)$ is the percentage difference between the work performed by the
 policy and the work of the full search. It is a counted quantity and not
 wall-clock time, nor an estimate of it.
 
-Summing \eqref{eqn_regret} over the committed nodes gives the loss the pruning
-incurred,
+Summing \eqref{eqn_regret} over the committed nodes gives the counterfactual loss
+of the pruning under that replay,
 \begin{equation}
 L(\tau) = 100 \, \frac{\sum_{n \in P(\tau)} r(n)}{\sum_{n \in N}
 J_{\mathrm{none}}(n)},
