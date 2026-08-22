@@ -375,9 +375,10 @@ Table~\ref{tab_frontier} is omitted, as it alone spans a decade of the axis.}
 \label{fig_frontier}
 \end{figure}
 
-The main conclusion when observing Table~\ref{tab_frontier} is that the ordering
-of the representations is preserved across the whole range, so it is not an
-artifact of one operating point. At 25\%, isolated variance loses 37.4
+The main conclusion when observing Table~\ref{tab_frontier} is that the four
+tabular representations stay below every pixel-domain arm at every cost reduction
+reported, so the separation between the two families is not an artifact of one
+operating point. At 25\%, isolated variance loses 37.4
 units while the twenty-four compact columns of A lose 5.3, a reduction of 7.0
 times, against the 516.6 units of the random control. This is the largest single
 gain in the table, and it contradicts any reading in which the information
@@ -408,7 +409,8 @@ capacity suffice. In its most favorable configuration it reaches 21.9 units at
 25\%, which is 4.1 times worse than A, although it holds 28\,128\,638
 parameters against the 11\,337 of the three networks of A, a factor of 2481.
 Doubling the fusion width degrades the result rather than improving it, at 29.4
-against 27.2 units under the same objective. This may be attributed to missing
+against 27.2 units under the same objective, and below 12\% of cost reduction the
+whole deep family is beaten by isolated variance. This may be attributed to missing
 information rather than to available capacity: the deep arm reads the same pixels
 as A, and eight columns of encoder state close a further factor of 1.60 with
 4291 parameters per level. The deep arm is therefore not an upper bound of the

@@ -474,3 +474,34 @@ robusta nas nove comparações de semente.
 
 **Lição de método, a manter:** a figura serviu de auditoria da tabela. Vale desconfiar de
 qualquer afirmação de dominância extraída de valores arredondados.
+
+---
+
+## 16. Varredura de afirmações do artigo contra o dado (22/08)
+
+Toda afirmação numérica e toda alegação de dominância foram reconferidas contra
+`frontier.csv` e `label_histogram.csv`. **Uma segunda afirmação caiu**, da mesma família da
+§15.
+
+**Caiu:** *"the ordering of the representations is preserved across the whole range"*. Entre
+10% e 30% de redução de custo, **cinco dos vinte e oito pares trocam de ordem**: variância ×
+ConvNeXt-CE em 12,6%, variância × ConvNeXt-256 em 14,7%, variância × ConvNeXt sensível a
+custo em 11,1%, A × A+C em 20,8% e A+B+C × A+B em 14,2%.
+
+**Substituída por uma afirmação mais forte e verificada:** as **quatro representações
+tabulares ficam abaixo de todas as quatro do domínio de pixels em toda a faixa reportada,
+sem exceção**. É a separação entre famílias, e não a ordem interna de cada uma, que se
+preserva — e é ela que o artigo precisa.
+
+**Achado aproveitado:** abaixo de 12% de redução de custo a família profunda inteira perde
+para a **variância isolada**. Entrou no parágrafo do braço profundo: reforça o princípio (3)
+mais do que qualquer razão a 25%.
+
+**Conferidas e corretas, não mexer:** 7,0× e 1,60× e 4,1×; 2.481× e os 4291 parâmetros por
+nível; pior semente de A+B 3,64 contra melhor de A 4,91; nove de nove comparações A+B contra
+A+B+C a 25%; amplitudes 0,81 e 4,56; 29,4 contra 27,2 e o 1,0% de perda de validação; o
+sensível a custo melhor em toda a faixa de 10% a 30%; e as 16.911.613 amostras de 8×8, todas
+`PARTITION_NONE`, zero divididas.
+
+**Regra para daqui em diante:** nenhuma alegação de dominância entra no texto sem ser
+testada na grade fina. Duas caíram por terem sido escritas a partir de tabela arredondada.
