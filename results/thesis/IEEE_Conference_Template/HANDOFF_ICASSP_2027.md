@@ -426,3 +426,23 @@ Cinco mudanças aplicadas, todas com o mesmo motivo: o que um leitor do ViTech t
 Menores: "optimal subtree" virou linguagem de partição; `Δ = 25%` glosado como *"one
 quarter of the search work skipped"* e não "of the shape evaluations", que era impreciso
 por Δ ser ponderado por área.
+
+---
+
+## 14. Vocabulário: "rung" foi eliminado (22/08)
+
+O termo vinha da *escada informacional* interna, mas **o artigo nunca estabelece a metáfora**
+— nunca diz "ladder" —, de modo que o leitor encontrava "rung A" sem referente. Pior, era
+uma segunda taxonomia para algo que o artigo já nomeia: *representation* é o título da III-A
+e o sujeito do protocolo e dos resultados.
+
+Esquema adotado, a manter:
+
+- **classe** → *representation* (ou *tabular representation*, quando o contraste é com o
+  braço profundo);
+- **indivíduo** → o rótulo nu: **A**, **A+B**, **A+C**, **A+B+C**;
+- **artefato treinado** → *networks* / *model*, e só onde parâmetros ou treino são o assunto.
+
+**Não trocar por "model"**: a tese do artigo é que a diferença não está no modelo e sim na
+informação, e chamar A e A+B de *models* empurra o leitor para a leitura arquitetural que o
+artigo quer negar. Nos artefatos de código a escada permanece (`rpp_ladder.py`), ver §1.

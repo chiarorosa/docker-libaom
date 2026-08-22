@@ -200,9 +200,9 @@ the above and left neighbors, their already decided widths and heights in
 logarithmic scale, the relative granularity of the neighborhood, and its
 anisotropy. Block C adds four columns of effective quantization and position,
 namely the dequantization step of the direct-current coefficient, the normalized
-position within the frame, and the depth of the node. Four rungs are built from
-these blocks, namely A, A+B, A+C, and A+B+C, the last one holding thirty-six
-columns. All of these columns are natively available during encoding at the
+position within the frame, and the depth of the node. Four tabular representations
+are built from these blocks, namely A, A+B, A+C, and A+B+C, the last one holding
+thirty-six columns. All of these columns are natively available during encoding at the
 pre-search instant, ensuring zero computational overhead for feature extraction.
 
 The remaining representation is the deep pixel arm, a multi-level convolutional
@@ -215,12 +215,12 @@ present as a test of the hypothesis that raw pixels plus representation capacity
 suffice, and not as an architectural baseline. A random scorer is included as a
 control.
 
-The four rungs are multilayer perceptrons with two hidden layers of 64 and 32
-rectified units, one network per block size, trained with hard-label cross entropy
-and AdamW \cite{adamw}, learning rate $1 \times 10^{-3}$, batches of 4096, and a
-fixed budget of 30 epochs. Every rung shares this one recipe and differs only in
-which columns it reads, which is what makes the verdict fall on information rather
-than on capacity or on training procedure. Each rung is trained with three seeds
+Each of the four is read by three multilayer perceptrons, one per block size, with
+two hidden layers of 64 and 32 rectified units, trained with hard-label cross
+entropy and AdamW \cite{adamw}, learning rate $1 \times 10^{-3}$, batches of 4096,
+and a fixed budget of 30 epochs. All four share this recipe and differ only in
+which columns they read, which is what makes the verdict fall on information
+rather than on capacity or on training procedure. Each is trained with three seeds
 and the reported value is their mean.
 
 \subsection{Policy, Cost Model, and Loss}
@@ -318,7 +318,7 @@ negative result on it only counts if the arm was given every advantage. Three
 controls were applied.
 
 The first is exposure. The arm was trained on the same corpus and under the same
-split as the rungs, so no representation sees data that another does not. The
+split as the tabular representations, so none sees data that another does not. The
 second is capacity. The fusion width was doubled from 128 to 256 channels, and the
 wider model is 1.0\% worse in validation loss, so additional capacity does not
 help and capacity is not the binding constraint.
@@ -372,22 +372,22 @@ A+B (32 columns) & \textbf{0.2} & \textbf{0.5} & \textbf{1.5} & \textbf{3.3}
 \framebox[0.98\columnwidth]{\rule{0pt}{4.4cm}%
 \parbox{0.86\columnwidth}{\centering\footnotesize
 PLACEHOLDER --- rate-distortion loss versus matched cost reduction, logarithmic
-vertical axis, one curve per representation, with seed-amplitude bars on the four
-rungs.}}
+vertical axis, one curve per representation, with seed-amplitude bars on the
+tabular ones.}}
 \caption{Rate-distortion loss as a function of matched search-cost reduction. Bars
-on the rungs show the amplitude over three training seeds.}
+on the tabular representations show the amplitude over three training seeds.}
 \label{fig_frontier}
 \end{figure}
 
 The main conclusion when observing Table~\ref{tab_frontier} is that the ordering
 of the representations is preserved across the whole range, so it is not an
 artifact of one operating point. At 25\%, isolated variance loses 37.4
-units while the twenty-four compact columns of rung A lose 5.3, a reduction of 7.0
+units while the twenty-four compact columns of A lose 5.3, a reduction of 7.0
 times, against the 516.6 units of the random control. This is the largest single
 gain in the table, and it contradicts any reading in which the information
 available in the pixel domain would be exhausted by variance.
 
-Adding the eight causal partitioning columns to rung A lowers the loss from 5.3 to
+Adding the eight causal partitioning columns to A lowers the loss from 5.3 to
 3.3 units, a further reduction of 1.60 times. The separation is robust to
 initialization, since the worst of the three seeds of A+B, at 3.6, is still better
 than the best of the three seeds of A, at 4.9. This is the central result: those eight columns
@@ -396,8 +396,8 @@ from the luminance of the block under any transformation, and therefore carry
 information produced by the encoding process itself.
 
 Conversely, the four columns of effective quantization, frame position, and node
-depth add nothing. Rung A+C reaches 6.4 units against 5.3 for rung A at 25\%, and
-its seed amplitude is 4.5 units against 0.8 for rung A, so the two distributions
+depth add nothing. A+C reaches 6.4 units against 5.3 for A at 25\%, and
+its seed amplitude is 4.5 units against 0.8 for A, so the two distributions
 overlap and block C does not add information while destabilizing the fit. Once combined with the causal columns the
 effect is no longer ambiguous, as A+B reaches 3.3 units against 4.0 for A+B+C, all
 nine pairwise seed comparisons agree, and Fig.~\ref{fig_frontier} shows A+B
@@ -406,12 +406,12 @@ although this superiority of A+B has not been verified inside the encoder.
 
 The deep arm does not support the hypothesis that raw pixels plus representation
 capacity suffice. In its most favorable configuration it reaches 21.9 units at
-25\%, which is 4.1 times worse than rung A, although it holds 28\,128\,638
-parameters against the 11\,337 of the three networks of rung A, a factor of 2481.
+25\%, which is 4.1 times worse than A, although it holds 28\,128\,638
+parameters against the 11\,337 of the three networks of A, a factor of 2481.
 Doubling the fusion width degrades the result rather than improving it, at 29.4
 against 27.2 units under the same objective. This may be attributed to missing
 information rather than to available capacity: the deep arm reads the same pixels
-as rung A, and eight columns of encoder state close a further factor of 1.60 with
+as A, and eight columns of encoder state close a further factor of 1.60 with
 4291 parameters per level. The deep arm is therefore not an upper bound of the
 pixel domain, since a model outperformed by another with strictly smaller
 information access establishes no ceiling.
