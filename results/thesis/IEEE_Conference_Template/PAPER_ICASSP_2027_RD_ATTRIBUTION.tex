@@ -218,9 +218,9 @@ control.
 Each of the four is read by three multilayer perceptrons, one per block size, with
 two hidden layers of 64 and 32 rectified units, trained with hard-label cross
 entropy and AdamW \cite{adamw}, learning rate $1 \times 10^{-3}$, batches of 4096,
-and a fixed budget of 30 epochs. All four share this recipe and differ only in
-which columns they read, which is what makes the verdict fall on information
-rather than on capacity or on training procedure. Each is trained with three seeds
+and a fixed budget of 30 epochs. All four share this training strategy and differ
+only in which columns they read, so the verdict falls on information rather than
+on capacity or on how the models were trained. Each is trained with three seeds
 and the reported value is their mean.
 
 \subsection{Policy, Cost Model, and Loss}
@@ -428,7 +428,7 @@ This paper presented an offline attribution protocol that measures the
 rate-distortion loss of competing representations of the AV1 intra partition
 decision at matched search-cost reduction, reaching the conclusion that the causal
 state of the encoding process carries decision information that luminance alone
-does not provide. The protocol holds the pruning policy and the training recipe
+does not provide. The protocol holds the pruning policy and the training strategy
 fixed and varies only the information a representation may read. It was
 evaluated over 3.81 million held-out decision nodes of sixteen UVG 4K sequences
 encoded with libaom v3.10.0. Twenty-four compact descriptors

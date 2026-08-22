@@ -441,7 +441,10 @@ Esquema adotado, a manter:
 - **classe** → *representation* (ou *tabular representation*, quando o contraste é com o
   braço profundo);
 - **indivíduo** → o rótulo nu: **A**, **A+B**, **A+C**, **A+B+C**;
-- **artefato treinado** → *networks* / *model*, e só onde parâmetros ou treino são o assunto.
+- **artefato treinado** → *networks* / *model*, e só onde parâmetros ou treino são o assunto;
+- **procedimento de treino** → *training strategy*, sempre. Havia três nomes para isto —
+  "recipe", "training procedure" e "training strategy" —; ficou só o último, que é o que a
+  literatura IEEE de codificação usa.
 
 **Não trocar por "model"**: a tese do artigo é que a diferença não está no modelo e sim na
 informação, e chamar A e A+B de *models* empurra o leitor para a leitura arquitetural que o
