@@ -97,10 +97,15 @@ TABELA_I = {
 }
 
 PALETAS = {
+    # Cinza para a referencia, azul para a familia tabular, laranja para a
+    # profunda. O par azul-laranja e o mais seguro sob daltonismo, e separa-se
+    # tambem em luminancia (0,30 contra 0,48), de modo que a figura sobrevive a
+    # uma impressao monocromatica acidental. A referencia fica em cinza porque
+    # nao esta em disputa: e a linha de base que as duas familias tentam bater.
     "cor": dict(
         surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
         grade="#e3e1d9",
-        ref="#8a8880", deep="#4a3aa7", tab="#25599f",
+        ref="#8a8880", deep="#bf6a1a", tab="#25599f",
     ),
     "cinza": dict(
         surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
