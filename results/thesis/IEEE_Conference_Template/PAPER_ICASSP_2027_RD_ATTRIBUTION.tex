@@ -334,14 +334,14 @@ objectives measured.
 The representations were evaluated over the six held-out sequences and
 3\,808\,703 decision nodes, under the All-Intra configuration of libaom v3.10.0
 at \texttt{cpu-used=0}. Table~\ref{tab_frontier}
-reports the loss $L$ of \eqref{eqn_loss} at five matched cost reductions, in units
-of $10^{-3}$ percent, where lower is better, and Fig.~\ref{fig_frontier} shows the
+reports the loss $L$ of \eqref{eqn_loss} at five matched cost reductions, in parts
+per million, where lower is better, and Fig.~\ref{fig_frontier} shows the
 corresponding frontiers.
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.3}
-\caption{Rate-Distortion Loss at Matched Cost Reduction, in Units of
-\upshape{$10^{-3}$} Percent of the Aggregated Undivided Cost}
+\caption{Rate-Distortion Loss at Matched Cost Reduction, in Parts per Million of
+the Aggregated Undivided Cost}
 \label{tab_frontier}
 \centering
 \begin{tabular}{lrrrrr}
@@ -349,16 +349,16 @@ corresponding frontiers.
 \textbf{Representation} & \textbf{10\%} & \textbf{15\%} & \textbf{20\%}
 & \textbf{25\%} & \textbf{30\%} \\
 \hline
-Random control & 196.3 & 298.9 & 406.6 & 516.6 & 634.2 \\
-Variance & 4.3 & 12.7 & 25.0 & 37.4 & 55.5 \\
-ConvNeXt, plain CE & 6.5 & 10.5 & 16.4 & 27.2 & 44.2 \\
-ConvNeXt, width 256 & 7.5 & 12.2 & 19.4 & 29.4 & 44.4 \\
-ConvNeXt, cost-sensitive & 5.4 & 8.0 & 14.0 & 21.9 & 37.9 \\
-A (24 columns) & 0.5 & 1.3 & 2.8 & 5.3 & 9.1 \\
-A+C (28 columns) & 0.5 & 1.2 & 2.7 & 6.4 & 12.2 \\
-A+B+C (36 columns) & 0.2 & 0.6 & 1.8 & 4.0 & 7.8 \\
-A+B (32 columns) & \textbf{0.2} & \textbf{0.5} & \textbf{1.5} & \textbf{3.3}
-& \textbf{6.9} \\
+Random control & 1963 & 2989 & 4066 & 5166 & 6342 \\
+Variance & 43 & 127 & 250 & 374 & 555 \\
+ConvNeXt, plain CE & 65 & 105 & 164 & 272 & 442 \\
+ConvNeXt, width 256 & 75 & 122 & 194 & 294 & 444 \\
+ConvNeXt, cost-sensitive & 54 & 80 & 140 & 219 & 379 \\
+A (24 columns) & 5 & 13 & 28 & 53 & 91 \\
+A+C (28 columns) & 5 & 12 & 27 & 64 & 122 \\
+A+B+C (36 columns) & 2 & 6 & 18 & 40 & 78 \\
+A+B (32 columns) & \textbf{2} & \textbf{5} & \textbf{15} & \textbf{33}
+& \textbf{69} \\
 \hline
 \end{tabular}
 \end{table}
@@ -379,38 +379,38 @@ Table~\ref{tab_frontier} is omitted, as it alone spans a decade of the axis.}
 The main conclusion when observing Table~\ref{tab_frontier} is that the four
 tabular representations stay below every pixel-domain arm at every cost reduction
 reported, so the separation between the two families is not an artifact of one
-operating point. At 25\%, isolated variance loses 37.4
-units while the twenty-four compact columns of A lose 5.3, a reduction of 7.0
-times, against the 516.6 units of the random control. This is the largest single
+operating point. At 25\%, isolated variance loses 374 ppm
+while the twenty-four compact columns of A lose 53 ppm, a reduction of 7.0
+times, against the 5166 ppm of the random control. This is the largest single
 gain in the table, and it contradicts any reading in which the information
 available in the pixel domain would be exhausted by variance.
 
-Adding the eight causal partitioning columns to A lowers the loss from 5.3 to
-3.3 units, a further reduction of 1.60 times. The separation is robust to
-initialization, since the worst of the three seeds of A+B, at 3.6, is still better
-than the best of the three seeds of A, at 4.9. This is the central result: those eight columns
+Adding the eight causal partitioning columns to A lowers the loss from 53 to
+33 ppm, a further reduction of 1.60 times. The separation is robust to
+initialization, since the worst of the three seeds of A+B, at 36 ppm, is still
+better than the best of the three seeds of A, at 49 ppm. This is the central result: those eight columns
 describe the partition choices of the already coded neighbors, are not computable
 from the luminance of the block under any transformation, and therefore carry
 information produced by the encoding process itself.
 
 Conversely, the four columns of effective quantization, frame position, and node
-depth add nothing. A+C reaches 6.4 units against 5.3 for A at 25\%, and
-its seed amplitude is 4.5 units against 0.8 for A, so the two distributions
+depth add nothing. A+C reaches 64 ppm against 53 for A at 25\%, and
+its seed amplitude is 45 ppm against 8 for A, so the two distributions
 overlap and block C does not add information while destabilizing the fit. Once combined with the causal columns the
-effect is no longer ambiguous, as A+B reaches 3.3 units against 4.0 for A+B+C and
+effect is no longer ambiguous, as A+B reaches 33 ppm against 40 for A+B+C and
 all nine pairwise seed comparisons agree. Fig.~\ref{fig_frontier} places the
-crossover at 14.2\% of cost reduction: below it the two are within 0.05 units of
+crossover at 14.2\% of cost reduction: below it the two are within 0.5 ppm of
 each other and the order is reversed, and above it A+B leads by a margin that
 widens with pruning. The thirty-six column vector is therefore not the offline
 optimum in the regime the paper reads, although this superiority of A+B has not
 been verified inside the encoder.
 
 The deep arm does not support the hypothesis that raw pixels plus representation
-capacity suffice. In its most favorable configuration it reaches 21.9 units at
+capacity suffice. In its most favorable configuration it reaches 219 ppm at
 25\%, which is 4.1 times worse than A, although it holds 28\,128\,638
 parameters against the 11\,337 of the three networks of A, a factor of 2481.
-Doubling the fusion width degrades the result rather than improving it, at 29.4
-against 27.2 units under the same objective, and below 12\% of cost reduction the
+Doubling the fusion width degrades the result rather than improving it, at 294 ppm
+against 272 under the same objective, and below 12\% of cost reduction the
 whole deep family is beaten by isolated variance. This may be attributed to missing
 information rather than to available capacity: the deep arm reads the same pixels
 as A, and eight columns of encoder state close a further factor of 1.60 with

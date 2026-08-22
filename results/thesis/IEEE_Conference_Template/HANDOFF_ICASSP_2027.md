@@ -505,3 +505,24 @@ sensível a custo melhor em toda a faixa de 10% a 30%; e as 16.911.613 amostras 
 
 **Regra para daqui em diante:** nenhuma alegação de dominância entra no texto sem ser
 testada na grade fina. Duas caíram por terem sido escritas a partir de tabela arredondada.
+
+---
+
+## 17. Unidade e notação de números grandes (22/08) — substitui a §4.1
+
+**A unidade passou de `10⁻³ %` para `ppm`.** A anterior era **composta**: o leitor tinha de
+decodificar "um milésimo de um por cento", duas operações mentais para ler uma célula. `ppm`
+é unidade única e corrente em engenharia, e o efeito na Tabela I é grande — **todas as
+quarenta e cinco células viram inteiros**, de 2 a 6342, contra 0,2 a 634,2 antes.
+
+Conversão: `ppm = reg_frac_pct × 10⁴`. As razões não mudam: 374/53 = 7,0×, 53/33 = 1,60×,
+219/53 = 4,1×.
+
+Isto **substitui** a decisão da §4.1 de escalar a coluna para `10⁻³ %`. O que continua
+valendo daquela seção é o resto: a normalização de `reg_frac` **não** foi refeita, e o
+denominador continua agregando os três níveis — a ressalva na Seção III-B é a mesma.
+
+**Números grandes passam a ser abreviados no texto.** Havia incoerência: o abstract dizia
+"28.1 million" e os Resultados "28\,128\,638", o mesmo número em dois formatos. Regra
+adotada: **acima de seis dígitos, abreviar** — `28.1 million`, `3.81 million`. Ficam por
+extenso os de até seis dígitos, que se leem de relance: `226\,447`, `11\,337`, `4291`.

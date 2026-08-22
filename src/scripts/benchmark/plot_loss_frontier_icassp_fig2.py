@@ -12,9 +12,9 @@ Composicao:
 
   eixo x  reducao de custo de busca casada, em por cento — o contador analitico
           de candidatos ponderado por area, e nao tempo de parede;
-  eixo y  perda de taxa-distorcao, em 10^-3 por cento, em escala logaritmica.
-          Logaritmica porque a faixa util cobre tres ordens de grandeza, de 0,2
-          nas representacoes tabulares a 634 no controle aleatorio, e numa escala
+  eixo y  perda de taxa-distorcao, em partes por milhao, em escala logaritmica.
+          Logaritmica porque a faixa util cobre tres ordens de grandeza, de 2
+          nas representacoes tabulares a 6342 no controle aleatorio, e numa escala
           linear as quatro tabulares colapsariam sobre o eixo.
 
   Nos cinco pontos de leitura da Tabela I, as representacoes tabulares levam
@@ -85,17 +85,17 @@ SEEDS = (0, 1, 2)
 LEITURA = [10, 15, 20, 25, 30]     # os pontos da Tabela I
 X_MIN, X_MAX = 6.0, 31.0
 
-# Valores da Tabela I, em 10^-3 %, para a trava de coerencia.
+# Valores da Tabela I, em ppm, para a trava de coerencia.
 TABELA_I = {
-    "random control":           [196.3, 298.9, 406.6, 516.6, 634.2],
-    "variance":                 [4.3, 12.7, 25.0, 37.4, 55.5],
-    "ConvNeXt, plain CE":       [6.5, 10.5, 16.4, 27.2, 44.2],
-    "ConvNeXt, width 256":      [7.5, 12.2, 19.4, 29.4, 44.4],
-    "ConvNeXt, cost-sensitive": [5.4, 8.0, 14.0, 21.9, 37.9],
-    "A":                        [0.5, 1.3, 2.8, 5.3, 9.1],
-    "A+C":                      [0.5, 1.2, 2.7, 6.4, 12.2],
-    "A+B+C":                    [0.2, 0.6, 1.8, 4.0, 7.8],
-    "A+B":                      [0.2, 0.5, 1.5, 3.3, 6.9],
+    "random control":           [1963, 2989, 4066, 5166, 6342],
+    "variance":                 [43, 127, 250, 374, 555],
+    "ConvNeXt, plain CE":       [65, 105, 164, 272, 442],
+    "ConvNeXt, width 256":      [75, 122, 194, 294, 444],
+    "ConvNeXt, cost-sensitive": [54, 80, 140, 219, 379],
+    "A":                        [5, 13, 28, 53, 91],
+    "A+C":                      [5, 12, 27, 64, 122],
+    "A+B+C":                    [2, 6, 18, 40, 78],
+    "A+B":                      [2, 5, 15, 33, 69],
 }
 
 # Cor POR CURVA, e nao por familia. A familia tabular ocupa uma faixa estreita do
@@ -150,12 +150,14 @@ ESTILO = {
 
 
 def ler(csv_path):
-    """{pruner: [(cost_red, perda em 10^-3 %)]}, ordenado por cost_red."""
+    """{pruner: [(cost_red, perda em ppm)]}, ordenado por cost_red.
+
+    `reg_frac_pct` esta em por cento; ppm = por cento x 1e4."""
     bruto = collections.defaultdict(list)
     with open(csv_path) as f:
         for r in csv.DictReader(f):
             bruto[r["pruner"]].append(
-                (float(r["cost_red"]), float(r["reg_frac_pct"]) * 1000.0))
+                (float(r["cost_red"]), float(r["reg_frac_pct"]) * 1e4))
     return {k: sorted(v) for k, v in bruto.items()}
 
 
@@ -182,7 +184,7 @@ def conferir(dados):
         y, _, _ = curva(dados, chave, xs)
         esperado = TABELA_I[rotulo]
         for g, obtido, alvo in zip(LEITURA, y, esperado):
-            if abs(obtido - alvo) > 0.05:
+            if abs(obtido - alvo) > 0.5:
                 erros.append("  %-26s @%2d%%: figura %.1f, Tabela I %.1f"
                              % (rotulo, g, obtido, alvo))
     if erros:
@@ -221,12 +223,12 @@ def draw(out_path, p, dados):
 
     ax.set_yscale("log")
     ax.set_xlim(X_MIN, X_MAX)
-    ax.set_ylim(0.13, 900)
+    ax.set_ylim(1.3, 9000)
     # Sem escapar o sinal de porcentagem: o matplotlib nao e LaTeX, e "\%"
     # imprimiria a propria barra invertida.
     ax.set_xlabel("Matched cost reduction (%)", fontsize=6.6,
                   color=p["ink"], labelpad=1.6)
-    ax.set_ylabel("Rate-distortion loss ($10^{-3}$ %)", fontsize=6.6,
+    ax.set_ylabel("Rate-distortion loss (ppm)", fontsize=6.6,
                   color=p["ink"], labelpad=1.6)
     ax.tick_params(axis="both", which="major", labelsize=6.0,
                    colors=p["ink_2"], length=1.9, width=0.4, pad=1.4)
