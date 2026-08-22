@@ -167,15 +167,13 @@ kept in the cost accounting.
 
 \begin{figure}[!t]
 \centering
-% TODO: replace by fig1_information_timeline.pdf, generated last in av1_bench.
-\framebox[0.98\columnwidth]{\rule{0pt}{2.8cm}%
-\parbox{0.86\columnwidth}{\centering\footnotesize
-PLACEHOLDER --- information-availability timeline inside one node: causal context
-and source luminance available before the search; undivided cost available after
-the first candidate; subtree costs available only after the recursion. The
-pre-search instant is marked.}}
+% Grayscale variant. The color one is figura1_linha_do_tempo.pdf, same geometry;
+% both from src/scripts/benchmark/plot_information_timeline_icassp_fig1.py.
+\includegraphics[width=\columnwidth]{fig1_information_timeline}
 \caption{Information available to a pruner at each instant of the search of a
-partition node, and the pre-search instant addressed in this work.}
+partition node. Each band is shaded from the instant the encoder holds it, so the
+three column blocks are free at the pre-search instant addressed in this work,
+while the rate-distortion costs are not yet defined there.}
 \label{fig_timeline}
 \end{figure}
 

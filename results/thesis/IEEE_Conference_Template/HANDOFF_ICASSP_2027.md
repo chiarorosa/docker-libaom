@@ -200,9 +200,11 @@ a perda às representações, não afirma magnitude absoluta.
    **removida por decisão do autor em 21/08** — a CFP a admite na 5ª página, não a exige. Zero `Overfull`. Balanceamento da última
    página por `IEEEtriggeratref{18}` — **reconferir se a lista de referências mudar**.
    As figuras estão reservadas como `ramebox` com o propósito escrito dentro, marcadas
-   `% TODO`; Fig. 1 com **2,8 cm** e Fig. 2 com **4,4 cm** de altura reservada — a folga
-   de texto acabou, então uma figura mais alta que a reserva empurra a Conclusão para a 5ª
-   página e viola a CFP.
+   `% TODO`. **A Fig. 1 já está pronta e instalada** (22/08): gerada por
+   `src/scripts/benchmark/plot_information_timeline_icassp_fig1.py`, 3,487 × 1,34 in, nas
+   duas paletas; no artigo entra a **monocromática**, `fig1_information_timeline.pdf`.
+   Falta só a Fig. 2, com **4,4 cm** de reserva — a folga de texto acabou, então uma figura
+   mais alta que a reserva empurra a Conclusão para a 5ª página e viola a CFP.
 2. **Gerar as figuras por último**, no contêiner `av1_bench` com `build/venv-ml`, em inglês
    e paleta acadêmica sóbria. Duas previstas:
    - Fig. 1 — linha do tempo de disponibilidade de informação dentro do nó. **Desenho
