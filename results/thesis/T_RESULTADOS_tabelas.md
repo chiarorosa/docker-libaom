@@ -137,8 +137,8 @@ ponderado pela área do bloco, conforme a Seção 3.4.1 do Capítulo de Metodolo
 As células, por sua vez, **não são taxa BD** e não convertem em taxa BD. O
 denominador soma os três níveis da hierarquia, que recobrem a mesma área da
 imagem, ao passo que a codificação real emprega apenas um nível por região. Por
-conseguinte, o valor sai sistematicamente menor do que qualquer perda observável
-no codificador.
+conseguinte, a razão sai deprimida para um mesmo numerador — o que **não** permite
+afirmar nada sobre a magnitude dela contra uma perda medida por recodificação.
 
 O que a tabela sustenta é a **razão entre subconjuntos no mesmo ponto de
 operação**: a 25%, o `pixels24` desperdiça 3,4 vezes o que o H9a desperdiça. O

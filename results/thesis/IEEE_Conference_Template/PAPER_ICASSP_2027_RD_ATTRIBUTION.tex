@@ -264,8 +264,9 @@ $L$ tends to zero as pruning tends to zero.
 Three properties of $L$ restrict its reading, and they are stated before any
 number is reported. First, the denominator aggregates the
 \texttt{PARTITION\_NONE} costs of the three hierarchy levels, which cover the same
-image area, so it is systematically larger than the cost of coding the frame and
-$L$ is systematically smaller than any efficiency loss observable in the encoder.
+image area, so it exceeds the cost of coding that area. This deflates the ratio
+for a given numerator, and nothing more: it licenses no comparison between the
+magnitude of $L$ and any loss measured by re-encoding.
 Second, the replay discounts recorded values, whereas pruning inside the encoder
 also alters the reconstruction that serves as reference to later blocks, a
 propagation absent here. Third, the sum runs over four quantization points, whose

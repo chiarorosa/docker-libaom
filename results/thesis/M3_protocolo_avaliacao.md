@@ -212,9 +212,18 @@ com vinte e um nós para o denominador, dos quais somente um subconjunto disjunt
 sobrevive na partição escolhida.
 
 O denominador não é, portanto, o custo de codificar o quadro. É a soma de custos
-hipotéticos mutuamente excludentes, o que o torna sistematicamente maior e, por
-conseguinte, torna `reg_frac` sistematicamente menor do que qualquer perda de
-eficiência observável no codificador.
+hipotéticos mutuamente excludentes, o que o torna maior do que o custo de
+codificar aquela área. A consequência é uma só: a razão fica deprimida para um
+mesmo numerador. **Isso não autoriza comparar a magnitude de `reg_frac` com
+qualquer perda medida por recodificação** — são grandezas de definição distinta,
+e a desigualdade entre elas não decorre da inflação do denominador.
+
+> **Correção de registro (2026-08-22).** Esta subseção afirmava que `reg_frac` é
+> "sistematicamente menor do que qualquer perda de eficiência observável no
+> codificador". A inferência não se sustenta: o denominador inflado só compara a
+> razão com ela mesma sob outra normalização, e nada diz sobre uma grandeza
+> medida noutro experimento. Corrigido também em `T_RESULTADOS` e em
+> `RESULTADOS_rpp_escada_informacional`.
 
 Uma segunda razão, de natureza distinta, separa as duas famílias. A simulação
 offline repassa uma árvore gravada e desconta valores registrados: podar um nó

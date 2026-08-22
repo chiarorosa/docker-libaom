@@ -179,8 +179,9 @@ registradas para o fechamento, não o fechamento.
   razões desta análise é previsão de taxa BD ou de tempo de parede.
 - **O denominador de `reg_frac` soma custos mutuamente excludentes** — os três níveis
   recobrem a mesma área da imagem, e um superbloco contribui com vinte e um nós dos quais só
-  um subconjunto disjunto sobrevive. A grandeza é sistematicamente menor que qualquer perda
-  observável no codificador, e legítima apenas em regime ordinal.
+  um subconjunto disjunto sobrevive. Isso deprime a razão para um mesmo numerador, e só
+  isso: não autoriza compará-la em magnitude com perda medida por recodificação. A grandeza
+  é legítima apenas em regime ordinal.
 - **A superioridade de A+B sobre A+B+C não foi verificada no codificador.** Fechá-la
   exigiria uma campanha análoga à do E5, com a ordem de 144 codificações.
 - **Três sementes** dão amplitude, não intervalo de confiança. As separações reportadas como

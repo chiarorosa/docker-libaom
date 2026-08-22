@@ -234,8 +234,9 @@ Pela regra B.0 (a limitação vem **antes** do número):
 - O crivo **não adjudica**: no único par com chão de codificador limpo ele diverge do
   encoder. É instrumento de atribuição de informação, não preditor de codificador.
 - O denominador soma custos **mutuamente excludentes** (os três níveis recobrem a mesma
-  área), o que torna a grandeza sistematicamente menor que qualquer perda observável no
-  codificador. Legítima apenas em regime **ordinal**.
+  área), o que deprime a razão para um mesmo numerador — e **só isso**; não autoriza
+  compará-la em magnitude com perda medida por recodificação. Legítima apenas em regime
+  **ordinal**.
 - Rótulos são o ótimo RDO a `cpu-used=0`.
 - Três sementes dão **amplitude**, não intervalo de confiança.
 - α = 0 e α = 3 são dois pontos; a curva em α não foi varrida.
@@ -316,9 +317,11 @@ Lagrangeano que a própria busca já calculou**, lido do registro. Ele diz quant
 decisão jogou fora, não quantos bits o arquivo final ganhou.
 
 A consequência pragmática, sem rodeio: **estes números não convertem em BD-BR e não devem ser
-lidos como tal**. São sistematicamente menores, por dois motivos — o denominador agrega os
-custos dos três níveis da árvore, que recobrem a mesma área da imagem, e a medição cobre uma
-única ação de poda, não uma cadeia completa de codificação. Servem para **ordenar**
+lidos como tal**. O denominador agrega os custos dos três níveis da árvore, que recobrem a
+mesma área da imagem, o que deprime a razão para um mesmo numerador; e a medição cobre uma
+única ação de poda, não uma cadeia completa de codificação. Nenhuma das duas coisas permite
+afirmar que o valor seja menor que uma perda medida por recodificação — grandezas de
+definição distinta não se ordenam por essa via. Servem para **ordenar**
 representações sob esforço casado, que é a pergunta do artigo, e não para prever o que um
 codificador entregaria.
 
