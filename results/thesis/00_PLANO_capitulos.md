@@ -101,6 +101,7 @@ medidos contra o próprio botão de velocidade do codificador.
 | `A1_INDICE_evidencias.md` | Todo número destinado aos capítulos, com documento-fonte, artefato numérico, script de reprodução e commit. É a prova de cada afirmação e a defesa contra alegação de seleção *a posteriori*. |
 | `A2_TABELAS_E_FIGURAS.md` | Plano das tabelas e figuras dos dois capítulos: legenda, dados de origem e script sugerido. Nenhuma figura existe ainda no projeto. |
 | `A3_RETRATACOES_E_LACUNAS.md` | Afirmações retiradas ou corrigidas ao longo da investigação, que o texto final **não pode** repetir; e as lacunas conhecidas, com o que cada uma custaria para fechar. |
+| `F1_extensao_interquadros.md` | Material para o capítulo de trabalhos futuros: análise estática do porquê de a delimitação *All-Intra* ser condição de validade do mecanismo, e não conveniência de escopo, com os quatro cenários de extensão à predição interquadros ordenados por custo e prognóstico. Nenhuma codificação nova; toda projeção de desempenho marcada como lacuna. |
 
 ---
 
