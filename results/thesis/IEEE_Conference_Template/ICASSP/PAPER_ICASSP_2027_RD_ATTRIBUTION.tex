@@ -53,6 +53,12 @@
 %    \ninept compensa. O template oferece o comando explicitamente e fixa 9 pt
 %    como piso tipografico, entao a alternativa seria cortar conteudo cientifico
 %    -- o que aqui sairia caro: nao ha 180 palavras de gordura no texto.
+% J. As duas figuras foram REGERADAS para o piso de 9 pt, que o template estende
+%    a toda a pagina e nao so ao texto corrido. Os geradores em
+%    src/scripts/benchmark/plot_*_icassp_fig{1,2}.py agora desenham na largura de
+%    coluna exata do spconf (86 mm), de modo que width=\columnwidth fique em
+%    escala 1:1 e os 9 pt declarados la sejam 9 pt medidos aqui. Consequencias:
+%    a Fig. 1 quebrou os rotulos em duas linhas e ambas ficaram mais altas.
 % ---------------------------------------------------------------------------
 \documentclass{article}
 \usepackage{spconf,amsmath,graphicx}
@@ -627,6 +633,10 @@ G.~Bj{\o}ntegaard,
 \newblock ``Calculation of average {PSNR} differences between {RD}-curves,''
 \newblock doc. {VCEG-M33}, Video Coding Experts Group (VCEG), Mar. 2001.
 
+% Equalizacao das colunas da ultima pagina, como manda o template do ICASSP.
+% Reconferir o ponto de quebra se a lista de referencias mudar.
+\vfill\pagebreak
+
 \bibitem{libaom}
 {Alliance for Open Media},
 \newblock ``{AV1} codec library ({libaom}), v3.10.0,'' [Online]. Available:
@@ -637,10 +647,6 @@ X.~Zhao et~al.,
 \newblock ``{AOM} common test conditions v9.0,''
 \newblock doc. {CWG-G082}, Alliance for Open Media, Codec Working Group, Mar.
   2026.
-
-% Equalizacao das colunas da ultima pagina, como manda o template do ICASSP.
-% Reconferir o ponto de quebra se a lista de referencias mudar.
-\vfill\pagebreak
 
 \bibitem{uvg}
 A.~Mercat, M.~Viitanen, and J.~Vanne,

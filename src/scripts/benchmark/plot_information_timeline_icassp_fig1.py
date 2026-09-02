@@ -31,6 +31,22 @@ Duas paletas, MESMA GEOMETRIA, como no gerador da figura 2 do LASCAS:
           atacado deixa de ser separado por matiz e passa a se-lo pelo tracado
           cheio contra o pontilhado dos demais.
 
+PISO TIPOGRAFICO DE 9 PT. O template do ICASSP 2027 exige corpo nao menor que
+nove pontos em TODA a pagina, e nao so no texto corrido. Duas consequencias
+governam a geometria abaixo:
+
+  1. a figura e desenhada exatamente na largura de coluna do spconf.sty
+     (\\textwidth 178 mm com \\columnsep 6 mm, logo \\columnwidth = 86 mm), para
+     que \\includegraphics[width=\\columnwidth] fique em escala 1:1 e os 9 pt
+     declarados aqui sejam 9 pt medidos na pagina;
+  2. a 9 pt os rotulos nao cabem mais em uma linha na coluna estreita, entao
+     passam a duas linhas e a figura fica mais alta. A COMPOSICAO NAO MUDA —
+     rotulos a esquerda, regua de instantes a direita, linhas verticais
+     continuas carregando o alinhamento —, mudam a quebra de linha e a altura.
+
+Toda a geometria e declarada em PONTOS e convertida em fracao no fim, porque o
+que precisa ser conferido contra a norma esta em pontos, e nao em fracao.
+
 Uso (dentro do conteiner):
     build/venv-ml/bin/python \
         src/scripts/benchmark/plot_information_timeline_icassp_fig1.py \
@@ -60,8 +76,16 @@ matplotlib.rcParams.update({
     "ps.fonttype": 42,
 })
 
-COL_W_IN = 252.0 / 72.27   # \columnwidth do IEEEtran [conference], em polegadas
-FIG_H_IN = 1.34            # reserva no .tex era 2,8 cm; conferir paginacao
+# Largura de coluna do spconf.sty (ICASSP): 86 mm. Desenhando nesta largura, o
+# \includegraphics[width=\columnwidth] fica em escala 1:1 e o corpo declarado
+# aqui e o corpo medido na pagina.
+W_PT = 86.0 / 25.4 * 72.0          # 243,78 pt PostScript
+H_PT = 185.0                       # altura imposta pelos rotulos de 9 pt
+COL_W_IN = W_PT / 72.0
+FIG_H_IN = H_PT / 72.0
+
+# Piso do template. Nenhum texto desta figura fica abaixo disto.
+PT = 9.0
 
 PALETAS = {
     "cor": dict(
@@ -88,29 +112,44 @@ PALETAS = {
 # O bloco de taxa/distorcao/custo de NONE existe no vetor completo da tese
 # (indices 38..40) e NAO e consumido por nenhuma representacao deste artigo:
 # aparece aqui para mostrar POR QUE nao poderia ser.
+# A quebra em duas linhas nao e enfeite: a 9 pt, "RD cost of the best partition"
+# em linha unica ocuparia metade da largura da coluna e nao sobraria regua.
 SPEC = {
     # O rotulo vai como texto simples: o matplotlib nao e LaTeX, e escapar o
     # sublinhado imprimiria a propria barra invertida.
     "instantes": [
-        ("before the search", 0.055),
-        ("after NONE",        0.520),
-        ("after recursion",   0.855),
+        ("before the\nsearch", 0.055, "left"),
+        ("after\nNONE",        0.520, "center"),
+        ("after\nrecursion",   0.855, "center"),
     ],
     # (rotulo, indice do instante em que a informacao passa a existir)
     "faixas": [
-        ("block A, 24 columns", 0),
-        ("block B, 8 columns",  0),
-        ("block C, 4 columns",  0),
-        ("RD cost of NONE",     1),
-        ("RD cost of the best partition", 2),
+        ("block A\n24 columns", 0),
+        ("block B\n8 columns",  0),
+        ("block C\n4 columns",  0),
+        ("RD cost\nof NONE",    1),
+        ("RD cost of the\nbest partition", 2),
     ],
 }
 
-X0, X1 = 0.372, 0.988      # extensao horizontal da regiao de instantes
-Y_EIXO = 0.845             # linha do tempo
-Y_TOPO_FAIXA = 0.700       # centro da primeira faixa
-PASSO = 0.140              # de centro a centro de faixas consecutivas
-FAIXA_H = 0.072
+# --- geometria, em pontos ----------------------------------------------------
+MARGEM_X = 3.0             # respiro nas duas bordas laterais
+LARG_ROTULO = 62.0         # coluna dos rotulos de faixa, a esquerda
+X0_PT = MARGEM_X + LARG_ROTULO + 6.0   # inicio da regua de instantes
+X1_PT = W_PT - MARGEM_X                # fim da regua
+Y_EIXO_PT = 154.0          # linha do tempo
+Y_TOPO_FAIXA_PT = 129.0    # centro da primeira faixa
+# O passo e o rotulo de duas linhas (cerca de 20 pt) mais 6 pt de respiro: e o
+# rotulo, e nao a barra, que dita a altura da linha depois do salto para 9 pt.
+PASSO_PT = 26.0
+FAIXA_H_PT = 11.0
+Y_NOTA_PT = 8.0
+
+X0, X1 = X0_PT / W_PT, X1_PT / W_PT
+Y_EIXO = Y_EIXO_PT / H_PT
+Y_TOPO_FAIXA = Y_TOPO_FAIXA_PT / H_PT
+PASSO = PASSO_PT / H_PT
+FAIXA_H = FAIXA_H_PT / H_PT
 
 
 def draw(out_path, p):
@@ -122,39 +161,42 @@ def draw(out_path, p):
     ax.axis("off")
     ax.set_facecolor(p["surface"])
 
-    xs = [X0 + t * (X1 - X0) for _, t in SPEC["instantes"]]
+    xs = [X0 + t * (X1 - X0) for _, t, _ha in SPEC["instantes"]]
+    x_rotulo = MARGEM_X / W_PT
 
     # ---------------- eixo do tempo dentro do no ----------------------------
-    ax.text(0.010, Y_EIXO + 0.030, "search of", ha="left", va="center",
-            fontsize=6.2, color=p["ink_2"], zorder=4)
-    ax.text(0.010, Y_EIXO - 0.032, "one node", ha="left", va="center",
-            fontsize=6.2, color=p["ink_2"], zorder=4)
-    ax.annotate("", xy=(X1 + 0.010, Y_EIXO), xytext=(0.140, Y_EIXO),
+    # "search of one node" fica sobre a coluna de rotulos, alinhado a seta.
+    ax.text(x_rotulo, Y_EIXO, "search of\none node", ha="left", va="center",
+            fontsize=PT, color=p["ink_2"], linespacing=1.12, zorder=4)
+    ax.annotate("", xy=(X1 + 2.0 / W_PT, Y_EIXO),
+                xytext=(X0 - 8.0 / W_PT, Y_EIXO),
                 arrowprops=dict(arrowstyle="-|>", color=p["muted"],
                                 linewidth=0.55, shrinkA=0, shrinkB=0))
 
     # Os tres instantes. O primeiro e o que o artigo ataca: tracado cheio e
     # acento; os outros dois, pontilhados e neutros. Na variante monocromatica
     # e essa diferenca de tracado, e nao o matiz, que carrega a distincao.
-    for i, ((rotulo, _), x) in enumerate(zip(SPEC["instantes"], xs)):
+    y_base = Y_TOPO_FAIXA - (len(SPEC["faixas"]) - 1) * PASSO - 9.0 / H_PT
+    for i, ((rotulo, _, ha), x) in enumerate(zip(SPEC["instantes"], xs)):
         alvo = (i == 0)
         cor = p["alvo"] if alvo else p["muted"]
-        y_base = Y_TOPO_FAIXA - (len(SPEC["faixas"]) - 1) * PASSO - 0.062
         ax.plot([x, x], [y_base, Y_EIXO], color=cor,
                 linewidth=0.85 if alvo else 0.45, zorder=3,
                 linestyle="-" if alvo else (0, (1.4, 1.4)))
         ax.plot([x], [Y_EIXO], marker="o", markersize=3.0 if alvo else 2.0,
                 color=cor, markeredgecolor="none", zorder=5, clip_on=False)
-        ax.text(x, Y_EIXO + 0.052, rotulo, ha="center", va="bottom",
-                fontsize=6.2, color=p["ink"] if alvo else p["ink_2"],
-                weight="bold" if alvo else "normal", zorder=6)
+        ax.text(x, Y_EIXO + 6.0 / H_PT, rotulo, ha=ha, va="bottom",
+                fontsize=PT, color=p["ink"] if alvo else p["ink_2"],
+                weight="bold" if alvo else "normal", linespacing=1.12,
+                zorder=6)
 
     # ---------------- faixas de disponibilidade -----------------------------
     for k, (rotulo, inst) in enumerate(SPEC["faixas"]):
         y = Y_TOPO_FAIXA - k * PASSO
         cedo = (inst == 0)
-        ax.text(0.010, y, rotulo, ha="left", va="center", fontsize=6.2,
-                color=p["ink"] if cedo else p["ink_2"], zorder=4)
+        ax.text(x_rotulo, y, rotulo, ha="left", va="center", fontsize=PT,
+                color=p["ink"] if cedo else p["ink_2"], linespacing=1.12,
+                zorder=4)
         # trilho apagado antes de existir, barra cheia a partir do instante
         ax.plot([X0, X1], [y, y], color=p["regua_leve"], linewidth=0.4,
                 zorder=1, solid_capstyle="butt")
@@ -165,9 +207,11 @@ def draw(out_path, p):
             linewidth=0.4, zorder=2))
 
     # ---------------- nota de leitura ---------------------------------------
-    ax.text(0.010, 0.040,
-            "each band is shaded from the instant the encoder holds it",
-            ha="left", va="center", fontsize=5.8, color=p["ink_2"], zorder=4)
+    # Encurtada em relacao a versao de 5,8 pt: a 9 pt a frase inteira nao cabe
+    # na largura da coluna. O que saiu ("each band is") esta na legenda do .tex.
+    ax.text(x_rotulo, Y_NOTA_PT / H_PT,
+            "shaded from the instant the encoder holds it",
+            ha="left", va="center", fontsize=PT, color=p["ink_2"], zorder=4)
 
     fig.savefig(out_path, facecolor=p["surface"])
     if out_path.endswith(".pdf"):

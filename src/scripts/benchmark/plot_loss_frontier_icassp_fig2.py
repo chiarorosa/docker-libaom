@@ -47,6 +47,7 @@ import sys
 import numpy as np
 
 import matplotlib
+import matplotlib.ticker
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
@@ -59,9 +60,23 @@ matplotlib.rcParams.update({
     "ps.fonttype": 42,
 })
 
-COL_W_IN = 252.0 / 72.27
-FIG_H_IN = 1.55            # baixado de 1,72 na revisao, para a Conclusao caber
-                           # na pagina 4; o eixo e logaritmico e sobrava folga
+# Piso tipografico do template do ICASSP: nenhum corpo abaixo de 9 pt na pagina,
+# e isso vale para eixo, marcacoes e legenda, nao so para o texto corrido.
+# Desenhando na largura de coluna exata do spconf.sty (\textwidth 178 mm com
+# \columnsep 6 mm, logo \columnwidth = 86 mm), o \includegraphics[width=
+# \columnwidth] fica em escala 1:1 e os 9 pt declarados aqui sao 9 pt medidos.
+W_PT = 86.0 / 25.4 * 72.0          # 243,78 pt PostScript
+H_PT = 190.0                       # 1,55 in nao comporta rotulos de 9 pt; a
+                                   # legenda de oito entradas sozinha pede 58 pt
+COL_W_IN = W_PT / 72.0
+FIG_H_IN = H_PT / 72.0
+PT = 9.0
+
+# Margens do eixo, em pontos, para o texto de 9 pt nao ser cortado.
+MARG_ESQ_PT = 38.0         # rotulo do eixo y + marcacoes "1000" + folgas
+MARG_INF_PT = 29.0         # marcacoes + rotulo do eixo x + folgas
+MARG_DIR_PT = 3.0
+MARG_SUP_PT = 4.0
 
 # --- o que entra, na ordem da Tabela I ---------------------------------------
 # `convnext_ce` NAO entra: e o braco legado, treinado noutro conjunto e com duas
@@ -198,7 +213,9 @@ def conferir(dados):
 def draw(out_path, p, dados):
     fig = plt.figure(figsize=(COL_W_IN, FIG_H_IN), dpi=400)
     fig.patch.set_facecolor(p["surface"])
-    ax = fig.add_axes([0.148, 0.185, 0.836, 0.788])
+    ax = fig.add_axes([MARG_ESQ_PT / W_PT, MARG_INF_PT / H_PT,
+                       1.0 - (MARG_ESQ_PT + MARG_DIR_PT) / W_PT,
+                       1.0 - (MARG_INF_PT + MARG_SUP_PT) / H_PT])
     ax.set_facecolor(p["surface"])
 
     xs = np.linspace(X_MIN, X_MAX, 260)
@@ -219,20 +236,28 @@ def draw(out_path, p, dados):
                             ecolor=cor, elinewidth=0.55, capsize=1.2,
                             capthick=0.55, zorder=4)
             ax.plot(xr, yr, linestyle="none", marker=e["marker"],
-                    markersize=2.4, color=cor, markeredgecolor="none",
+                    markersize=3.0, color=cor, markeredgecolor="none",
                     zorder=5)
 
     ax.set_yscale("log")
     ax.set_xlim(X_MIN, X_MAX)
     ax.set_ylim(1.3, 9000)
+    # Marcacoes de y como inteiros, e nao como 10^n. O expoente de uma potencia
+    # sai a cerca de 70% do corpo, o que colocaria um algarismo abaixo do piso de
+    # 9 pt do template; alem disso, com so tres decadas uteis "10 / 100 / 1000"
+    # le-se mais direto em ppm.
+    ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0))
+    ax.yaxis.set_major_formatter(
+        matplotlib.ticker.FuncFormatter(lambda v, _pos: "%g" % v))
+    ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     # Sem escapar o sinal de porcentagem: o matplotlib nao e LaTeX, e "\%"
     # imprimiria a propria barra invertida.
-    ax.set_xlabel("Matched cost reduction (%)", fontsize=6.6,
-                  color=p["ink"], labelpad=1.6)
-    ax.set_ylabel("Rate-distortion loss (ppm)", fontsize=6.6,
-                  color=p["ink"], labelpad=1.6)
-    ax.tick_params(axis="both", which="major", labelsize=6.0,
-                   colors=p["ink_2"], length=1.9, width=0.4, pad=1.4)
+    ax.set_xlabel("Matched cost reduction (%)", fontsize=PT,
+                  color=p["ink"], labelpad=2.0)
+    ax.set_ylabel("Rate-distortion loss (ppm)", fontsize=PT,
+                  color=p["ink"], labelpad=2.0)
+    ax.tick_params(axis="both", which="major", labelsize=PT,
+                   colors=p["ink_2"], length=2.2, width=0.4, pad=1.8)
     ax.tick_params(axis="both", which="minor", length=1.0, width=0.3)
     ax.grid(True, which="major", color=p["grade"], linewidth=0.35, zorder=0)
     for s in ax.spines.values():
@@ -241,16 +266,19 @@ def draw(out_path, p, dados):
 
     # Legenda em duas colunas, dentro do eixo: numa figura de coluna unica uma
     # caixa externa custaria mais altura do que a que a paginacao tem.
+    # Com ncol=2 e oito entradas, o matplotlib preenche coluna a coluna, e a
+    # ordem de CURVAS ja separa as quatro longas (referencia e familia profunda)
+    # das quatro curtas (tabulares) -- e o que faz a caixa caber a 9 pt.
     handles = [plt.Line2D([], [], color=p["curva"][r], linewidth=ESTILO[r]["lw"],
                           linestyle=ESTILO[r]["ls"],
-                          marker=ESTILO[r]["marker"], markersize=2.4,
+                          marker=ESTILO[r]["marker"], markersize=3.0,
                           markeredgecolor="none")
                for _c, r, f, plota in CURVAS if plota]
     leg = ax.legend(handles, [r for _c, r, _f, plota in CURVAS if plota],
                     loc="upper left",
-                    ncol=2, fontsize=5.1, frameon=True, framealpha=0.94,
-                    borderpad=0.28, labelspacing=0.20, handlelength=2.1,
-                    handletextpad=0.38, columnspacing=0.9, borderaxespad=0.30)
+                    ncol=2, fontsize=PT, frameon=True, framealpha=0.94,
+                    borderpad=0.28, labelspacing=0.22, handlelength=1.8,
+                    handletextpad=0.38, columnspacing=0.8, borderaxespad=0.30)
     leg.get_frame().set_linewidth(0.35)
     leg.get_frame().set_edgecolor(p["grade"])
     for t in leg.get_texts():
