@@ -59,30 +59,31 @@ matplotlib.rcParams.update({
     "ps.fonttype": 42,
 })
 
-COL_W_IN = 252.0 / 72.27   # \columnwidth do IEEEtran [conference], em polegadas
+COL_W_IN = 252.0 / 72.27   # lumnwidth do IEEEtran [conference], em polegadas
+PT = 9.0                   # piso tipografico do artigo: nada abaixo disto
 
 # --- ritmo vertical ----------------------------------------------------------
 # A altura da figura e DERIVADA das linhas, e nao arbitrada: assim mexer em uma
 # caixa nao desalinha o resto nem exige reajustar um numero solto la em cima.
 # Alturas em polegadas.
 LINHAS = [
-    ("pad",  0.045),
-    ("e1",   0.115),   # blocos de entrada do estagio 1
-    ("gap",  0.070),   # junta + seta para o primeiro losango
-    ("c1",   0.225),   # p_none  > tau_none
-    ("gap",  0.050),
-    ("c2",   0.225),   # p_split > tau_split
-    ("gap",  0.050),
-    ("c3",   0.225),   # p_rest  < tau_rest
-    ("gap",  0.095),   # aqui volta o trilho de reencontro do estagio 1
-    ("none", 0.155),   # NONE e avaliado, duas linhas
-    ("gap",  0.045),
-    ("e2",   0.115),   # blocos de entrada do estagio 2
-    ("gap",  0.070),
-    ("c4",   0.225),   # p_ext < theta
-    ("gap",  0.095),   # aqui volta o trilho do estagio 2
-    ("fim",  0.115),   # uma linha so
-    ("pad",  0.030),
+    ("pad",  0.050),
+    ("e1",   0.200),   # blocos de entrada do estagio 1
+    ("gap",  0.105),   # junta + seta para o primeiro losango
+    ("c1",   0.340),   # p_none  > tau_none
+    ("gap",  0.075),
+    ("c2",   0.340),   # p_split > tau_split
+    ("gap",  0.075),
+    ("c3",   0.340),   # p_rest  < tau_rest
+    ("gap",  0.125),   # aqui volta o trilho de reencontro do estagio 1
+    ("none", 0.330),   # NONE e avaliado, duas linhas
+    ("gap",  0.065),
+    ("e2",   0.200),   # blocos de entrada do estagio 2
+    ("gap",  0.105),
+    ("c4",   0.340),   # p_ext < theta
+    ("gap",  0.125),   # aqui volta o trilho do estagio 2
+    ("fim",  0.335),   # duas linhas
+    ("pad",  0.040),
 ]
 FIG_H_IN = sum(h for _, h in LINHAS)
 
@@ -109,9 +110,15 @@ X_NOME    = 0.020          # coluna do nome do podador, nas linhas de entrada
 X_ENT_0   = 0.280          # primeiro bloco de entrada
 X_ENT_1   = 0.996
 
+# Nomes curtos dos blocos do vetor: a contagem continua vindo de SPEC, para
+# nao divergir da Secao III-A, mas o rotulo encurta. Com o piso de 9 pt, tres
+# caixas lado a lado numa coluna de 3,49 in dao cerca de 17 caracteres cada.
+CURTO = {"luma descriptors": "luma", "causal context": "context",
+         "qp and position": "qp, pos"}
+
 # --- textos ------------------------------------------------------------------
 # Blocos do vetor de atributos: vem de SPEC, para nao divergirem da Secao III-A.
-ENTRADAS_1 = ["%d %s" % (n, r) for r, n in SPEC["blocos_s1"]]
+ENTRADAS_1 = ["%d %s" % (n, CURTO[r]) for r, n in SPEC["blocos_s1"]]
 ENTRADA_2_EXTRA = "%d %s" % (SPEC["bloco_extra_s2"][1],
                              SPEC["bloco_extra_s2"][0])
 
@@ -127,8 +134,8 @@ CONDICOES = {
 # cada consequencia conferivel: o leitor conta as formas que sobraram.
 ACOES = {
     "c1": "only NONE is evaluated",
-    "c2": "only SPLIT: NONE, HORZ, VERT,\nAB and 4-way are skipped",
-    "c3": "HORZ and VERT off, and\nAB and 4-way by dependency",
+    "c2": "only SPLIT: NONE and\nthe other shapes off",
+    "c3": "HORZ and VERT off,\nAB and 4-way with them",
     "c4": "AB and 4-way off",
 }
 
@@ -145,14 +152,14 @@ def draw(out_path, p):
     def seta(x0, y0, x1, y1, cor=None, cabeca=True):
         ax.annotate("", xy=(x1, y1), xytext=(x0, y0),
                     arrowprops=dict(arrowstyle="-|>" if cabeca else "-",
-                                    color=cor or p["ink_2"], linewidth=0.55,
-                                    shrinkA=0, shrinkB=0, mutation_scale=4.2),
+                                    color=cor or p["ink_2"], linewidth=0.8,
+                                    shrinkA=0, shrinkB=0, mutation_scale=7.0),
                     zorder=4)
 
     def linha(pontos, cor=None):
         xs = [q[0] for q in pontos]
         ys = [q[1] for q in pontos]
-        ax.plot(xs, ys, color=cor or p["ink_2"], linewidth=0.55, zorder=3,
+        ax.plot(xs, ys, color=cor or p["ink_2"], linewidth=0.8, zorder=3,
                 solid_capstyle="round", solid_joinstyle="round")
 
     def losango(chave, cor):
@@ -160,28 +167,28 @@ def draw(out_path, p):
         ax.add_patch(Polygon([(X_SPINE, yc + h / 2), (X_SPINE + MEIA_LOS, yc),
                               (X_SPINE, yc - h / 2), (X_SPINE - MEIA_LOS, yc)],
                              closed=True, facecolor=p["surface"],
-                             edgecolor=cor, linewidth=0.7, zorder=4))
+                             edgecolor=cor, linewidth=0.9, zorder=4))
         ax.text(X_SPINE, yc, CONDICOES[chave], ha="center", va="center",
-                fontsize=5.4, color=p["ink"], zorder=5)
+                fontsize=PT, color=p["ink"], zorder=5)
         return yc, h
 
     def caixa_acao(chave, yc, terminal=False, cor=None):
         """Consequencia do ramo "yes". Terminal (cantos arredondados) marca o
         ramo que ENCERRA a busca deste no: o compromisso com o split e o unico
         que dispensa a avaliacao de NONE, e por isso nao reencontra o fluxo."""
-        h = 0.150 / FIG_H_IN if "\n" in ACOES[chave] else 0.105 / FIG_H_IN
+        h = (0.335 if "\n" in ACOES[chave] else 0.215) / FIG_H_IN
         w = X_ACAO_1 - X_ACAO_0
         if terminal:
             ax.add_patch(FancyBboxPatch((X_ACAO_0, yc - h / 2), w, h,
                                         boxstyle="round,pad=0,rounding_size=0.022",
                                         facecolor=p["kept_f"], edgecolor=cor,
-                                        linewidth=0.6, zorder=4))
+                                        linewidth=0.8, zorder=4))
         else:
             ax.add_patch(Rectangle((X_ACAO_0, yc - h / 2), w, h,
                                    facecolor=p["surface"], edgecolor=cor,
-                                   linewidth=0.6, zorder=4))
+                                   linewidth=0.8, zorder=4))
         ax.text((X_ACAO_0 + X_ACAO_1) / 2, yc, ACOES[chave], ha="center",
-                va="center", fontsize=4.9, color=p["ink"], linespacing=1.25,
+                va="center", fontsize=PT, color=p["ink"], linespacing=1.25,
                 zorder=5)
         return h
 
@@ -189,8 +196,8 @@ def draw(out_path, p):
         yc, h = Y[chave]
         ax.add_patch(Rectangle((X_SPINE - MEIA_PROC, yc - h / 2),
                                2 * MEIA_PROC, h, facecolor=p["surface"],
-                               edgecolor=cor, linewidth=0.7, zorder=4))
-        ax.text(X_SPINE, yc, texto, ha="center", va="center", fontsize=4.8,
+                               edgecolor=cor, linewidth=0.9, zorder=4))
+        ax.text(X_SPINE, yc, texto, ha="center", va="center", fontsize=PT,
                 color=p["ink"], linespacing=1.2, zorder=5)
         return yc, h
 
@@ -198,11 +205,14 @@ def draw(out_path, p):
         """Linha de entrada: identidade do podador a esquerda, blocos do vetor
         de atributos a direita, e a junta que os leva ao primeiro losango."""
         yc, h = Y[chave]
-        ax.plot([X_NOME + 0.012], [yc + 0.030], marker="o", markersize=6.4,
+        # Numero e nome na MESMA linha de base. Com o piso de 9 pt, o arranjo
+        # anterior — circulo acima, nome abaixo — pedia meia polegada de altura
+        # na coluna da esquerda e invadia as folgas das linhas vizinhas.
+        ax.plot([X_NOME + 0.020], [yc], marker="o", markersize=13.0,
                 color=cor, markeredgecolor="none", zorder=6, clip_on=False)
-        ax.text(X_NOME + 0.012, yc + 0.030, num, ha="center", va="center",
-                fontsize=4.5, color=p["surface"], weight="bold", zorder=7)
-        ax.text(X_NOME, yc - 0.036, nome, ha="left", va="center", fontsize=5.4,
+        ax.text(X_NOME + 0.020, yc, num, ha="center", va="center",
+                fontsize=PT, color=p["surface"], weight="bold", zorder=7)
+        ax.text(X_NOME + 0.055, yc, nome, ha="left", va="center", fontsize=PT,
                 color=cor, weight="bold", zorder=5)
 
         n = len(blocos)
@@ -214,9 +224,9 @@ def draw(out_path, p):
             ax.add_patch(Rectangle((x0, yc - h / 2), w, h,
                                    facecolor=(cor if destaque else p["kept_f"]),
                                    edgecolor=(cor if destaque else p["kept_e"]),
-                                   linewidth=0.5, zorder=4))
+                                   linewidth=0.7, zorder=4))
             ax.text(x0 + w / 2, yc, rotulo, ha="center", va="center",
-                    fontsize=4.9,
+                    fontsize=PT,
                     color=(p["surface"] if destaque else p["ink"]), zorder=5)
             centros.append(x0 + w / 2)
         return yc, h, centros
@@ -233,7 +243,7 @@ def draw(out_path, p):
                (max(centros), y_barra)])
         seta(X_SPINE, y_barra, X_SPINE, yc_alvo + h_alvo / 2)
         ax.text(X_SPINE - 0.012, (y_barra + yc_alvo + h_alvo / 2) / 2, rotulo,
-                ha="right", va="center", fontsize=4.8, color=p["ink_2"],
+                ha="right", va="center", fontsize=PT, color=p["ink_2"],
                 zorder=5)
 
     def ramo_sim(chave, yc, h, cor, terminal=False):
@@ -241,7 +251,7 @@ def draw(out_path, p):
         consequencia. Devolve a altura da caixa, para o trilho."""
         seta(X_SPINE + MEIA_LOS, yc, X_ACAO_0, yc)
         ax.text((X_SPINE + MEIA_LOS + X_ACAO_0) / 2, yc + 0.022, "yes",
-                ha="center", va="center", fontsize=4.5, color=p["ink_2"],
+                ha="center", va="center", fontsize=PT, color=p["ink_2"],
                 zorder=5)
         return caixa_acao(chave, yc, terminal=terminal, cor=cor)
 
@@ -251,7 +261,7 @@ def draw(out_path, p):
         # e onde o trilho reencontra o eixo, e os dois colidiriam.
         ax.text(X_SPINE - 0.012,
                 yc - h / 2 - 0.34 * (yc - h / 2 - y_prox_topo), "no",
-                ha="right", va="center", fontsize=4.5, color=p["ink_2"],
+                ha="right", va="center", fontsize=PT, color=p["ink_2"],
                 zorder=5)
 
     def trilho(y_saidas, y_merge, y_alvo_topo):
@@ -270,7 +280,7 @@ def draw(out_path, p):
 
     # ---------------- estagio 1 ---------------------------------------------
     y_e1, h_e1, cx1 = fila_entrada(
-        "e1", "pre-search pruner", "1", c1,
+        "e1", "pre-search", "1", c1,
         [(r, False) for r in ENTRADAS_1])
     yc1, hc1 = Y["c1"]
     junta(y_e1, h_e1, cx1, yc1, hc1, "36")
@@ -296,13 +306,13 @@ def draw(out_path, p):
     y_merge = (yc3 - hc3 / 2 + y_none + h_none / 2) / 2
     trilho(y_saidas, y_merge, y_none + h_none / 2)
 
-    caixa_processo("none", "NONE is evaluated: its rate,\n"
+    caixa_processo("none", "NONE is evaluated: rate,\n"
                            "distortion and RD cost", p["ink_2"])
 
     # ---------------- estagio 2 ---------------------------------------------
     y_e2, h_e2, cx2 = fila_entrada(
-        "e2", "post-NONE pruner", "2", c2,
-        [("the same 36 attributes", False), (ENTRADA_2_EXTRA, True)])
+        "e2", "post-NONE", "2", c2,
+        [("the same 36", False), (ENTRADA_2_EXTRA, True)])
     seta(X_SPINE, y_none - h_none / 2, X_SPINE, y_e2 + h_e2 / 2)
     yc4, hc4 = Y["c4"]
     junta(y_e2, h_e2, cx2, yc4, hc4, "39")
@@ -314,7 +324,8 @@ def draw(out_path, p):
     y_merge2 = (yc4 - hc4 / 2 + y_fim + h_fim / 2) / 2
     trilho([yc4], y_merge2, y_fim + h_fim / 2)
 
-    caixa_processo("fim", "the enabled candidates are evaluated", p["ink_2"])
+    caixa_processo("fim", "the enabled candidates\n"
+                          "are evaluated", p["ink_2"])
 
     fig.savefig(out_path, facecolor=p["surface"])
     if out_path.endswith(".pdf"):
