@@ -81,14 +81,15 @@ matplotlib.rcParams.update({
 # que o leitor ve. Por isso NAO se usa bbox_inches="tight" aqui: o recorte
 # automatico mudaria a altura final e quebraria o orcamento de pagina.
 COL_W_IN = 252.0 / 72.27
-FIG_H_IN = 170.0 / 72.0    # altura pedida pelo piso de 9 pt, ver docstring
+FIG_H_IN = 178.0 / 72.0    # altura pedida pelo piso de 9 pt, ver docstring
 PT = 9.0                   # piso tipografico: nada abaixo disto na figura
 
 # Margens do eixo, em pontos PostScript, dimensionadas para o texto de 9 pt.
-MARG_ESQ_PT = 33.0         # rotulo do eixo y + marcacoes "0.5" + folga
-MARG_INF_PT = 30.0         # marcacoes + rotulo do eixo x + folga
+MARG_ESQ_PT = 32.0         # rotulo do eixo y do painel (a) + marcacoes
+MARG_INF_PT = 42.0         # marcacoes + rotulo do painel + rotulo do eixo x
 MARG_DIR_PT = 4.0
-MARG_SUP_PT = 15.0        # titulo de cada janela
+MARG_SUP_PT = 5.0
+MARG_INT_PT = 34.0         # entre os paineis: eixo y do painel (b)
 
 # --- paleta: os mesmos slots validados da figura 1 ---------------------------
 # Reaproveitados por coerencia entre as figuras do artigo. A validacao (faixa de
@@ -137,31 +138,31 @@ EXPECTED = {
 }
 
 
-# --- faixas dos eixos --------------------------------------------------------
-# O eixo do tempo e QUEBRADO em duas janelas. Os seis pontos medidos vivem em
-# dois aglomerados separados por 12 pontos percentuais de tempo, e cada
-# aglomerado tem largura interna de 2,1 (equilibrado) e 0,65 (agressivo) pontos
-# percentuais. Num eixo continuo de 10% a 35%, os tres pontos de cada familia
-# caem sobre o mesmo corpo de marcador e leem-se como um ponto so, que e
-# justamente o que a figura nao pode esconder: a estrutura interna de cada
-# familia E o argumento do artigo. Duas janelas ampliadas, com a quebra marcada,
-# resolvem os seis pontos e mantem a relacao vertical entre as familias, uma vez
-# que o eixo da taxa BD e comum e continuo.
-#   A janela da esquerda e a que carrega a comparacao de precos: a reta do botao
-# de limiar e o salto do segundo estagio partem do mesmo ponto de operacao e sao
-# lidos na mesma escala. Por isso ela dispensa o quadro de detalhe da versao
-# anterior.
-XA_MIN, XA_MAX = 17.25, 20.45      # janela da calibracao equilibrada
-XB_MIN, XB_MAX = 31.15, 32.60      # janela da calibracao agressiva
-Y_MIN, Y_MAX = 0.42, 1.58
+# --- os dois paineis ---------------------------------------------------------
+# A figura tem dois paineis, um por calibracao, cada um com eixos proprios e
+# rotulados. Um painel unico nao serve: os seis pontos medidos vivem em dois
+# aglomerados separados por 14 pontos percentuais de tempo, e a largura interna
+# de cada aglomerado e de 2,09 (equilibrado) e 0,65 (agressivo) pontos
+# percentuais, de modo que num eixo continuo os tres pontos de cada calibracao
+# caem sobre o mesmo corpo de marcador. A estrutura interna de cada familia E o
+# argumento do artigo, e precisa ser legivel.
+#   Dois paineis independentes, e nao um eixo quebrado: cada painel e uma
+# figura completa e honesta em si, com a sua faixa declarada nas marcacoes, e o
+# leitor nao precisa confiar em marca de quebra alguma para saber onde esta.
+# As faixas absolutas dos dois paineis dizem, sozinhas, a distancia entre as
+# calibracoes.
+XA_MIN, XA_MAX = 17.30, 20.35   # (a) calibracao equilibrada
+YA_MIN, YA_MAX = 0.528, 0.748
+XB_MIN, XB_MAX = 31.28, 32.42   # (b) calibracao agressiva
+YB_MIN, YB_MAX = 1.376, 1.438
 
-# Reparticao da area de desenho entre as duas janelas, em fracao da largura
-# util. A janela da esquerda leva mais porque cobre 3,2 pontos percentuais
-# contra 1,45, e porque e nela que ficam as duas retas anotadas.
-# A folga entre as janelas, em fracao da largura util; a reparticao entre elas
-# nao e escolhida, e derivada das faixas dentro de draw(), para que a escala do
-# eixo do tempo seja a mesma nos dois lados.
-FOLGA = 0.055
+# Resolucao da medicao de tempo: dois desvios-padrao da repeticao quintupla da
+# campanha, 0,46 ponto percentual. Desenhada como faixa a partir da base do
+# primeiro estagio em cada painel, ela transforma a leitura do marginal do
+# segundo estagio em algo verificavel a olho: no painel (a) o ponto implantado
+# sai da faixa, no painel (b) fica dentro dela.
+RESOL_PP = 0.46
+BAND = "#efedE4"
 def load(path):
     """Devolve {config: (bd_rate, ts_pct)} e confere contra o texto do artigo."""
     if not os.path.exists(path):
@@ -211,26 +212,37 @@ def estilo_eixo(ax):
 
 
 
-def marca_quebra(ax_a, ax_b):
-    """Marcas de quebra nas bordas que se encaram, no estilo usual: dois tracos
-    inclinados sobre a linha de base de cada janela. Sem elas o leitor pode tomar
-    as duas janelas por um eixo continuo e ler a distancia entre as familias
-    errado."""
-    d, y = 0.018, 0.0
-    for ax, xs in ((ax_a, (1.0,)), (ax_b, (0.0,))):
-        for x in xs:
-            for dy in (0,):
-                ax.plot([x - d, x + d], [y - 2.2 * d + dy, y + 2.2 * d + dy],
-                        transform=ax.transAxes, color=MUTED, linewidth=0.8,
-                        clip_on=False, zorder=8)
+def painel(fig, rect, pts, base_knob, cor, marca, xlim, ylim, xticks, yticks):
+    """Um painel: a familia, a faixa de resolucao e a reta do botao de limiar."""
+    ax = fig.add_axes(rect)
+    ax.set_facecolor(SURFACE)
 
+    # Faixa de resolucao da medicao, a partir da base do primeiro estagio.
+    ax.axvspan(pts[0][1], pts[0][1] + RESOL_PP, color=BAND, linewidth=0,
+               zorder=0)
+    ax.grid(True, color=GRID, linewidth=0.6, zorder=1)
+    ax.set_axisbelow(True)
 
-def serie(ax, pts, cor, marca):
-    ax.plot([p[1] for p in pts], [p[0] for p in pts], color=cor,
-            linewidth=LW, zorder=4)
+    # Botao de limiar do primeiro estagio: a reta que liga as duas bases das
+    # duas calibracoes. Ela sai da base no painel (a) e chega a base no painel
+    # (b); em ambos os casos e recortada pela faixa do painel.
+    ax.plot([base_knob[0][1], base_knob[1][1]],
+            [base_knob[0][0], base_knob[1][0]], color=KNOB, linewidth=1.3,
+            linestyle=(0, (4, 2.2)), zorder=2)
+
+    ax.plot([p[1] for p in pts], [p[0] for p in pts], color=cor, linewidth=LW,
+            zorder=4)
     ax.plot([p[1] for p in pts], [p[0] for p in pts], linestyle="none",
             marker=marca, markersize=MS, color=cor, markeredgecolor=SURFACE,
             markeredgewidth=0.7, zorder=5)
+
+    ax.set_xlim(*xlim)
+    ax.set_ylim(*ylim)
+    ax.set_xticks(xticks)
+    ax.set_yticks(yticks)
+    ax.set_ylabel("BD-BR (%)", fontsize=PT, color=INK_2, labelpad=2.0)
+    estilo_eixo(ax)
+    return ax
 
 
 def draw(data, out_path, precos):
@@ -238,87 +250,46 @@ def draw(data, out_path, precos):
     fig.patch.set_facecolor(SURFACE)
 
     w_pt, h_pt = COL_W_IN * 72.0, FIG_H_IN * 72.0
-    x0 = MARG_ESQ_PT / w_pt
+    # Os dois paineis tem a mesma largura de desenho. Cada um leva a sua propria
+    # margem esquerda, porque cada um tem a sua escala de taxa BD e os seus
+    # rotulos de marcacao.
+    larg = (w_pt - MARG_ESQ_PT - MARG_INT_PT - MARG_DIR_PT) / 2.0
     y0 = MARG_INF_PT / h_pt
-    w = 1.0 - (MARG_ESQ_PT + MARG_DIR_PT) / w_pt
     h = 1.0 - (MARG_INF_PT + MARG_SUP_PT) / h_pt
-    # As duas janelas partilham a MESMA escala do eixo do tempo: a largura de
-    # cada uma sai da sua propria faixa. Sem isso, um ponto percentual de tempo
-    # mediria coisas diferentes nos dois lados e a dispersao interna das duas
-    # familias deixaria de ser comparavel a olho, que e metade do que a figura
-    # precisa mostrar.
-    span_a, span_b = XA_MAX - XA_MIN, XB_MAX - XB_MIN
-    util = w * (1.0 - FOLGA)
-    w_a = util * span_a / (span_a + span_b)
-    w_b = util - w_a
-    ax_a = fig.add_axes([x0, y0, w_a, h])
-    ax_b = fig.add_axes([x0 + w_a + w * FOLGA, y0, w_b, h])
+    rect_a = [MARG_ESQ_PT / w_pt, y0, larg / w_pt, h]
+    rect_b = [(MARG_ESQ_PT + larg + MARG_INT_PT) / w_pt, y0, larg / w_pt, h]
 
     bal = [data[k] for k, _ in BALANCED]
     agg = [data[k] for k, _ in AGGRESSIVE]
+    knob = (bal[0], agg[0])
 
-    for ax in (ax_a, ax_b):
-        ax.set_facecolor(SURFACE)
-        ax.grid(True, color=GRID, linewidth=0.6, zorder=1)
-        ax.set_axisbelow(True)
-        ax.set_ylim(Y_MIN, Y_MAX)
-        # Botao de limiar do primeiro estagio: o segmento entre as duas BASES,
-        # desenhado inteiro nas duas janelas e recortado por elas. E a unica
-        # alternativa disponivel a quem quiser comprar mais tempo sem o segundo
-        # estagio, e e a referencia contra a qual o preco do segundo estagio
-        # deve ser lido. Atravessar a quebra e o que amarra as duas janelas.
-        ax.plot([bal[0][1], agg[0][1]], [bal[0][0], agg[0][0]], color=KNOB,
-                linewidth=1.3, linestyle=(0, (4, 2.2)), zorder=2)
+    ax_a = painel(fig, rect_a, bal, knob, C_BAL, M_BAL,
+                  (XA_MIN, XA_MAX), (YA_MIN, YA_MAX),
+                  [18, 19, 20], [0.55, 0.60, 0.65, 0.70])
+    painel(fig, rect_b, agg, knob, C_AGG, M_AGG,
+           (XB_MIN, XB_MAX), (YB_MIN, YB_MAX),
+           [31.5, 32.0], [1.38, 1.40, 1.42])
 
-    ax_a.set_xlim(XA_MIN, XA_MAX)
-    ax_b.set_xlim(XB_MIN, XB_MAX)
-    serie(ax_a, bal, C_BAL, M_BAL)
-    serie(ax_b, agg, C_AGG, M_AGG)
-
-    ax_a.set_xticks([18, 19, 20])
-    ax_b.set_xticks([31.5, 32.5])
-    ax_a.set_yticks([0.5, 1.0, 1.5])
-    ax_b.set_yticks([0.5, 1.0, 1.5])
-    estilo_eixo(ax_a)
-    estilo_eixo(ax_b)
-    # A janela da direita nao repete os rotulos da taxa BD: o eixo e o mesmo, e
-    # repeti-los sugeriria duas escalas verticais distintas.
-    ax_b.set_yticklabels([])
-    ax_b.spines["left"].set_visible(False)
-    ax_b.tick_params(axis="y", length=0)
-    marca_quebra(ax_a, ax_b)
-
-    ax_a.set_ylabel("BD-BR (%)", fontsize=PT, color=INK_2, labelpad=2.0)
-    # Um unico rotulo de eixo x, centrado sobre as duas janelas: a grandeza e a
-    # mesma, so a faixa muda.
-    fig.text(x0 + w / 2.0, 1.5 / h_pt, "Time savings (%)", fontsize=PT,
-             color=INK_2, ha="center", va="bottom")
-
-    # Cada janela E uma calibracao, e por isso o nome da serie vai no topo da
-    # janela, e nao flutuando ao lado dos pontos: nao ha o que confundir dentro
-    # de cada uma, e o rotulo deixa de disputar espaco com os dados e com as
-    # duas retas anotadas. A legenda da figura completa o nome.
-    ax_a.set_title("balanced", fontsize=PT, color=C_BAL, pad=3.0)
-    ax_b.set_title("aggressive", fontsize=PT, color=C_AGG, pad=3.0)
-
-    # As duas taxas de cambio, anotadas na janela em que partem do mesmo ponto
-    # de operacao e sao lidas na mesma escala. O angulo e o angulo aparente na
-    # tela, e nao a inclinacao em unidades de dado.
-    ax_w_in, ax_h_in = w_a * COL_W_IN, h * FIG_H_IN
-    a_knob = angulo(precos["knob"], ax_w_in, ax_h_in, XA_MAX - XA_MIN,
-                    Y_MAX - Y_MIN)
-    a_st2 = angulo(precos["stage2"], ax_w_in, ax_h_in, XA_MAX - XA_MIN,
-                   Y_MAX - Y_MIN)
-    x_k = XA_MAX - 0.08
-    ax_a.text(x_k, bal[0][0] + precos["knob"] * (x_k - bal[0][1]) + 0.020,
+    # As duas taxas de cambio, anotadas no painel em que partem do mesmo ponto de
+    # operacao e sao lidas na mesma escala. Horizontais, e nao alinhadas as
+    # retas: com 9 pt num painel de pouco mais de uma polegada, o texto girado
+    # pela inclinacao aparente da reta do botao, que aqui passa dos 50 graus,
+    # atravessaria o painel inteiro.
+    ax_a.text(XA_MIN + 0.08, YA_MAX - 0.006,
               f"threshold knob, {precos['knob']:.3f}", fontsize=PT,
-              color=INK_2, ha="right", va="bottom", rotation=a_knob,
-              rotation_mode="anchor", zorder=6)
-    x_s = 18.52
-    ax_a.text(x_s, bal[0][0] + precos["stage2"] * (x_s - bal[0][1]) - 0.022,
+              color=INK_2, ha="left", va="top", zorder=6)
+    ax_a.text(18.62, 0.5525,
               f"second stage, {precos['stage2']:.3f}", fontsize=PT,
-              color=C_BAL, ha="center", va="top", rotation=a_st2,
-              rotation_mode="anchor", zorder=6)
+              color=C_BAL, ha="center", va="center", zorder=6)
+
+    # Rotulo de cada painel e rotulo unico do eixo x, sob os dois: a grandeza e
+    # a mesma, so a faixa muda.
+    for rect, texto, cor in ((rect_a, "(a) balanced", C_BAL),
+                             (rect_b, "(b) aggressive", C_AGG)):
+        fig.text(rect[0] + rect[2] / 2.0, 15.5 / h_pt, texto, fontsize=PT,
+                 color=cor, ha="center", va="bottom")
+    fig.text(0.5, 1.5 / h_pt, "Time savings (%)", fontsize=PT, color=INK_2,
+             ha="center", va="bottom")
 
     fig.savefig(out_path, facecolor=SURFACE)
     if out_path.endswith(".pdf"):
