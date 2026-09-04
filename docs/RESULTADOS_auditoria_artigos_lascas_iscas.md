@@ -171,3 +171,79 @@ sequências da grade CTC.
    única, base distinta — não depende desta diferença.
 4. Os artefatos de `results/benchmark/` não são versionados; esta auditoria vale para o
    estado local desses arquivos na data indicada.
+
+## 6. Adendo de 2026-09-04 — retirada da comparação com a escada de presets do LASCAS
+
+Restrição editorial acrescentada nesta data, por orientação: o artigo LASCAS **não pode
+apresentar comparação com os presets nativos** (`cpu-used` 1, 2 e 3). A justificativa é de
+escopo, e é a mesma que o próprio resumo do artigo declara: o SNP-AV1 introduz duas redes
+neurais em dois estágios da busca de partição e não toca em etapa alguma fora dela,
+enquanto qualquer preset nativo reconfigura dezenas de heurísticas espalhadas por todas as
+etapas do codificador. Pôr os dois lado a lado ordena arranjos de escopo distinto, e não
+técnicas de busca de partição.
+
+### 6.1 O que saiu do artigo
+
+| Passagem removida | Conteúdo |
+|---|---|
+| Resumo | a admissão de não dominância dos presets e a alegação de preencher o vão da escada |
+| Seção I | a formulação "não é mais um preset de velocidade" |
+| Seção VI (resultados) | os dois parágrafos de qualificação da comparação e a distinção arquitetural em relação à rede convolucional nativa |
+| Seção VI | o parágrafo do valor de `cpu-used=1` (32,59% a 0,449%) e da granularidade não coberta |
+| Seção VI | a menção ao custo do caminho da rede nativa no parágrafo de sobrecarga |
+| Conclusão | a ressalva de não dominância da escada |
+| Figura 3 | as três séries de preset nativo e a faixa sombreada de vão não coberto |
+
+Permanece uma única menção, de duas sentenças, no primeiro parágrafo de comparação da
+Seção VI: a declaração de escopo que justifica a ausência da comparação, sem número algum
+de preset. Ela existe para antecipar a pergunta do revisor, e não para comparar.
+
+Permanecem legítimas, por não serem comparação de desempenho, as menções a `cpu-used=0`
+(âncora e regime de extração do conjunto de dados) e a `cpu-used=6` (verificação de que
+um preset rápido já poda heuristicamente e por isso não serve para rotular).
+
+### 6.2 O que entrou no lugar
+
+O eixo de comparação passou a ser interno, e o argumento central do artigo passou a ser a
+**taxa de câmbio** entre tempo e taxa BD das duas alavancas que a solução implantada
+oferece ao seu usuário, ambas medidas na mesma grade CTC A1 e visíveis na Figura 3:
+
+| Alavanca | Segmento medido | Preço (pp de taxa BD por pp de tempo) |
+|---|---|--:|
+| botão de limiar do 1º estágio | `ml_balanced` → `ml_aggr` | 0,0606 |
+| 2º estágio, calibração implantada | `ml_balanced` → `ml_bal_h9d` | 0,0179 |
+| 2º estágio, calibração forte | `ml_balanced` → `ml_bal_h9d_pl20` | 0,0399 |
+
+A razão publicada é, por conseguinte, **3,4×** (0,0606 / 0,0179 = 3,38), e não os 3,5× da
+versão anterior. Os dois valores são o mesmo resultado sob estimadores distintos, já
+registrados em `results/thesis/R4_h9d.md` §4.6: 3,5× pelo estimador de interpolação por
+sequência (0,063) e 3,38× pela média das médias (0,0606). O artigo passou a usar **apenas
+o estimador de média das médias**, que é o único derivável dos pontos que a própria
+Figura 3 plota, e o script da figura recalcula os três preços a cada execução e os imprime
+para auditoria. O estimador de interpolação por sequência continua sendo a fonte do teste
+de não dominância sequência a sequência (6 de 8, duas por dominância de Pareto estrita),
+que é contagem e não preço, e os dois não se misturam em tabela alguma.
+
+Comando de reprodução (contêiner `av1_bench`):
+
+```bash
+build/venv-ml/bin/python src/scripts/benchmark/plot_operating_space_fig3.py \
+    --out-dir results/thesis/figuras
+```
+
+### 6.3 Consequências para o restante do texto
+
+O enunciado corrigido da Conclusão 3 da tese — dois podadores se somam na medida em que os
+conjuntos de candidatos que retiram são disjuntos, no ponto de operação em que efetivamente
+rodam (`R6_analise_integrada.md` §6.4) — passou a ser a espinha argumentativa do artigo, na
+Seção V (regra do empilhamento) e na Seção VI (a inércia do 2º estágio sobre a base
+agressiva, +0,17 pp, abaixo da resolução de ~0,46 pp). A prova por sobreposição entre o
+H9a e o podador binário **não** entra, por pertencer ao artigo irmão.
+
+### 6.4 Limitações deste adendo
+
+1. A retirada é editorial e não altera medição alguma: nenhum número foi recalculado, com a
+   exceção declarada dos três preços da tabela acima, que saem do mesmo
+   `bdrate_average.csv` já auditado na Seção 2.
+2. A tese continua apresentando a fronteira global com os presets nativos, como manda o seu
+   próprio escopo (`M1_objeto_e_formulacao.md` §1.5). A restrição vale para o artigo LASCAS.
