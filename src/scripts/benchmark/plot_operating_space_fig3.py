@@ -148,21 +148,13 @@ EXPECTED = {
 # argumento do artigo, e precisa ser legivel.
 #   Dois paineis independentes, e nao um eixo quebrado: cada painel e uma
 # figura completa e honesta em si, com a sua faixa declarada nas marcacoes, e o
-# leitor nao precisa confiar em marca de quebra alguma para saber onde esta.
-# As faixas absolutas dos dois paineis dizem, sozinhas, a distancia entre as
+# leitor nao precisa confiar em marca de quebra alguma para saber onde esta. As
+# faixas absolutas dos dois paineis dizem, sozinhas, a distancia entre as
 # calibracoes.
 XA_MIN, XA_MAX = 17.30, 20.35   # (a) calibracao equilibrada
-YA_MIN, YA_MAX = 0.528, 0.748
+YA_MIN, YA_MAX = 0.516, 0.748
 XB_MIN, XB_MAX = 31.28, 32.42   # (b) calibracao agressiva
 YB_MIN, YB_MAX = 1.376, 1.438
-
-# Resolucao da medicao de tempo: dois desvios-padrao da repeticao quintupla da
-# campanha, 0,46 ponto percentual. Desenhada como faixa a partir da base do
-# primeiro estagio em cada painel, ela transforma a leitura do marginal do
-# segundo estagio em algo verificavel a olho: no painel (a) o ponto implantado
-# sai da faixa, no painel (b) fica dentro dela.
-RESOL_PP = 0.46
-BAND = "#efedE4"
 def load(path):
     """Devolve {config: (bd_rate, ts_pct)} e confere contra o texto do artigo."""
     if not os.path.exists(path):
@@ -213,13 +205,9 @@ def estilo_eixo(ax):
 
 
 def painel(fig, rect, pts, base_knob, cor, marca, xlim, ylim, xticks, yticks):
-    """Um painel: a familia, a faixa de resolucao e a reta do botao de limiar."""
+    """Um painel: a familia de pontos e a reta do botao de limiar."""
     ax = fig.add_axes(rect)
     ax.set_facecolor(SURFACE)
-
-    # Faixa de resolucao da medicao, a partir da base do primeiro estagio.
-    ax.axvspan(pts[0][1], pts[0][1] + RESOL_PP, color=BAND, linewidth=0,
-               zorder=0)
     ax.grid(True, color=GRID, linewidth=0.6, zorder=1)
     ax.set_axisbelow(True)
 
@@ -270,17 +258,18 @@ def draw(data, out_path, precos):
            (XB_MIN, XB_MAX), (YB_MIN, YB_MAX),
            [31.5, 32.0], [1.38, 1.40, 1.42])
 
-    # As duas taxas de cambio, anotadas no painel em que partem do mesmo ponto de
-    # operacao e sao lidas na mesma escala. Horizontais, e nao alinhadas as
-    # retas: com 9 pt num painel de pouco mais de uma polegada, o texto girado
-    # pela inclinacao aparente da reta do botao, que aqui passa dos 50 graus,
-    # atravessaria o painel inteiro.
-    ax_a.text(XA_MIN + 0.08, YA_MAX - 0.006,
-              f"threshold knob, {precos['knob']:.3f}", fontsize=PT,
+    # As duas retas do painel (a) partem do mesmo ponto de operacao, e e essa
+    # origem comum que autoriza compara-las: sao as duas maneiras de comprar
+    # tempo a partir da base do primeiro estagio. A figura nomeia cada uma e
+    # anuncia a razao entre os seus precos, que e o numero que o texto discute;
+    # os dois precos em separado ficam no corpo do artigo, para nao encher de
+    # digito um painel de uma polegada.
+    ax_a.text(XA_MIN + 0.10, YA_MAX - 0.008, "threshold knob", fontsize=PT,
               color=INK_2, ha="left", va="top", zorder=6)
-    ax_a.text(18.62, 0.5525,
-              f"second stage, {precos['stage2']:.3f}", fontsize=PT,
-              color=C_BAL, ha="center", va="center", zorder=6)
+    razao = precos["knob"] / precos["stage2"]
+    ax_a.text(18.80, 0.5405, f"second stage,\n{razao:.1f}$\\times$ cheaper",
+              fontsize=PT, color=C_BAL, ha="center", va="center",
+              linespacing=1.2, zorder=6)
 
     # Rotulo de cada painel e rotulo unico do eixo x, sob os dois: a grandeza e
     # a mesma, so a faixa muda.

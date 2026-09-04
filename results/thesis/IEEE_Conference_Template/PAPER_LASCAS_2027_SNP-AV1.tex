@@ -407,11 +407,11 @@ exercised and the second pruner has almost nothing to remove.
   \caption{Operating space of SNP-AV1 over the CTC Class A1 4K sequences, against
   the libaom v3.10.0 anchor at \texttt{cpu-used=0}: (a) balanced calibration and
   (b) aggressive calibration, each on its own axes. In both panels the three
-  points differ only in the strength of the second pruner, the dashed line is the
-  threshold knob of the first stage, which leaves the base of the family in (a)
-  and reaches it in (b), and the shaded band is the 0.46-point measurement
-  resolution taken from that base. The two prices annotated in (a) are in BD-BR
-  points per point of time savings.}
+  points differ only in the strength of the second pruner, and the dashed line is
+  the threshold knob of the first stage, which leaves the base of the family in
+  (a) and reaches it in (b). The two lines of (a) leave the same operating point,
+  and the second stage buys time along it at about a third of the price of the
+  knob.}
   \label{fig_space}
 \end{figure}
 
@@ -421,9 +421,9 @@ resolution of the arrangement and above it in one sequence out of eight instead
 of six. With the undivided threshold loosened to 0.60, the first stage commits
 the nodes so early that they seldom reach the point at which the extended
 partitions would be decided, and the two pruners fall back to disputing the same
-residue. Fig.~\ref{fig_space}(b) is that collapse: the deployed point stays
-inside the measurement resolution of its own base, which in Fig.~\ref{fig_space}(a)
-it leaves well behind.
+residue. Fig.~\ref{fig_space}(b) shows what is left of the second stage there:
+the three points cover 0.65 percentage points of time savings, and the step the
+deployed calibration adds is 0.17 of them.
 
 Table~\ref{tab_seq} opens the two deployed points per sequence, and what it
 exposes is content dispersion, not a swept range. Read as time bought per point
