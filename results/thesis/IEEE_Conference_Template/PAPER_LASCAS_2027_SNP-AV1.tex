@@ -404,11 +404,13 @@ exercised and the second pruner has almost nothing to remove.
   \centering
   % src/scripts/benchmark/plot_operating_space_fig3.py
   \includegraphics[width=\columnwidth]{fig3_operating_space}
-  \caption{Operating space of SNP-AV1 over the CTC Class A1 4K sequences, against
-  the libaom v3.10.0 anchor at \texttt{cpu-used=0}. Inside each calibration the
-  three points differ only in the strength of the second pruner; the dashed line
-  is the threshold knob of the first stage, and the inset resolves the balanced
-  calibration, where the two prices leave the same operating point.}
+  \caption{Operating space of SNP-AV1 over the CTC Class A1 4K sequences. Both
+  axes are measured against the libaom v3.10.0 anchor at \texttt{cpu-used=0},
+  which is their origin and lies outside the plotted range. Inside each
+  calibration the three points differ only in the strength of the second pruner,
+  and the dashed line is the threshold knob of the first stage. The inset
+  magnifies the balanced calibration, where the two prices, in BD-BR points per
+  point of time savings, leave the same operating point.}
   \label{fig_space}
 \end{figure}
 
@@ -461,7 +463,7 @@ This study was financed in part by the Coordena\c{c}\~ao de Aperfei\c{c}oamento 
 Pessoal de N\'ivel Superior -- Brasil (CAPES) -- Finance Code 001, and also by the
 Brazilian research support agencies CNPq and FAPERGS.
 
-\IEEEtriggeratref{9}
+% \IEEEtriggeratref{n}  % set only when the last page needs balancing
 \begin{thebibliography}{00}
 
 \bibitem{statista} Statista. (2025). \emph{Share of Internet Users Watching Online Videos Every Month From 1st Quarter 2022 to 3rd Quarter 2024}. [Online]. Available: \url{https://www.statista.com/statistics/1489445/online-video-viewers-worldwide-quarterly/}

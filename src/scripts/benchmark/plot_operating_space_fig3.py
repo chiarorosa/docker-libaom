@@ -8,15 +8,17 @@ contra os do artigo antes de plotar; qualquer divergencia aborta a execucao.
 
 Eixo x: reducao de tempo (TS, definicao canonica da M3, media por ponto de
 quantizacao e depois por sequencia). Eixo y: taxa BD sobre PSNR-Y. Mais a
-direita e mais abaixo e melhor. A origem e a ancora, o libaom v3.10.0 intocado
-em `cpu-used=0`.
+direita e mais abaixo e melhor. A ancora — o libaom v3.10.0 intocado em
+`cpu-used=0` — e a origem dos dois eixos e fica FORA da faixa desenhada: nao ha
+ponto medido abaixo de 17,7% de reducao de tempo, e comecar o eixo em 10% devolve
+a area do desenho aos dados. A legenda do artigo declara a ancora.
 
 ESCOPO (decisao editorial de 2026-09-04, orientacao): a figura NAO apresenta a
 escada de presets nativos. O SNP-AV1 age apenas dentro da busca de particao,
-enquanto um preset reconfigura todas as etapas do codificador; po-los lado a
-lado compara arranjos de escopo distinto. O eixo de comparacao desta figura e
-interno: os seis pontos medidos do SNP-AV1 contra a ancora exaustiva, e as duas
-taxas de cambio entre tempo e taxa BD que a geometria dos pontos expoe.
+enquanto um preset reconfigura todas as etapas do codificador; po-los lado a lado
+compara arranjos de escopo distinto. O eixo de comparacao desta figura e interno:
+os seis pontos medidos e as duas taxas de cambio entre tempo e taxa BD que a
+geometria deles expoe.
 
     - o segmento tracejado liga as duas BASES (apenas o primeiro estagio) e e,
       portanto, o botao de limiar do primeiro estagio: a unica alternativa que a
@@ -24,8 +26,18 @@ taxas de cambio entre tempo e taxa BD que a geometria dos pontos expoe.
     - o primeiro salto dentro de cada familia e o segundo estagio na calibracao
       implantada, e a sua inclinacao e visivelmente mais suave.
 
-As duas inclinacoes anotadas sao calculadas no proprio script, a partir dos
-mesmos pontos plotados, e impressas no terminal para auditoria.
+Os dois saltos do segundo estagio medem de 1,0 a 2,1 pontos percentuais de tempo,
+contra os 13,8 que separam as duas calibracoes do primeiro estagio. Na escala do
+grafico principal eles sao um borrao, e e justamente a inclinacao deles que
+carrega o argumento do artigo; o quadro de detalhe resolve isso sem exigir uma
+segunda figura. As duas inclinacoes anotadas sao calculadas no proprio script, a
+partir dos mesmos pontos plotados, e impressas no terminal para auditoria.
+
+TIPOGRAFIA: piso de 9 pt para TODO texto da figura — eixo, marcacoes, rotulos de
+serie e anotacoes. Como a figura e desenhada na largura de coluna exata do
+IEEEtran e incluida com `width=\\columnwidth`, a escala e 1:1 e os 9 pt
+declarados aqui sao 9 pt medidos na pagina. O piso e o que fixa a altura: em
+1,6 in nao cabem rotulos deste corpo sem colisao.
 
 Uso (dentro do conteiner):
     build/venv-ml/bin/python src/scripts/benchmark/plot_operating_space_fig3.py \
@@ -65,11 +77,18 @@ matplotlib.rcParams.update({
 # --- geometria: a figura e desenhada no TAMANHO FINAL ------------------------
 # \columnwidth do IEEEtran [conference] em papel carta mede 252,0 pt de TeX,
 # isto e, 252/72,27 = 3,487 in. Desenhando neste tamanho e incluindo com
-# width=\columnwidth, a escala e 1:1 e os corpos de texto abaixo sao os corpos
+# width=\columnwidth, a escala e 1:1 e os corpos declarados abaixo sao os corpos
 # que o leitor ve. Por isso NAO se usa bbox_inches="tight" aqui: o recorte
 # automatico mudaria a altura final e quebraria o orcamento de pagina.
 COL_W_IN = 252.0 / 72.27
-FIG_H_IN = 1.62          # teto acordado com o enquadramento de 4+1 paginas
+FIG_H_IN = 186.0 / 72.0    # altura pedida pelo piso de 9 pt, ver docstring
+PT = 9.0                   # piso tipografico: nada abaixo disto na figura
+
+# Margens do eixo, em pontos PostScript, dimensionadas para o texto de 9 pt.
+MARG_ESQ_PT = 33.0         # rotulo do eixo y + marcacoes "0.5" + folga
+MARG_INF_PT = 30.0         # marcacoes + rotulo do eixo x + folga
+MARG_DIR_PT = 4.0
+MARG_SUP_PT = 5.0
 
 # --- paleta: os mesmos slots validados da figura 1 ---------------------------
 # Reaproveitados por coerencia entre as figuras do artigo. A validacao (faixa de
@@ -84,12 +103,14 @@ INK = "#0b0b0b"
 INK_2 = "#52514e"
 MUTED = "#898781"
 GRID = "#e1e0d9"
-KNOB = "#8a8880"   # botao de limiar do primeiro estagio: elemento de apoio
+KNOB = "#8a8880"    # botao de limiar do primeiro estagio: elemento de apoio
 DETAIL = "#f6f5f0"  # fundo do quadro de detalhe
 
 # Marcadores distintos por serie, e nao apenas cores: em impressao em cinza a
 # forma continua separando as duas series sem exigir uma variante texturizada.
 M_BAL, M_AGG = "o", "^"
+MS = 5.6            # corpo do marcador, proporcional ao texto de 9 pt
+LW = 1.5
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", "..", ".."))
@@ -114,6 +135,13 @@ EXPECTED = {
     "ml_aggr_h9d": (1.409, 31.68),
     "ml_aggr_h9d_pl20": (1.420, 32.16),
 }
+
+# --- faixas dos eixos --------------------------------------------------------
+X_MIN, X_MAX = 10.0, 34.8      # ancora fora da faixa; ver docstring
+Y_MIN, Y_MAX = 0.30, 1.66
+# Quadro de detalhe: a familia equilibrada, onde a comparacao de precos acontece.
+IX_MIN, IX_MAX = 17.28, 20.52
+IY_MIN, IY_MAX = 0.512, 0.742
 
 
 def load(path):
@@ -145,85 +173,94 @@ def preco(p_ini, p_fim):
     return (p_fim[0] - p_ini[0]) / (p_fim[1] - p_ini[1])
 
 
-def angulo_aparente(slope, ax_w_in, ax_h_in, x_span, y_span):
+def angulo(slope, w_in, h_in, x_span, y_span):
     """Angulo, em graus, com que uma inclinacao em unidades de dado aparece na
     tela. Sem esta conversao, um rotulo rotacionado pela inclinacao nominal
     descola da reta que deveria acompanhar."""
-    return math.degrees(math.atan(slope * (ax_h_in / y_span) /
-                                  (ax_w_in / x_span)))
+    return math.degrees(math.atan(slope * (h_in / y_span) / (w_in / x_span)))
 
 
-def inset(fig, ax, bal, precos):
-    """Detalhe da familia equilibrada, onde a comparacao de precos acontece.
+def estilo_eixo(ax):
+    ax.tick_params(colors=MUTED, labelsize=PT, length=0, pad=3.0)
+    for lbl in ax.get_xticklabels() + ax.get_yticklabels():
+        lbl.set_color(INK)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
+    for side in ("left", "bottom"):
+        ax.spines[side].set_color(MUTED)
+        ax.spines[side].set_linewidth(0.7)
 
-    Os dois saltos do segundo estagio medem de 1,0 a 2,1 pontos percentuais de
-    tempo, contra os 13,8 que separam as duas calibracoes do primeiro estagio.
-    Na escala do grafico principal eles sao um borrao, e e justamente a
-    inclinacao deles que carrega o argumento do artigo. O detalhe resolve isso
-    sem exigir uma segunda figura: mesma familia, mesma cor, mesmos marcadores.
+
+def detalhe(ax, bal, precos, ax_w_in, ax_h_in):
+    """Quadro de detalhe da familia equilibrada, no canto inferior direito.
+
+    A area e livre por construcao: os pontos sobem da esquerda para a direita, e
+    o canto de muito tempo poupado com pouca taxa BD nao contem dado algum.
     """
-    ix0, ix1 = 17.32, 20.42
-    iy0, iy1 = 0.532, 0.738
-    axi = ax.inset_axes([0.035, 0.505, 0.375, 0.440])
-    # Fundo levemente distinto do papel: sinaliza que o quadro e um destaque, e
-    # nao um segundo grafico independente, sem precisar de moldura fechada.
+    rect = [0.500, 0.050, 0.487, 0.335]
+    axi = ax.inset_axes(rect)
+    # Fundo levemente distinto do papel e moldura fechada: sinalizam que o quadro
+    # e um destaque, e nao um segundo grafico independente.
+    #   O detalhe NAO leva marcacoes de eixo. Com o piso de 9 pt, os rotulos das
+    # marcacoes cairiam ao lado dos do eixo principal e as duas escalas passariam
+    # a competir pela mesma leitura. O que o quadro precisa mostrar e a razao
+    # entre as duas inclinacoes, e ela nao depende da escala: os dois valores
+    # anotados dao o conteudo quantitativo, e a legenda declara a faixa ampliada.
     axi.set_facecolor(DETAIL)
-    axi.grid(True, color=GRID, linewidth=0.4, zorder=1)
-    axi.set_axisbelow(True)
+
+    w_in, h_in = rect[2] * ax_w_in, rect[3] * ax_h_in
+    a_knob = angulo(precos["knob"], w_in, h_in, IX_MAX - IX_MIN,
+                    IY_MAX - IY_MIN)
+    a_st2 = angulo(precos["stage2"], w_in, h_in, IX_MAX - IX_MIN,
+                   IY_MAX - IY_MIN)
 
     # A reta do botao de limiar, redesenhada a partir da MESMA base do primeiro
     # estagio: as duas alternativas partem do mesmo ponto de operacao, que e a
     # unica leitura em que a comparacao de precos e legitima.
-    dx = ix1 - bal[0][1]
-    axi.plot([bal[0][1], ix1], [bal[0][0], bal[0][0] + precos["knob"] * dx],
-             color=KNOB, linewidth=0.9, linestyle=(0, (4, 2.2)), zorder=2)
+    dx = IX_MAX - bal[0][1]
+    axi.plot([bal[0][1], IX_MAX], [bal[0][0], bal[0][0] + precos["knob"] * dx],
+             color=KNOB, linewidth=1.2, linestyle=(0, (4, 2.2)), zorder=2)
     axi.plot([p[1] for p in bal], [p[0] for p in bal], color=C_BAL,
-             linewidth=1.0, zorder=4)
+             linewidth=LW, zorder=4)
     axi.plot([p[1] for p in bal], [p[0] for p in bal], linestyle="none",
-             marker=M_BAL, markersize=2.8, color=C_BAL,
-             markeredgecolor=SURFACE, markeredgewidth=0.5, zorder=5)
+             marker=M_BAL, markersize=MS - 0.8, color=C_BAL,
+             markeredgecolor=SURFACE, markeredgewidth=0.6, zorder=5)
 
-    w_in, h_in = 0.375 * 0.875 * COL_W_IN, 0.440 * 0.765 * FIG_H_IN
-    a_knob = angulo_aparente(precos["knob"], w_in, h_in, ix1 - ix0, iy1 - iy0)
-    a_st2 = angulo_aparente(precos["stage2"], w_in, h_in, ix1 - ix0, iy1 - iy0)
+    x_k = 19.05
+    axi.text(x_k, bal[0][0] + precos["knob"] * (x_k - bal[0][1]) + 0.012,
+             f"{precos['knob']:.3f}", fontsize=PT, color=INK_2, ha="center",
+             va="bottom", rotation=a_knob, rotation_mode="anchor", zorder=6)
+    x_s = 18.42
+    axi.text(x_s, bal[0][0] + precos["stage2"] * (x_s - bal[0][1]) - 0.018,
+             f"{precos['stage2']:.3f}", fontsize=PT, color=C_BAL, ha="center",
+             va="top", rotation=a_st2, rotation_mode="anchor", zorder=6)
 
-    axi.text(18.85, bal[0][0] + precos["knob"] * (18.85 - bal[0][1]) + 0.007,
-             f"threshold knob, {precos['knob']:.3f}", fontsize=4.8,
-             color=INK_2, ha="center", va="bottom", rotation=a_knob,
-             rotation_mode="anchor", zorder=6)
-    axi.text(18.23, 0.5767 - 0.005,
-             f"second stage, {precos['stage2']:.3f}", fontsize=4.8,
-             color=C_BAL, ha="center", va="top", rotation=a_st2,
-             rotation_mode="anchor", zorder=6)
-    # Sem titulo dentro do detalhe: a legenda da figura ja o identifica, e cada
-    # linha de texto a mais nesta area disputa espaco com os proprios dados.
-
-    axi.set_xlim(ix0, ix1)
-    axi.set_ylim(iy0, iy1)
-    axi.set_xticks([18, 19, 20])
-    axi.set_yticks([0.6, 0.7])
-    axi.tick_params(colors=MUTED, labelsize=4.8, length=0, pad=1.0)
-    for lbl in axi.get_xticklabels() + axi.get_yticklabels():
-        lbl.set_color(INK)
-    for side in ("top", "right"):
-        axi.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
+    axi.set_xlim(IX_MIN, IX_MAX)
+    axi.set_ylim(IY_MIN, IY_MAX)
+    axi.set_xticks([])
+    axi.set_yticks([])
+    for side in ("top", "right", "left", "bottom"):
+        axi.spines[side].set_visible(True)
         axi.spines[side].set_color(MUTED)
-        axi.spines[side].set_linewidth(0.5)
+        axi.spines[side].set_linewidth(0.6)
 
 
 def draw(data, out_path, precos):
     fig = plt.figure(figsize=(COL_W_IN, FIG_H_IN), dpi=400)
     fig.patch.set_facecolor(SURFACE)
-    # Margens em fracao da figura, fixadas a mao porque o tamanho final e o
-    # tamanho desenhado. Sobra o necessario para rotulo de eixo e marcas.
-    ax = fig.add_axes([0.115, 0.205, 0.875, 0.765])
+
+    w_pt, h_pt = COL_W_IN * 72.0, FIG_H_IN * 72.0
+    rect = [MARG_ESQ_PT / w_pt, MARG_INF_PT / h_pt,
+            1.0 - (MARG_ESQ_PT + MARG_DIR_PT) / w_pt,
+            1.0 - (MARG_INF_PT + MARG_SUP_PT) / h_pt]
+    ax = fig.add_axes(rect)
     ax.set_facecolor(SURFACE)
+    ax_w_in, ax_h_in = rect[2] * COL_W_IN, rect[3] * FIG_H_IN
 
     bal = [data[k] for k, _ in BALANCED]
     agg = [data[k] for k, _ in AGGRESSIVE]
 
-    ax.grid(True, color=GRID, linewidth=0.5, zorder=1)
+    ax.grid(True, color=GRID, linewidth=0.6, zorder=1)
     ax.set_axisbelow(True)
 
     # Botao de limiar do primeiro estagio: o segmento entre as duas bases. E a
@@ -231,60 +268,45 @@ def draw(data, out_path, precos):
     # segundo estagio, e a sua inclinacao e a referencia contra a qual a do
     # segundo estagio deve ser lida.
     ax.plot([bal[0][1], agg[0][1]], [bal[0][0], agg[0][0]], color=KNOB,
-            linewidth=0.9, linestyle=(0, (4, 2.2)), zorder=2)
-
-    # Ancora: e um ponto de operacao real, o denominador de todo o resto.
-    ax.plot([0], [0], marker="P", markersize=3.8, color=INK,
-            markeredgecolor=SURFACE, markeredgewidth=0.5, zorder=6)
-    ax.text(0.9, 0.035, "anchor, cpu-used=0", fontsize=5.8, color=INK_2,
-            va="bottom", ha="left", zorder=6)
+            linewidth=1.2, linestyle=(0, (4, 2.2)), zorder=2)
 
     for pts, cor, marca in ((bal, C_BAL, M_BAL), (agg, C_AGG, M_AGG)):
         ax.plot([p[1] for p in pts], [p[0] for p in pts], color=cor,
-                linewidth=1.0, zorder=4)
+                linewidth=LW, zorder=4)
         ax.plot([p[1] for p in pts], [p[0] for p in pts], linestyle="none",
-                marker=marca, markersize=3.2, color=cor,
-                markeredgecolor=SURFACE, markeredgewidth=0.5, zorder=5)
+                marker=marca, markersize=MS, color=cor,
+                markeredgecolor=SURFACE, markeredgewidth=0.6, zorder=5)
 
-    # Rotulo direto de cada familia, no lugar de uma legenda: em pouco mais de
-    # 1,6 in de altura a legenda consome espaco que os proprios dados precisam,
-    # e o rotulo junto ao dado dispensa a correspondencia por cor. Em duas
-    # linhas para nao invadir a moldura nem a reta do botao de limiar.
-    ax.text(bal[1][1] + 0.3, bal[1][0] - 0.135, "balanced\ncalibration",
-            fontsize=6.0, color=C_BAL, ha="center", va="top",
-            linespacing=1.15, zorder=6)
-    ax.text(32.2, agg[1][0] - 0.115, "aggressive\ncalibration",
-            fontsize=6.0, color=C_AGG, ha="center", va="top",
-            linespacing=1.15, zorder=6)
+    # Rotulo direto de cada familia, no lugar de uma legenda: o rotulo junto ao
+    # dado dispensa o leitor de fazer a correspondencia por cor, e a legenda
+    # gastaria area que os proprios dados precisam.
+    ax.text(bal[1][1] - 0.5, bal[1][0] - 0.075, "balanced\ncalibration",
+            fontsize=PT, color=C_BAL, ha="center", va="top", linespacing=1.2,
+            zorder=6)
+    ax.text(X_MAX - 0.9, agg[1][0] + 0.055, "aggressive\ncalibration",
+            fontsize=PT, color=C_AGG, ha="right", va="bottom", linespacing=1.2,
+            zorder=6)
 
     # Rotulo da reta do botao de limiar, alinhado a ela. O angulo e o angulo
-    # aparente na tela, e nao a inclinacao em unidades de dado: depende da
-    # razao entre as escalas dos dois eixos, que estao fixadas logo abaixo.
-    ang = angulo_aparente(precos["knob"], ax_w_in=0.875 * COL_W_IN,
-                          ax_h_in=0.765 * FIG_H_IN,
-                          x_span=36.8, y_span=1.795)
-    x_rot = 25.0
-    y_rot = bal[0][0] + precos["knob"] * (x_rot - bal[0][1])
-    ax.text(x_rot, y_rot + 0.035, "first-stage threshold knob",
-            fontsize=5.8, color=INK_2, ha="center", va="bottom",
-            rotation=ang, rotation_mode="anchor", zorder=6)
+    # aparente na tela, e nao a inclinacao em unidades de dado: depende da razao
+    # entre as escalas dos dois eixos.
+    a_knob = angulo(precos["knob"], ax_w_in, ax_h_in, X_MAX - X_MIN,
+                    Y_MAX - Y_MIN)
+    x_rot = 25.6
+    ax.text(x_rot, bal[0][0] + precos["knob"] * (x_rot - bal[0][1]) + 0.030,
+            "first-stage threshold knob", fontsize=PT, color=INK_2,
+            ha="center", va="bottom", rotation=a_knob, rotation_mode="anchor",
+            zorder=6)
 
-    inset(fig, ax, bal, precos)
+    detalhe(ax, bal, precos, ax_w_in, ax_h_in)
 
-    ax.set_xlim(-1.2, 35.6)
-    ax.set_ylim(-0.075, 1.72)
-    ax.set_xticks([0, 5, 10, 15, 20, 25, 30, 35])
-    ax.set_yticks([0, 0.5, 1.0, 1.5])
-    ax.set_xlabel("Time savings (%)", fontsize=7.0, color=INK_2, labelpad=1.5)
-    ax.set_ylabel("BD-BR (%)", fontsize=7.0, color=INK_2, labelpad=1.5)
-    ax.tick_params(colors=MUTED, labelsize=6.5, length=0, pad=1.5)
-    for lbl in ax.get_xticklabels() + ax.get_yticklabels():
-        lbl.set_color(INK)
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(MUTED)
-        ax.spines[side].set_linewidth(0.6)
+    ax.set_xlim(X_MIN, X_MAX)
+    ax.set_ylim(Y_MIN, Y_MAX)
+    ax.set_xticks([10, 15, 20, 25, 30])
+    ax.set_yticks([0.5, 1.0, 1.5])
+    ax.set_xlabel("Time savings (%)", fontsize=PT, color=INK_2, labelpad=2.0)
+    ax.set_ylabel("BD-BR (%)", fontsize=PT, color=INK_2, labelpad=2.0)
+    estilo_eixo(ax)
 
     fig.savefig(out_path, facecolor=SURFACE)
     if out_path.endswith(".pdf"):
@@ -336,8 +358,9 @@ def main():
                     "0.0000", "0.0000"])
     print(f"  gravado: {csv_path}")
 
-    print(f"\nDimensoes finais: {COL_W_IN:.3f} x {FIG_H_IN:.2f} in, "
-          f"para \\includegraphics[width=\\columnwidth]{{figura3_espaco_operacao}}")
+    print(f"\nDimensoes finais: {COL_W_IN:.3f} x {FIG_H_IN:.2f} in, piso de "
+          f"{PT:.0f} pt, para "
+          f"\\includegraphics[width=\\columnwidth]{{figura3_espaco_operacao}}")
 
 
 if __name__ == "__main__":
