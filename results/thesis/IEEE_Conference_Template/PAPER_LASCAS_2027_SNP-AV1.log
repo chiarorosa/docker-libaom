@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.8.19)  4 SEP 2026 17:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2026.8.19)  4 SEP 2026 17:25
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -341,19 +341,19 @@ Package pdftex.def Info: fig2_insertion_points.pdf  used on input line 187.
 Underfull \vbox (badness 1087) has occurred while \output is active []
 
  [2 <./fig1_partition_shapes.pdf> <./fig2_insertion_points.pdf>] [3]
-<fig3_operating_space.pdf, id=61, 252.0pt x 186.6975pt>
+<fig3_operating_space.pdf, id=61, 252.0pt x 170.6375pt>
 File: fig3_operating_space.pdf Graphic file (type pdf)
 <use fig3_operating_space.pdf>
 Package pdftex.def Info: fig3_operating_space.pdf  used on input line 406.
-(pdftex.def)             Requested size: 252.0pt x 186.70842pt.
+(pdftex.def)             Requested size: 252.0pt x 170.64748pt.
  [4 <./fig3_operating_space.pdf>]
-Underfull \hbox (badness 5077) in paragraph at lines 469--470
+Underfull \hbox (badness 5077) in paragraph at lines 472--473
 \OT1/ptm/m/it/8 Ev-ery Month From 1st Quar-ter 2022 to 3rd Quar-ter 2024\OT1/pt
 m/m/n/8 .
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 469--470
+Underfull \hbox (badness 10000) in paragraph at lines 472--473
 \OT1/ptm/m/n/8 [On-line]. Avail-able: $https : / / www . statista . com / stati
 stics / 1489445 /
  []
@@ -382,7 +382,7 @@ Here is how much of TeX's memory you used:
  26321 multiletter control sequences out of 15000+600000
  597739 words of font info for 113 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 57i,9n,65p,655b,347s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,9n,65p,731b,347s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texli
@@ -394,10 +394,10 @@ w/courier/ucrr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmb8
 a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb></usr/sh
 are/texlive/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/tex
 mf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on PAPER_LASCAS_2027_SNP-AV1.pdf (5 pages, 204056 bytes).
+Output written on PAPER_LASCAS_2027_SNP-AV1.pdf (5 pages, 202392 bytes).
 PDF statistics:
- 139 PDF objects out of 1000 (max. 8388607)
- 80 compressed objects within 1 object stream
+ 131 PDF objects out of 1000 (max. 8388607)
+ 76 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  16 words of extra memory for PDF output out of 10000 (max. 10000000)
 

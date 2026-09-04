@@ -81,14 +81,14 @@ matplotlib.rcParams.update({
 # que o leitor ve. Por isso NAO se usa bbox_inches="tight" aqui: o recorte
 # automatico mudaria a altura final e quebraria o orcamento de pagina.
 COL_W_IN = 252.0 / 72.27
-FIG_H_IN = 186.0 / 72.0    # altura pedida pelo piso de 9 pt, ver docstring
+FIG_H_IN = 170.0 / 72.0    # altura pedida pelo piso de 9 pt, ver docstring
 PT = 9.0                   # piso tipografico: nada abaixo disto na figura
 
 # Margens do eixo, em pontos PostScript, dimensionadas para o texto de 9 pt.
 MARG_ESQ_PT = 33.0         # rotulo do eixo y + marcacoes "0.5" + folga
 MARG_INF_PT = 30.0         # marcacoes + rotulo do eixo x + folga
 MARG_DIR_PT = 4.0
-MARG_SUP_PT = 5.0
+MARG_SUP_PT = 15.0        # titulo de cada janela
 
 # --- paleta: os mesmos slots validados da figura 1 ---------------------------
 # Reaproveitados por coerencia entre as figuras do artigo. A validacao (faixa de
@@ -109,7 +109,7 @@ DETAIL = "#f6f5f0"  # fundo do quadro de detalhe
 # Marcadores distintos por serie, e nao apenas cores: em impressao em cinza a
 # forma continua separando as duas series sem exigir uma variante texturizada.
 M_BAL, M_AGG = "o", "^"
-MS = 5.6            # corpo do marcador, proporcional ao texto de 9 pt
+MS = 5.0            # corpo do marcador, proporcional ao texto de 9 pt
 LW = 1.5
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -136,14 +136,32 @@ EXPECTED = {
     "ml_aggr_h9d_pl20": (1.420, 32.16),
 }
 
+
 # --- faixas dos eixos --------------------------------------------------------
-X_MIN, X_MAX = 10.0, 34.8      # ancora fora da faixa; ver docstring
-Y_MIN, Y_MAX = 0.30, 1.66
-# Quadro de detalhe: a familia equilibrada, onde a comparacao de precos acontece.
-IX_MIN, IX_MAX = 17.28, 20.52
-IY_MIN, IY_MAX = 0.512, 0.742
+# O eixo do tempo e QUEBRADO em duas janelas. Os seis pontos medidos vivem em
+# dois aglomerados separados por 12 pontos percentuais de tempo, e cada
+# aglomerado tem largura interna de 2,1 (equilibrado) e 0,65 (agressivo) pontos
+# percentuais. Num eixo continuo de 10% a 35%, os tres pontos de cada familia
+# caem sobre o mesmo corpo de marcador e leem-se como um ponto so, que e
+# justamente o que a figura nao pode esconder: a estrutura interna de cada
+# familia E o argumento do artigo. Duas janelas ampliadas, com a quebra marcada,
+# resolvem os seis pontos e mantem a relacao vertical entre as familias, uma vez
+# que o eixo da taxa BD e comum e continuo.
+#   A janela da esquerda e a que carrega a comparacao de precos: a reta do botao
+# de limiar e o salto do segundo estagio partem do mesmo ponto de operacao e sao
+# lidos na mesma escala. Por isso ela dispensa o quadro de detalhe da versao
+# anterior.
+XA_MIN, XA_MAX = 17.25, 20.45      # janela da calibracao equilibrada
+XB_MIN, XB_MAX = 31.15, 32.60      # janela da calibracao agressiva
+Y_MIN, Y_MAX = 0.42, 1.58
 
-
+# Reparticao da area de desenho entre as duas janelas, em fracao da largura
+# util. A janela da esquerda leva mais porque cobre 3,2 pontos percentuais
+# contra 1,45, e porque e nela que ficam as duas retas anotadas.
+# A folga entre as janelas, em fracao da largura util; a reparticao entre elas
+# nao e escolhida, e derivada das faixas dentro de draw(), para que a escala do
+# eixo do tempo seja a mesma nos dois lados.
+FOLGA = 0.055
 def load(path):
     """Devolve {config: (bd_rate, ts_pct)} e confere contra o texto do artigo."""
     if not os.path.exists(path):
@@ -191,58 +209,28 @@ def estilo_eixo(ax):
         ax.spines[side].set_linewidth(0.7)
 
 
-def detalhe(ax, bal, precos, ax_w_in, ax_h_in):
-    """Quadro de detalhe da familia equilibrada, no canto inferior direito.
 
-    A area e livre por construcao: os pontos sobem da esquerda para a direita, e
-    o canto de muito tempo poupado com pouca taxa BD nao contem dado algum.
-    """
-    rect = [0.500, 0.050, 0.487, 0.335]
-    axi = ax.inset_axes(rect)
-    # Fundo levemente distinto do papel e moldura fechada: sinalizam que o quadro
-    # e um destaque, e nao um segundo grafico independente.
-    #   O detalhe NAO leva marcacoes de eixo. Com o piso de 9 pt, os rotulos das
-    # marcacoes cairiam ao lado dos do eixo principal e as duas escalas passariam
-    # a competir pela mesma leitura. O que o quadro precisa mostrar e a razao
-    # entre as duas inclinacoes, e ela nao depende da escala: os dois valores
-    # anotados dao o conteudo quantitativo, e a legenda declara a faixa ampliada.
-    axi.set_facecolor(DETAIL)
 
-    w_in, h_in = rect[2] * ax_w_in, rect[3] * ax_h_in
-    a_knob = angulo(precos["knob"], w_in, h_in, IX_MAX - IX_MIN,
-                    IY_MAX - IY_MIN)
-    a_st2 = angulo(precos["stage2"], w_in, h_in, IX_MAX - IX_MIN,
-                   IY_MAX - IY_MIN)
+def marca_quebra(ax_a, ax_b):
+    """Marcas de quebra nas bordas que se encaram, no estilo usual: dois tracos
+    inclinados sobre a linha de base de cada janela. Sem elas o leitor pode tomar
+    as duas janelas por um eixo continuo e ler a distancia entre as familias
+    errado."""
+    d, y = 0.018, 0.0
+    for ax, xs in ((ax_a, (1.0,)), (ax_b, (0.0,))):
+        for x in xs:
+            for dy in (0,):
+                ax.plot([x - d, x + d], [y - 2.2 * d + dy, y + 2.2 * d + dy],
+                        transform=ax.transAxes, color=MUTED, linewidth=0.8,
+                        clip_on=False, zorder=8)
 
-    # A reta do botao de limiar, redesenhada a partir da MESMA base do primeiro
-    # estagio: as duas alternativas partem do mesmo ponto de operacao, que e a
-    # unica leitura em que a comparacao de precos e legitima.
-    dx = IX_MAX - bal[0][1]
-    axi.plot([bal[0][1], IX_MAX], [bal[0][0], bal[0][0] + precos["knob"] * dx],
-             color=KNOB, linewidth=1.2, linestyle=(0, (4, 2.2)), zorder=2)
-    axi.plot([p[1] for p in bal], [p[0] for p in bal], color=C_BAL,
-             linewidth=LW, zorder=4)
-    axi.plot([p[1] for p in bal], [p[0] for p in bal], linestyle="none",
-             marker=M_BAL, markersize=MS - 0.8, color=C_BAL,
-             markeredgecolor=SURFACE, markeredgewidth=0.6, zorder=5)
 
-    x_k = 19.05
-    axi.text(x_k, bal[0][0] + precos["knob"] * (x_k - bal[0][1]) + 0.012,
-             f"{precos['knob']:.3f}", fontsize=PT, color=INK_2, ha="center",
-             va="bottom", rotation=a_knob, rotation_mode="anchor", zorder=6)
-    x_s = 18.42
-    axi.text(x_s, bal[0][0] + precos["stage2"] * (x_s - bal[0][1]) - 0.018,
-             f"{precos['stage2']:.3f}", fontsize=PT, color=C_BAL, ha="center",
-             va="top", rotation=a_st2, rotation_mode="anchor", zorder=6)
-
-    axi.set_xlim(IX_MIN, IX_MAX)
-    axi.set_ylim(IY_MIN, IY_MAX)
-    axi.set_xticks([])
-    axi.set_yticks([])
-    for side in ("top", "right", "left", "bottom"):
-        axi.spines[side].set_visible(True)
-        axi.spines[side].set_color(MUTED)
-        axi.spines[side].set_linewidth(0.6)
+def serie(ax, pts, cor, marca):
+    ax.plot([p[1] for p in pts], [p[0] for p in pts], color=cor,
+            linewidth=LW, zorder=4)
+    ax.plot([p[1] for p in pts], [p[0] for p in pts], linestyle="none",
+            marker=marca, markersize=MS, color=cor, markeredgecolor=SURFACE,
+            markeredgewidth=0.7, zorder=5)
 
 
 def draw(data, out_path, precos):
@@ -250,70 +238,93 @@ def draw(data, out_path, precos):
     fig.patch.set_facecolor(SURFACE)
 
     w_pt, h_pt = COL_W_IN * 72.0, FIG_H_IN * 72.0
-    rect = [MARG_ESQ_PT / w_pt, MARG_INF_PT / h_pt,
-            1.0 - (MARG_ESQ_PT + MARG_DIR_PT) / w_pt,
-            1.0 - (MARG_INF_PT + MARG_SUP_PT) / h_pt]
-    ax = fig.add_axes(rect)
-    ax.set_facecolor(SURFACE)
-    ax_w_in, ax_h_in = rect[2] * COL_W_IN, rect[3] * FIG_H_IN
+    x0 = MARG_ESQ_PT / w_pt
+    y0 = MARG_INF_PT / h_pt
+    w = 1.0 - (MARG_ESQ_PT + MARG_DIR_PT) / w_pt
+    h = 1.0 - (MARG_INF_PT + MARG_SUP_PT) / h_pt
+    # As duas janelas partilham a MESMA escala do eixo do tempo: a largura de
+    # cada uma sai da sua propria faixa. Sem isso, um ponto percentual de tempo
+    # mediria coisas diferentes nos dois lados e a dispersao interna das duas
+    # familias deixaria de ser comparavel a olho, que e metade do que a figura
+    # precisa mostrar.
+    span_a, span_b = XA_MAX - XA_MIN, XB_MAX - XB_MIN
+    util = w * (1.0 - FOLGA)
+    w_a = util * span_a / (span_a + span_b)
+    w_b = util - w_a
+    ax_a = fig.add_axes([x0, y0, w_a, h])
+    ax_b = fig.add_axes([x0 + w_a + w * FOLGA, y0, w_b, h])
 
     bal = [data[k] for k, _ in BALANCED]
     agg = [data[k] for k, _ in AGGRESSIVE]
 
-    ax.grid(True, color=GRID, linewidth=0.6, zorder=1)
-    ax.set_axisbelow(True)
+    for ax in (ax_a, ax_b):
+        ax.set_facecolor(SURFACE)
+        ax.grid(True, color=GRID, linewidth=0.6, zorder=1)
+        ax.set_axisbelow(True)
+        ax.set_ylim(Y_MIN, Y_MAX)
+        # Botao de limiar do primeiro estagio: o segmento entre as duas BASES,
+        # desenhado inteiro nas duas janelas e recortado por elas. E a unica
+        # alternativa disponivel a quem quiser comprar mais tempo sem o segundo
+        # estagio, e e a referencia contra a qual o preco do segundo estagio
+        # deve ser lido. Atravessar a quebra e o que amarra as duas janelas.
+        ax.plot([bal[0][1], agg[0][1]], [bal[0][0], agg[0][0]], color=KNOB,
+                linewidth=1.3, linestyle=(0, (4, 2.2)), zorder=2)
 
-    # Botao de limiar do primeiro estagio: o segmento entre as duas bases. E a
-    # unica alternativa disponivel a quem quiser comprar mais tempo sem o
-    # segundo estagio, e a sua inclinacao e a referencia contra a qual a do
-    # segundo estagio deve ser lida.
-    ax.plot([bal[0][1], agg[0][1]], [bal[0][0], agg[0][0]], color=KNOB,
-            linewidth=1.2, linestyle=(0, (4, 2.2)), zorder=2)
+    ax_a.set_xlim(XA_MIN, XA_MAX)
+    ax_b.set_xlim(XB_MIN, XB_MAX)
+    serie(ax_a, bal, C_BAL, M_BAL)
+    serie(ax_b, agg, C_AGG, M_AGG)
 
-    for pts, cor, marca in ((bal, C_BAL, M_BAL), (agg, C_AGG, M_AGG)):
-        ax.plot([p[1] for p in pts], [p[0] for p in pts], color=cor,
-                linewidth=LW, zorder=4)
-        ax.plot([p[1] for p in pts], [p[0] for p in pts], linestyle="none",
-                marker=marca, markersize=MS, color=cor,
-                markeredgecolor=SURFACE, markeredgewidth=0.6, zorder=5)
+    ax_a.set_xticks([18, 19, 20])
+    ax_b.set_xticks([31.5, 32.5])
+    ax_a.set_yticks([0.5, 1.0, 1.5])
+    ax_b.set_yticks([0.5, 1.0, 1.5])
+    estilo_eixo(ax_a)
+    estilo_eixo(ax_b)
+    # A janela da direita nao repete os rotulos da taxa BD: o eixo e o mesmo, e
+    # repeti-los sugeriria duas escalas verticais distintas.
+    ax_b.set_yticklabels([])
+    ax_b.spines["left"].set_visible(False)
+    ax_b.tick_params(axis="y", length=0)
+    marca_quebra(ax_a, ax_b)
 
-    # Rotulo direto de cada familia, no lugar de uma legenda: o rotulo junto ao
-    # dado dispensa o leitor de fazer a correspondencia por cor, e a legenda
-    # gastaria area que os proprios dados precisam.
-    ax.text(bal[1][1] - 0.5, bal[1][0] - 0.075, "balanced\ncalibration",
-            fontsize=PT, color=C_BAL, ha="center", va="top", linespacing=1.2,
-            zorder=6)
-    ax.text(X_MAX - 0.9, agg[1][0] + 0.055, "aggressive\ncalibration",
-            fontsize=PT, color=C_AGG, ha="right", va="bottom", linespacing=1.2,
-            zorder=6)
+    ax_a.set_ylabel("BD-BR (%)", fontsize=PT, color=INK_2, labelpad=2.0)
+    # Um unico rotulo de eixo x, centrado sobre as duas janelas: a grandeza e a
+    # mesma, so a faixa muda.
+    fig.text(x0 + w / 2.0, 1.5 / h_pt, "Time savings (%)", fontsize=PT,
+             color=INK_2, ha="center", va="bottom")
 
-    # Rotulo da reta do botao de limiar, alinhado a ela. O angulo e o angulo
-    # aparente na tela, e nao a inclinacao em unidades de dado: depende da razao
-    # entre as escalas dos dois eixos.
-    a_knob = angulo(precos["knob"], ax_w_in, ax_h_in, X_MAX - X_MIN,
+    # Cada janela E uma calibracao, e por isso o nome da serie vai no topo da
+    # janela, e nao flutuando ao lado dos pontos: nao ha o que confundir dentro
+    # de cada uma, e o rotulo deixa de disputar espaco com os dados e com as
+    # duas retas anotadas. A legenda da figura completa o nome.
+    ax_a.set_title("balanced", fontsize=PT, color=C_BAL, pad=3.0)
+    ax_b.set_title("aggressive", fontsize=PT, color=C_AGG, pad=3.0)
+
+    # As duas taxas de cambio, anotadas na janela em que partem do mesmo ponto
+    # de operacao e sao lidas na mesma escala. O angulo e o angulo aparente na
+    # tela, e nao a inclinacao em unidades de dado.
+    ax_w_in, ax_h_in = w_a * COL_W_IN, h * FIG_H_IN
+    a_knob = angulo(precos["knob"], ax_w_in, ax_h_in, XA_MAX - XA_MIN,
                     Y_MAX - Y_MIN)
-    x_rot = 25.6
-    ax.text(x_rot, bal[0][0] + precos["knob"] * (x_rot - bal[0][1]) + 0.030,
-            "first-stage threshold knob", fontsize=PT, color=INK_2,
-            ha="center", va="bottom", rotation=a_knob, rotation_mode="anchor",
-            zorder=6)
-
-    detalhe(ax, bal, precos, ax_w_in, ax_h_in)
-
-    ax.set_xlim(X_MIN, X_MAX)
-    ax.set_ylim(Y_MIN, Y_MAX)
-    ax.set_xticks([10, 15, 20, 25, 30])
-    ax.set_yticks([0.5, 1.0, 1.5])
-    ax.set_xlabel("Time savings (%)", fontsize=PT, color=INK_2, labelpad=2.0)
-    ax.set_ylabel("BD-BR (%)", fontsize=PT, color=INK_2, labelpad=2.0)
-    estilo_eixo(ax)
+    a_st2 = angulo(precos["stage2"], ax_w_in, ax_h_in, XA_MAX - XA_MIN,
+                   Y_MAX - Y_MIN)
+    x_k = XA_MAX - 0.08
+    ax_a.text(x_k, bal[0][0] + precos["knob"] * (x_k - bal[0][1]) + 0.020,
+              f"threshold knob, {precos['knob']:.3f}", fontsize=PT,
+              color=INK_2, ha="right", va="bottom", rotation=a_knob,
+              rotation_mode="anchor", zorder=6)
+    x_s = 18.52
+    ax_a.text(x_s, bal[0][0] + precos["stage2"] * (x_s - bal[0][1]) - 0.022,
+              f"second stage, {precos['stage2']:.3f}", fontsize=PT,
+              color=C_BAL, ha="center", va="top", rotation=a_st2,
+              rotation_mode="anchor", zorder=6)
 
     fig.savefig(out_path, facecolor=SURFACE)
     if out_path.endswith(".pdf"):
         fig.savefig(out_path[:-4] + ".png", facecolor=SURFACE, dpi=400)
     plt.close(fig)
     print(f"  gravado: {out_path}")
-
 
 def main():
     ap = argparse.ArgumentParser()
