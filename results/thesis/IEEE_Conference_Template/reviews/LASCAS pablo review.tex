@@ -80,7 +80,8 @@ twice as long \cite{layek2017}, a problem aggravated during UHD 4K content
 processing.
 
 One of the largest individual costs of AV1 intra-frame coding is the block
-partitioning decision. Every superblock is submitted to a recursive search that,
+partitioning decision \cite{bender2023}. Every superblock is submitted to a
+recursive search that,
 at each node of the partition tree, evaluates up to ten partition types by
 rate-distortion optimization (RDO) \cite{sullivan1998} and keeps the cheapest one,
 descending recursively whenever the split wins. The search is exhaustive by
@@ -94,8 +95,10 @@ jeong2019} act on the intra prediction mode decision loop, \cite{correa2020,%
 netto2022} are hardware solutions for the AV1 intra prediction, whose target is
 the circuit and not the encoder search, and \cite{kim2019} uses decision trees on
 the inter-prediction modes. Learning-based partitioning solutions do exist for
-VVC \cite{saldanha2022,he2021,chen2019} and can be adapted to the AV1 coding
-tools, but they were designed for the quad-tree with nested multi-type tree and
+VVC, over variance, random forests, gradient boosting, texture complexity and
+the regression of RD costs \cite{saldanha2022,he2021,chen2019,song2024,%
+kherchouche2024,kherchouche2025}, and can be adapted to the AV1 coding tools,
+but they were designed for the quad-tree with nested multi-type tree and
 evaluated on another encoder. None allows a direct and fair comparison, and none
 acts on the recursive partition search of AV1.
 
@@ -292,13 +295,13 @@ encoded, as the CTC specifies for the AI scenario, at \texttt{cq-level} 20, 32, 
 and 55, against the unmodified libaom at \texttt{cpu-used=0} as anchor. The BD-BR
 \cite{bjontegaard} is computed over the luma peak signal-to-noise ratio, and
 every value reported here is a coding efficiency loss. Writing
-$t_{\mathrm{cfg}}(s,q)$ and $t_{\mathrm{anc}}(s,q)$ for the encoding times of the
-evaluated configuration and of the anchor on sequence $s$ at quality point $q$,
-over the sequence set $S$ and the quality set $Q$,
+$t_{\mathrm{SNP}}(s,q)$ and $t_{\mathrm{anc}}(s,q)$ for the encoding times of the
+evaluated SNP-AV1 configuration and of the anchor on sequence $s$ at quality
+point $q$, over the sequence set $S$ and the quality set $Q$,
 
 \begin{equation}
 \mathrm{TS} = \frac{1}{|S|} \sum_{s \in S} \frac{1}{|Q|} \sum_{q \in Q}
-\left( 1 - \frac{t_{\mathrm{cfg}}(s,q)}{t_{\mathrm{anc}}(s,q)} \right),
+\left( 1 - \frac{t_{\mathrm{SNP}}(s,q)}{t_{\mathrm{anc}}(s,q)} \right),
 \label{eq_ts}
 \end{equation}
 
@@ -439,6 +442,8 @@ Brazilian research support agencies CNPq and FAPERGS.
 
 \bibitem{layek2017} M. A. Layek \emph{et al.}, ``Performance analysis of H.264, H.265, VP9 and AV1 video encoders,'' in \emph{Proc. 19th Asia-Pacific Netw. Oper. Manage. Symp. (APNOMS)}, Sep. 2017, pp. 322--325.
 
+\bibitem{bender2023} I. Bender \emph{et al.}, ``Complexity and compression efficiency analysis of libaom AV1 video codec,'' \emph{J. Real-Time Image Process.}, vol. 20, no. 3, art. no. 50, May 2023.
+
 \bibitem{sullivan1998} G. J. Sullivan and T. Wiegand, ``Rate-distortion optimization for video compression,'' \emph{IEEE Signal Process. Mag.}, vol. 15, no. 6, pp. 74--90, Nov. 1998.
 
 \bibitem{libaom} Alliance for Open Media. \emph{AV1 Codec Library}, v3.10.0. [Online]. Available: \url{https://aomedia.googlesource.com/aom}
@@ -460,6 +465,12 @@ Brazilian research support agencies CNPq and FAPERGS.
 \bibitem{he2021} Q. He, W. Wu, L. Luo, C. Zhu, and H. Guo, ``Random forest based fast CU partition for VVC intra coding,'' in \emph{Proc. IEEE Int. Symp. Broadband Multimedia Syst. Broadcast. (BMSB)}, Aug. 2021, pp. 1--4.
 
 \bibitem{chen2019} J. Chen, H. Sun, J. Katto, X. Zeng, and Y. Fan, ``Fast QTMT partition decision algorithm in VVC intra coding based on variance and gradient,'' in \emph{Proc. IEEE Vis. Commun. Image Process. (VCIP)}, Dec. 2019, pp. 1--4.
+
+\bibitem{song2024} Y. Song, S. Cheng, M. Wang, and X. Peng, ``Fast CU partition for VVC intra-frame coding via texture complexity,'' \emph{IEEE Signal Process. Lett.}, vol. 31, pp. 959--963, 2024.
+
+\bibitem{kherchouche2024} M. E. A. Kherchouche, F. Galpin, T. Dumas, D. Menard, and L. Zhang, ``RD-cost regression speed up technique for VVC intra block partitioning,'' in \emph{Proc. IEEE Int. Conf. Acoust., Speech Signal Process. (ICASSP)}, Apr. 2024, pp. 3530--3534.
+
+\bibitem{kherchouche2025} M. E. A. Kherchouche \emph{et al.}, ``Complexity reduction study based on RD costs approximation for VVC intra partitioning,'' in \emph{Proc. Data Compression Conf. (DCC)}, Mar. 2025, p. 377.
 
 \bibitem{uvg} A. Mercat, M. Viitanen, and J. Vanne, ``UVG dataset: 50/120fps 4K sequences for video codec analysis and development,'' in \emph{Proc. 11th ACM Multimedia Syst. Conf. (MMSys)}, Jun. 2020, pp. 297--302.
 

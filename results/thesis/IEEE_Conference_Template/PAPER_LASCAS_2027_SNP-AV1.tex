@@ -138,14 +138,14 @@ NONE reads the rate, the distortion and the RD cost of the unpartitioned node, a
 the price of never saving the cost of producing them.
 
 The cost of the search was measured with the native partition timing
-instrumentation of libaom over 875{,}317 decision nodes of the 4K sequences of
+instrumentation of libaom over 875{,}317 decision nodes of the UHD 4K sequences of
 Section~\ref{sec_data}, at \texttt{cpu-used=0}, taking as local work the sum of
 the nine non-recursive candidates of a node. It splits into three blocks of
 comparable size: NONE takes 30.1\% of that time, the two rectangular types 35.6\%
 and the six extended ones 34.3\%. No single extended type exceeds 7.22\%, which is
 why the weight of the family went unnoticed, and the cost concentrates in the
 large nodes, reaching 50.0\% at 32$\times$32 and 51.0\% at 64$\times$64 samples,
-the nodes a 4K frame produces in abundance.
+the nodes a UHD 4K frame produces in abundance.
 
 This work is focused on the recursive block partitioning decision of the AV1
 intra-frame coding. The other decisions taken inside a coding block, such as the
@@ -216,7 +216,7 @@ guard so that the writing binary is never the one that measures acceleration, to
 record at every node of the intra-frame partition search the decision taken by
 the encoder together with the luma samples, the causal context, the quantization
 state, the position and the rate-distortion result of NONE. The dataset was built
-from the sixteen 4K sequences of the UVG dataset \cite{uvg}, at
+from the sixteen UHD 4K sequences of the UVG dataset \cite{uvg}, at
 $3840\times2160$ resolution, 8-bit depth and 4:2:0 chroma subsampling, each
 encoded at four quantization points (\texttt{cq-level} 20, 32, 43 and 55) over
 five frames sampled uniformly along the whole clip, since in AI coding
@@ -288,7 +288,7 @@ bitstream syntax.
 
 The developed solution was evaluated using the libaom v3.10.0 AV1 reference
 software, following the AOM Common Test Conditions (CTC) \cite{ctc} and under the
-AI encoder configuration. The eight 4K sequences of the CTC Class A1 test set,
+AI encoder configuration. The eight UHD 4K sequences of the CTC Class A1 test set,
 named in Table~\ref{tab_seq}, are all at $3840\times2160$ resolution, 10-bit depth
 and 4:2:0 chroma subsampling \cite{xipha1}. The first 15 frames of each were
 encoded, as the CTC specifies for the AI scenario, at \texttt{cq-level} 20, 32, 43
@@ -360,7 +360,7 @@ and loses only where the extended axis is barely exercised.
   % src/scripts/benchmark/plot_operating_space_fig3.py (variante cinza)
   \includegraphics[width=\columnwidth]{fig3_operating_space}
   \caption{Operating space of SNP-AV1 against anchor at
-  \texttt{cpu-used=0}, over the CTC Class A1 4K sequences: (a) balanced and
+  \texttt{cpu-used=0}, over the CTC Class A1 UHD 4K sequences: (a) balanced and
   (b) aggressive calibration, each on its own axes. Inside a panel the three
   points differ only in the strength of the second pruner; the dashed line is the
   threshold knob of the first stage.}
@@ -410,7 +410,7 @@ features and decides how much of the subtree is opened before any
 rate-distortion cost is paid; the second adds the measured RD cost of NONE and
 decides whether the extended partitions, one third of the local search time, are
 worth evaluating. Both were implemented in C inside libaom v3.10.0 and evaluated
-on the CTC Class A1 4K sequences under the AI configuration. Measured marginally
+on the CTC Class A1 UHD 4K sequences under the AI configuration. Measured marginally
 over the balanced base, the second pruner buys time about 3.4 times cheaper than
 the thresholds of the first stage and wins in six of the eight sequences; the
 advantage collapses over the aggressive base, where the first stage commits the
