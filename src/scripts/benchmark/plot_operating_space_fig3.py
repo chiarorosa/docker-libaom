@@ -96,8 +96,14 @@ MARG_INT_PT = 34.0         # entre os paineis: eixo y do painel (b)
 # luminosidade, piso de croma, separacao sob deficiencia de visao de cor e
 # contraste contra a superficie) esta registrada em plot_partstats_fig1.py e nao
 # se repete aqui. Cada entidade tem slot fixo; a cor segue a entidade.
-C_BAL = "#25599f"   # azul-aco   — SNP-AV1, calibracao equilibrada
-C_AGG = "#4a3aa7"   # violeta    — SNP-AV1, calibracao agressiva
+# Duas paletas, como no fluxograma da figura 1: a colorida para apresentacao e
+# a de escala de cinza, que e a implantada no artigo. No cinza as duas series
+# recebem a MESMA tinta, porque nada se perde: elas vivem em paineis separados e
+# ja se distinguem pela forma do marcador (M_BAL/M_AGG abaixo).
+PALETAS = {
+    "cor":   dict(bal="#25599f", agg="#4a3aa7"),   # azul-aco, violeta
+    "cinza": dict(bal="#141413", agg="#141413"),
+}
 
 SURFACE = "#ffffff"   # o papel do artigo e branco: a figura deve fundir-se nele
 INK = "#0b0b0b"
@@ -233,7 +239,8 @@ def painel(fig, rect, pts, base_knob, cor, marca, xlim, ylim, xticks, yticks):
     return ax
 
 
-def draw(data, out_path, precos):
+def draw(data, out_path, precos, pal):
+    c_bal, c_agg = pal["bal"], pal["agg"]
     fig = plt.figure(figsize=(COL_W_IN, FIG_H_IN), dpi=400)
     fig.patch.set_facecolor(SURFACE)
 
@@ -251,10 +258,10 @@ def draw(data, out_path, precos):
     agg = [data[k] for k, _ in AGGRESSIVE]
     knob = (bal[0], agg[0])
 
-    ax_a = painel(fig, rect_a, bal, knob, C_BAL, M_BAL,
+    ax_a = painel(fig, rect_a, bal, knob, c_bal, M_BAL,
                   (XA_MIN, XA_MAX), (YA_MIN, YA_MAX),
                   [18, 19, 20], [0.55, 0.60, 0.65, 0.70])
-    painel(fig, rect_b, agg, knob, C_AGG, M_AGG,
+    painel(fig, rect_b, agg, knob, c_agg, M_AGG,
            (XB_MIN, XB_MAX), (YB_MIN, YB_MAX),
            [31.5, 32.0], [1.38, 1.40, 1.42])
 
@@ -268,13 +275,13 @@ def draw(data, out_path, precos):
               color=INK_2, ha="left", va="top", zorder=6)
     razao = precos["knob"] / precos["stage2"]
     ax_a.text(18.80, 0.5405, f"second stage,\n{razao:.1f}$\\times$ cheaper",
-              fontsize=PT, color=C_BAL, ha="center", va="center",
+              fontsize=PT, color=c_bal, ha="center", va="center",
               linespacing=1.2, zorder=6)
 
     # Rotulo de cada painel e rotulo unico do eixo x, sob os dois: a grandeza e
     # a mesma, so a faixa muda.
-    for rect, texto, cor in ((rect_a, "(a) balanced", C_BAL),
-                             (rect_b, "(b) aggressive", C_AGG)):
+    for rect, texto, cor in ((rect_a, "(a) balanced", c_bal),
+                             (rect_b, "(b) aggressive", c_agg)):
         fig.text(rect[0] + rect[2] / 2.0, 15.5 / h_pt, texto, fontsize=PT,
                  color=cor, ha="center", va="bottom")
     fig.text(0.5, 1.5 / h_pt, "Time savings (%)", fontsize=PT, color=INK_2,
@@ -291,6 +298,8 @@ def main():
     ap.add_argument("--csv", default=DEFAULT_CSV)
     ap.add_argument("--out-dir",
                     default=os.path.join(ROOT, "results", "thesis", "figuras"))
+    ap.add_argument("--variante", choices=sorted(PALETAS) + ["ambas"],
+                    default="ambas")
     args = ap.parse_args()
 
     print(f"Lendo {args.csv}")
@@ -314,7 +323,10 @@ def main():
 
     os.makedirs(args.out_dir, exist_ok=True)
     base = os.path.join(args.out_dir, "figura3_espaco_operacao")
-    draw(data, base + ".pdf", precos)
+    sufixo = {"cor": "", "cinza": "_cinza"}
+    alvos = sorted(PALETAS) if args.variante == "ambas" else [args.variante]
+    for nome in alvos:
+        draw(data, base + sufixo[nome] + ".pdf", precos, PALETAS[nome])
 
     csv_path = os.path.join(args.out_dir, "figura3_dados.csv")
     with open(csv_path, "w", newline="") as f:

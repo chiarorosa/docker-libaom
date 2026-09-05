@@ -380,3 +380,23 @@ Três pontos levantados na revisão da figura, resolvidos assim:
    que a ausência fosse **legível** em vez de parecer um esquecimento, os conectores das outras
    três caixas foram alongados (`X_ACAO_1` de 0,944 para 0,918 e `X_TRILHO` de 0,974 para 0,992),
    o que mais que dobra o traço de retorno e torna evidente qual caixa não o tem.
+
+### 7.7 Figura 2 do artigo (espaço de operação) também em cinza, 2026-09-05
+
+Para que o artigo não misturasse convenções — um diagrama em cinza ao lado de um gráfico
+colorido —, `plot_operating_space_fig3.py` ganhou o mesmo arranjo de duas paletas já usado pelo
+fluxograma: `PALETAS = {"cor", "cinza"}` e a opção `--variante`, com as duas saídas geradas por
+padrão (`figura3_espaco_operacao.pdf` e `figura3_espaco_operacao_cinza.pdf`). O artigo inclui a
+variante em cinza; a colorida permanece disponível para apresentação e para a tese.
+
+Nada se perde na conversão, e a razão é de projeto, não de sorte: as duas séries vivem em
+**painéis separados**, com escalas próprias, e já se distinguem pela **forma do marcador**
+(círculo em (a), triângulo em (b)) — decisão registrada no comentário do script desde a primeira
+versão. Na paleta cinza as duas recebem a mesma tinta (`#141413`). O único par que precisa
+continuar separável **dentro** de um painel é a reta tracejada do botão de limiar contra a
+poligonal medida, e essa separação nunca dependeu de cor: é traço tracejado cinza-médio
+(`#8a8880`) contra traço cheio preto.
+
+Estado do artigo após a mudança: monocromático de ponta a ponta, 4 páginas técnicas, página 5 só
+com Acknowledgment e Referências, zero `Overfull`, zero referência indefinida, todas as fontes
+embutidas e subsetadas.
