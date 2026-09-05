@@ -358,3 +358,25 @@ build/venv-ml/bin/python src/scripts/benchmark/plot_operating_space_fig3.py --ou
 2. A validação de §7.3 confere o **vetor de entrada** dos modelos implantados. Ela não
    revalida os pesos nem repete a campanha de codificação, que permanecem os auditados na
    Seção 2 deste documento.
+
+### 7.6 Ajustes na Figura 1 do artigo (fluxograma), 2026-09-05
+
+Três pontos levantados na revisão da figura, resolvidos assim:
+
+1. **Variante impressa.** O artigo passa a incluir `figura2_fluxograma_cinza.pdf` (paleta em
+   escala de cinza) e não mais a variante colorida. A cor não carregava informação no
+   fluxograma: os dois estágios já se distinguem pelo número no marcador, pelo nome e pela
+   posição.
+2. **Forma das caixas de consequência.** As quatro caixas do ramo "yes" passaram a ter a
+   **mesma forma** — retângulo de canto reto, como as caixas de processo e as de entrada. Antes,
+   a caixa do compromisso com o `PARTITION_SPLIT` tinha cantos arredondados para marcar que ela
+   encerra o nó; a distinção continua, mas agora só pelo preenchimento, que não compete com a
+   gramática de formas do diagrama (losango = decisão, retângulo = ação ou processo).
+3. **A conexão ausente do "only SPLIT" está correta e é deliberada.** Verificado em
+   `src/aom/av1/encoder/encodeframe_utils.h:271`: `av1_set_square_split_only` faz
+   `partition_none_allowed = 0`. Sob esse ramo o `PARTITION_NONE` **não é avaliado**, de modo que
+   o nó nunca alcança a caixa "NONE is evaluated" nem o ponto de enganche do 2º estágio
+   (`av1_prune_after_none`). Ligar essa caixa ao trilho de reencontro seria erro de fato. Para
+   que a ausência fosse **legível** em vez de parecer um esquecimento, os conectores das outras
+   três caixas foram alongados (`X_ACAO_1` de 0,944 para 0,918 e `X_TRILHO` de 0,974 para 0,992),
+   o que mais que dobra o traço de retorno e torna evidente qual caixa não o tem.

@@ -45,7 +45,7 @@ import sys
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
-from matplotlib.patches import FancyBboxPatch, Polygon, Rectangle  # noqa: E402
+from matplotlib.patches import Polygon, Rectangle  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from plot_pruner_insertion_fig2 import PALETAS, SPEC  # noqa: E402
@@ -104,8 +104,8 @@ X_SPINE   = 0.265          # eixo dos losangos e das caixas de processo
 MEIA_LOS  = 0.200          # meia-largura do losango
 MEIA_PROC = 0.215          # meia-largura da caixa de processo
 X_ACAO_0  = 0.558          # caixas de consequencia, a direita do ramo "yes"
-X_ACAO_1  = 0.944
-X_TRILHO  = 0.974          # trilho vertical de reencontro
+X_ACAO_1  = 0.918
+X_TRILHO  = 0.992          # trilho vertical de reencontro
 X_NOME    = 0.020          # coluna do nome do podador, nas linhas de entrada
 X_ENT_0   = 0.280          # primeiro bloco de entrada
 X_ENT_1   = 0.996
@@ -172,20 +172,20 @@ def draw(out_path, p):
         return yc, h
 
     def caixa_acao(chave, yc, terminal=False, cor=None):
-        """Consequencia do ramo "yes". Terminal (cantos arredondados) marca o
-        ramo que ENCERRA a busca deste no: o compromisso com o split e o unico
-        que dispensa a avaliacao de NONE, e por isso nao reencontra o fluxo."""
+        """Consequencia do ramo "yes". As quatro caixas tem a MESMA forma —
+        retangulo de canto reto, como as de processo e as de entrada —, porque
+        a forma nao carrega informacao aqui e a variacao so lia como ruido.
+        O ramo terminal, que ENCERRA a busca deste no, e marcado pelo
+        preenchimento e por um terminador explicito na aresta direita: com
+        `partition_none_allowed = 0` o compromisso com o split dispensa a
+        avaliacao de NONE (av1_set_square_split_only, encodeframe_utils.h:271),
+        de modo que ele nao reencontra o fluxo nem alcanca o 2o estagio."""
         h = (0.335 if "\n" in ACOES[chave] else 0.215) / FIG_H_IN
         w = X_ACAO_1 - X_ACAO_0
-        if terminal:
-            ax.add_patch(FancyBboxPatch((X_ACAO_0, yc - h / 2), w, h,
-                                        boxstyle="round,pad=0,rounding_size=0.022",
-                                        facecolor=p["kept_f"], edgecolor=cor,
-                                        linewidth=0.8, zorder=4))
-        else:
-            ax.add_patch(Rectangle((X_ACAO_0, yc - h / 2), w, h,
-                                   facecolor=p["surface"], edgecolor=cor,
-                                   linewidth=0.8, zorder=4))
+        ax.add_patch(Rectangle((X_ACAO_0, yc - h / 2), w, h,
+                               facecolor=(p["kept_f"] if terminal
+                                          else p["surface"]),
+                               edgecolor=cor, linewidth=0.8, zorder=4))
         ax.text((X_ACAO_0 + X_ACAO_1) / 2, yc, ACOES[chave], ha="center",
                 va="center", fontsize=PT, color=p["ink"], linespacing=1.25,
                 zorder=5)
