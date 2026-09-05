@@ -32,6 +32,14 @@ Block partitioning is one of the AV1 decisions that contributes to this complexi
 
 Several methods have been proposed to reduce the computational cost of modern video encoders by predicting coding decisions and avoiding unlikely alternatives. In AV1, previous works have investigated fast coding-tool selection~\cite{xu2020fastav1intra,xu2021av1toolselection}, fast intra-mode decisions~\cite{jeong2019fastav1intra}, and machine-learning-based inter-prediction decisions~\cite{kim2019fastav1inter}. Fast block partitioning has also been extensively investigated for VVC. Existing approaches exploit variance and gradient information~\cite{chen2019fastvvcqtmt}, random forests~\cite{he2021fastvvcrandomforest}, and gradient-boosting models~\cite{saldanha2022fastvvcpartitioning}. More recent methods continue to explore different sources of information for partition decisions, including texture complexity~\cite{song2024fastvvcpartitioning} and predicted RD costs~\cite{kherchouche2024vvcrdcostregression}. Neighboring-block RD costs have also been incorporated into learning-based partitioning methods~\cite{kherchouche2025vvcrdcostapproximation}. These works demonstrate that information available before or during the partition search can be exploited to reduce the number of costly RDO evaluations.
 
+\begin{figure*}[t]
+\centering
+% src/scripts/benchmark/plot_information_flow_icassp_fig1.py
+\includegraphics[width=\textwidth]{fig1_information_flow}
+\caption{AV1 intra partition-search flow highlighting the pre-search early-termination point considered in this work.}
+\label{fig:early_partition_decision}
+\end{figure*}
+
 However, existing approaches are generally designed and evaluated as complete fast-encoding methods, jointly defining the input features, prediction model, decision rule, and resulting amount of search reduction. Their reported RD--complexity trade-offs therefore characterize the performance of the complete method, but do not directly isolate the contribution of the information supplied to the decision mechanism. Consequently, when one method produces a better trade-off than another, it is difficult to determine whether the improvement results from more informative input data or from differences in the prediction and pruning configurations. Identifying which information is most useful for an early partition decision is nevertheless important for designing efficient decision mechanisms, particularly when such information must be available before expensive RD evaluations are performed.
 
 This paper addresses this problem through a controlled offline framework for evaluating different feature sets for early AV1 intra partition decisions. We focus on the earliest partition-search decision, in which a node can be terminated as \texttt{PARTITION\_NONE} before evaluating the remaining partition alternatives and their descendants. Starting from an exhaustive AV1 reference encoding, different feature sets are evaluated using the same early-termination rule and compared at equal partition-search reduction. The evaluated information includes block variance, block-content features, previously coded partition information from causal neighboring blocks, and raw luminance samples processed by a ConvNeXt model. Experiments on 4K UVG sequences show that the block-content features substantially reduce the normalized RD-cost penalty compared with block variance and the pixel-based model. More importantly, adding the partition information of causal neighbors reduces the normalized RD-cost penalty by 37.7\% over the compact descriptors alone at 25\% partition-search reduction. These results indicate that previously coded partition decisions provide useful contextual information for identifying blocks whose partition search can be terminated early.
@@ -46,13 +54,6 @@ At a given node of the partition tree, the encoder evaluates multiple partition 
 Figure~\ref{fig:early_partition_decision} illustrates the partition-search flow and the early decision investigated in this work. Before the RD search of the current node starts, the encoder already has access to source/block information, coding parameters, and decisions previously made for causal neighboring blocks. In contrast, RD information associated with the current node is produced only as the search progresses: the cost $J_{\mathrm{none}}$ becomes available after evaluating \texttt{PARTITION\_NONE}, while the RD cost of the best partition is known only after the full partition search.
 
 This work targets the pre-search decision highlighted in Fig.~\ref{fig:early_partition_decision}. At this point, a predictor decides whether the node can be directly terminated as \texttt{PARTITION\_NONE}. A positive decision avoids the evaluation of the remaining partition alternatives and their recursive descendants; otherwise, the regular partition search is performed. Consequently, the prediction can only exploit information available before the current-node RD search. This restriction defines the information sets evaluated by the methodology introduced in Section~\ref{sec:method}.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{fig1_information_flow}
-\caption{AV1 intra partition-search flow highlighting the pre-search early-termination point considered in this work.}
-\label{fig:early_partition_decision}
-\end{figure}
 
 \section{Controlled Offline Evaluation}
 \label{sec:method}
