@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Figura 2 do artigo ICASSP 2027 — perda de taxa-distorcao contra reducao de
-custo de busca casada, uma curva por representacao.
+"""Figura 2 do artigo ICASSP 2027 — penalidade de custo RD normalizada contra
+reducao de busca de particionamento casada, uma curva por conjunto de atributos.
 
 Diferente da figura 1, que e diagrama estrutural, esta PLOTA MEDICAO. Le a fonte
 unica do artigo, `results/models/oracle_regret_rpp/frontier.csv`, e nao aceita
@@ -10,9 +10,11 @@ a tabela de contarem historias diferentes.
 
 Composicao:
 
-  eixo x  reducao de custo de busca casada, em por cento — o contador analitico
-          de candidatos ponderado por area, e nao tempo de parede;
-  eixo y  perda de taxa-distorcao, em partes por milhao, em escala logaritmica.
+  eixo x  reducao de busca de particionamento casada, em por cento — o
+          contador analitico de candidatos ponderado por area, e nao tempo
+          de parede;
+  eixo y  penalidade de custo RD normalizada, em 10^-4 % (a unidade da
+          Tabela I), em escala logaritmica.
           Logaritmica porque a faixa util cobre tres ordens de grandeza, de 2
           nas representacoes tabulares a 6342 no controle aleatorio, e numa escala
           linear as quatro tabulares colapsariam sobre o eixo.
@@ -87,51 +89,56 @@ MARG_SUP_PT = 4.0
 # gasta-la com a ancora oposta comprime justamente as oito curvas em disputa. A
 # trava de coerencia abaixo continua conferindo as nove.
 CURVAS = [
-    ("random",              "random control",           "ref",  False),
-    ("variance",            "variance",                 "ref",  True),
+    ("random",              "Random control",           "ref",  False),
+    ("variance",            "Variance",                 "ref",  True),
     ("convnext_ce_h9",      "ConvNeXt, plain CE",       "deep", True),
     ("convnext_ce_h9_f256", "ConvNeXt, width 256",      "deep", True),
     ("convnext_regret",     "ConvNeXt, cost-sensitive", "deep", True),
-    ("RPP_A",               "A",                        "tab",  True),
-    ("RPP_A_C",             "A+C",                      "tab",  True),
-    ("RPP_A_B_C",           "A+B+C",                    "tab",  True),
-    ("RPP_A_B",             "A+B",                      "tab",  True),
+    ("RPP_A",               "BC",                       "tab",  True),
+    ("RPP_A_C",             "BC+CSP",                   "tab",  True),
+    ("RPP_A_B_C",           "BC+NC+CSP",                "tab",  True),
+    ("RPP_A_B",             "BC+NC",                    "tab",  True),
 ]
 SEEDS = (0, 1, 2)
+# Ordem da legenda: a da Tabela I, sem o controle aleatorio, que nao e desenhado.
+LEGENDA = ["Variance", "ConvNeXt, plain CE", "ConvNeXt, width 256",
+           "ConvNeXt, cost-sensitive", "BC", "BC+NC", "BC+CSP", "BC+NC+CSP"]
 LEITURA = [10, 15, 20, 25, 30]     # os pontos da Tabela I
 X_MIN, X_MAX = 6.0, 31.0
 
-# Valores da Tabela I, em ppm, para a trava de coerencia.
+# Valores da Tabela I, em 10^-4 % (equivalente a ppm), para a trava de
+# coerencia. Os rotulos sao os do artigo: BC, NC e CSP nomeiam os blocos de
+# atributos da Secao III-B; nos artefatos as chaves seguem RPP_A/_B/_C.
 TABELA_I = {
-    "random control":           [1963, 2989, 4066, 5166, 6342],
-    "variance":                 [43, 127, 250, 374, 555],
+    "Random control":           [1963, 2989, 4066, 5166, 6342],
+    "Variance":                 [43, 127, 250, 374, 555],
     "ConvNeXt, plain CE":       [65, 105, 164, 272, 442],
     "ConvNeXt, width 256":      [75, 122, 194, 294, 444],
     "ConvNeXt, cost-sensitive": [54, 80, 140, 219, 379],
-    "A":                        [5, 13, 28, 53, 91],
-    "A+C":                      [5, 12, 27, 64, 122],
-    "A+B+C":                    [2, 6, 18, 40, 78],
-    "A+B":                      [2, 5, 15, 33, 69],
+    "BC":                       [5, 13, 28, 53, 91],
+    "BC+CSP":                   [5, 12, 27, 64, 122],
+    "BC+NC+CSP":                [2, 6, 18, 40, 78],
+    "BC+NC":                    [2, 5, 15, 33, 69],
 }
 
 # Cor POR CURVA, e nao por familia. A familia tabular ocupa uma faixa estreita do
 # eixo — a 25% as quatro cabem entre 3,3 e 6,4 unidades —, e um matiz unico para
-# as quatro deixava o cruzamento de A+B com A+B+C ilegivel. Cada uma recebe agora
-# um matiz proprio, com boa dispersao de luminancia, e mantem o tracado e o
-# marcador como canal redundante: e isso que preserva a leitura em impressao
-# monocromatica acidental e sob daltonismo.
+# as quatro deixava o cruzamento de BC+NC com BC+NC+CSP ilegivel. Cada uma
+# recebe agora um matiz proprio, com boa dispersao de luminancia, e mantem o
+# tracado e o marcador como canal redundante: e isso que preserva a leitura em
+# impressao monocromatica acidental e sob daltonismo.
 # A familia profunda continua agrupada em laranja, em tres tons: ali o que
 # importa e que as tres estejam juntas e acima, nao qual e qual.
 CURVA_COR = {
-    "random control":           "#8a8880",
-    "variance":                 "#8a8880",   # referencia, fora da disputa
+    "Random control":           "#8a8880",
+    "Variance":                 "#8a8880",   # referencia, fora da disputa
     "ConvNeXt, plain CE":       "#bf6a1a",
     "ConvNeXt, width 256":      "#d99441",
     "ConvNeXt, cost-sensitive": "#8f4a10",
-    "A":                        "#2b7bba",   # azul medio
-    "A+C":                      "#46a08a",   # verde-azulado, o mais claro
-    "A+B+C":                    "#8a5fa8",   # violeta
-    "A+B":                      "#10375c",   # azul profundo, a protagonista
+    "BC":                       "#2b7bba",   # azul medio
+    "BC+CSP":                   "#46a08a",   # verde-azulado, o mais claro
+    "BC+NC+CSP":                "#8a5fa8",   # violeta
+    "BC+NC":                    "#10375c",   # azul profundo, a protagonista
 }
 
 PALETAS = {
@@ -142,26 +149,26 @@ PALETAS = {
     "cinza": dict(
         surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
         grade="#e0ded7",
-        curva={"random control": "#9b9992", "variance": "#9b9992",
+        curva={"Random control": "#9b9992", "Variance": "#9b9992",
                "ConvNeXt, plain CE": "#6b6a65",
                "ConvNeXt, width 256": "#8d8c86",
                "ConvNeXt, cost-sensitive": "#55544f",
-               "A": "#4a4945", "A+C": "#7a7973",
-               "A+B+C": "#2b2a27", "A+B": "#141413"},
+               "BC": "#4a4945", "BC+CSP": "#7a7973",
+               "BC+NC+CSP": "#2b2a27", "BC+NC": "#141413"},
     ),
 }
 # Tracado e marcador por curva. Na variante monocromatica sao eles, e nao o
 # matiz, que separam as nove curvas.
 ESTILO = {
-    "random control":           dict(ls=(0, (1.2, 1.2)), marker=None,  lw=0.6),
-    "variance":                 dict(ls=(0, (4, 1.6)),   marker="v",   lw=0.7),
+    "Random control":           dict(ls=(0, (1.2, 1.2)), marker=None,  lw=0.6),
+    "Variance":                 dict(ls=(0, (4, 1.6)),   marker="v",   lw=0.7),
     "ConvNeXt, plain CE":       dict(ls="-",             marker="s",   lw=0.7),
     "ConvNeXt, width 256":      dict(ls=(0, (2.4, 1.2)), marker="P",   lw=0.7),
     "ConvNeXt, cost-sensitive": dict(ls=(0, (5, 1.4, 1, 1.4)), marker="X", lw=0.7),
-    "A":                        dict(ls="-",             marker="o",   lw=0.85),
-    "A+C":                      dict(ls=(0, (3, 1.3)),   marker="^",   lw=0.85),
-    "A+B+C":                    dict(ls=(0, (1.4, 1.2)), marker="D",   lw=0.85),
-    "A+B":                      dict(ls="-",             marker="*",   lw=1.05),
+    "BC":                       dict(ls="-",             marker="o",   lw=0.85),
+    "BC+CSP":                   dict(ls=(0, (3, 1.3)),   marker="^",   lw=0.85),
+    "BC+NC+CSP":                dict(ls=(0, (1.4, 1.2)), marker="D",   lw=0.85),
+    "BC+NC":                    dict(ls="-",             marker="*",   lw=1.05),
 }
 
 
@@ -243,7 +250,7 @@ def draw(out_path, p, dados):
     ax.set_xlim(X_MIN, X_MAX)
     ax.set_ylim(1.3, 9000)
     # Marcacoes de y como inteiros, e nao como 10^n. O expoente de uma potencia
-    # sai a cerca de 70% do corpo, o que colocaria um algarismo abaixo do piso de
+    # le-se mais direto do que a potencia.
     # 9 pt do template; alem disso, com so tres decadas uteis "10 / 100 / 1000"
     # le-se mais direto em ppm.
     ax.yaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0))
@@ -252,9 +259,9 @@ def draw(out_path, p, dados):
     ax.yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     # Sem escapar o sinal de porcentagem: o matplotlib nao e LaTeX, e "\%"
     # imprimiria a propria barra invertida.
-    ax.set_xlabel("Matched cost reduction (%)", fontsize=PT,
+    ax.set_xlabel("Partition-search reduction (%)", fontsize=PT,
                   color=p["ink"], labelpad=2.0)
-    ax.set_ylabel("Rate-distortion loss (ppm)", fontsize=PT,
+    ax.set_ylabel("Normalized RD-cost penalty ($10^{-4}$%)", fontsize=PT,
                   color=p["ink"], labelpad=2.0)
     ax.tick_params(axis="both", which="major", labelsize=PT,
                    colors=p["ink_2"], length=2.2, width=0.4, pad=1.8)
@@ -269,12 +276,16 @@ def draw(out_path, p, dados):
     # Com ncol=2 e oito entradas, o matplotlib preenche coluna a coluna, e a
     # ordem de CURVAS ja separa as quatro longas (referencia e familia profunda)
     # das quatro curtas (tabulares) -- e o que faz a caixa caber a 9 pt.
+    # A legenda segue a ORDEM DA TABELA I, e nao a ordem de desenho: quem le
+    # chega aqui vindo da tabela, e uma ordem diferente obrigaria a procurar
+    # linha por linha. A ordem de desenho continua sendo a de CURVAS, que deixa
+    # BC+NC por ultimo para que a protagonista nao seja encoberta.
     handles = [plt.Line2D([], [], color=p["curva"][r], linewidth=ESTILO[r]["lw"],
                           linestyle=ESTILO[r]["ls"],
                           marker=ESTILO[r]["marker"], markersize=3.0,
                           markeredgecolor="none")
-               for _c, r, f, plota in CURVAS if plota]
-    leg = ax.legend(handles, [r for _c, r, _f, plota in CURVAS if plota],
+               for r in LEGENDA]
+    leg = ax.legend(handles, LEGENDA,
                     loc="upper left",
                     ncol=2, fontsize=PT, frameon=True, framealpha=0.94,
                     borderpad=0.28, labelspacing=0.22, handlelength=1.8,
