@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Figura 1 do artigo ICASSP 2027 - fluxo da busca de particionamento intra do
-AV1 num no, com o ponto de decisao antecipada e a informacao disponivel em cada
-instante.
+"""Figura 1 do artigo ICASSP 2027 - o no de decisao do particionamento intra do
+AV1: o que existe antes da busca, a decisao antecipada, e o que a busca gera.
 
 Diagrama ESTRUTURAL, como a figura 2 do LASCAS: nao le artefato numerico, e sim
 declara em blocos os fatos que desenha, cada um com a sua procedencia no .tex, de
@@ -9,33 +8,36 @@ modo que uma mudanca de terminologia no artigo obrigue a mexer aqui e nao passe
 despercebida. A trava `conferir()` reconfere o vocabulario contra o proprio
 `paper.tex` e para se divergirem.
 
-TOPOLOGIA: e a do rascunho em TikZ que originou a figura, preservada caixa por
-caixa - entrada a esquerda, decisao ao centro, ramo "Yes" descendo em duas
-acoes, ramo "No" a direita com os quatro estagios nativos dentro de um retangulo
-tracejado, e as duas notas laterais tracejadas ligadas aos estagios em que uma
-grandeza de custo passa a existir. O que muda em relacao ao rascunho e a
-execucao: tipografia do proprio artigo (Times no corpo, Courier nos tokens
-\\texttt), paleta sobria do grupo e largura declarada em pontos.
+Tres decisoes de composicao, nesta ordem de importancia:
 
-Por que DUAS COLUNAS (`figure*`, `width=\\textwidth`): o desenho e largo por
-natureza - sao tres colunas de conteudo lado a lado mais a coluna de notas.
-Espremido em 86 mm ele so caberia empilhado e com cerca de 3,9 in de altura,
-45% da coluna; em 178 mm cabe em 2,7 in, com a mesma area de pagina e a leitura
-da esquerda para a direita que o fluxo pede.
+  ECONOMIA DE TEXTO. Cada caixa carrega o NOME da etapa, nao a sua descricao: o
+  que a etapa faz esta no corpo do artigo, e repeti-lo na figura so competia com
+  ele. Onde o artigo tem simbolo, a figura usa o simbolo - $J_\\mathrm{none}$ e
+  $J^{*}$, da equacao (1) -, que e o que permite marcar o instante em que cada
+  custo passa a existir sem gastar uma frase.
 
-Duas paletas, MESMA GEOMETRIA, como nos demais geradores:
-  cor   - o azul-aco #25599f dos acentos das figuras do grupo, no lugar do azul
-          do rascunho;
-  cinza - o mesmo desenho em luminancia, para impressao monocromatica.
+  VOCABULARIO DO ARTIGO. Todo rotulo e expressao que ja ocorre no corpo:
+  "pre-search information", "current-node RD search", "partition candidates",
+  "best partition", os tokens \\texttt e os dois simbolos de custo. A figura nao
+  introduz termo proprio - "rectangular" e "extended", por exemplo, saem porque
+  nao aparecem no .tex.
+
+  ESCALA DE CINZA. Sem matiz: o desenho e estrutural, e a unica hierarquia que
+  precisa marcar - a caixa da decisao contra as demais - se resolve por peso de
+  traco e por preenchimento. Assim ele sobrevive a impressao monocromatica sem
+  variante separada e sem depender de cor para significar.
+
+Coluna simples (86 mm), proporcao 1,3:1. A versao anterior espalhava o mesmo
+conteudo em `figure*` de 178 mm: ocupava 4,5 polegadas-coluna de pagina contra
+as 2,6 desta, e a horizontalidade vinha das frases dentro das caixas, nao da
+informacao.
 
 Uso (dentro do conteiner):
     build/venv-ml/bin/python \\
         src/scripts/benchmark/plot_information_flow_icassp_fig1.py \\
         --out-dir results/thesis/figuras
 
-Saidas: figura1_fluxo_informacao.pdf       (variante de cor, a do artigo)
-        figura1_fluxo_informacao_cinza.pdf (variante monocromatica)
-        e um .png de cada, para conferencia visual.
+Saida: figura1_fluxo_informacao.pdf, e um .png para conferencia visual.
 """
 import argparse
 import os
@@ -67,91 +69,79 @@ matplotlib.rcParams.update({
     "ps.fonttype": 42,
 })
 
-# Largura de texto exata do spconf.sty (\textwidth 178 mm), de modo que
-# \includegraphics[width=\textwidth] fique em escala 1:1 e os corpos declarados
-# aqui sejam os corpos medidos na pagina.
-W_PT = 178.0 / 25.4 * 72.0         # 504,57 pt PostScript
-FIG_W_IN = W_PT / 72.0
+# Largura de coluna exata do spconf.sty (\textwidth 178 mm, \columnsep 6 mm),
+# de modo que \includegraphics[width=\columnwidth] fique em escala 1:1 e os
+# corpos declarados aqui sejam os corpos medidos na pagina.
+W_PT = 86.0 / 25.4 * 72.0          # 243,78 pt PostScript
+COL_W_IN = W_PT / 72.0
 
 PT = 8.5        # corpo das caixas
-PT_TT = 8.5     # o mesmo corpo, na fonte do \texttt da pagina
 LINHA = 10.0    # entrelinha
-PADB = 5.0      # respiro interno das caixas
-PADG = 6.0      # respiro interno do grupo tracejado
+PADB = 3.5      # respiro interno das caixas
+PADG = 5.0      # respiro interno do grupo tracejado
 MARGEM = 1.5
+SETA = 8.0      # comprimento das setas entre etapas
+SETA_RAMO = 15.0  # a bifurcacao, que precisa de espaco para o cotovelo
 
 # --- as colunas do desenho, em pontos ----------------------------------------
 # Somam W_PT. Cada largura foi fixada pela linha mais longa que a coluna carrega,
-# medida com `caber()` na hora de desenhar: mexer no texto sem mexer aqui para a
+# medida por `caber()` na hora de desenhar: mexer no texto sem mexer aqui para a
 # execucao em vez de produzir um PDF com texto vazando.
-W_ENTRADA = 122.0
-W_DECISAO = 100.0
-W_GRUPO = 143.0
-W_NOTA = 98.5
-GAP_ENT_DEC = 14.0      # a seta da entrada para a decisao
-GAP_DEC_GRP = 14.0      # a seta "No", da decisao para o primeiro estagio
-GAP_GRP_NOTA = 10.0     # os tracejados que ligam estagio e nota
-W_SIM = 110.0           # as acoes do ramo "Yes", mais largas que a decisao
+W_SIM = 94.0            # o desfecho do ramo "yes"
+W_GRUPO = 104.0         # a busca do no, com as suas etapas
+W_MARCA = 30.0          # a coluna dos simbolos de custo
+GAP_SIM_GRP = 7.0
+GAP_GRP_MARCA = 5.0
+W_DECISAO = 132.0
 
 # --- os fatos desenhados, com procedencia ------------------------------------
-# Todo texto abaixo vem do proprio paper.tex, Secao II ("AV1 Intra Partition
-# Search and Early-Termination Point"). A terminologia do artigo e normativa:
-# esta figura se ajusta a ela, nunca o contrario.
-#
-# Convencao de linha: uma lista de trechos (texto, familia), para que um token
-# em Courier possa dividir a linha com o texto em Times, como no \texttt.
+# Todo rotulo abaixo ocorre no proprio paper.tex. A terminologia do artigo e
+# normativa: esta figura se ajusta a ela, nunca o contrario. Convencao de linha:
+# uma lista de trechos (texto, familia), para que um token em Courier possa
+# dividir a linha com o texto em Times, como no \texttt da pagina.
 TX = "monospace"
 SF = "serif"
 
 ENTRADA = {
-    "titulo": ["Available before the", "current-node RD search"],
-    "itens": [["Source/block information"],
-              ["Coding parameters"],
-              ["Previously coded causal-", "neighbor partitions"]],
+    "titulo": "Pre-search information",
+    "linhas": [[("source/block information, coding parameters,", SF)],
+               [("partitions of causal neighbors", SF)]],
 }
-DECISAO = {
-    "titulo": "Early decision",
-    "linhas": [[("Terminate as", SF)], [("PARTITION_NONE?", TX)]],
-}
-SIM = [
-    [[("Select", SF)], [("PARTITION_NONE", TX)]],
-    [[("Skip remaining partition", SF)],
-     [("alternatives and their", SF)],
-     [("recursive descendants", SF)]],
+DECISAO = [("Terminate as ", SF), ("PARTITION_NONE", TX), ("?", SF)]
+SIM = [[("PARTITION_NONE", TX)],
+       [("selected; candidates", SF)],
+       [("and descendants skipped", SF)]]
+GRUPO_TITULO = "Current-node RD search"
+# (linha da etapa, simbolo do custo que passa a existir nela)
+ETAPAS = [
+    ([("PARTITION_NONE", TX)], "$J_\\mathrm{none}$"),
+    ([("PARTITION_SPLIT", TX)], None),
+    ([("remaining candidates", SF)], None),
+    ([("best partition", SF)], "$J^{*}$"),
 ]
-GRUPO_TITULO = "Generated during the current-node search"
-ESTAGIOS = [
-    ([[("Evaluate ", SF), ("PARTITION_NONE", TX)]],
-     [[("$J_\\mathrm{none}$ becomes", SF)], [("available here", SF)]]),
-    ([[("Evaluate ", SF), ("PARTITION_SPLIT", TX)],
-      [("and recurse into children", SF)]], None),
-    ([[("Evaluate rectangular and", SF)], [("extended partitions", SF)]], None),
-    ([[("Select best partition", SF)]],
-     [[("Best-partition RD cost", SF)], [("becomes available only", SF)],
-      [("after the full search", SF)]]),
-]
-RAMOS = {"sim": "Yes", "nao": "No"}
+RAMOS = {"sim": "yes", "nao": "no"}
 
-PALETAS = {
-    "cor": dict(
-        surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
-        borda="#4a4945", acento="#25599f", acento_fill="#eef3fa",
-        acento_leve="#7d9cc4", nota_borda="#6e6d68",
-    ),
-    "cinza": dict(
-        surface="#ffffff", ink="#0b0b0b", ink_2="#3f3e3b", muted="#6e6d68",
-        borda="#3f3e3b", acento="#141413", acento_fill="#eeece7",
-        acento_leve="#8c8a84", nota_borda="#6e6d68",
-    ),
-}
+# --- paleta acromatica -------------------------------------------------------
+# Sem matiz. A decisao se distingue por traco mais grosso e fundo preenchido; o
+# grupo da busca, por borda tracejada; as marcas de custo, por corpo em italico
+# matematico. Nada aqui significa por cor.
+P = dict(
+    surface="#ffffff",
+    ink="#0b0b0b",          # texto das caixas
+    ink_2="#3f3e3b",        # rotulos de ramo e simbolos
+    borda="#4a4945",        # borda das caixas de acao
+    forte="#141413",        # borda da decisao
+    fundo="#e6e4df",        # fundo da decisao
+    tracejado="#8c8a84",    # grupo e conectores
+)
 
 
 def conferir(tex_path):
     """Trava de vocabulario contra o paper.tex.
 
     A figura nao pode introduzir termo que o artigo nao use. Cada expressao
-    abaixo tem de aparecer no .tex; uma divergencia significa que a Secao II
-    mudou e que a figura ficou para tras."""
+    abaixo e desenhada e tem de aparecer no .tex; uma divergencia significa que
+    o texto mudou e que a figura ficou para tras."""
     if not os.path.exists(tex_path):
         print("  aviso: %s nao encontrado, trava de vocabulario nao rodou"
               % tex_path)
@@ -165,15 +155,18 @@ def conferir(tex_path):
     plano = re.sub(r"[{}$]", "", plano)
     plano = re.sub(r"\s+", " ", plano)
     exigidos = [
-        "current-node RD search",
+        "pre-search information",
         "source/block information",
         "coding parameters",
-        "causal neighboring blocks",
+        "causal neighbor",
+        "current-node RD search",
         "PARTITION_NONE",
         "PARTITION_SPLIT",
+        "partition candidates",
         "recursive descendants",
+        "best partition",
         "J_none",
-        "the RD cost of the best partition",
+        "J^*",
     ]
     faltando = [e for e in exigidos if e.lower() not in plano.lower()]
     if faltando:
@@ -193,16 +186,15 @@ def altura(n_linhas, pad=PADB):
 class Tela(object):
     """Eixo unico em pontos PostScript, origem no canto inferior esquerdo."""
 
-    def __init__(self, altura_pt, p):
+    def __init__(self, altura_pt):
         self.h = altura_pt
-        self.p = p
-        self.fig = plt.figure(figsize=(FIG_W_IN, altura_pt / 72.0), dpi=400)
-        self.fig.patch.set_facecolor(p["surface"])
+        self.fig = plt.figure(figsize=(COL_W_IN, altura_pt / 72.0), dpi=400)
+        self.fig.patch.set_facecolor(P["surface"])
         self.ax = self.fig.add_axes([0, 0, 1, 1])
         self.ax.set_xlim(0, W_PT)
         self.ax.set_ylim(0, altura_pt)
         self.ax.set_axis_off()
-        self.ax.set_facecolor(p["surface"])
+        self.ax.set_facecolor(P["surface"])
         self.fig.canvas.draw()
         self.rend = self.fig.canvas.get_renderer()
 
@@ -213,16 +205,10 @@ class Tela(object):
         t.remove()
         return bb.width * 72.0 / self.fig.dpi
 
-    def largura_linha(self, linha, size=PT, peso="normal"):
-        return sum(self.largura(s, family=f, fontsize=size, fontweight=peso)
-                   for s, f in linha)
-
-    def caber(self, linha, limite, onde, size=PT, peso="normal"):
-        """Trava de transbordo: nenhum texto pode estourar a sua caixa.
-
-        Sem ela, um ajuste de vocabulario passaria despercebido no .pdf e so
-        apareceria na prova impressa."""
-        w = self.largura_linha(linha, size, peso)
+    def caber(self, linha, limite, onde, peso="normal"):
+        """Trava de transbordo: nenhum texto pode estourar a sua caixa."""
+        w = sum(self.largura(s, family=f, fontsize=PT, fontweight=peso)
+                for s, f in linha)
         if w > limite:
             sys.stderr.write(
                 "Texto estoura a caixa em %s: %.1f pt para %.1f pt disponiveis"
@@ -231,7 +217,7 @@ class Tela(object):
         return w
 
     # -- primitivas ---------------------------------------------------------
-    def caixa(self, x0, y0, x1, y1, borda, fill, lw=0.6, dash=None, r=2.6,
+    def caixa(self, x0, y0, x1, y1, borda, fill, lw=0.5, dash=None, r=1.8,
               zorder=2):
         pat = FancyBboxPatch(
             (x0 + r, y0 + r), x1 - x0 - 2 * r, y1 - y0 - 2 * r,
@@ -241,203 +227,139 @@ class Tela(object):
             pat.set_linestyle((0, dash))
         self.ax.add_patch(pat)
 
-    def texto(self, x, y, s, ha="center", size=PT, cor=None, familia=None,
-              peso="normal"):
+    def texto(self, x, y, s, ha="center", cor=None, familia=None,
+              peso="normal", size=PT):
         kw = {"family": familia} if familia else {}
         self.ax.text(x, y, s, ha=ha, va="baseline", fontsize=size,
-                     color=cor or self.p["ink"], fontweight=peso, zorder=5,
-                     **kw)
+                     color=cor or P["ink"], fontweight=peso, zorder=5, **kw)
 
-    def linha(self, x, y, partes, ha="center", size=PT, cor=None,
-              peso="normal"):
+    def linha(self, x, y, partes, ha="center", cor=None, peso="normal"):
         """Uma linha com trechos em Times e trechos em Courier."""
-        larguras = [self.largura(s, family=f, fontsize=size, fontweight=peso)
+        larguras = [self.largura(s, family=f, fontsize=PT, fontweight=peso)
                     for s, f in partes]
         total = sum(larguras)
-        cur = {"left": x, "right": x - total,
-               "center": x - total / 2.0}[ha]
+        cur = {"left": x, "right": x - total, "center": x - total / 2.0}[ha]
         for (s, f), w in zip(partes, larguras):
-            self.texto(cur, y, s, ha="left", size=size, cor=cor, familia=f,
-                       peso=peso)
+            self.texto(cur, y, s, ha="left", cor=cor, familia=f, peso=peso)
             cur += w
         return total
 
-    def bloco(self, xc, y_topo, linhas, size=PT, cor=None, peso="normal"):
-        """Linhas centradas, do topo para baixo. Devolve a base da ultima."""
-        y = y_topo - LINHA + 2.6
+    def bloco(self, xc, y_topo, linhas, cor=None):
+        y = y_topo - PADB - LINHA + 2.6
         for ln in linhas:
-            self.linha(xc, y, ln, ha="center", size=size, cor=cor, peso=peso)
+            self.linha(xc, y, ln, ha="center", cor=cor)
             y -= LINHA
-        return y + LINHA
 
-    def seta(self, x0, y0, x1, y1, cor, lw=0.7, tracejada=False):
+    def seta(self, x0, y0, x1, y1, cor, lw=0.6, tracejada=False, cabeca=True):
         pat = FancyArrowPatch(
-            (x0, y0), (x1, y1),
-            arrowstyle="-" if tracejada else "-|>",
-            mutation_scale=5.0, linewidth=lw, color=cor,
+            (x0, y0), (x1, y1), arrowstyle="-|>" if cabeca else "-",
+            mutation_scale=4.5, linewidth=lw, color=cor,
             shrinkA=0, shrinkB=0, zorder=4)
         if tracejada:
-            pat.set_linestyle((0, (2.2, 1.8)))
+            pat.set_linestyle((0, (1.8, 1.6)))
         self.ax.add_patch(pat)
 
 
-def desenhar(out_path, p):
+def desenhar(out_path):
     # --- alturas, somadas antes de abrir a figura ---------------------------
-    h_entrada = altura(len(ENTRADA["titulo"])
-                       + sum(len(i) for i in ENTRADA["itens"]))
-    h_decisao = altura(1 + len(DECISAO["linhas"]))
-    h_sim = [altura(len(b)) for b in SIM]
-    h_estagio = [altura(len(linhas)) for linhas, _n in ESTAGIOS]
-    h_nota = {i: altura(len(n)) for i, (_l, n) in enumerate(ESTAGIOS)
-              if n is not None}
+    h_entrada = altura(1 + len(ENTRADA["linhas"]))
+    h_decisao = altura(1)
+    h_sim = altura(len(SIM))
+    h_etapa = altura(1)
+    h_tit_grupo = LINHA + 1.0
+    h_ramo = (h_tit_grupo + len(ETAPAS) * h_etapa
+              + (len(ETAPAS) - 1) * SETA + 2 * PADG)
 
-    seta_v = 10.0                       # entre acoes empilhadas
-    h_grupo = sum(h_estagio) + (len(ESTAGIOS) - 1) * seta_v + 2 * PADG
-    h_tit_grupo = LINHA + 3.0
+    H = (MARGEM + h_entrada + SETA + h_decisao + SETA_RAMO + h_ramo + MARGEM)
 
-    # O ramo "Yes" desce a partir da decisao; o desenho tem de acomodar tambem
-    # a nota do ultimo estagio, que e mais alta do que o estagio a que se liga.
-    h_coluna_grupo = h_tit_grupo + h_grupo
-    x_ent = MARGEM
-    x_dec = x_ent + W_ENTRADA + GAP_ENT_DEC
-    x_grp = x_dec + W_DECISAO + GAP_DEC_GRP
-    x_nota = x_grp + W_GRUPO + GAP_GRP_NOTA
-    assert abs((x_nota + W_NOTA + MARGEM) - W_PT) < 1.0, \
-        "as colunas nao somam a largura do texto"
+    t = Tela(H)
+    x0, x1 = MARGEM, W_PT - MARGEM
+    xc = (x0 + x1) / 2.0
 
-    # Centro do primeiro estagio, ao qual a decisao e a entrada se alinham.
-    def montar(H):
-        y_grp_topo = H - MARGEM - h_tit_grupo
-        y_est_centro = []
-        y = y_grp_topo - PADG
-        for h in h_estagio:
-            y_est_centro.append(y - h / 2.0)
-            y -= h + seta_v
-        return y_grp_topo, y_est_centro
-
-    # Altura provisoria e correcao: nem a cadeia "Yes" nem a nota do ultimo
-    # estagio podem furar a margem inferior.
-    H = MARGEM * 2 + h_coluna_grupo
-    for _ in range(4):
-        _yt, centros = montar(H)
-        y_dec_centro = centros[0]
-        base_sim = (y_dec_centro - h_decisao / 2.0 - seta_v - h_sim[0]
-                    - seta_v - h_sim[1])
-        base_nota = min(centros[i] - h_nota[i] / 2.0 for i in h_nota)
-        falta = MARGEM - min(base_sim, base_nota, MARGEM)
-        if falta <= 0.01:
-            break
-        H += falta
-
-    t = Tela(H, p)
-    y_grp_topo, centros = montar(H)
-    y_dec_centro = centros[0]
-
-    # --- coluna 1: a informacao disponivel antes da busca -------------------
-    y0 = y_dec_centro - h_entrada / 2.0
-    t.caixa(x_ent, y0, x_ent + W_ENTRADA, y0 + h_entrada, p["borda"],
-            p["surface"])
-    interno = W_ENTRADA - 2 * PADB
-    y = y0 + h_entrada - PADB - LINHA + 2.6
-    for s in ENTRADA["titulo"]:
-        t.caber([(s, SF)], interno, "entrada", peso="bold")
-        t.texto(x_ent + W_ENTRADA / 2.0, y, s, size=PT, cor=p["acento"],
-                peso="bold")
+    # --- 1. o que ja existe antes da busca ----------------------------------
+    y_top = H - MARGEM
+    t.caixa(x0, y_top - h_entrada, x1, y_top, P["borda"], P["surface"])
+    t.caber([(ENTRADA["titulo"], SF)], x1 - x0 - 2 * PADB, "entrada",
+            peso="bold")
+    t.texto(xc, y_top - PADB - LINHA + 2.6, ENTRADA["titulo"], cor=P["forte"],
+            peso="bold")
+    y = y_top - PADB - 2 * LINHA + 2.6
+    for ln in ENTRADA["linhas"]:
+        t.caber(ln, x1 - x0 - 2 * PADB, "entrada")
+        t.linha(xc, y, ln, ha="center")
         y -= LINHA
-    x_marca = x_ent + PADB + 1.0
-    x_item = x_marca + 6.5
-    for item in ENTRADA["itens"]:
-        t.texto(x_marca, y, "•", ha="left", size=PT, cor=p["ink_2"])
-        for s in item:
-            t.caber([(s, SF)], x_ent + W_ENTRADA - PADB - x_item, "entrada")
-            t.texto(x_item, y, s, ha="left", size=PT, cor=p["ink"])
-            y -= LINHA
 
-    # --- coluna 2: a decisao antecipada -------------------------------------
-    y0 = y_dec_centro - h_decisao / 2.0
-    t.caixa(x_dec, y0, x_dec + W_DECISAO, y0 + h_decisao, p["acento"],
-            p["acento_fill"], lw=1.0, r=3.2)
-    x_dec_c = x_dec + W_DECISAO / 2.0
-    t.texto(x_dec_c, y0 + h_decisao - PADB - LINHA + 2.6, DECISAO["titulo"],
-            size=PT, cor=p["acento"], peso="bold")
-    yb = y0 + h_decisao - PADB - 2 * LINHA + 2.6
-    for ln in DECISAO["linhas"]:
-        t.caber(ln, W_DECISAO - 2 * PADB, "decisao")
-        t.linha(x_dec_c, yb, ln, ha="center")
-        yb -= LINHA
-    t.seta(x_ent + W_ENTRADA, y_dec_centro, x_dec, y_dec_centro, p["ink_2"])
+    # --- 2. a decisao antecipada --------------------------------------------
+    y_dec_top = y_top - h_entrada - SETA
+    t.seta(xc, y_dec_top + SETA, xc, y_dec_top, P["ink_2"])
+    xd0, xd1 = xc - W_DECISAO / 2.0, xc + W_DECISAO / 2.0
+    t.caixa(xd0, y_dec_top - h_decisao, xd1, y_dec_top, P["forte"], P["fundo"],
+            lw=0.9)
+    t.caber(DECISAO, W_DECISAO - 2 * PADB, "decisao")
+    t.linha(xc, y_dec_top - PADB - LINHA + 2.6, DECISAO, ha="center")
 
-    # --- ramo "Yes": desce da decisao em duas acoes -------------------------
-    x_sim_c = x_dec_c
-    x_sim0 = x_sim_c - W_SIM / 2.0
-    y = y0
-    t.seta(x_sim_c, y, x_sim_c, y - seta_v, p["ink_2"])
-    t.texto(x_sim_c + 3.0, y - seta_v + 3.2, RAMOS["sim"], ha="left", size=PT,
-            cor=p["ink_2"], peso="bold")
-    y -= seta_v
-    for i, bloco in enumerate(SIM):
-        t.caixa(x_sim0, y - h_sim[i], x_sim0 + W_SIM, y, p["borda"],
-                p["surface"])
-        yb = y - PADB - LINHA + 2.6
-        for ln in bloco:
-            t.caber(ln, W_SIM - 2 * PADB, "ramo Yes")
-            t.linha(x_sim_c, yb, ln, ha="center")
-            yb -= LINHA
-        y -= h_sim[i]
-        if i < len(SIM) - 1:
-            t.seta(x_sim_c, y, x_sim_c, y - seta_v, p["ink_2"])
-            y -= seta_v
+    # --- 3. os dois ramos ---------------------------------------------------
+    y_ramo = y_dec_top - h_decisao - SETA_RAMO
+    x_sim0 = x0
+    x_grp0 = x_sim0 + W_SIM + GAP_SIM_GRP
+    x_grp1 = x_grp0 + W_GRUPO
+    x_marca = x_grp1 + GAP_GRP_MARCA
+    assert abs((x_marca + W_MARCA + MARGEM) - W_PT) < 1.5, \
+        "as colunas nao somam a largura da coluna do artigo"
+    xs_c = x_sim0 + W_SIM / 2.0
+    xg_c = (x_grp0 + x_grp1) / 2.0
 
-    # --- ramo "No": o grupo tracejado com os estagios nativos ---------------
-    t.caixa(x_grp, y_grp_topo - h_grupo, x_grp + W_GRUPO, y_grp_topo,
-            p["acento_leve"], p["surface"], lw=0.8, dash=(3.0, 2.2), r=3.2,
-            zorder=1)
-    # O titulo do grupo corre numa linha so, e por isso pode ser mais largo do
-    # que a caixa: ele vive fora dela, e as folgas dos dois lados o comportam.
-    t.caber([(GRUPO_TITULO, SF)], W_GRUPO + GAP_DEC_GRP + GAP_GRP_NOTA,
-            "titulo do grupo", peso="bold")
-    t.texto(x_grp + W_GRUPO / 2.0, y_grp_topo + 3.0 - LINHA + 2.6 + LINHA,
-            GRUPO_TITULO, size=PT, cor=p["acento"], peso="bold")
+    # A bifurcacao e ortogonal, e nao diagonal: um tronco curto, uma travessa,
+    # e uma descida por ramo. E o roteamento que nao cruza rotulo nenhum.
+    y_b = y_dec_top - h_decisao
+    y_trave = y_b - SETA_RAMO * 0.45
+    t.seta(xc, y_b, xc, y_trave, P["ink_2"], cabeca=False)
+    t.seta(xs_c, y_trave, xg_c, y_trave, P["ink_2"], cabeca=False)
+    # O desfecho do "yes" e uma caixa so, muito mais baixa do que o grupo do
+    # "no"; centrada contra ele, o desenho fica equilibrado, e alinhada pelo
+    # topo sobraria um vazio de meia figura no canto inferior esquerdo.
+    y_sim_top = y_ramo - (h_ramo - h_sim) / 2.0
+    t.seta(xs_c, y_trave, xs_c, y_sim_top, P["ink_2"])
+    t.seta(xg_c, y_trave, xg_c, y_ramo, P["ink_2"])
+    t.texto(xs_c + 2.5, y_trave + 2.4, RAMOS["sim"], ha="left", cor=P["ink_2"])
+    t.texto(xg_c - 2.5, y_trave + 2.4, RAMOS["nao"], ha="right", cor=P["ink_2"])
 
-    x_est0 = x_grp + PADG
-    x_est1 = x_grp + W_GRUPO - PADG
-    x_est_c = (x_est0 + x_est1) / 2.0
-    for i, (linhas, nota) in enumerate(ESTAGIOS):
-        y1 = centros[i] + h_estagio[i] / 2.0
-        t.caixa(x_est0, y1 - h_estagio[i], x_est1, y1, p["borda"],
-                p["surface"], zorder=3)
-        yb = y1 - PADB - LINHA + 2.6
-        for ln in linhas:
-            t.caber(ln, x_est1 - x_est0 - 2 * PADB, "estagio %d" % (i + 1))
-            t.linha(x_est_c, yb, ln, ha="center")
-            yb -= LINHA
-        if i < len(ESTAGIOS) - 1:
-            t.seta(x_est_c, y1 - h_estagio[i], x_est_c,
-                   y1 - h_estagio[i] - seta_v, p["ink_2"])
-        if nota is None:
-            continue
-        # A nota lateral, tracejada, e o instante em que a grandeza existe.
-        yn = centros[i] + h_nota[i] / 2.0
-        t.caixa(x_nota, yn - h_nota[i], x_nota + W_NOTA, yn, p["nota_borda"],
-                p["surface"], lw=0.5, dash=(2.2, 1.8))
-        t.seta(x_est1, centros[i], x_nota, centros[i], p["nota_borda"],
-               lw=0.5, tracejada=True)
-        yb = yn - PADB - LINHA + 2.6
-        for ln in nota:
-            t.caber(ln, W_NOTA - 2 * PADB, "nota %d" % (i + 1))
-            t.linha(x_nota + W_NOTA / 2.0, yb, ln, ha="center")
-            yb -= LINHA
+    # ramo "yes": o no termina, e a figura nao precisa dizer mais nada
+    t.caixa(x_sim0, y_sim_top - h_sim, x_sim0 + W_SIM, y_sim_top, P["borda"],
+            P["surface"])
+    for ln in SIM:
+        t.caber(ln, W_SIM - 2 * PADB, "ramo yes")
+    t.bloco(xs_c, y_sim_top, SIM)
 
-    # A seta "No" atravessa a borda do grupo, como no rascunho: e ela que diz
-    # que a busca inteira e a consequencia da decisao negativa.
-    t.seta(x_dec + W_DECISAO, y_dec_centro, x_est0, y_dec_centro, p["ink_2"])
-    t.texto((x_dec + W_DECISAO + x_est0) / 2.0, y_dec_centro + 3.2,
-            RAMOS["nao"], size=PT, cor=p["ink_2"], peso="bold")
+    # ramo "no": a busca do no, etapa a etapa, com o custo que cada uma produz.
+    # O rotulo do grupo vive DENTRO do tracejado, para que a seta do ramo pouse
+    # na borda da caixa e nao atravesse texto.
+    t.caixa(x_grp0, y_ramo - h_ramo, x_grp1, y_ramo, P["tracejado"],
+            P["surface"], lw=0.6, dash=(2.6, 2.0), zorder=1)
+    t.caber([(GRUPO_TITULO, SF)], W_GRUPO - 2 * PADG, "titulo do grupo",
+            peso="bold")
+    t.texto(xg_c, y_ramo - PADG - LINHA + 3.0, GRUPO_TITULO, cor=P["forte"],
+            peso="bold")
+    y = y_ramo - PADG - h_tit_grupo
+    for i, (ln, marca) in enumerate(ETAPAS):
+        t.caber(ln, W_GRUPO - 2 * PADG - 2 * PADB, "etapa %d" % (i + 1))
+        t.caixa(x_grp0 + PADG, y - h_etapa, x_grp1 - PADG, y, P["borda"],
+                P["surface"], zorder=3)
+        t.linha(xg_c, y - PADB - LINHA + 2.6, ln, ha="center")
+        if marca is not None:
+            yc = y - h_etapa / 2.0
+            t.seta(x_grp1 - PADG, yc, x_marca, yc, P["tracejado"],
+                   tracejada=True)
+            t.texto(x_marca + 2.0, yc - 2.9, marca, ha="left", cor=P["ink_2"])
+        y -= h_etapa
+        if i < len(ETAPAS) - 1:
+            t.seta(xg_c, y, xg_c, y - SETA, P["ink_2"])
+            y -= SETA
 
-    t.fig.savefig(out_path, facecolor=p["surface"])
-    t.fig.savefig(out_path[:-4] + ".png", facecolor=p["surface"], dpi=400)
+    t.fig.savefig(out_path, facecolor=P["surface"])
+    t.fig.savefig(out_path[:-4] + ".png", facecolor=P["surface"], dpi=400)
     plt.close(t.fig)
-    print("  gravado: %s  (%.3f x %.2f in)" % (out_path, FIG_W_IN, H / 72.0))
+    print("  gravado: %s  (%.3f x %.2f in)" % (out_path, COL_W_IN, H / 72.0))
 
 
 def main():
@@ -449,18 +371,11 @@ def main():
         "paper.tex"))
     ap.add_argument("--out-dir", default=os.path.join(
         root, "results", "thesis", "figuras"))
-    ap.add_argument("--variante", choices=sorted(PALETAS) + ["ambas"],
-                    default="ambas")
     args = ap.parse_args()
 
     conferir(args.tex)
     os.makedirs(args.out_dir, exist_ok=True)
-    sufixo = {"cor": "", "cinza": "_cinza"}
-    alvos = sorted(PALETAS) if args.variante == "ambas" else [args.variante]
-    for nome in alvos:
-        desenhar(os.path.join(args.out_dir,
-                              "figura1_fluxo_informacao%s.pdf" % sufixo[nome]),
-                 PALETAS[nome])
+    desenhar(os.path.join(args.out_dir, "figura1_fluxo_informacao.pdf"))
 
 
 if __name__ == "__main__":
