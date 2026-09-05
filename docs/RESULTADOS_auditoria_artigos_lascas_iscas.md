@@ -247,3 +247,114 @@ H9a e o podador binário **não** entra, por pertencer ao artigo irmão.
    `bdrate_average.csv` já auditado na Seção 2.
 2. A tese continua apresentando a fronteira global com os presets nativos, como manda o seu
    próprio escopo (`M1_objeto_e_formulacao.md` §1.5). A restrição vale para o artigo LASCAS.
+
+---
+
+## 7. Adendo de 2026-09-05 — alinhamento terminológico ao *proposal* ICASSP e validação do modelo do LASCAS
+
+Motivação: o orientador entregou, em
+`results/thesis/IEEE_Conference_Template/reviews/daniel proposal.tex`, a redação de referência
+do artigo ICASSP. Duas coisas dele valem para o LASCAS: a **terminologia canônica da área** e o
+**batismo científico dos conjuntos de atributos**, que antes eram os blocos A, B e C do código.
+Nada de resultado, nenhum número e nenhuma citação cruzada foram transportados: artigos irmãos
+da tese não se citam.
+
+### 7.1 Varredura de terminologia aplicada ao LASCAS
+
+| Antes (LASCAS) | Depois (canônico ICASSP) |
+|---|---|
+| `evaluates ten candidate shapes` | `evaluates up to ten partition types` |
+| `candidate shape`, `rectangular shapes`, `4-way shapes` | `partition type`, `rectangular types`, `4-way types` |
+| `attribute`, `attribute vector` | `feature`, `feature set` |
+| `causal context` (como nome do conjunto) | `pre-search features` / `causal-neighbor partition context` |
+| `the undivided candidate` | `the unpartitioned node` / `PARTITION_NONE` |
+| `rate-distortion (RD) cost` (sem sigla do processo) | `rate-distortion optimization (RDO)`, definida na Introdução |
+| `pixels` (como dimensão de bloco) | `samples` |
+| `CQ 20, 32, 43, 55` | `cq-level 20, 32, 43 and 55`, "four quantization points" |
+| `10 bits` | `10-bit depth` |
+| `multilayer perceptrons` | `multilayer perceptrons (MLPs)` |
+| `rectified units` | `ReLU units` |
+| `\section{Block Partitioning in AV1}` | `\section{The AV1 Intra Partition Search}` |
+| `\subsection{Attribute Design}` | `\subsection{Pre-Search Feature Sets}` |
+| `\subsection{Dataset Construction}` | `\subsection{Reference Encoding and Dataset}` |
+| `\subsection{Network Architecture and Training}` | `\subsection{Prediction Models and Training}` |
+
+O léxico métrico do grupo (`computational effort`, `coding efficiency`, `time savings (TS)`,
+`BD-BR`, `trade-off`) foi **preservado**, por ser normativo em `CLAUDE.md` B.12 e não conflitar
+com o *proposal*.
+
+### 7.2 Conjuntos nomeados BC / NC / CSP
+
+O *proposal* nomeia os três blocos do vetor pré-busca, e os nomes foram adotados no LASCAS
+(Seção III-A) e na Figura 1 (fluxograma), substituindo a enumeração corrida:
+
+| Nome | Sigla | Nº | Bloco no código (`features.py`) | Índices |
+|---|:--:|--:|---|---|
+| Block-content features | BC | 24 | A — luminância + `q_norm` + posição no superbloco | 0–23 |
+| Causal-neighbor partition context | NC | 8 | B — vizinhança de particionamento causal | 24–31 |
+| Coding-state and position features | CSP | 4 | C — `dc_q`, posição no quadro, profundidade | 32–35 |
+| (2º estágio) log da taxa, distorção e custo RD do `PARTITION_NONE` | — | 3 | E | 36–38 |
+
+Ganho colateral: a Seção III-A ficou mais **precisa**, e não só mais curta. A redação anterior
+dizia "twenty-four luma descriptors", o que superestimava o bloco A — ele tem 21 descritores de
+luminância mais `q_norm`, `pos_r` e `pos_c` (`features.py` linhas 193–201). "Twenty-four
+block-content descriptors ... the normalized quantization index and the position inside the
+64×64 unit" descreve exatamente o que o código calcula.
+
+### 7.3 Validação: qual modelo o LASCAS discute
+
+Verificação feita contra o código implantado, não contra documento derivado:
+
+| Evidência | Valor |
+|---|---|
+| `src/scripts/partition_model/features.py:204` | `NUM_FEATURES_H9A = 36` (A+B+C) |
+| `src/aom/av1/encoder/partition_student_weights.h:26` | `AV1_PARTITION_STUDENT_NUM_FEATURES 36` |
+| Cabeçalho gerado por `export_weights.py` | "features from features.py (NUM_FEATURES=36)" |
+| `src/aom/av1/encoder/partition_student_h9d_weights.h:27` | `AV1_PARTITION_STUDENT_H9D_NUM_FEATURES 39` |
+| `results/thesis/T_ATRIBUTOS_H9.md` §1 e §4 | H9a = 36; H9c/H9d = 39 |
+| Contagem de parâmetros | 3×(36·64+64+64·32+32+32·3+3) = 13.641 mais 3×(39·64+64+64·32+32+32·2+2) = 14.118 → **27.759**, exatamente o número já publicado no artigo |
+
+**Veredito: o LASCAS discute o modelo de 36 atributos (BC+NC+CSP) no 1º estágio e o de 39
+(BC+NC+CSP + RD do `PARTITION_NONE`) no 2º.** É esse par que foi compilado em C, medido no
+codificador e que produziu toda a taxa BD e toda a redução de tempo do artigo. Nenhuma
+correção de número foi necessária.
+
+**Ponto de atenção declarado.** O estudo offline do ICASSP aponta **BC+NC (32)** como a melhor
+combinação sob redução de busca casada, e **BC+NC+CSP (36)** um degrau abaixo. Não há
+contradição factual entre os dois artigos: o LASCAS relata o artefato **implantado e medido no
+codificador**, e não a fronteira offline; e ele não faz, em nenhum ponto, a afirmação de que 36
+seja o conjunto ótimo. O que existe é uma tensão de leitura para quem ler os dois — e como
+artigos irmãos não se citam, ela não aparece em nenhum dos textos. A decisão de projeto, se
+houver oportunidade em versão de periódico, é reavaliar o CSP no codificador; até lá o LASCAS
+descreve o que foi de fato executado.
+
+### 7.4 Consequência editorial: o teto de 4 páginas
+
+Restrição do evento fixada nesta data: **4 páginas de conteúdo técnico; a 5ª só admite material
+referencial.** Para atingi-la sem retirar item obrigatório de `CLAUDE.md` Partes A e B, foram
+feitas nove passadas de compressão sobre perífrase (nenhuma sobre evidência), mais:
+
+- retirada da Figura 1 (as dez formas de partição), cujos nomes voltaram à prosa da Seção II;
+- Figura 3 (espaço de operação) de 1,97 in para 1,78 in, mantido o piso de 9 pt;
+- `\arraystretch` da Tabela I de 1,15 para 1,05;
+- legenda da Tabela I encurtada (a âncora `cpu-used=0` já consta do texto e da Figura 2).
+
+Estado verificado: Seções I–V e Conclusões terminam na página 4; a página 5 contém apenas o
+Acknowledgment e as Referências. Nenhum `Overfull` e nenhuma referência indefinida no `.log`.
+
+Comando de reprodução das figuras (contêiner `av1_bench`):
+
+```bash
+build/venv-ml/bin/python src/scripts/benchmark/plot_pruner_flowchart_fig2.py --out-dir results/thesis/figuras
+build/venv-ml/bin/python src/scripts/benchmark/plot_operating_space_fig3.py --out-dir results/thesis/figuras
+```
+
+### 7.5 Limitações deste adendo
+
+1. A varredura é **de forma**: nenhum número, nenhuma tabela e nenhuma figura de dado foi
+   recalculado. A única figura regerada por motivo de dado foi a Figura 1 do artigo
+   (fluxograma), e apenas para trocar os rótulos dos blocos por BC/NC/CSP — as contagens
+   continuam vindo de `SPEC`, que espelha `features.py`.
+2. A validação de §7.3 confere o **vetor de entrada** dos modelos implantados. Ela não
+   revalida os pesos nem repete a campanha de codificação, que permanecem os auditados na
+   Seção 2 deste documento.

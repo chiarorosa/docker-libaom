@@ -81,12 +81,12 @@ matplotlib.rcParams.update({
 # que o leitor ve. Por isso NAO se usa bbox_inches="tight" aqui: o recorte
 # automatico mudaria a altura final e quebraria o orcamento de pagina.
 COL_W_IN = 252.0 / 72.27
-FIG_H_IN = 178.0 / 72.0    # altura pedida pelo piso de 9 pt, ver docstring
+FIG_H_IN = 128.0 / 72.0    # altura pedida pelo piso de 9 pt, ver docstring
 PT = 9.0                   # piso tipografico: nada abaixo disto na figura
 
 # Margens do eixo, em pontos PostScript, dimensionadas para o texto de 9 pt.
 MARG_ESQ_PT = 32.0         # rotulo do eixo y do painel (a) + marcacoes
-MARG_INF_PT = 42.0         # marcacoes + rotulo do painel + rotulo do eixo x
+MARG_INF_PT = 38.0         # marcacoes + rotulo do painel + rotulo do eixo x
 MARG_DIR_PT = 4.0
 MARG_SUP_PT = 5.0
 MARG_INT_PT = 34.0         # entre os paineis: eixo y do painel (b)

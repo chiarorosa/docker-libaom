@@ -1,0 +1,184 @@
+\documentclass{article}
+\usepackage{spconf,amsmath,graphicx}
+\usepackage{cite}
+\usepackage[hidelinks]{hyperref}
+
+\title{Controlled Evaluation of Pre-Search Information for Early AV1 Intra Partition Decisions}
+
+\name{Pablo Rosa, Daniel Palomino, Marcelo Porto, Luciano Agostini}
+\address{Video Technology Research Group (ViTech), Graduate Program in Computing (PPGC), \\  Federal University of Pelotas (UFPel), Pelotas, Brazil \\
+  \{pablo.rosa, dpalomino, porto, agostini\}@inf.ufpel.edu.br}
+
+\begin{document}
+\ninept
+
+\maketitle
+
+\begin{abstract}
+AV1 intra-frame encoding requires an expensive recursive search over multiple block partitioning alternatives. Fast methods reduce this cost by predicting when the search can be terminated early, but existing approaches usually change both the input information and the pruning configuration, making it difficult to isolate the contribution of the information used for the decision. This paper presents a controlled offline framework for evaluating different feature sets for early AV1 intra partition decisions. From an exhaustive reference encoding, feature sets are compared using the same early-termination rule and at equal partition-search reduction. Experiments on 4K UVG sequences show that compact block-content features substantially outperform block variance and a pixel-based ConvNeXt model. Adding the previously coded partition information of causal neighbors further reduces the normalized RD-cost penalty by 37.7\% at 25\% partition-search reduction. The results indicate that neighboring partition decisions provide useful contextual information beyond the content of the current block for early AV1 partitioning.
+\end{abstract}
+
+\begin{keywords}
+Video coding, AV1, intra-frame partitioning, fast encoding, early termination,
+machine learning
+\end{keywords}
+
+\section{Introduction}
+\label{sec:intro}
+
+The increasing demand for high-quality video at progressively lower transmission and storage rates has continuously driven the development of more efficient video coding technologies. Standards such as High Efficiency Video Coding (HEVC)~\cite{itut2013hevc}, Versatile Video Coding (VVC)~\cite{itut2020vvc}, and the open and royalty-free AOMedia Video 1 (AV1) codec~\cite{aomedia2019av1,han2021av1overview} provide increasingly flexible coding tools to improve compression efficiency. However, these coding gains come at the cost of substantially higher encoder complexity, as larger sets of coding alternatives must be evaluated during rate-distortion optimization (RDO)~\cite{sullivan1998rdoptimization,grois2016codingefficiency,layek2017encoderperformance}. Recent profiling of the libaom AV1 encoder further shows that its advanced coding tools and partitioning structures have an important impact on the computational cost of encoding~\cite{bender2023av1complexity}.
+
+Block partitioning is one of the AV1 decisions that contributes to this complexity. AV1 recursively partitions each superblock and supports up to ten partition types at a node, allowing the block structure to adapt to the spatial characteristics of the coded content~\cite{han2021av1overview,chen2018av1tools}. Selecting the partition structure requires evaluating multiple alternatives through RDO, with some partition choices recursively introducing additional coding blocks and, consequently, further mode evaluations. Although this flexibility contributes to compression efficiency, it also expands the search space of the encoder~\cite{bender2023av1complexity}. Therefore, identifying partition alternatives that can be safely discarded before their complete RD evaluation is an important approach for reducing encoding complexity.
+
+Several methods have been proposed to reduce the computational cost of modern video encoders by predicting coding decisions and avoiding unlikely alternatives. In AV1, previous works have investigated fast coding-tool selection~\cite{xu2020fastav1intra,xu2021av1toolselection}, fast intra-mode decisions~\cite{jeong2019fastav1intra}, and machine-learning-based inter-prediction decisions~\cite{kim2019fastav1inter}. Fast block partitioning has also been extensively investigated for VVC. Existing approaches exploit variance and gradient information~\cite{chen2019fastvvcqtmt}, random forests~\cite{he2021fastvvcrandomforest}, and gradient-boosting models~\cite{saldanha2022fastvvcpartitioning}. More recent methods continue to explore different sources of information for partition decisions, including texture complexity~\cite{song2024fastvvcpartitioning} and predicted RD costs~\cite{kherchouche2024vvcrdcostregression}. Neighboring-block RD costs have also been incorporated into learning-based partitioning methods~\cite{kherchouche2025vvcrdcostapproximation}. These works demonstrate that information available before or during the partition search can be exploited to reduce the number of costly RDO evaluations.
+
+However, existing approaches are generally designed and evaluated as complete fast-encoding methods, jointly defining the input features, prediction model, decision rule, and resulting amount of search reduction. Their reported RD--complexity trade-offs therefore characterize the performance of the complete method, but do not directly isolate the contribution of the information supplied to the decision mechanism. Consequently, when one method produces a better trade-off than another, it is difficult to determine whether the improvement results from more informative input data or from differences in the prediction and pruning configurations. Identifying which information is most useful for an early partition decision is nevertheless important for designing efficient decision mechanisms, particularly when such information must be available before expensive RD evaluations are performed.
+
+This paper addresses this problem through a controlled offline framework for evaluating different feature sets for early AV1 intra partition decisions. We focus on the earliest partition-search decision, in which a node can be terminated as \texttt{PARTITION\_NONE} before evaluating the remaining partition alternatives and their descendants. Starting from an exhaustive AV1 reference encoding, different feature sets are evaluated using the same early-termination rule and compared at equal partition-search reduction. The evaluated information includes block variance, block-content features, previously coded partition information from causal neighboring blocks, and raw luminance samples processed by a ConvNeXt model. Experiments on 4K UVG sequences show that the block-content features substantially reduce the normalized RD-cost penalty compared with block variance and the pixel-based model. More importantly, adding the partition information of causal neighbors reduces the normalized RD-cost penalty by 37.7\% over the compact descriptors alone at 25\% partition-search reduction. These results indicate that previously coded partition decisions provide useful contextual information for identifying blocks whose partition search can be terminated early.
+
+\section{AV1 Intra Partition Search and Early-Termination Point}
+
+AV1 supports a flexible recursive block-partitioning structure to adapt the coding units to the spatial characteristics of the input signal~\cite{han2021av1overview,chen2018av1tools}. Each frame is divided into superblocks of up to $128\times128$ samples, which can be recursively partitioned into smaller blocks.
+
+At a given node of the partition tree, the encoder evaluates multiple partition alternatives through rate-distortion optimization (RDO) to determine the best partition configuration. Depending on the selected alternative, the search may recursively expand to additional nodes, considerably increasing the number of coding decisions evaluated by the encoder~\cite{bender2023av1complexity}. Avoiding unnecessary partition evaluations is therefore an important mechanism for reducing AV1 encoding complexity.
+
+Figure~\ref{fig:early_partition_decision} illustrates the partition-search flow and the early decision investigated in this work. Before the RD search of the current node starts, the encoder already has access to source/block information, coding parameters, and decisions previously made for causal neighboring blocks. In contrast, RD information associated with the current node is produced only as the search progresses: the cost $J_{\mathrm{none}}$ becomes available after evaluating \texttt{PARTITION\_NONE}, while the RD cost of the best partition is known only after the full partition search.
+
+This work targets the pre-search decision highlighted in Fig.~\ref{fig:early_partition_decision}. At this point, a predictor decides whether the node can be directly terminated as \texttt{PARTITION\_NONE}. A positive decision avoids the evaluation of the remaining partition alternatives and their recursive descendants; otherwise, the regular partition search is performed. Consequently, the prediction can only exploit information available before the current-node RD search. This restriction defines the information sets evaluated by the methodology introduced in Section~3.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig 1.png}
+\caption{AV1 intra partition-search flow highlighting the pre-search early-termination point considered in this work.}
+\label{fig:early_partition_decision}
+\end{figure}
+
+\section{Controlled Offline Evaluation}
+
+The proposed framework compares different sources of pre-search information while keeping the early-termination rule unchanged. Rather than evaluating complete fast-partitioning methods with different pruning configurations, the framework replays an exhaustive AV1 partition search and measures the RD-cost penalty caused by early termination at the same amount of partition-search reduction.
+
+\subsection{Offline Early-Termination Replay}
+
+For each decision node $n$, the exhaustive reference search provides the RD cost of \texttt{PARTITION\_NONE}, denoted by $J_{\mathrm{none}}(n)$, and the RD cost of the partition selected by the full search, denoted by $J^{*}(n)$. A predictor assigns a probability to \texttt{PARTITION\_NONE}, and the node is early-terminated whenever this probability exceeds a threshold $\tau$. Otherwise, the full recorded search is retained.
+
+When a node is early-terminated, the RD-cost penalty associated with this decision is
+
+\begin{equation}
+p(n)=J_{\mathrm{none}}(n)-J^{*}(n),
+\end{equation}
+
+which is non-negative and equals zero whenever \texttt{PARTITION\_NONE} is also the decision selected by the exhaustive search. Since terminating a node also removes the search of its descendants, the replay follows the resulting pruned tree rather than treating node decisions independently.
+
+The corresponding partition-search reduction, denoted by $\Delta(\tau)$, is computed from the number of partition candidates that would no longer be evaluated. Each node is weighted by its block area and by the number of partition candidates evaluated at that block size. Therefore, $\Delta(\tau)$ represents an analytical reduction in partition-search effort rather than a measured encoding-time reduction.
+
+The aggregate normalized RD-cost penalty is defined as
+
+\begin{equation}
+P_{\mathrm{RD}}(\tau)=
+100
+\frac{
+\sum_{n\in\mathcal{T}(\tau)} p(n)
+}{
+\sum_{n\in\mathcal{N}} J_{\mathrm{none}}(n)
+},
+\end{equation}
+
+where $\mathcal{T}(\tau)$ is the set of nodes early-terminated under threshold $\tau$, and $\mathcal{N}$ contains all evaluated decision nodes. The denominator is common to all feature sets and aggregates the recorded \texttt{PARTITION\_NONE} RD costs over all evaluated block levels and quantization points. Hence, $P_{\mathrm{RD}}$ is interpreted only as a relative measure for comparing predictors under the same replay conditions, rather than as a BD-rate estimate. Because the replay uses costs recorded from the exhaustive reference encoding, it does not capture reconstruction changes that an actual early-termination decision could propagate to subsequently coded blocks.
+
+Sweeping $\tau$ produces a curve relating normalized RD-cost penalty to partition-search reduction. Different predictors are then compared at the same value of $\Delta$, so differences in $P_{\mathrm{RD}}$ reflect their ability to identify which nodes can be safely terminated under an equal amount of partition-search reduction.
+
+\subsection{Pre-Search Feature Sets}
+
+The evaluated inputs are restricted to information available before the RD search of the current node, as illustrated in Fig.~\ref{fig:early_partition_decision}. Three groups of features are considered.
+
+The \textbf{\underline{B}lock-\underline{C}ontent features} (BC) comprise 24 compact descriptors associated with the current block. They include second-order and gradient statistics computed from the block and its quadrants, edge measures, contrast with parent and sibling blocks, the normalized quantization index, and the two coordinates of the node within the $64\times64$ unit.
+
+The \textbf{causal-\underline{N}eighbor partition \underline{C}ontext} (NC) adds eight features derived from already coded blocks above and to the left of the current node. These features describe neighbor availability, their previously selected block dimensions, and the relative granularity and anisotropy of the surrounding partition structure.
+
+The \textbf{\underline{C}oding-\underline{S}tate and \underline{P}osition features} (CSP) add four descriptors related to the current coding configuration and position: the effective DC dequantization step, the normalized position within the frame, and the node depth.
+
+Four feature combinations are evaluated: BC, BC+NC, BC+CSP, and BC+NC+CSP. Block variance is additionally included as a simple pre-search baseline. A random scorer is also included as a sanity-check control. A raw-pixel input is also evaluated through a convolutional model to determine whether the source samples alone can provide comparable information without explicitly designed descriptors. The prediction models and training procedure are described in Section~4.
+
+\section{Experimental Setup}
+
+\subsection{Reference Encoding and Dataset}
+
+Reference partition decisions and RD costs were collected from libaom v3.10.0~\cite{aomedia2024libaom}, instrumented to log the exhaustive partition search. The encoder was configured for All-Intra coding according to the AOM Common Test Conditions~\cite{zhao2026aomctc}, using \texttt{cpu-used=0}. The analysis starts at the four $64\times64$ quadrants of each superblock and considers decision nodes of $64\times64$, $32\times32$, and $16\times16$ samples. Nodes of $8\times8$ samples are retained in the partition-search accounting but are not modeled, since no further split was selected for them in the collected data. Nine partition candidates are counted for $64\times64$, $32\times32$, and $16\times16$ nodes and four for $8\times8$ nodes; the cost of \texttt{PARTITION\_SPLIT} is represented by the recursive evaluation of its children.
+
+Experiments use the 16 sequences of the UVG dataset~\cite{mercat2020uvgdataset}, at $3840\times2160$ resolution, 8-bit depth, and 4:2:0 chroma subsampling. Each sequence was encoded at four quantization points (\texttt{cq-level} 20, 32, 43, and 55), using five frames uniformly sampled along the sequence. The resulting dataset contains 26.98 million logged partition-tree nodes, of which 10.07 million correspond to modeled decision nodes.
+
+The dataset was split at the sequence level, using ten sequences for training, three for validation, and three for testing, with no sequence shared across subsets. The six validation and test sequences jointly contain 226,447 $64\times64$ units and 3,808,703 decision nodes and are used for the results reported in Section~5.
+
+\subsection{Prediction Models and Training}
+
+Each feature-based configuration described in Section~3.2 is evaluated using one multilayer perceptron (MLP) per modeled block size. The MLPs contain two hidden layers with 64 and 32 ReLU units. All feature sets use the same network architecture and training procedure, with only the input dimension adjusted to the corresponding feature set. Models are trained with cross-entropy loss and AdamW~\cite{loshchilov2019adamw}, using a learning rate of $10^{-3}$, batches of 4096 samples, and a fixed budget of 30 epochs. Each configuration is trained with three random seeds, and mean results are reported.
+
+The raw-pixel baseline uses a multi-level ConvNeXt~\cite{liu2022convnext} operating on a two-channel input formed by the luminance samples of the $64\times64$ unit and a constant quantization plane. Features from three stages of the convolutional trunk are combined across spatial scales to provide local and block-level context for the partition prediction. Two training objectives are evaluated: standard cross entropy and a cost-sensitive variant~\cite{elkan2001costsensitivelearning}, in which each sample is weighted according to the RD-cost penalty associated with an incorrect early-termination decision. ConvNeXt checkpoints are selected according to the validation loss on the three validation sequences. The default fusion width is 128 channels; an additional 256-channel configuration is evaluated under standard cross entropy to assess the effect of increased model capacity.
+
+
+
+\section{Results and Discussion}
+
+Table~\ref{tab:frontier} and Fig.~\ref{fig:frontier} compare the normalized RD-cost penalty obtained by the evaluated predictors at partition-search reductions from 10\% to 30\%. Lower values indicate that the predictor more accurately identifies nodes that can be early-terminated under the same amount of search reduction. The feature-based predictors consistently outperform block variance across the evaluated operating points. At 25\% partition-search reduction, BC reduces the penalty from 374 to 53, corresponding to a $7.0\times$ reduction relative to the variance baseline.
+
+\begin{table}[t]
+\caption{Normalized RD-cost penalty ($10^{-4}\%$) at equal partition-search reduction.}
+\label{tab:frontier}
+\centering
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lrrrrr}
+\hline
+\textbf{Predictor} & \textbf{10\%} & \textbf{15\%} & \textbf{20\%}
+& \textbf{25\%} & \textbf{30\%} \\
+\hline
+Random control & 1963 & 2989 & 4066 & 5166 & 6342 \\
+Variance & 43 & 127 & 250 & 374 & 555 \\
+ConvNeXt, plain CE & 65 & 105 & 164 & 272 & 442 \\
+ConvNeXt, width 256 & 75 & 122 & 194 & 294 & 444 \\
+ConvNeXt, cost-sensitive & 54 & 80 & 140 & 219 & 379 \\
+BC (24 features) & 5 & 13 & 28 & 53 & 91 \\
+\underline{\textbf{BC+NC (32 features)}} & \underline{\textbf{2}} &\underline{ \textbf{5}} & \underline{\textbf{15}}
+& \underline{\textbf{33}} & \underline{\textbf{69}} \\
+BC+CSP (28 features) & 5 & 12 & 27 & 64 & 122 \\
+BC+NC+CSP (36 features) & 2 & 6 & 18 & 40 & 78 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+% src/scripts/benchmark/plot_loss_frontier_icassp_fig2.py
+\includegraphics[width=\columnwidth]{fig2_loss_frontier}
+\caption{Normalized RD-cost penalty as a function of partition-search reduction. Error bars show the range across three random seeds. The random control in Table~\ref{tab:frontier} is omitted for readability.}
+\label{fig:frontier}
+\end{figure}
+
+The main result is obtained by adding causal-neighbor partition context to the block-content features. At 25\% partition-search reduction, BC+NC reduces the penalty from 53 to 33, a 37.7\% improvement over BC alone. The benefit is observed throughout the evaluated range, with BC+NC achieving the lowest penalty at all operating points, tying BC+NC+CSP at 10\%. The result is also consistent across random initializations: at 25\%, the worst BC+NC seed reaches 36, whereas the best BC seed reaches 49. These results indicate that previously coded partition decisions provide useful contextual information beyond the block-content features alone.
+
+In contrast, the coding-state and position features (CSP) do not provide
+a consistent improvement under the evaluated setup.. At 25\% partition-search reduction, BC+CSP increases the penalty from 53 to 64, while adding CSP to BC+NC increases it from 33 to 40. Similar behavior is observed over most of the evaluated operating range. This result also indicates that the gain obtained with NC cannot be explained simply by increasing the number of input features.
+
+Among the raw-pixel models, cost-sensitive training consistently improves the ConvNeXt over standard cross entropy and is therefore used as the main pixel-based baseline. At 25\% partition-search reduction, it reaches a penalty of 219, compared with 272 for plain cross entropy, while BC reaches 53. The ConvNeXt contains approximately 28.1 million parameters, whereas the three MLPs used by BC jointly contain only about 11.3 thousand. Increasing the ConvNeXt fusion width from 128 to 256 channels does not improve its performance. Thus, under the evaluated architecture and training conditions, increasing model capacity or directly processing raw pixels does not close the gap to the compact pre-search features.
+
+
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+This paper presented a controlled offline framework for evaluating which pre-search information is most useful for early AV1 intra partition decisions. By comparing predictors under the same early-termination rule and at equal partition-search reduction, the proposed methodology separates the effect of the input information from differences in pruning behavior.
+The results show that causal-neighbor partition context provides useful information beyond block-content features. 
+Adding this context consistently reduces the normalized RD-cost penalty, with a 37.7\% improvement at 25\% partition-search reduction in the current evaluation. In contrast, the additional coding-state and position features provide no consistent benefit under the evaluated setup.
+The analysis is based on an offline replay of an exhaustive reference encoding and therefore does not capture reconstruction-error propagation or directly estimate BD-rate. Future work will investigate whether the observed ranking between feature sets is preserved when the early-termination decision is integrated into the encoder.
+
+\section{Acknowledgment}
+\label{sec:ack}
+
+This study was financed in part by the Coor\-de\-na\c{c}\~ao de
+Aper\-fei\-\c{c}oa\-men\-to de Pes\-so\-al de N\'ivel Su\-pe\-ri\-or -- Brasil
+(CAPES) -- Finance Code 001, and also by the Brazilian research support agencies
+CNPq and FAPERGS.
+
+\bibliographystyle{IEEEbib}
+\bibliography{strings,refs}
+
+\end{document}

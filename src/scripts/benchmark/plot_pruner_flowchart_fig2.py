@@ -59,7 +59,7 @@ matplotlib.rcParams.update({
     "ps.fonttype": 42,
 })
 
-COL_W_IN = 252.0 / 72.27   # lumnwidth do IEEEtran [conference], em polegadas
+COL_W_IN = 252.0 / 72.27   # largura de coluna do IEEEtran [conference], em polegadas
 PT = 9.0                   # piso tipografico do artigo: nada abaixo disto
 
 # --- ritmo vertical ----------------------------------------------------------
@@ -67,23 +67,23 @@ PT = 9.0                   # piso tipografico do artigo: nada abaixo disto
 # caixa nao desalinha o resto nem exige reajustar um numero solto la em cima.
 # Alturas em polegadas.
 LINHAS = [
-    ("pad",  0.050),
-    ("e1",   0.200),   # blocos de entrada do estagio 1
-    ("gap",  0.105),   # junta + seta para o primeiro losango
-    ("c1",   0.340),   # p_none  > tau_none
+    ("pad",  0.030),
+    ("e1",   0.170),   # blocos de entrada do estagio 1
+    ("gap",  0.075),   # junta + seta para o primeiro losango
+    ("c1",   0.285),   # p_none  > tau_none
+    ("gap",  0.055),
+    ("c2",   0.285),   # p_split > tau_split
+    ("gap",  0.055),
+    ("c3",   0.285),   # p_rest  < tau_rest
+    ("gap",  0.090),   # aqui volta o trilho de reencontro do estagio 1
+    ("none", 0.290),   # NONE e avaliado, duas linhas
+    ("gap",  0.050),
+    ("e2",   0.170),   # blocos de entrada do estagio 2
     ("gap",  0.075),
-    ("c2",   0.340),   # p_split > tau_split
-    ("gap",  0.075),
-    ("c3",   0.340),   # p_rest  < tau_rest
-    ("gap",  0.125),   # aqui volta o trilho de reencontro do estagio 1
-    ("none", 0.330),   # NONE e avaliado, duas linhas
-    ("gap",  0.065),
-    ("e2",   0.200),   # blocos de entrada do estagio 2
-    ("gap",  0.105),
-    ("c4",   0.340),   # p_ext < theta
-    ("gap",  0.125),   # aqui volta o trilho do estagio 2
-    ("fim",  0.335),   # duas linhas
-    ("pad",  0.040),
+    ("c4",   0.285),   # p_ext < theta
+    ("gap",  0.090),   # aqui volta o trilho do estagio 2
+    ("fim",  0.290),   # duas linhas
+    ("pad",  0.030),
 ]
 FIG_H_IN = sum(h for _, h in LINHAS)
 
@@ -113,8 +113,7 @@ X_ENT_1   = 0.996
 # Nomes curtos dos blocos do vetor: a contagem continua vindo de SPEC, para
 # nao divergir da Secao III-A, mas o rotulo encurta. Com o piso de 9 pt, tres
 # caixas lado a lado numa coluna de 3,49 in dao cerca de 17 caracteres cada.
-CURTO = {"luma descriptors": "luma", "causal context": "context",
-         "qp and position": "qp, pos"}
+CURTO = {"BC": "BC", "NC": "NC", "CSP": "CSP"}
 
 # --- textos ------------------------------------------------------------------
 # Blocos do vetor de atributos: vem de SPEC, para nao divergirem da Secao III-A.
@@ -134,7 +133,7 @@ CONDICOES = {
 # cada consequencia conferivel: o leitor conta as formas que sobraram.
 ACOES = {
     "c1": "only NONE is evaluated",
-    "c2": "only SPLIT: NONE and\nthe other shapes off",
+    "c2": "only SPLIT: NONE and\nthe other types off",
     "c3": "HORZ and VERT off,\nAB and 4-way with them",
     "c4": "AB and 4-way off",
 }

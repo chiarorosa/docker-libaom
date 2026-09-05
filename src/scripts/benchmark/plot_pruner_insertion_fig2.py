@@ -118,9 +118,8 @@ SPEC = {
     "nivel_terminal": "8",
     "parametros":     "27,759",
     # (rotulo, numero de atributos) na ordem em que o vetor os carrega.
-    "blocos_s1":      [("luma descriptors", 24), ("causal context", 8),
-                       ("qp and position", 4)],
-    "bloco_extra_s2": ("log RD of NONE", 3),
+    "blocos_s1":      [("BC", 24), ("NC", 8), ("CSP", 4)],
+    "bloco_extra_s2": ("RD of NONE", 3),
 }
 
 # --- grade horizontal, compartilhada pelo cabecalho e pela matriz ------------

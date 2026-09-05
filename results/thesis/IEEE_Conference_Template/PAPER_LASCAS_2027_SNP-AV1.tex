@@ -42,24 +42,22 @@ agostini@inf.ufpel.edu.br}
 
 \begin{abstract}
 The intra-frame coding of the AOMedia Video 1 (AV1) codec relies on a recursive
-block partition search that evaluates ten candidate shapes at each node of the
-partition tree. At the highest-quality configuration this search is
-exhaustive by construction and dominates the intra-frame encoding time. This
-paper presents the Stacked Neural Pruners for AV1 (SNP-AV1), a fast decision
-algorithm for the intra-frame partition search applying two neural networks at
-two distinct stages of a single node. The first reads thirty-six attributes of
-causal context, whose extraction cost is negligible, and decides before any
-rate-distortion evaluation how much of the subtree deserves to be opened. The
-second adds the measured rate-distortion cost of the undivided candidate and
-decides whether the AB and 4-way shapes, which take one third of the local search
-time and which no earlier pruner targeted, are evaluated at all. The two are
-stacked because the candidates they remove are disjoint. Experimental results
-show that SNP-AV1 achieves an average time savings of 18.74\% with a Bjontegaard
-delta bitrate (BD-BR) of 0.59\%, reaching 32.16\% and 1.42\% under a stronger
-calibration, and the second pruner buys time about 3.4 times cheaper than
-loosening the thresholds of the first. To the best of the authors' knowledge,
-this is the first solution in the literature to prune the extended partitions of
-the AV1 intra-frame partition search with a learned model.
+block partition search that evaluates up to ten partition types at each node of
+the partition tree. At the highest-quality configuration this search is exhaustive by
+construction and dominates the intra-frame encoding time. This paper presents the
+Stacked Neural Pruners for AV1 (SNP-AV1), a fast decision algorithm applying two
+neural networks at two distinct stages of a single node of that search. The first
+reads thirty-six pre-search features, whose extraction cost is negligible, and
+decides before any rate-distortion evaluation how much of the subtree deserves to
+be opened. The second adds the measured rate-distortion cost of the unpartitioned
+node and decides whether the AB and 4-way partition types, one third of the local
+search time and a family no earlier predictor targeted, are evaluated at all. The two are stacked because the candidates they remove are disjoint.
+Experimental results show that SNP-AV1 achieves an average time savings of
+18.74\% with a Bjontegaard delta bitrate (BD-BR) of 0.59\%, reaching 32.16\% and
+1.42\% under a stronger calibration, and the second pruner buys time about 3.4
+times cheaper than loosening the thresholds of the first. To the best of the
+authors' knowledge, this is the first solution in the literature to prune the
+extended partitions of the AV1 intra-frame partition search with a learned model.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -72,243 +70,217 @@ partitioning, machine learning, neural networks.
 
 Video is the dominant workload of the Internet, and the share of users watching
 online video every month has kept growing over the last years \cite{statista}.
-Alongside the standards defined by the international standardization bodies, such
-as the High Efficiency Video Coding (HEVC) \cite{hevc} and the Versatile Video
-Coding (VVC) \cite{vvc}, developed by the Motion Picture Expert Group (ISO/IEC
-MPEG) and by the Video Coding Experts Group (ITU-T VCEG), the Alliance for Open
-Media (AOMedia) maintains the AOMedia Video 1 (AV1) \cite{av1site}, which follows
-the state-of-the-art flow of hybrid video encoders, splitting the process into
-intra-frame prediction, inter-frame prediction, transforms, quantization, in-loop
-filters and entropy coding, and introduced new techniques in each of these steps
-\cite{han2021,chen2018}. This coding efficiency comes at the price of
-computational effort: AV1 was shown to be superior to HEVC under certain
-conditions \cite{grois2016}, but encoding took twice as long \cite{layek2017}, a
-problem aggravated during UHD 4K content processing.
+Alongside the standards of the international bodies, such as the High Efficiency
+Video Coding (HEVC) \cite{hevc} and the Versatile Video Coding (VVC) \cite{vvc},
+from the Motion Picture Expert Group (ISO/IEC MPEG) and the Video Coding Experts
+Group (ITU-T VCEG), the Alliance for Open Media (AOMedia) maintains the AOMedia
+Video 1 (AV1) \cite{av1site}. AV1 follows the hybrid coding flow and introduced
+new techniques in each of its steps \cite{han2021,chen2018}. This coding
+efficiency comes at the price of computational effort: AV1 was shown to be
+superior to HEVC under certain conditions \cite{grois2016}, but encoding took
+twice as long \cite{layek2017}, a problem aggravated during UHD 4K content
+processing.
 
 One of the largest individual costs of AV1 intra-frame coding is the block
 partitioning decision. Every superblock is submitted to a recursive search that,
-at each node of the partition tree, evaluates the rate-distortion (RD) cost
-\cite{sullivan1998} of ten candidate shapes and keeps the cheapest one,
-descending recursively whenever the quad-tree split wins. The search is
-exhaustive by construction, since the encoder can only determine the best shape
-after evaluating the block under each candidate, and the reference software
-libaom \cite{libaom} performs it in full at the highest-quality setting,
-\texttt{cpu-used=0}.
+at each node of the partition tree, evaluates up to ten partition types by
+rate-distortion optimization (RDO) \cite{sullivan1998} and keeps the cheapest one,
+descending recursively whenever the split wins. The search is exhaustive by
+construction, since the best partition type is only known after the node is
+evaluated under every candidate, and the reference software libaom \cite{libaom}
+performs it in full at the highest-quality setting, \texttt{cpu-used=0}.
 
 There are a few works in the literature targeting the computational effort of
 AV1, and none of them deals with this search. The works \cite{xu2020,xu2021,%
-jeong2019} act on the intra prediction mode decision loop, while
-\cite{correa2020,netto2022} are hardware solutions for the AV1 intra prediction,
-whose target is the circuit and not the encoder search, and \cite{kim2019} uses
-decision trees to determine whether all inter-prediction modes need to be
-evaluated. Learning-based partitioning solutions do exist for VVC
-\cite{saldanha2022,he2021,chen2019} and can be adapted to the AV1 coding tools,
-but they were designed for the quad-tree with nested multi-type tree and
-evaluated on another encoder. None of these papers allow a direct and fair
-comparison, and none of them acts on the recursive partition search of the AV1
-intra-frame coding.
+jeong2019} act on the intra prediction mode decision loop, \cite{correa2020,%
+netto2022} are hardware solutions for the AV1 intra prediction, whose target is
+the circuit and not the encoder search, and \cite{kim2019} uses decision trees on
+the inter-prediction modes. Learning-based partitioning solutions do exist for
+VVC \cite{saldanha2022,he2021,chen2019} and can be adapted to the AV1 coding
+tools, but they were designed for the quad-tree with nested multi-type tree and
+evaluated on another encoder. None allows a direct and fair comparison, and none
+acts on the recursive partition search of AV1.
 
 This paper presents the Stacked Neural Pruners for AV1 (SNP-AV1), a fast decision
 algorithm confined to the intra-frame partition search, which leaves every other
 encoding stage untouched. The main strategy of this solution is to remove
 candidates progressively, as stronger evidence becomes available: a first network
-decides how much of the partition tree deserves to be opened, from causal context
-whose extraction cost is negligible, and a second decides whether the most
-expensive family of candidates is worth evaluating, from the rate-distortion
-evidence the encoder has measured by then. The two are stacked because the sets
-of candidates they remove are disjoint, which is the condition under which the
-savings of two pruners accumulate instead of competing for the same time. Over
-the eight UHD 4K video sequences of the Common Test Conditions (CTC) Class A1,
+decides how much of the partition tree deserves to be opened, from pre-search
+information whose extraction cost is negligible, and a second decides whether the
+most expensive family of candidates is worth evaluating, from the
+rate-distortion evidence the encoder has measured by then. The two are stacked
+because the sets of candidates they remove are disjoint, the condition under
+which two pruners accumulate instead of competing for the same time. Over the
+eight UHD 4K video sequences of the Common Test Conditions (CTC) Class A1,
 SNP-AV1 reaches an average time savings of 18.74\% with a Bj{\o}ntegaard delta
 bitrate (BD-BR) of 0.586\%.
 
-\section{Block Partitioning in AV1}
+\section{The AV1 Intra Partition Search}
 \label{sec_shapes}
 
 The basic unit of the AV1 partitioning is the superblock, of 128$\times$128 or
-64$\times$64 pixels, and the structure that subdivides it is called partition
-tree \cite{han2021}. AV1 allows ten partition types at each node \cite{chen2018},
-which Fig.~\ref{fig_shapes} names and organizes into the four families used
-throughout this paper: the two structural decisions, PARTITION\_NONE, hereafter
-NONE, which codes the node undivided, and PARTITION\_SPLIT, the quad-tree split
-into four square sub-blocks; the two rectangular shapes; the four asymmetric AB
-shapes; and the two 4-way shapes, of 4:1 aspect ratio. The AB and the 4-way
+64$\times$64 samples, and the structure that subdivides it is the partition tree
+\cite{han2021}. AV1 supports up to ten partition types at a node \cite{chen2018},
+grouped here into four families: the two structural decisions,
+\texttt{PARTITION\_NONE}, hereafter NONE, which codes the node undivided, and
+\texttt{PARTITION\_SPLIT}, the quad-tree split into four square sub-blocks; the two
+rectangular types, \texttt{PARTITION\_HORZ} and \texttt{PARTITION\_VERT}; the four
+asymmetric AB types, each combining one rectangular half with two square
+sub-blocks; and the two 4-way types, of 4:1 aspect ratio. The AB and the 4-way
 families are jointly called the extended partitions.
 
-\begin{figure}[!t]
-  \centering
-  % src/scripts/benchmark/plot_partition_shapes_fig1.py
-  \includegraphics[width=\columnwidth]{fig1_partition_shapes}
-  \caption{The ten partition shapes evaluated at a node, grouped into the four
-  families used in this work, with the share of local search time
-  each family consumes.}
-  \label{fig_shapes}
-\end{figure}
-
 The evaluation order inside a node is fixed and defines which information has
-already been paid at each point of the flow: NONE, the quad-tree split, the
-rectangular shapes and finally the extended partitions. A pruner acting before
-the first evaluation is blind to any rate-distortion number; one acting after
-NONE has the rate, distortion and RD cost of the undivided candidate, at the
-price of never saving the cost of producing them.
+already been paid at each point of the flow: NONE, the split, the rectangular
+types and finally the extended partitions. A predictor consulted at the
+pre-search point is blind to any rate-distortion information; one consulted after
+NONE reads the rate, the distortion and the RD cost of the unpartitioned node, at
+the price of never saving the cost of producing them.
 
-The cost distribution in Fig.~\ref{fig_shapes} was measured with the native
-partition timing instrumentation of libaom over 875{,}317 decision nodes of the
-4K videos described in Section \ref{sec_data}, at \texttt{cpu-used=0}, taking as
-local work the sum of the nine non-recursive candidates of a node. It splits into
-three blocks of comparable size: NONE takes 30.1\% of that time, the two
-rectangular shapes take 35.6\% and the six extended ones take 34.3\%. No single
-extended shape exceeds 7.22\%, which is why the weight of the family went
-unnoticed, and the cost concentrates in the large nodes, reaching 50.0\% at
-32$\times$32 and 51.0\% at 64$\times$64 pixels, the nodes a 4K frame produces in
-abundance.
+The cost of the search was measured with the native partition timing
+instrumentation of libaom over 875{,}317 decision nodes of the 4K sequences of
+Section~\ref{sec_data}, at \texttt{cpu-used=0}, taking as local work the sum of
+the nine non-recursive candidates of a node. It splits into three blocks of
+comparable size: NONE takes 30.1\% of that time, the two rectangular types 35.6\%
+and the six extended ones 34.3\%. No single extended type exceeds 7.22\%, which is
+why the weight of the family went unnoticed, and the cost concentrates in the
+large nodes, reaching 50.0\% at 32$\times$32 and 51.0\% at 64$\times$64 samples,
+the nodes a 4K frame produces in abundance.
 
-This work is focused on the acceleration of the recursive block partitioning
-decision of the AV1 intra-frame coding. The other decisions taken inside a coding
-block, such as the intra prediction modes, the transform type search and the
-in-loop filtering, lie outside the partition search loop attacked here, as does
-the inter-frame partition search, since the solution is trained and evaluated
-exclusively under the All-Intra (AI) encoder configuration.
+This work is focused on the recursive block partitioning decision of the AV1
+intra-frame coding. The other decisions taken inside a coding block, such as the
+intra prediction modes, the transform type search and the in-loop filtering, lie
+outside the partition search loop attacked here, as does the inter-frame
+partition search, since the solution is trained and evaluated exclusively under
+the All-Intra (AI) encoder configuration.
 
 \section{Proposed SNP-AV1 Solution}
 \label{sec_method}
 
-The Stacked Neural Pruners for AV1 (SNP-AV1) is a fast decision algorithm
-composed of two neural pruners inserted at two distinct stages of the search of a
-node, as shown in Fig.~\ref{fig_snp}. The main strategy of this solution is to
-consult each pruner at the earliest point of the flow at which the information it
-needs has already been paid for.
+The Stacked Neural Pruners for AV1 (SNP-AV1) is a fast decision algorithm that
+inserts two neural pruners at two distinct stages of the search of a node, as
+shown in Fig.~\ref{fig_snp}. The main strategy of this solution is to consult
+each pruner at the earliest point of the flow at which the information it reads
+has already been paid for.
 
 \begin{figure}[!t]
   \centering
   % src/scripts/benchmark/plot_pruner_flowchart_fig2.py
   \includegraphics[width=\columnwidth]{fig2_insertion_points}
-  \caption{Insertion points of the two pruners in the search of a node, and the
-  cascade of conditions each applies.}
+  \caption{Insertion points of the two pruners and the cascade of conditions each
+  applies.}
   \label{fig_snp}
 \end{figure}
 
-The two stages are complementary rather than competing. The first acts before any
-rate-distortion evaluation, so a commitment removes every competing candidate of
-the node and the whole subtree below it; it pays for that reach by deciding blind
-to rate-distortion. The second acts only on the nodes that survive the first and
-reads the measured RD cost of NONE, over a narrower scope: the AB and 4-way
-candidates still standing.
+The rule behind the pairing is that two pruners in the same search compete for
+the same saved time whenever they remove the same candidates, however different
+the information each reads, and accumulate whenever the sets they remove are
+disjoint. The first asks, at the pre-search point, whether the node can be
+settled at once on the structural axis of NONE against the split, so a commitment
+removes every competing candidate of the node and the whole subtree below it; the
+second asks only, and only on the nodes that survived, whether the extended
+partitions, the block of cost isolated in Section~\ref{sec_shapes}, are worth
+evaluating. One limit follows, measured in Section~\ref{sec_results}: a node the
+first stage has committed never reaches the second, so the disjunction is a
+property of the operating point, and not of the pruners.
 
-The rule behind the pairing is that two pruners inserted in the same search
-compete for the same saved time whenever they remove the same candidates, however
-different the information each of them reads, and accumulate whenever the sets
-they remove are disjoint. The first stage asks whether the node can be settled at
-once, on the structural axis of NONE against the quad-tree split; the second asks
-whether the extended partitions, the block of cost isolated in
-Section~\ref{sec_shapes}, are worth evaluating. One limit follows from the same
-rule, and Section~\ref{sec_results} measures it: a node the first stage has
-committed never reaches the second, so the disjunction that makes the two
-additive is a property of the operating point, and not of the pruners.
+\subsection{Pre-Search Feature Sets}
 
-\subsection{Attribute Design}
+Both stages read the same pool of pre-search features, organized into three named
+sets. The block-content features (BC) are twenty-four compact descriptors of the
+node and of its hierarchical context: variance and gradient statistics of the
+block and of its quadrants, edge strength and density, row and column profiles,
+the contrast against the parent and the sibling sub-blocks, the normalized
+quantization index and the position inside the 64$\times$64 unit. The
+causal-neighbor partition context (NC) adds eight features from the already coded
+blocks above and to the left: their availability, their decided widths and
+heights in log2 units, and the granularity and the anisotropy of the surrounding
+partition structure. The coding-state and position features (CSP) add four: the
+effective DC dequantization step, the normalized position in the frame and the
+node depth. The first stage reads BC+NC+CSP, thirty-six features in all; the
+second reads the same thirty-six plus the logarithm of the rate, of the
+distortion and of the RD cost measured for NONE, for thirty-nine.
 
-The attribute vector of the first stage has thirty-six entries. Twenty-four are
-luma descriptors of the node and of its hierarchical context, covering variance,
-gradient energy and orientation, row and column profiles, edge strength and
-density, and the contrast against the parent and the sibling sub-blocks. Eight
-carry the causal partitioning neighborhood, that is, the availability of the
-above and left neighbors, their decided widths and heights in log2 units and
-their granularity and anisotropy; the last four carry the dequantization step of
-the luma DC coefficient, the normalized position and the node depth.
+The criterion for inclusion was the cost of each feature where the pruner is
+consulted: NC and CSP are a free read of state the search already maintains, and
+BC is arithmetic linear in the area of the node, so no feature demands a
+rate-distortion evaluation of its own. Every luma sample is brought to the
+eight-bit scale first, so models trained on eight-bit material are deployed
+unchanged on the ten-bit evaluation sequences.
 
-The criterion for inclusion was the cost of obtaining each attribute where the
-pruner is consulted: the twelve neighborhood, quantization and position entries
-are a free read of state the native search already maintains, and the luma
-descriptors require only arithmetic linear in the area of the node. The second
-stage reads these thirty-six plus the logarithm of the rate, of the distortion
-and of the RD cost measured for NONE. Every luma sample is brought to the
-eight-bit scale before any descriptor is computed, and the dequantization step
-with it, so the models trained on
-eight-bit material are deployed unchanged on the ten-bit evaluation sequences.
-
-\subsection{Dataset Construction}
+\subsection{Reference Encoding and Dataset}
 \label{sec_data}
 
-The reference software libaom v3.10.0 was instrumented under a compile-time guard
-to record, at every node of the intra-frame partition search, the decision taken
-by the encoder itself together with the luma samples, the causal context, the
-quantization state, the position and the rate-distortion result of NONE. The
-guard is necessary because a binary that writes at every node cannot measure
-acceleration.
+The reference software libaom v3.10.0 was instrumented, under a compile-time
+guard so that the writing binary is never the one that measures acceleration, to
+record at every node of the intra-frame partition search the decision taken by
+the encoder together with the luma samples, the causal context, the quantization
+state, the position and the rate-distortion result of NONE. The dataset was built
+from the sixteen 4K sequences of the UVG dataset \cite{uvg}, at
+$3840\times2160$ resolution, 8-bit depth and 4:2:0 chroma subsampling, each
+encoded at four quantization points (\texttt{cq-level} 20, 32, 43 and 55) over
+five frames sampled uniformly along the whole clip, since in AI coding
+consecutive frames are nearly identical. The extraction ran at
+\texttt{cpu-used=0}, because the label is only faithful if every partition type
+was evaluated: an extraction at \texttt{cpu-used=6} produced zero counts for the
+six extended classes, exactly the ones the second stage must predict.
 
-The dataset was built from the sixteen 4K sequences of the UVG dataset
-\cite{uvg}, at 3840$\times$2160, 8-bit depth and 4:2:0 chroma subsampling, each
-encoded at CQ 20, 32, 43 and 55 over five frames sampled uniformly along the
-whole clip, since in AI coding consecutive frames are nearly identical. The
-extraction ran entirely at \texttt{cpu-used=0}, because the label is only
-faithful if it comes from a search that evaluated every candidate shape: an
-extraction at \texttt{cpu-used=6} produced zero counts for the six extended
-classes, exactly the ones the second stage must predict.
-
-The resulting dataset contains 26.98 million samples, of which 10.07 million are
-decision nodes of 16, 32 and 64 pixels; the rest are 8$\times$8 leaves whose
-label is constant and which are left out of the modeling. It was partitioned by
+The resulting dataset contains 26.98 million logged partition-tree nodes, of
+which 10.07 million are decision nodes of 16, 32 and 64 samples; the rest are
+8$\times$8 leaves of constant label, left out of the modeling. It was split by
 sequence into ten training, three validation and three reserved test sequences,
 frozen before any measurement, and the eight evaluation sequences belong to the
 CTC Class A1 set, absent from the UVG corpus, so no sequence is reused across
 training, testing and evaluation, which rules out data leakage.
 
-\subsection{Network Architecture and Training}
+\subsection{Prediction Models and Training}
 
-Both stages use multilayer perceptrons, one per node size, trained independently
-for the 16$\times$16, 32$\times$32 and 64$\times$64 levels; the 8$\times$8 level
-is terminal and is not modeled. The topology is common to all six networks and
-deliberately shallow: two hidden layers of 64 and 32 rectified units and a linear
-output whose softmax gives three class probabilities in the first stage and two
-in the second, for 27{,}759 parameters in total. They were trained in PyTorch
-\cite{pytorch} with the AdamW optimizer \cite{adamw}, a learning rate of
-$1 \times 10^{-3}$, a weight decay of $1 \times 10^{-4}$, batches of 4096 samples
-and a fixed budget of 30 epochs, under hard-label cross entropy without class
-weighting. The attributes are standardized during training and the
+Both stages use multilayer perceptrons (MLPs), one per node size, trained
+independently for the 16$\times$16, 32$\times$32 and 64$\times$64 levels; the
+8$\times$8 level is terminal and is not modeled. The topology is common to all six
+networks and deliberately shallow: two hidden layers with 64 and 32 ReLU units
+and a linear output whose softmax gives three class probabilities in the first
+stage and two in the second, for 27{,}759 parameters in total. They were trained
+in PyTorch \cite{pytorch} with the AdamW optimizer \cite{adamw}, a learning rate
+of $1 \times 10^{-3}$, a weight decay of $1 \times 10^{-4}$, batches of 4096
+samples and a fixed budget of 30 epochs, under hard-label cross entropy and with
+no distillation term. The features are standardized during training and the
 standardization is folded into the first linear layer at export time, so the
-encoder feeds raw attributes and the models execute natively within the encoding
+encoder feeds raw features and the models execute natively within the encoding
 pipeline; this parity was verified over 192 random vectors, with a maximum
-difference of $1.35 \times 10^{-7}$.
-
-On the reserved sequences, and before any encoder integration, the expected
-calibration error of the first stage is 0.0112 over 1{,}816{,}393 held-out
-decision nodes, so reading its thresholds as confidence levels is verified rather
-than assumed, and the three rate-distortion attributes raise the area under the
-receiver operating characteristic curve of the second from 0.890 to 0.902.
+difference of $1.35 \times 10^{-7}$. Over 1{,}816{,}393 held-out decision nodes of
+the reserved sequences, the expected calibration error of the first stage is
+0.0112, so reading its thresholds as confidence levels is verified rather than
+assumed.
 
 \subsection{Pruning Policies and Encoder Integration}
 
-The first-stage pruner applies three actions in cascade, drawn in
-Fig.~\ref{fig_snp}, on the probabilities $p_{\mathrm{none}}$,
-$p_{\mathrm{split}}$ and $p_{\mathrm{rest}}$ of the undivided, split and
-remaining classes. If $p_{\mathrm{none}} > \tau_{\mathrm{none}}$, the node is
-decided as NONE and the whole subtree is cut, the primary lever of time
-savings. Otherwise, if $p_{\mathrm{split}} > \tau_{\mathrm{split}}$, NONE is
-skipped as well and the search recurses only into the four sub-blocks.
-Otherwise, if $p_{\mathrm{rest}} < \tau_{\mathrm{rest}}$, the rectangular
-candidates are disabled, and the extended ones with them by dependency;
-otherwise the node proceeds to the full search. Two operating points were frozen
-before the final campaign: the balanced one uses $\tau_{\mathrm{none}} = 0.95$,
+The first-stage pruner applies the three actions drawn in Fig.~\ref{fig_snp} on
+the probabilities $p_{\mathrm{none}}$, $p_{\mathrm{split}}$ and
+$p_{\mathrm{rest}}$ of the NONE, split and remaining classes: it terminates the
+node as NONE and cuts the whole subtree when $p_{\mathrm{none}} >
+\tau_{\mathrm{none}}$, which is the primary lever of time savings; otherwise it
+skips NONE and recurses only into the four sub-blocks when $p_{\mathrm{split}} >
+\tau_{\mathrm{split}}$; otherwise it disables the rectangular candidates, and the
+extended ones with them by dependency, when $p_{\mathrm{rest}} <
+\tau_{\mathrm{rest}}$. Two operating points were frozen before the final
+campaign: the balanced one uses $\tau_{\mathrm{none}} = 0.95$,
 $\tau_{\mathrm{split}} = 0.90$ and $\tau_{\mathrm{rest}} = 0.20$, the aggressive
 one 0.60, 0.85 and 0.40.
 
 The second-stage pruner marks the node to skip the extended partitions when
-$p_{\mathrm{ext}}$, the estimated probability that an AB or a 4-way shape wins
-the node, falls below a threshold $\theta$ kept per node size, leaving NONE, the
-quad-tree split and the rectangular shapes untouched. The per-level threshold is
-experimental, since the values that discard the same fraction of true winners
-differ widely: calibrated on the reserved sequences to lose a tenth of the nodes
-whose optimal shape is extended, the deployed values are 0.0910, 0.1031 and
-0.0144 at the 16, 32 and 64-pixel levels, and a stronger calibration gives
-0.1776, 0.1627 and 0.0321.
-
-Both pruners were implemented in C inside libaom v3.10.0, each behind a
-compile-time guard whose disabled build reproduces the reference bitstream byte
-for byte, which is what allows the marginal contribution of the second to be
-attributed to its decisions and not to a difference of build. The policy only
-removes candidates and never forces an illegal one, so SNP-AV1 is fully compliant
-with the AV1 specification and does not affect the bitstream syntax.
+$p_{\mathrm{ext}}$, the estimated probability that an extended type wins the node,
+falls below a threshold $\theta$ kept per node size, leaving NONE, the split and
+the rectangular types untouched. The threshold is per level because the values
+that discard the same fraction of true winners differ widely: calibrated on the
+reserved sequences to lose a tenth of the nodes whose optimal type is extended,
+the deployed values are 0.0910, 0.1031 and 0.0144 at the 16, 32 and 64-sample
+levels, and a stronger calibration gives 0.1776, 0.1627 and 0.0321. Both pruners
+were implemented in C inside libaom v3.10.0, each behind its own compile-time
+guard whose disabled build reproduces the reference bitstream byte for byte,
+which is what allows the contribution of the second to be attributed to its
+decisions. The policy only removes candidates and never forces an illegal one, so
+SNP-AV1 is fully compliant with the AV1 specification and does not affect the
+bitstream syntax.
 
 \section{Results and Comparisons}
 \label{sec_results}
@@ -316,15 +288,15 @@ with the AV1 specification and does not affect the bitstream syntax.
 The developed solution was evaluated using the libaom v3.10.0 AV1 reference
 software, following the AOM Common Test Conditions (CTC) \cite{ctc} and under the
 AI encoder configuration. The eight 4K sequences of the CTC Class A1 test set,
-named in Table~\ref{tab_seq}, are all at 3840$\times$2160, 10 bits and 4:2:0
-\cite{xipha1}. The first 15 frames of each were encoded, as the CTC specifies for
-the AI scenario, at CQ 20, 32, 43 and 55, against the unmodified libaom at
-\texttt{cpu-used=0} as anchor. The BD-BR \cite{bjontegaard} is computed over the
-luma peak signal-to-noise ratio, and all values reported here are positive, hence
-coding efficiency losses. Writing $t_{\mathrm{cfg}}(s,q)$ and
-$t_{\mathrm{anc}}(s,q)$ for the encoding times of the evaluated configuration and
-of the anchor on sequence $s$ at quality point $q$, over the sequence set $S$ and
-the quality set $Q$,
+named in Table~\ref{tab_seq}, are all at $3840\times2160$ resolution, 10-bit depth
+and 4:2:0 chroma subsampling \cite{xipha1}. The first 15 frames of each were
+encoded, as the CTC specifies for the AI scenario, at \texttt{cq-level} 20, 32, 43
+and 55, against the unmodified libaom at \texttt{cpu-used=0} as anchor. The BD-BR
+\cite{bjontegaard} is computed over the luma peak signal-to-noise ratio, and
+every value reported here is a coding efficiency loss. Writing
+$t_{\mathrm{cfg}}(s,q)$ and $t_{\mathrm{anc}}(s,q)$ for the encoding times of the
+evaluated configuration and of the anchor on sequence $s$ at quality point $q$,
+over the sequence set $S$ and the quality set $Q$,
 
 \begin{equation}
 \mathrm{TS} = \frac{1}{|S|} \sum_{s \in S} \frac{1}{|Q|} \sum_{q \in Q}
@@ -332,29 +304,21 @@ the quality set $Q$,
 \label{eq_ts}
 \end{equation}
 
-reported as a percentage. All BD-BR and TS results come from this grid; the
-shares in Fig.~\ref{fig_shapes} were measured on the UVG corpus of
-Section~\ref{sec_data} instead. Every configuration was encoded once, and
-repeating the anchor and the balanced first stage five times on Crosswalk gives a
-standard deviation of 0.23 percentage points on TS, so a difference of time
-savings below twice that value is not resolved, while the BD-BR values are exact.
-The anchor is the exhaustive partition search itself, and no native speed preset
-is placed beside SNP-AV1: a preset reconfigures every coding stage, so a
-side-by-side reading would rank arrangements of different scope rather than
-partition-search techniques.
-
-Fig.~\ref{fig_space} places the six measured operating points against that
-anchor. The balanced calibration spans time savings of 17.72\% to 19.81\% at
-a BD-BR of 0.568\% to 0.651\%, and the aggressive one 31.51\% to 32.16\% at
-1.403\% to 1.420\%. Inside each family the three points differ only in how much
-of the extended family the second pruner removes, and moving from one family to
-the other is a matter of thresholds alone, without retraining and without
+reported as a percentage. All BD-BR and TS results come from this grid; the cost
+shares of Section~\ref{sec_shapes} were measured on the UVG corpus instead. Every
+configuration was encoded once; repeating the anchor and the balanced first stage
+five times on Crosswalk gives a standard deviation of 0.23 percentage points on
+TS, so differences below twice that value are not resolved, while the BD-BR
+values are exact. No native speed preset is placed beside SNP-AV1: a preset
+reconfigures every coding stage, so a side-by-side reading would rank
+arrangements of different scope rather than partition-search techniques.
+Fig.~\ref{fig_space} places the six measured operating points against the anchor,
+and moving among them is a matter of thresholds alone, without retraining or
 recompiling.
 
 \begin{table}[!t]
-\renewcommand{\arraystretch}{1.15}
-\caption{Per-Sequence Results of the Two Deployed Operating Points Against the
-libaom v3.10.0 Anchor at \upshape cpu-used=0}
+\renewcommand{\arraystretch}{1.05}
+\caption{Per-Sequence Results of the Two Deployed Operating Points}
 \label{tab_seq}
 \centering
 \begin{tabular}{lcccc}
@@ -384,13 +348,11 @@ of coding efficiency per point of time bought, against the 0.061 charged by the
 only alternative the deployed solution leaves to its user, which is loosening the
 thresholds of the first stage: the second pruner is about 3.4 times cheaper, and
 Fig.~\ref{fig_space}(a) shows the two prices as the two slopes that leave the
-same operating point. Its stronger calibration costs 0.040 over the
-same base, still below the price of the threshold knob, which is why the milder
-one is deployed. Sequence by sequence, at time savings matched by interpolating
-the first-stage thresholds, the stacked point is the better of the two in six of
-the eight sequences, two of them by strict Pareto dominance, and it loses only in
-Crosswalk and Neon1224, the two sequences in which the extended axis is barely
-exercised and the second pruner has almost nothing to remove.
+same operating point. Its stronger calibration costs 0.040, still below the price
+of the knob, which is why the milder one is deployed. Sequence by sequence, at
+time savings matched by interpolating the first-stage thresholds, the stacked
+point wins in six of the eight sequences, two of them by strict Pareto dominance,
+and loses only where the extended axis is barely exercised.
 
 \begin{figure}[!t]
   \centering
@@ -398,67 +360,61 @@ exercised and the second pruner has almost nothing to remove.
   \includegraphics[width=\columnwidth]{fig3_operating_space}
   \caption{Operating space of SNP-AV1 against the libaom v3.10.0 anchor at
   \texttt{cpu-used=0}, over the CTC Class A1 4K sequences: (a) balanced and
-  (b) aggressive calibration, each on its own axes. Inside each panel the three
-  points differ only in the strength of the second pruner, and the dashed line is
-  the threshold knob of the first stage.}
+  (b) aggressive calibration, each on its own axes. Inside a panel the three
+  points differ only in the strength of the second pruner; the dashed line is the
+  threshold knob of the first stage.}
   \label{fig_space}
 \end{figure}
 
 This additivity is a property of the operating point, and not of the pruner. Over
 the aggressive base the same second stage adds 0.17 percentage points, below the
-resolution of the arrangement and above it in one sequence out of eight instead
-of six. With the undivided threshold loosened to 0.60, the first stage commits
-the nodes so early that they seldom reach the point at which the extended
-partitions would be decided, and the two pruners fall back to disputing the same
-residue. Fig.~\ref{fig_space}(b) shows what is left of the second stage there:
-the three points cover 0.65 percentage points of time savings, and the step the
-deployed calibration adds is 0.17 of them.
+resolution of the arrangement and above it in one sequence instead of six: with
+the NONE threshold loosened to 0.60, the first stage commits the nodes so early
+that they seldom reach the point at which the extended partitions would be
+decided, and the two pruners fall back to disputing the same residue. That is the
+whole width of Fig.~\ref{fig_space}(b), whose three points cover 0.65 percentage
+points of time savings.
 
 Table~\ref{tab_seq} opens the two deployed points sequence by sequence, and what
 it exposes is content dispersion, not a swept range. At the balanced calibration
-the time savings average 18.74\% with a standard deviation of 3.40 percentage
-points, from 13.78\% on NocturneDance to 22.89\% on Tango, and the BD-BR averages
-0.586\% with a standard deviation of 0.278, from 0.168\% to 1.139\% on those same
-two sequences. The aggressive calibration keeps that shape and lifts the level,
-to 31.68\% $\pm$ 4.17 of time savings, from 26.03\% to 38.80\%, at 1.409\%
-$\pm$ 0.377 of BD-BR, from 0.934\% to 2.206\%. This dispersion is content and not
-measurement, since it is more than ten times the standard deviation of the
-repeated encodings.
+the time savings average 18.74\% $\pm$ 3.40 percentage points, from 13.78\% on
+NocturneDance to 22.89\% on Tango, and the BD-BR averages 0.586\% $\pm$ 0.278,
+from 0.168\% to 1.139\% on those same two sequences. The aggressive calibration
+keeps that shape and lifts the level, to 31.68\% $\pm$ 4.17 of time savings, from
+26.03\% to 38.80\%, at 1.409\% $\pm$ 0.377 of BD-BR, from 0.934\% to 2.206\%. The
+dispersion is content and not measurement, since it is more than ten times the
+standard deviation of the repeated encodings.
 
 Read as time bought per point of coding efficiency ceded, the eight sequences
 have a median of 35 points of time savings per point of BD-BR at the balanced
-calibration and of 22 at the aggressive one, the rising price the
-aggregate showed. The two extremes are the two ends of one mechanism: the
-time a sequence yields is bounded by how often the exhaustive search settles for
-the undivided candidate, since committing NONE is what removes a subtree, and the
-efficiency it cedes is set by how often the first stage commits where that search
-would not have. The coupling between the two columns is visible at the balanced
-point, where they correlate by rank at 0.79 ($p = 0.02$), and dissolves at the
-aggressive one, at 0.31 ($p = 0.46$), which may be attributed to a threshold
-loose enough to commit nodes almost everywhere.
-
-The overhead is reported rather than omitted: the complete path of SNP-AV1,
-attribute extraction and inference together, stays below one third of one percent
-of the encoding time, so the time savings come from the pruning decisions and not
-from the lightness of each inference.
+calibration and of 22 at the aggressive one, the rising price the aggregate
+showed. The two columns are the two ends of one mechanism, and they correlate by
+rank at 0.79 ($p = 0.02$) at the balanced point: the time a sequence yields is
+bounded by how often the search itself settles for the unpartitioned node, and
+the efficiency it cedes by how often the first stage commits where that search
+would not have. The coupling dissolves at the aggressive point, at 0.31
+($p = 0.46$), which may be attributed to a threshold loose enough to commit nodes
+almost everywhere. The overhead is reported rather than omitted: feature
+extraction and inference together stay below one third of one percent of the
+encoding time, so the savings come from the pruning decisions and not from the
+lightness of each inference.
 
 \section{Conclusions}
 
 This paper presented SNP-AV1, a machine-learning solution that stacks two neural
 pruners at two distinct stages of the AV1 intra-frame partition search, reaching
 an average time savings of 18.74\% with a BD-BR of 0.59\%, and 32.16\% with
-1.42\% under a stronger calibration. The first pruner decides how much of the
-subtree is opened before any rate-distortion cost is paid, and the second whether
-the extended partitions, one third of the local search time, are worth
-evaluating; the two are stacked because the candidates they remove are disjoint.
-Both were implemented in C inside libaom v3.10.0 and evaluated on the eight 4K
-sequences of the CTC Class A1 under the AI configuration. Measured marginally
-over the first, the second pruner adds 1.02 percentage points of time savings for
-0.018 of BD-BR, about 3.4 times cheaper than buying the same time from the
-thresholds of the first stage, and it is the better of the two in six of the
-eight sequences; the advantage collapses on the aggressive base, where the first
-stage commits the nodes first. Besides, to the best of the authors' knowledge,
-this is the first
+1.42\% under a stronger calibration. The first pruner reads thirty-six pre-search
+features and decides how much of the subtree is opened before any
+rate-distortion cost is paid; the second adds the measured RD cost of NONE and
+decides whether the extended partitions, one third of the local search time, are
+worth evaluating. Both were implemented in C inside libaom v3.10.0 and evaluated
+on the CTC Class A1 4K sequences under the AI configuration. Measured marginally
+over the balanced base, the second pruner buys time about 3.4 times cheaper than
+the thresholds of the first stage and wins in six of the eight sequences; the
+advantage collapses over the aggressive base, where the first stage commits the
+nodes before they reach the second, which is the operating-point limit of the
+stacking. Besides, to the best of the authors' knowledge, this is the first
 solution in the literature to prune the extended partitions of the AV1
 intra-frame partition search with a learned model.
 
