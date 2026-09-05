@@ -400,3 +400,41 @@ poligonal medida, e essa separação nunca dependeu de cor: é traço tracejado 
 Estado do artigo após a mudança: monocromático de ponta a ponta, 4 páginas técnicas, página 5 só
 com Acknowledgment e Referências, zero `Overfull`, zero referência indefinida, todas as fontes
 embutidas e subsetadas.
+
+### 7.8 Referências trazidas do *proposal* ICASSP e símbolo da equação (1), 2026-09-05
+
+**Origem.** A bibliografia do *proposal* (`reviews/ICASSP daniel proposal.tex`, dados completos
+lidos de `reviews/PAPER_ICASSP_2027_AV1_reviewDaniel.pdf`) foi confrontada com as 25 referências
+do LASCAS. Quatro entradas de lá são mais atuais do que qualquer equivalente daqui e foram
+incorporadas; as demais ou já constavam, ou são específicas do estudo offline (ConvNeXt,
+aprendizado sensível a custo) e não têm função no LASCAS.
+
+| Nova | Onde entra | Por quê |
+|---|---|---|
+| Bender *et al.*, *J. Real-Time Image Process.*, 2023 | M5, sobre a afirmação de custo | A frase "one of the largest individual costs of AV1 intra-frame coding is the block partitioning decision" **não tinha citação alguma**: era asserção. Passa a ter âncora externa, e de uma análise de complexidade do próprio libaom. |
+| Song *et al.*, *IEEE Signal Process. Lett.*, 2024 | M6, família VVC | Atualiza um grupo que ia só até 2022. |
+| Kherchouche *et al.*, ICASSP 2024 | M6, família VVC | Regressão de custo RD para particionamento intra — o vizinho mais próximo do 2º estágio. |
+| Kherchouche *et al.*, DCC 2025 | M6, família VVC | O trabalho mais recente da linha; aproximação de custos RD para particionamento intra de VVC. |
+
+O parágrafo M6 passou a **classificar** a família, como manda `CLAUDE.md` B.4/M6, em vez de apenas
+listá-la: "over variance, random forests, gradient boosting, texture complexity and the regression
+of RD costs [18]–[23]". O veredito de comparabilidade que já existia cobre as três novas sem
+frase adicional — todas foram projetadas para a árvore quaternária com árvore multitipo aninhada
+e avaliadas em outro codificador.
+
+*Ressalvas de procedência.* (i) A entrada da DCC 2025 é um resumo de **uma página** (p. 377), como
+é praxe da conferência; foi mantida por ser publicação IEEE indexada e por constar do *proposal*.
+(ii) Os meses de ICASSP 2024 (Abr.) e DCC 2025 (Mar.) foram completados pelas datas fixas dessas
+conferências; o mês do *Signal Processing Letters* não foi inventado e a entrada sai sem ele.
+(iii) Bender *et al.* é trabalho publicado do próprio grupo, e não artigo irmão desta tese — a
+proibição de citação cruzada de `CLAUDE.md` B.15 não se aplica.
+
+**Símbolo da equação (1).** `t_cfg` passou a `t_SNP`, e a definição, a "the evaluated SNP-AV1
+configuration". A troca é legítima porque **todas** as configurações às quais o artigo aplica a
+definição de redução de tempo são configurações do próprio SNP-AV1 — os seis pontos de operação
+diferem apenas nos limiares e na presença do 2º podador, e nenhum preset nativo entra na
+comparação (§6 deste documento). O anchor mantém `t_anc`.
+
+Estado após a mudança: 29 referências, numeração em ordem de primeira citação conferida no PDF
+([9] Bender entre [8] Layek e [10] Sullivan; família VVC contígua em [18]–[23], comprimida pelo
+`cite.sty`), 4 páginas técnicas, zero `Overfull`, zero referência indefinida.
