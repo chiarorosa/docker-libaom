@@ -87,7 +87,8 @@ MARG_SUP_PT = 4.0
 # O ultimo campo diz se a curva e DESENHADA. O controle aleatorio fica de fora do
 # desenho e permanece na Tabela I: sozinho ele ocupa uma decada inteira do eixo, e
 # gasta-la com a ancora oposta comprime justamente as oito curvas em disputa. A
-# trava de coerencia abaixo continua conferindo as nove.
+# trava de coerencia abaixo continua conferindo TODAS as linhas da tabela,
+# desenhadas ou nao.
 CURVAS = [
     ("random",              "Random control",           "ref",  False),
     ("variance",            "Variance",                 "ref",  True),
@@ -95,6 +96,12 @@ CURVAS = [
     ("convnext_ce_h9_f256", "ConvNeXt, width 256",      "deep", True),
     ("convnext_regret",     "ConvNeXt, cost-sensitive", "deep", True),
     ("RPP_A",               "BC",                       "tab",  True),
+    # Controle de permutacao de BC+NC: mesmas 32 entradas, com as oito colunas
+    # de NC reatribuidas entre amostras. Fora do desenho pela mesma razao que o
+    # controle aleatorio: a sua curva cai SOBRE a de BC -- que e o resultado --
+    # e duas curvas sobrepostas numa coluna de 86 mm tornam ambas ilegiveis sem
+    # acrescentar leitura alguma. A trava de coerencia abaixo continua a conferir.
+    ("RPP_A_Bshuf",         "BC+shuffled NC",           "tab",  False),
     ("RPP_A_C",             "BC+CSP",                   "tab",  True),
     ("RPP_A_B_C",           "BC+NC+CSP",                "tab",  True),
     ("RPP_A_B",             "BC+NC",                    "tab",  True),
@@ -116,6 +123,7 @@ TABELA_I = {
     "ConvNeXt, width 256":      [75, 122, 194, 294, 444],
     "ConvNeXt, cost-sensitive": [54, 80, 140, 219, 379],
     "BC":                       [5, 13, 28, 53, 91],
+    "BC+shuffled NC":           [5, 13, 27, 48, 86],
     "BC+CSP":                   [5, 12, 27, 64, 122],
     "BC+NC+CSP":                [2, 6, 18, 40, 78],
     "BC+NC":                    [2, 5, 15, 33, 69],
@@ -136,6 +144,7 @@ CURVA_COR = {
     "ConvNeXt, width 256":      "#d99441",
     "ConvNeXt, cost-sensitive": "#8f4a10",
     "BC":                       "#2b7bba",   # azul medio
+    "BC+shuffled NC":           "#7fb2d8",   # o azul de BC, dessaturado
     "BC+CSP":                   "#46a08a",   # verde-azulado, o mais claro
     "BC+NC+CSP":                "#8a5fa8",   # violeta
     "BC+NC":                    "#10375c",   # azul profundo, a protagonista
@@ -153,7 +162,8 @@ PALETAS = {
                "ConvNeXt, plain CE": "#6b6a65",
                "ConvNeXt, width 256": "#8d8c86",
                "ConvNeXt, cost-sensitive": "#55544f",
-               "BC": "#4a4945", "BC+CSP": "#7a7973",
+               "BC": "#4a4945", "BC+shuffled NC": "#6d6c66",
+               "BC+CSP": "#7a7973",
                "BC+NC+CSP": "#2b2a27", "BC+NC": "#141413"},
     ),
 }
@@ -166,6 +176,7 @@ ESTILO = {
     "ConvNeXt, width 256":      dict(ls=(0, (2.4, 1.2)), marker="P",   lw=0.7),
     "ConvNeXt, cost-sensitive": dict(ls=(0, (5, 1.4, 1, 1.4)), marker="X", lw=0.7),
     "BC":                       dict(ls="-",             marker="o",   lw=0.85),
+    "BC+shuffled NC":           dict(ls=(0, (2, 1.4)),   marker="o",   lw=0.7),
     "BC+CSP":                   dict(ls=(0, (3, 1.3)),   marker="^",   lw=0.85),
     "BC+NC+CSP":                dict(ls=(0, (1.4, 1.2)), marker="D",   lw=0.85),
     "BC+NC":                    dict(ls="-",             marker="*",   lw=1.05),
@@ -214,7 +225,8 @@ def conferir(dados):
         sys.stderr.write("Figura e Tabela I divergem:\n" + "\n".join(erros)
                          + "\nAtualize TABELA_I e a tabela do .tex.\n")
         raise SystemExit(1)
-    print("  trava de coerencia: as 45 celulas batem com a Tabela I")
+    print("  trava de coerencia: as {} celulas batem com a Tabela I".format(
+        len(CURVAS) * len(LEITURA)))
 
 
 def draw(out_path, p, dados):

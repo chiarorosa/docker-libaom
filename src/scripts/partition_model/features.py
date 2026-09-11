@@ -233,7 +233,41 @@ RPP_SUBSETS = {
     "A_B": list(range(32)),
     "A_C": list(range(24)) + list(range(32, 36)),
     "A_B_C": list(range(36)),
+    # Permutation control for A_B: SAME eight columns, SAME input width, SAME
+    # architecture and recipe, but the block of eight is reassigned across
+    # samples, so it keeps its own marginal joint distribution and loses only
+    # its association with the node it describes. If A_B beats A because of the
+    # information in B, this rung falls back onto A; if A_B beats A merely
+    # because 32 inputs fit the data better than 24, this rung keeps the gain.
+    # Consumed by `rpp_ladder.py` (training) and `oracle_regret.py` (scoring)
+    # through `RPP_SHUFFLE_COLS` below -- the shuffle is applied on BOTH sides,
+    # since a model trained against a decorrelated block must be scored against
+    # a decorrelated block for the control to mean anything.
+    "A_Bshuf": list(range(32)),
 }
+
+# rung -> columns of the 36-wide H9a vector whose values are permuted across
+# samples. Absent means the rung is trained and scored intact.
+RPP_SHUFFLE_COLS = {
+    "A_Bshuf": list(range(24, 32)),
+}
+
+
+def shuffle_columns(feat, cols, seed):
+    """Reassign `cols` across the rows of `feat` under one shared permutation.
+
+    One permutation for the whole block, not one per column: permuting each
+    column independently would also destroy the correlations WITHIN the block
+    (a left neighbor's width against its height, say), and the control would
+    then be removing more than the dimensionality confounder it is meant to
+    isolate. Returns a copy; `feat` is left untouched.
+    """
+    if not cols:
+        return feat
+    rng = np.random.default_rng(seed)
+    out = np.array(feat, copy=True)
+    out[:, cols] = out[rng.permutation(len(out))][:, cols]
+    return out
 
 # BLOCK_SIZE (av1/common/enums.h) -> (width_px, height_px).
 _BSIZE_PX = {

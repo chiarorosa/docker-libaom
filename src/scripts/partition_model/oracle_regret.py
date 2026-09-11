@@ -64,7 +64,8 @@ DISPLAY_ORDER = ["random", "variance", "pixels24", "convnext_ce",
                  "convnext_regret", "H9a", "H9a_b1", "H9a_cw",
                  "H9c", "regret", "GNN", "GNN_causal"]
 DISPLAY_ORDER += ["RPP_{}_s{}".format(r, s)
-                  for r in ("A", "A_B", "A_C", "A_B_C") for s in range(8)]
+                  for r in ("A", "A_B", "A_Bshuf", "A_C", "A_B_C")
+                  for s in range(8)]
 
 # A grade de tau compartilhada é inadequada para a variância. Como o seu
 # P(NONE)=exp(-var/1000) concentra toda a faixa útil em (0,97; 0,99), na grade
@@ -127,9 +128,17 @@ def node_regret_full(members, ctx):
     return out
 
 
-def collect(entries, per_pkl=None):
+def collect(entries, per_pkl=None, need_luma=True, need_extra=True):
     """Superblocos com feat H9a(36) e H9c(39), verdade, regret por nó, e a RD
-    total (Sigma none_rd dos nós de decisão) para normalizar."""
+    total (Sigma none_rd dos nós de decisão) para normalizar.
+
+    `need_luma`/`need_extra` desligam o que so os bracos profundos e os
+    pos-NONE consomem: a luma do superbloco (ConvNeXt/GNN) e os vetores
+    `feat_h9a_b1`(42)/`feat_h9c`(39). Um braco tabular sobre `feat` nao os le,
+    e mante-los custa ~2/3 da memoria da coleta -- o suficiente para a vara
+    held-out completa nao caber no conteiner. Desligar NAO altera numero
+    algum: `total_none_rd`, o regret por no e a politica de poda sao os
+    mesmos, byte a byte."""
     sbs = []
     total_none_rd = 0.0
     for e in entries:
@@ -144,21 +153,21 @@ def collect(entries, per_pkl=None):
             for k, (dim, r, c, _luma, label) in enumerate(sb["members"]):
                 fa = featmod.node_features_h9a(sb["luma"], dim, r, c,
                                                sb["qindex"], sb["ctx"][k])
-                fb1 = featmod.node_features_h9a_b1(sb["luma"], dim, r, c,
-                                                   sb["qindex"], sb["ctx"][k],
-                                                   node_ctx)
-                fc = featmod.node_features_h9c(sb["luma"], dim, r, c,
-                                               sb["qindex"], sb["ctx"][k])
                 rr = reg.get((dim, r, c))
                 if rr:
                     total_none_rd += rr["none_rd"]
-                nodes[(dim, r, c)] = {
-                    "truth": label, "feat": fa, "feat_h9a_b1": fb1,
-                    "feat_h9c": fc,
-                    "reg_abs": rr["abs"] if rr else None,
-                    "reg_rel": rr["rel"] if rr else None}
-            sbs.append({"nodes": nodes, "luma": sb["luma"],
-                        "qindex": sb["qindex"]})
+                nd = {"truth": label, "feat": fa,
+                      "reg_abs": rr["abs"] if rr else None,
+                      "reg_rel": rr["rel"] if rr else None}
+                if need_extra:
+                    nd["feat_h9a_b1"] = featmod.node_features_h9a_b1(
+                        sb["luma"], dim, r, c, sb["qindex"], sb["ctx"][k],
+                        node_ctx)
+                    nd["feat_h9c"] = featmod.node_features_h9c(
+                        sb["luma"], dim, r, c, sb["qindex"], sb["ctx"][k])
+                nodes[(dim, r, c)] = nd
+            sbs.append({"nodes": nodes, "qindex": sb["qindex"],
+                        "luma": sb["luma"] if need_luma else None})
             took += 1
             if per_pkl and took >= per_pkl:
                 break
@@ -167,10 +176,17 @@ def collect(entries, per_pkl=None):
     return sbs, total_none_rd
 
 
-def score_student(sbs, bundle, device, feat_key, width, cols=None):
+def score_student(sbs, bundle, device, feat_key, width, cols=None,
+                  shuffle_cols=None, shuffle_seed=0):
     """`cols` selects an arbitrary column subset of the stored vector instead
     of the leading `width` prefix. The prefix form covers A (0..23) and A+B
-    (0..31) because those are contiguous; A+C is not, and needs the gather."""
+    (0..31) because those are contiguous; A+C is not, and needs the gather.
+
+    `shuffle_cols` names columns of the STORED vector whose values are permuted
+    across the scored nodes of each level, for the A_Bshuf permutation control.
+    A model trained on a decorrelated block has to be scored on a decorrelated
+    block: presenting the intact block to weights fitted against noise would
+    measure a distribution shift, not the value of the information."""
     if cols is not None:
         width = len(cols)
     nets = {}
@@ -188,6 +204,11 @@ def score_student(sbs, bundle, device, feat_key, width, cols=None):
                            is not None else
                            sbs[si]["nodes"][key][feat_key][:width])
                           for si, key in idx])
+        if shuffle_cols:
+            # Positions of the shuffled columns AFTER the gather.
+            sel = list(cols) if cols is not None else list(range(width))
+            pos = [sel.index(c) for c in shuffle_cols if c in sel]
+            feats = featmod.shuffle_columns(feats, pos, shuffle_seed + dim)
         with torch.no_grad():
             p = F.softmax(nets[dim](torch.tensor(
                 feats, dtype=torch.float32, device=device)), -1).cpu().numpy()
@@ -346,6 +367,11 @@ def main(argv):
     ap.add_argument("--rpp-seeds", nargs="+", type=int, default=[0, 1, 2],
                     help="seeds of the RPP ladder bundles to score, if "
                          "results/models/rpp_ladder/ exists")
+    ap.add_argument("--arms", nargs="+", default=None,
+                    help="score only these arms (default: all). Names as in "
+                         "DISPLAY_ORDER; RPP rungs expand to RPP_<rung>_s<seed>. "
+                         "Restricting to feat-only arms also slims the collect, "
+                         "which is what makes the full held-out set fit in RAM.")
     ap.add_argument("--out-dir",
                     default="/workspace/results/models/oracle_regret")
     args = ap.parse_args(argv)
@@ -356,7 +382,21 @@ def main(argv):
     _, held = datamod.split_entries(entries, args.seqs, train_seqs=[])
     datamod.assert_real_luma(held)
     print("pkls held-out: {} ({})".format(len(held), args.seqs), flush=True)
-    sbs, total_rd = collect(held, per_pkl=(args.per_pkl or None))
+    # Arms whose scorer reads ONLY nd["feat"] (or nothing at all). If the
+    # selection stays inside this set, the collect can drop the luma and the
+    # two extra feature vectors.
+    FEAT_ONLY = {"random", "variance", "pixels24", "H9a", "H9a_cw"}
+    FEAT_ONLY |= {"RPP_{}_s{}".format(r, s)
+                  for r in ("A", "A_B", "A_Bshuf", "A_C", "A_B_C")
+                  for s in range(8)}
+    sel = set(args.arms) if args.arms else None
+    slim = sel is not None and sel <= FEAT_ONLY
+    if sel is not None:
+        print("bracos: {}{}".format(", ".join(sorted(sel)),
+                                    " [coleta enxuta]" if slim else ""),
+              flush=True)
+    sbs, total_rd = collect(held, per_pkl=(args.per_pkl or None),
+                            need_luma=not slim, need_extra=not slim)
     n_dec = sum(1 for sb in sbs for k in sb["nodes"] if k[0] in (16, 32, 64))
     print("superblocos: {}, nós de decisão: {}, RD total: {:.3g}".format(
         len(sbs), n_dec, total_rd))
@@ -370,6 +410,8 @@ def main(argv):
     curves = {}
 
     def run(name, scorer, taus_override=None):
+        if sel is not None and name not in sel:
+            return
         try:
             scorer()
             curves[name] = sweep(sbs, taus_override or taus, total_rd)
@@ -388,16 +430,18 @@ def main(argv):
     # the policy and the cost model with the arms above.
     lad = os.path.join(args.models_dir, "rpp_ladder")
     if os.path.isdir(lad):
-        for rung in ("A", "A_B", "A_C", "A_B_C"):
+        for rung in ("A", "A_B", "A_Bshuf", "A_C", "A_B_C"):
             for seed in sorted(args.rpp_seeds):
                 tag = "{}_s{}".format(rung, seed)
                 if not os.path.exists(os.path.join(lad, tag, "students.pt")):
                     continue
                 run("RPP_" + tag,
-                    lambda tag=tag, rung=rung: score_student(
+                    lambda tag=tag, rung=rung, seed=seed: score_student(
                         sbs, load("rpp_ladder/{}/students.pt".format(tag)),
                         device, "feat", 0,
-                        cols=featmod.RPP_SUBSETS[rung]))
+                        cols=featmod.RPP_SUBSETS[rung],
+                        shuffle_cols=featmod.RPP_SHUFFLE_COLS.get(rung),
+                        shuffle_seed=773000 + seed * 1000))
     # Os dois ConvNeXt na MESMA vara: o teto de pixels como foi treinado (CE
     # sobre rotulos duros) e o retreinado com alvo de regret. Sem o primeiro
     # aqui, um ganho do segundo nao seria atribuivel ao objetivo.

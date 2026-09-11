@@ -70,6 +70,9 @@ def main(argv):
     p.add_argument("--out-dir",
                    default="/workspace/results/models/rpp_ladder")
     p.add_argument("--rungs", nargs="+", default=["A", "A_B", "A_C", "A_B_C"],
+                   # "A_Bshuf" is the permutation control for A_B; it is not in
+                   # the default ladder because it answers a different question
+                   # (is the A_B step information or width?) and is run on top.
                    choices=sorted(featmod.RPP_SUBSETS))
     p.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
     # Held fixed across every rung: this is the whole point of the experiment.
@@ -107,6 +110,7 @@ def main(argv):
             bundle = {"hidden": args.hidden, "students": {}, "norm": {},
                       "num_features": len(cols), "feature_set": "h9a",
                       "rung": rung, "cols": cols, "seed": seed,
+                      "shuffle_cols": featmod.RPP_SHUFFLE_COLS.get(rung),
                       "class_weight": False}
             for dim, _ in MODEL_LEVELS:
                 src = data[dim]
@@ -116,7 +120,17 @@ def main(argv):
                 # not depend on how many rungs ran before it.
                 torch.manual_seed(seed * 1000 + dim)
                 np.random.seed(seed * 1000 + dim)
-                rec = {"feat": src["feat"][:, cols], "truth": src["truth"],
+                # Permutation control (rung A_Bshuf): decorrelate the eight
+                # causal-context columns from the node they describe BEFORE
+                # slicing, keeping width, architecture and recipe untouched.
+                # Seeded per (rung, seed, level) so the permutation is
+                # reproducible and never repeats across levels.
+                base = src["feat"]
+                shuf = featmod.RPP_SHUFFLE_COLS.get(rung)
+                if shuf:
+                    base = featmod.shuffle_columns(
+                        base, shuf, 991000 + seed * 1000 + dim)
+                rec = {"feat": base[:, cols], "truth": src["truth"],
                        "teacher": np.full((len(src["truth"]), 3), 1.0 / 3.0,
                                           dtype=np.float32)}
                 net, norm = train_student(rec, args.hidden, device,
