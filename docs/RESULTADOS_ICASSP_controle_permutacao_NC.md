@@ -145,3 +145,26 @@ título passa a ser sustentada por um controle, e não apenas pelo casamento de 
 Seção III-B ganha o parágrafo do controle; Tabela I ganha a linha `BC+shuffled NC (32 features)`;
 Seção V ganha o parágrafo de leitura do controle; o fecho do parágrafo do CSP deixa de ser a prova
 contra dimensionalidade e passa a corroboração. O `paper.tex` original **não** foi tocado.
+
+## 9. Robustez a deixar-uma-semente-de-fora
+
+Levantada a hipótese de que a semente 1 do controle seria fora da curva (40,77 em 25%, contra
+53,21 e 49,99 das outras duas), a verificação mostra que **ela é a melhor semente nos três
+braços**: BC 49,10 contra 57,22 e 54,05; controle 40,77 contra 53,21 e 49,99; BC+NC 30,02 contra
+33,86 e 36,38. Não é anomalia do controle, e sim uma inicialização que produz modelos melhores
+neste arranjo. Com n=3 tampouco há critério que a classifique como outlier.
+
+Efeito de removê-la, em 25% de redução:
+
+| cenário | BC+NC sobre o controle | controle contra BC |
+|---|--:|--:|
+| todas as sementes | 30,4% | −10,2% |
+| sem a s1 em **todos** os braços | 31,9% | −7,2% |
+| sem a s1 **só no controle** (enviesado) | 35,2% | −3,5% |
+
+A remoção consistente praticamente não move nada, e o controle segue abaixo do BC. A remoção
+apenas no controle melhora os números, mas retira a melhor semente de um braço mantendo-a nos
+outros dois — comparação enviesada e trivialmente reprodutível por quem baixar os artefatos.
+
+Conclusão: a ordenação BC+NC < controle ~ BC sobrevive ao *leave-one-seed-out*, o que é um
+resultado de robustez mais forte que a média sobre três sementes isolada.
