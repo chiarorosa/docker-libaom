@@ -159,6 +159,30 @@ The main result is obtained by adding causal-neighbor partition context to the b
 
 The permutation control indicates that this gain follows from the information carried by the neighbor features, and not from the larger input vector. BC+shuffled NC remains at the level of BC over the evaluated range, with overlapping seed ranges at every operating point, and BC+NC improves over it by 57.4\% at 10\% and by 51.8\% at 20\% partition-search reduction. At 25\%, BC+shuffled NC reaches a penalty of 46, against 50 for BC and 27 for BC+NC, and the separation holds across random initializations: the best BC+shuffled NC seed reaches 39, above the 31 of the worst BC+NC seed, so the two configurations do not overlap despite sharing the same input width and the same architecture. Therefore, the eight neighbor features contribute through their association with the current node, rather than through the additional input dimensions they occupy.
 
+\begin{table}[t]
+\caption{Improvement of BC+NC over BC (\%) at equal partition-search reduction, by quantization point and by test sequence. Dashes mark operating points that the subset does not reach.}
+\label{tab:slices}
+\centering
+\setlength{\tabcolsep}{3.6pt}
+\begin{tabular}{lrrrrr}
+\hline
+\textbf{Subset} & \textbf{10\%} & \textbf{15\%} & \textbf{20\%}
+& \textbf{25\%} & \textbf{30\%} \\
+\hline
+\texttt{cq-level} 20 & $-7.7$ & $-4.1$ & --- & --- & --- \\
+\texttt{cq-level} 32 & 66.8 & 72.1 & 74.5 & 61.3 & 37.6 \\
+\texttt{cq-level} 43 & 9.5 & 31.9 & 44.0 & 56.2 & 59.0 \\
+\texttt{cq-level} 55 & 43.1 & 58.7 & 56.7 & 54.7 & 50.6 \\
+\hline
+Jockey & 44.6 & 56.2 & 53.1 & 55.4 & 25.4 \\
+RaceNight & 60.5 & 58.7 & 72.1 & 63.3 & 53.4 \\
+RiverBank & 49.9 & 49.5 & 19.0 & $-8.9$ & --- \\
+\hline
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:slices} reports the same comparison restricted to each quantization point and to each test sequence, obtained by replaying the recorded search over the corresponding subset. The improvement of BC+NC over BC is observed in all three test sequences and in all three random seeds up to 20\% partition-search reduction, which indicates that the gain is not dominated by a single content, and at three of the four quantization points over the whole evaluated range. Two exceptions are visible. At the lowest quantization point BC+NC does not improve over BC, and this is also the subset in which early termination is least applicable, since it does not reach 25\% partition-search reduction; the benefit therefore concentrates where there is search to remove. In RiverBank the improvement decreases with the amount of reduction and the two configurations cross between 20\% and 25\%, which may be attributed to the fine spatial detail that covers most of the frame in this sequence, leaving few nodes for which early termination is safe.
+
 In contrast, the coding-state and position features (CSP) do not provide
 a consistent improvement under the evaluated setup. At 25\% partition-search reduction, BC+CSP increases the penalty from 50 to 78, while adding CSP to BC+NC increases it from 27 to 34. Similar behavior is observed over the higher reductions. This behavior is consistent with the permutation control, since adding input dimensions is not by itself sufficient to reduce the penalty.
 
