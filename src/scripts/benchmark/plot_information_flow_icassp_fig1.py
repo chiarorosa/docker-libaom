@@ -77,8 +77,13 @@ matplotlib.rcParams.update({
 
 DPI = 400
 W_PT = 86.0 / 25.4 * 72.0          # 243,78 pt — \columnwidth do spconf.sty
-H_PT = 213.0
-COL_W_IN, FIG_H_IN = W_PT / 72.0, H_PT / 72.0
+H_PT = 213.0    # altura do CONTEUDO, do topo do primeiro simbolo a base do ultimo
+# Respiro vertical. Sem ele o traco dos terminadores, que o matplotlib centra no
+# caminho, perde metade da sua largura no limite do eixo e a figura aparece
+# cortada em cima e embaixo no PDF da pagina.
+MARG_V = 4.0
+H_FIG = H_PT + 2 * MARG_V
+COL_W_IN, FIG_H_IN = W_PT / 72.0, H_FIG / 72.0
 
 PT = 6.8        # corpo dos rotulos de simbolo
 PT_MONO = 6.0   # tokens em Courier, mais largos que a serif no mesmo corpo
@@ -173,7 +178,7 @@ def draw(out_path):
     fig.patch.set_facecolor(FUNDO)
     ax = fig.add_axes([0, 0, 1, 1])
     ax.set_xlim(0, W_PT)
-    ax.set_ylim(0, H_PT)
+    ax.set_ylim(0, H_FIG)
     ax.axis("off")
     fig.canvas.draw()
     rend = fig.canvas.get_renderer()
@@ -195,7 +200,7 @@ def draw(out_path):
     def Y(t):
         """'Distancia do topo' -> ordenada, para que a leitura acima seja de
         cima para baixo, como o desenho."""
-        return H_PT - t
+        return H_FIG - MARG_V - t
 
     def rotular(cx, cy, linhas, util, nome):
         # `util` pode ser um numero (simbolos de lado reto) ou uma funcao da
@@ -228,11 +233,15 @@ def draw(out_path):
             ax.add_patch(Rectangle((x, y0), w, h, facecolor=face,
                                    edgecolor=TINTA, linewidth=lw, zorder=3))
         elif tipo == "terminador":
-            r = h / 2 - 0.8
-            ax.add_patch(FancyBboxPatch((x + r, y0 + 0.8), w - 2 * r, h - 1.6,
-                                        boxstyle="round,pad=%.2f" % r,
-                                        facecolor=face, edgecolor=TINTA,
-                                        linewidth=lw, zorder=3))
+            # pad=0 e rounding_size: com "round,pad=r" o matplotlib INFLA a
+            # caixa em r para cada lado, e o terminador saia com quase o dobro
+            # da altura pedida, estourando o limite do eixo em cima e embaixo.
+            r = h / 2.0
+            ax.add_patch(FancyBboxPatch(
+                (x, y0), w, h,
+                boxstyle="round,pad=0,rounding_size=%.2f" % r,
+                facecolor=face, edgecolor=TINTA, linewidth=lw,
+                mutation_aspect=1.0, zorder=3))
             util = w - 2 * r - PAD
         elif tipo == "entrada":     # paralelogramo
             d = 8.0
@@ -301,9 +310,45 @@ def draw(out_path):
     print("  ajuste de texto: todas as linhas cabem nos seus simbolos")
 
     fig.savefig(out_path, facecolor=FUNDO)
-    fig.savefig(out_path.replace(".pdf", ".png"), facecolor=FUNDO, dpi=DPI)
+    png = out_path.replace(".pdf", ".png")
+    fig.savefig(png, facecolor=FUNDO, dpi=DPI)
     plt.close(fig)
+    conferir_bordas(png)
     print("  gravado: %s  (%.3f x %.2f in)" % (out_path, COL_W_IN, FIG_H_IN))
+
+
+def conferir_bordas(png, minimo_pt=1.0):
+    """Trava de sangria: nenhuma tinta pode encostar na borda da figura.
+
+    Existe porque um simbolo pode estourar o limite do eixo sem que nada falhe
+    -- foi o que aconteceu com os terminadores, que o boxstyle "round,pad=r"
+    INFLA em r para cada lado, saindo com quase o dobro da altura pedida e
+    aparecendo cortados no PDF da pagina. A conferencia e feita no bitmap, que e
+    a unica forma de ver o resultado e nao a intencao."""
+    try:
+        from PIL import Image
+    except ImportError:
+        print("  aviso: PIL ausente, trava de sangria nao rodou")
+        return
+    import numpy as np
+    a = np.array(Image.open(png).convert("L"))
+    tinta = a < 200
+    if not tinta.any():
+        raise SystemExit("Figura 1 saiu em branco.")
+    lin = np.where(tinta.any(axis=1))[0]
+    col = np.where(tinta.any(axis=0))[0]
+    ppp = DPI / 72.0
+    bordas = {"topo": lin[0] / ppp, "base": (a.shape[0] - 1 - lin[-1]) / ppp,
+              "esquerda": col[0] / ppp, "direita": (a.shape[1] - 1 - col[-1]) / ppp}
+    curtas = {k: v for k, v in bordas.items() if v < minimo_pt}
+    if curtas:
+        sys.stderr.write(
+            "Tinta encosta na borda da figura: "
+            + ", ".join("%s %.1f pt" % (k, v) for k, v in sorted(curtas.items()))
+            + chr(10) + "Aumente MARG_V ou recue a raia; o PDF da pagina vai cortar." + chr(10))
+        raise SystemExit(1)
+    print("  trava de sangria: %s" % ", ".join(
+        "%s %.1f pt" % (k, bordas[k]) for k in ("topo", "base", "esquerda", "direita")))
 
 
 def main(argv):
