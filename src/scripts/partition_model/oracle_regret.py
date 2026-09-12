@@ -147,6 +147,7 @@ def collect(entries, per_pkl=None, need_luma=True, need_extra=True):
             if not sb.get("has_rd"):
                 raise SystemExit("{}: sem contexto RD".format(e["path"]))
             reg = node_regret_full(sb["members"], sb["ctx"])
+            sb_none_rd = 0.0
             node_ctx = {(dim, r, c): ctx for (dim, r, c, _luma, _label), ctx
                        in zip(sb["members"], sb["ctx"])}
             nodes = {}
@@ -156,6 +157,7 @@ def collect(entries, per_pkl=None, need_luma=True, need_extra=True):
                 rr = reg.get((dim, r, c))
                 if rr:
                     total_none_rd += rr["none_rd"]
+                    sb_none_rd += rr["none_rd"]
                 nd = {"truth": label, "feat": fa,
                       "reg_abs": rr["abs"] if rr else None,
                       "reg_rel": rr["rel"] if rr else None}
@@ -166,8 +168,14 @@ def collect(entries, per_pkl=None, need_luma=True, need_extra=True):
                     nd["feat_h9c"] = featmod.node_features_h9c(
                         sb["luma"], dim, r, c, sb["qindex"], sb["ctx"][k])
                 nodes[(dim, r, c)] = nd
+            # Procedencia por superbloco: permite recortar a vara por sequencia
+            # e por ponto de quantizacao SEM recoletar, ja que o replay da arvore
+            # podada e independente entre superblocos. `none_rd` e o denominador
+            # da normalizacao restrito a este superbloco.
             sbs.append({"nodes": nodes, "qindex": sb["qindex"],
-                        "luma": sb["luma"] if need_luma else None})
+                        "luma": sb["luma"] if need_luma else None,
+                        "src": os.path.basename(e["path"]),
+                        "none_rd": sb_none_rd})
             took += 1
             if per_pkl and took >= per_pkl:
                 break
