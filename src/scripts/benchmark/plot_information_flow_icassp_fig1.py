@@ -14,28 +14,33 @@ Fluxograma classico, na convencao de livro-texto:
 
 Line art em preto sobre branco, sem matiz: a unica enfase e a decisao estudada,
 marcada por preenchimento leve e traco mais pesado -- que e o que a legenda
-promete ao dizer "highlighting the pre-search early-termination point". Assim a
-figura sobrevive a impressao monocromatica sem variante separada.
+promete ao dizer "highlighting the pre-search early-termination point".
 
-Duas economias deliberadas de texto:
+DUAS RAIAS, e nao uma coluna unica. O ramo "No" desce pela raia da direita com
+as quatro etapas de avaliacao; o ramo "Yes" desce pela da esquerda com o seu
+unico desfecho. A altura da figura passa a ser o MAIOR dos dois percursos, e nao
+a soma: empilhar tudo numa coluna alongava o desenho sem acrescentar leitura.
+As duas raias se reencontram no terminador final.
 
-  O desfecho do ramo "Yes" diz apenas "Select PARTITION_NONE". Que os candidatos
-  restantes e os seus descendentes sao pulados NAO precisa ser escrito: o proprio
-  desvio, que salta todas as caixas de avaliacao, e a afirmacao. Um fluxograma
-  que repete em texto o que a seta ja diz esta dizendo duas vezes.
+Tres economias de texto:
 
-  As anotacoes de custo sao "J_none available" e "J* available", sem dizer QUANDO:
-  o quando e a altura em que a anotacao esta presa. A da direita so aparece na
-  ultima caixa, que e o que significa "only after the full search".
+  O rotulo lateral flutuante "before the current-node RD search" diz QUANDO a
+  entrada existe; dentro do paralelogramo ficam so os itens. Assim o simbolo
+  carrega dados e a nota carrega tempo, sem que um repita o outro.
+
+  O desfecho do ramo "Yes" diz apenas "Select NONE". Que os candidatos restantes
+  e os seus descendentes sao pulados NAO precisa ser escrito: o proprio desvio,
+  que salta as quatro caixas de avaliacao, e a afirmacao.
+
+  As anotacoes de custo dizem so o simbolo e "available": o quando e a altura em
+  que cada uma esta presa.
+
+Nomes curtos de particao (NONE, SPLIT) seguem a convencao declarada na Secao II
+do artigo, que dispensa o prefixo PARTITION_.
 
 Toda linha e MEDIDA no renderizador e conferida contra a largura util do seu
-simbolo; um rotulo que nao caiba PARA a execucao em vez de gerar um PDF com
-texto vazando. E o que impede que mexer no texto sem reconferir a geometria
-passe despercebido.
-
-Diagrama ESTRUTURAL: nao le artefato numerico, declara em FLUXO os fatos que
-desenha, e a trava `conferir()` reconfere cada expressao contra o .tex do artigo.
-A terminologia do artigo e normativa.
+simbolo -- no losango, contra a largura na altura daquela linha. Um rotulo que
+nao caiba PARA a execucao em vez de gerar um PDF com texto vazando.
 
 Uso (dentro do conteiner):
     build/venv-ml/bin/python \\
@@ -72,66 +77,65 @@ matplotlib.rcParams.update({
 
 DPI = 400
 W_PT = 86.0 / 25.4 * 72.0          # 243,78 pt — \columnwidth do spconf.sty
-H_PT = 250.0
+H_PT = 213.0
 COL_W_IN, FIG_H_IN = W_PT / 72.0, H_PT / 72.0
 
 PT = 6.8        # corpo dos rotulos de simbolo
 PT_MONO = 6.0   # tokens em Courier, mais largos que a serif no mesmo corpo
-PT_NOTA = 6.0   # ramos "Yes"/"No" e anotacoes de custo
+PT_NOTA = 6.0   # ramos, rotulo lateral e anotacoes de custo
 LH = 7.8        # entrelinha dentro de um simbolo
 PAD = 4.0       # respiro horizontal minimo dentro de um simbolo
 
 TINTA = "#0b0b0b"
 FUNDO = "#ffffff"
-REALCE = "#e8e6df"      # preenchimento do losango da decisao estudada
+REALCE = "#e8e6df"
 NOTA = "#3f3e3b"
 LW, LW_REALCE = 0.6, 1.1
 
-# --- as tres raias verticais -------------------------------------------------
-# Esquerda: o desfecho do ramo "Yes". Centro: o fluxo principal. Direita: as
-# anotacoes de custo. Separa-las e o que evita cruzamento de conectores.
-X_ESQ, W_ESQ = 3.0, 79.0
-X_CEN, W_CEN = 90.0, 100.0
-X_DIR = 194.0
-CX_ESQ, CX_CEN = X_ESQ + W_ESQ / 2, X_CEN + W_CEN / 2
+# --- as duas raias -----------------------------------------------------------
+X_ESQ, W_ESQ = 3.0, 112.0          # entrada, decisao e o desfecho do "Yes"
+X_DIR, W_DIR = 127.0, 114.0        # o percurso "No": as quatro avaliacoes
+CX_ESQ, CX_DIR = X_ESQ + W_ESQ / 2, X_DIR + W_DIR / 2
+
+S, M, I = False, True, "it"        # serif, monoespacado, italico
 
 # --- o fluxo desenhado, com procedencia --------------------------------------
 # Ordem de avaliacao dentro do no e instante de cada custo: Secao II. Contagem
-# de candidatos e representacao de PARTITION_SPLIT pela avaliacao recursiva dos
-# filhos: Secao IV-A. Uma linha e uma lista de trechos (texto, monoespacado?).
-S, M = False, True          # serif, monoespacado
-FLUXO = [
-    dict(tipo="terminador", t=2.0, h=13.0,
+# de candidatos e representacao de SPLIT pela avaliacao recursiva dos filhos:
+# Secao IV-A. Uma linha e uma lista de trechos (texto, estilo).
+RAIA_ESQ = [
+    dict(tipo="terminador", t=2.0, h=13.0, chave="inicio",
          linhas=[[("Node of the partition tree", S)]]),
-    dict(tipo="entrada", t=25.0, h=36.0,
-         linhas=[[("Pre-search information:", S)],
-                 [("source/block information,", S)],
+    dict(tipo="entrada", t=26.0, h=30.0, chave="entrada",
+         linhas=[[("source/block information,", S)],
                  [("coding parameters,", S)],
                  [("causal-neighbor partitions", S)]]),
-    dict(tipo="decisao", t=73.0, h=38.0, realce=True,
-         linhas=[[("Terminate as", S)], [("PARTITION_NONE", M), ("?", S)]]),
-    dict(tipo="processo", t=123.0, h=14.0, chave="none",
-         linhas=[[("Evaluate ", S), ("PARTITION_NONE", M)]]),
-    dict(tipo="processo", t=147.0, h=21.0,
-         linhas=[[("Evaluate ", S), ("PARTITION_SPLIT", M)],
+    dict(tipo="decisao", t=69.0, h=38.0, realce=True, chave="decisao",
+         linhas=[[("Early decision:", S)],
+                 [("terminate as ", S), ("NONE", M), ("?", S)]]),
+    dict(tipo="processo", t=124.0, h=14.0, chave="yes",
+         linhas=[[("Select ", S), ("NONE", M)]]),
+]
+RAIA_DIR = [
+    dict(tipo="processo", t=77.5, h=21.0,   # centro alinhado ao do losango
+         linhas=[[("Evaluate ", S), ("NONE", M)],
+                 [(r"$J_{\mathrm{none}}$ available", I)]]),
+    dict(tipo="processo", t=107.5, h=21.0,
+         linhas=[[("Evaluate ", S), ("SPLIT", M)],
                  [("and its recursive descendants", S)]]),
-    dict(tipo="processo", t=178.0, h=21.0,
+    dict(tipo="processo", t=137.5, h=21.0,
          linhas=[[("Evaluate the remaining", S)],
                  [("partition candidates", S)]]),
-    dict(tipo="processo", t=209.0, h=14.0, chave="best",
-         linhas=[[("Select the best partition", S)]]),
-    dict(tipo="terminador", t=233.0, h=13.0,
-         linhas=[[("Node decided", S)]]),
+    dict(tipo="processo", t=167.5, h=21.0,
+         linhas=[[("Select the best partition", S)],
+                 [(r"$J^{*}$ available", I)]]),
 ]
+FINAL = dict(tipo="terminador", t=196.0, h=13.0, x=45.0, w=155.0,
+             linhas=[[("Node decided", S)]])
 
-# Desfecho do ramo "Yes", na raia da esquerda, na altura da ultima etapa.
-RAMO_YES = dict(t=209.0, h=14.0,
-                linhas=[[("Select ", S), ("PARTITION_NONE", M)]])
-
-# Anotacoes de custo, na raia da direita. `alvo` e a chave da caixa de onde
-# parte a linha tracejada; a altura e que diz "quando".
-NOTAS = [dict(alvo="none", texto=r"$J_{\mathrm{none}}$ available"),
-         dict(alvo="best", texto=r"$J^{*}$ available")]
+# Rotulo lateral flutuante: diz QUANDO a entrada existe, no espaco livre a
+# direita do paralelogramo, acima da primeira etapa da raia da direita.
+LATERAL = dict(t=41.0, linhas=["before the", "current-node RD search"])
 
 
 def conferir(tex_path):
@@ -149,11 +153,12 @@ def conferir(tex_path):
     plano = re.sub(r"\\[a-zA-Z]+", " ", plano)
     plano = re.sub(r"[{}$]", "", plano)
     plano = re.sub(r"\s+", " ", plano).lower()
-    exigidos = ["node of the partition tree", "pre-search",
+    exigidos = ["node of the partition tree", "early decision",
+                "before the current-node rd search",
                 "source/block information", "coding parameters",
-                "causal-neighbor", "terminat", "partition_none",
-                "partition_split", "recursive descendants",
-                "partition candidates", "best partition", "j_none", "j^*"]
+                "causal-neighbor", "terminated as none", "cost of split",
+                "recursive descendants", "partition candidates",
+                "best partition", "j_none", "j^*"]
     faltam = [e for e in exigidos if e not in plano]
     if faltam:
         sys.stderr.write("Figura 1 usa termo ausente do artigo:\n  "
@@ -174,50 +179,51 @@ def draw(out_path):
     rend = fig.canvas.get_renderer()
     estouros = []
 
-    def medir(s, size, mono):
-        """Largura de um trecho, em pontos, medida no renderizador."""
-        t = ax.text(0, 0, s, fontsize=size,
-                    family="monospace" if mono else "serif")
+    def kw(estilo):
+        if estilo is M:
+            return dict(fontsize=PT_MONO, family="monospace")
+        if estilo == I:
+            return dict(fontsize=PT_NOTA, family="serif", style="italic")
+        return dict(fontsize=PT, family="serif")
+
+    def medir(s, estilo):
+        t = ax.text(0, 0, s, **kw(estilo))
         w = t.get_window_extent(renderer=rend).width / DPI * 72.0
         t.remove()
         return w
 
     def Y(t):
-        """'Distancia do topo' -> ordenada, para que a leitura do FLUXO acima
-        seja de cima para baixo, como o desenho."""
+        """'Distancia do topo' -> ordenada, para que a leitura acima seja de
+        cima para baixo, como o desenho."""
         return H_PT - t
 
     def rotular(cx, cy, linhas, util, nome):
         # `util` pode ser um numero (simbolos de lado reto) ou uma funcao da
         # distancia ao centro vertical: num losango a largura disponivel encolhe
-        # a medida que a linha se afasta da meia altura, e conferir pela largura
-        # central reprovaria rotulos que cabem.
-        """Compoe as linhas centradas no conjunto. Uma linha pode misturar
-        serif e Courier; os trechos sao medidos e assentados em sequencia, de
-        modo que a LINHA fique centrada -- e nao a emenda entre os trechos."""
+        # conforme a linha se afasta da meia altura.
         n = len(linhas)
         for i, trechos in enumerate(linhas):
             y = cy + (n - 1) * LH / 2 - i * LH
-            larguras = [medir(s, PT_MONO if mono else PT, mono)
-                        for s, mono in trechos]
+            larguras = [medir(s, e) for s, e in trechos]
             total = sum(larguras)
             disp = util(y - cy) if callable(util) else util
             if total > disp:
-                estouros.append("  %-28s %.1f pt em %.1f pt uteis: %s"
+                estouros.append("  %-26s %.1f pt em %.1f pt uteis: %s"
                                 % (nome, total, disp,
                                    "".join(s for s, _ in trechos)))
             x = cx - total / 2
-            for (s, mono), w in zip(trechos, larguras):
-                ax.text(x, y, s, fontsize=PT_MONO if mono else PT, color=TINTA,
-                        ha="left", va="center",
-                        family="monospace" if mono else "serif", zorder=5)
+            for (s, e), w in zip(trechos, larguras):
+                ax.text(x, y, s, color=TINTA, ha="left", va="center",
+                        zorder=5, **kw(e))
                 x += w
 
-    def simbolo(tipo, x, w, t, h, linhas, realce=False):
+    def simbolo(item, x, w):
+        t, h = item["t"], item["h"]
         y0, cy, cx = Y(t + h), Y(t + h / 2), x + w / 2
+        realce = item.get("realce", False)
         lw = LW_REALCE if realce else LW
         face = REALCE if realce else FUNDO
-        util = w - 2 * PAD
+        tipo, util = item["tipo"], w - 2 * PAD
         if tipo == "processo":
             ax.add_patch(Rectangle((x, y0), w, h, facecolor=face,
                                    edgecolor=TINTA, linewidth=lw, zorder=3))
@@ -240,7 +246,7 @@ def draw(out_path):
                                  closed=True, facecolor=face, edgecolor=TINTA,
                                  linewidth=lw, zorder=3))
             util = lambda dy, w=w, h=h: w * (1.0 - abs(dy) / (h / 2.0)) - 2 * PAD
-        rotular(cx, cy, linhas, util, linhas[0][0][0][:26])
+        rotular(cx, cy, item["linhas"], util, item["linhas"][0][0][0][:24])
         return dict(x=x, w=w, cx=cx, cy=cy, topo=Y(t), base=Y(t + h))
 
     def seta(p0, p1, ponta=True):
@@ -253,41 +259,43 @@ def draw(out_path):
         seta(p0, meio, ponta=False)
         seta(meio, p1)
 
-    # ---------------- fluxo principal ---------------------------------------
-    por_chave, caixas = {}, []
-    for item in FLUXO:
-        c = simbolo(item["tipo"], X_CEN, W_CEN, item["t"], item["h"],
-                    item["linhas"], item.get("realce", False))
-        caixas.append(c)
-        if "chave" in item:
-            por_chave[item["chave"]] = c
-    for a, b in zip(caixas, caixas[1:]):
-        seta((CX_CEN, a["base"]), (CX_CEN, b["topo"]))
+    # ---------------- raia da esquerda --------------------------------------
+    esq = {}
+    for item in RAIA_ESQ:
+        esq[item["chave"]] = simbolo(item, X_ESQ, W_ESQ)
+    seta((CX_ESQ, esq["inicio"]["base"]), (CX_ESQ, esq["entrada"]["topo"]))
+    seta((CX_ESQ, esq["entrada"]["base"]), (CX_ESQ, esq["decisao"]["topo"]))
+    seta((CX_ESQ, esq["decisao"]["base"]), (CX_ESQ, esq["yes"]["topo"]))
+    ax.text(CX_ESQ + 2.5, (esq["decisao"]["base"] + esq["yes"]["topo"]) / 2,
+            "Yes", fontsize=PT_NOTA, color=NOTA, ha="left", va="center",
+            zorder=5)
 
-    dec, fim = caixas[2], caixas[-1]
-    ax.text(CX_CEN + 2.5, (dec["base"] + caixas[3]["topo"]) / 2, "No",
-            fontsize=PT_NOTA, color=NOTA, ha="left", va="center", zorder=5)
+    # ---------------- raia da direita ---------------------------------------
+    dir_ = [simbolo(item, X_DIR, W_DIR) for item in RAIA_DIR]
+    for a, b in zip(dir_, dir_[1:]):
+        seta((CX_DIR, a["base"]), (CX_DIR, b["topo"]))
+    # ramo "No": do vertice direito do losango para a primeira avaliacao
+    dec = esq["decisao"]
+    seta((dec["x"] + dec["w"], dec["cy"]), (X_DIR - 0.4, dir_[0]["cy"]))
+    ax.text((dec["x"] + dec["w"] + X_DIR) / 2, dec["cy"] + 2.0, "No",
+            fontsize=PT_NOTA, color=NOTA, ha="center", va="bottom", zorder=5)
 
-    # ---------------- ramo "Yes" --------------------------------------------
-    yes = simbolo("processo", X_ESQ, W_ESQ, RAMO_YES["t"], RAMO_YES["h"],
-                  RAMO_YES["linhas"])
-    cotovelo((dec["x"], dec["cy"]), (CX_ESQ, dec["cy"]), (CX_ESQ, yes["topo"]))
-    ax.text(dec["x"] - 2.5, dec["cy"] + 2.5, "Yes", fontsize=PT_NOTA,
-            color=NOTA, ha="right", va="bottom", zorder=5)
-    cotovelo((CX_ESQ, yes["base"]), (CX_ESQ, fim["cy"]),
-             (X_CEN - 0.4, fim["cy"]))
+    # ---------------- reencontro no terminador final ------------------------
+    fim = simbolo(FINAL, FINAL["x"], FINAL["w"])
+    seta((CX_ESQ, esq["yes"]["base"]), (CX_ESQ, fim["topo"]))
+    seta((CX_DIR, dir_[-1]["base"]), (CX_DIR, fim["topo"]))
 
-    # ---------------- anotacoes de custo ------------------------------------
-    for nota in NOTAS:
-        alvo = por_chave[nota["alvo"]]
-        ax.plot([alvo["x"] + alvo["w"], X_DIR - 2.0], [alvo["cy"]] * 2,
-                color=NOTA, linewidth=0.45, linestyle=(0, (2.2, 1.6)), zorder=2)
-        ax.text(X_DIR, alvo["cy"], nota["texto"], fontsize=PT_NOTA, color=NOTA,
-                ha="left", va="center", zorder=5)
+    # ---------------- rotulo lateral flutuante ------------------------------
+    ent = esq["entrada"]
+    ax.plot([ent["x"] + ent["w"] - 6.0, X_DIR + 4.0], [ent["cy"]] * 2,
+            color=NOTA, linewidth=0.45, linestyle=(0, (2.2, 1.6)), zorder=2)
+    for i, s in enumerate(LATERAL["linhas"]):
+        ax.text(X_DIR + 6.0, ent["cy"] + (LH / 2 if i == 0 else -LH / 2), s,
+                fontsize=PT_NOTA, color=NOTA, ha="left", va="center",
+                style="italic", zorder=5)
 
     if estouros:
-        sys.stderr.write("Rotulo nao cabe no simbolo:\n"
-                         + "\n".join(estouros)
+        sys.stderr.write("Rotulo nao cabe no simbolo:\n" + "\n".join(estouros)
                          + "\nEncurte o texto ou alargue a raia.\n")
         raise SystemExit(1)
     print("  ajuste de texto: todas as linhas cabem nos seus simbolos")
