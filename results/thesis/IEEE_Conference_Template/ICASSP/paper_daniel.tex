@@ -15,7 +15,7 @@
 \maketitle
 
 \begin{abstract}
-AV1 intra-frame encoding requires an expensive recursive search over multiple block partitioning alternatives. Fast methods reduce this cost by predicting when the search can be terminated early, but existing approaches usually change both the input information and the pruning configuration, making it difficult to isolate the contribution of the information used for the decision. This paper presents a controlled offline framework for evaluating different feature sets for early AV1 intra partition decisions. From an exhaustive reference encoding, feature sets are compared using the same early-termination rule and at equal partition-search reduction. Experiments on 4K UVG sequences show that compact block-content features substantially outperform block variance and a pixel-based ConvNeXt model. Adding the previously coded partition information of causal neighbors further reduces the normalized RD-cost penalty by 37.7\% at 25\% partition-search reduction. The results indicate that neighboring partition decisions provide useful contextual information beyond the content of the current block for early AV1 partitioning.
+AV1 intra-frame encoding requires an expensive recursive search over multiple block partitioning alternatives. Fast methods reduce this cost by predicting when the search can be terminated early, but existing approaches usually change both the input information and the pruning configuration, making it difficult to isolate the contribution of the information used for the decision. This paper presents a controlled offline framework for evaluating different feature sets for early AV1 intra partition decisions. From an exhaustive reference encoding, feature sets are compared using the same early-termination rule and at equal partition-search reduction. Experiments on 4K UVG sequences show that compact block-content features substantially outperform block variance and a pixel-based ConvNeXt model. Adding the previously coded partition information of causal neighbors further reduces the normalized RD-cost penalty by 46.0\% at 25\% partition-search reduction. The results indicate that neighboring partition decisions provide useful contextual information beyond the content of the current block for early AV1 partitioning.
 \end{abstract}
 
 \begin{keywords}
@@ -34,7 +34,7 @@ Several methods have been proposed to reduce the computational cost of modern vi
 
 However, existing approaches are generally designed and evaluated as complete fast-encoding methods, jointly defining the input features, prediction model, decision rule, and resulting amount of search reduction. Their reported RD--complexity trade-offs therefore characterize the performance of the complete method, but do not directly isolate the contribution of the information supplied to the decision mechanism. Consequently, when one method produces a better trade-off than another, it is difficult to determine whether the improvement results from more informative input data or from differences in the prediction and pruning configurations. Identifying which information is most useful for an early partition decision is nevertheless important for designing efficient decision mechanisms, particularly when such information must be available before expensive RD evaluations are performed.
 
-This paper addresses this problem through a controlled offline framework for evaluating different feature sets for early AV1 intra partition decisions. We focus on the earliest partition-search decision, in which a node can be terminated as \texttt{PARTITION\_NONE} before evaluating the remaining partition alternatives and their descendants. Starting from an exhaustive AV1 reference encoding, different feature sets are evaluated using the same early-termination rule and compared at equal partition-search reduction. The evaluated information includes block variance, block-content features, previously coded partition information from causal neighboring blocks, and raw luminance samples processed by a ConvNeXt model. Experiments on 4K UVG sequences show that the block-content features substantially reduce the normalized RD-cost penalty compared with block variance and the pixel-based model. More importantly, adding the partition information of causal neighbors reduces the normalized RD-cost penalty by 37.7\% over the compact descriptors alone at 25\% partition-search reduction. These results indicate that previously coded partition decisions provide useful contextual information for identifying blocks whose partition search can be terminated early.
+This paper addresses this problem through a controlled offline framework for evaluating different feature sets for early AV1 intra partition decisions. We focus on the earliest partition-search decision, in which a node can be terminated as \texttt{PARTITION\_NONE} before evaluating the remaining partition alternatives and their descendants. Starting from an exhaustive AV1 reference encoding, different feature sets are evaluated using the same early-termination rule and compared at equal partition-search reduction. The evaluated information includes block variance, block-content features, previously coded partition information from causal neighboring blocks, and raw luminance samples processed by a ConvNeXt model. Experiments on 4K UVG sequences show that the block-content features substantially reduce the normalized RD-cost penalty compared with block variance and the pixel-based model. More importantly, adding the partition information of causal neighbors reduces the normalized RD-cost penalty by 46.0\% over the compact descriptors alone at 25\% partition-search reduction. These results indicate that previously coded partition decisions provide useful contextual information for identifying blocks whose partition search can be terminated early.
 
 \section{AV1 Intra Partition Search and Early-Termination Point}
 
@@ -109,19 +109,19 @@ Reference partition decisions and RD costs were collected from libaom v3.10.0~\c
 
 Experiments use the 16 sequences of the UVG dataset~\cite{mercat2020uvgdataset}, at $3840\times2160$ resolution, 8-bit depth, and 4:2:0 chroma subsampling. Each sequence was encoded at four quantization points (\texttt{cq-level} 20, 32, 43, and 55), using five frames uniformly sampled along the sequence. The resulting dataset contains 26.98 million logged partition-tree nodes, of which 10.07 million correspond to modeled decision nodes.
 
-The dataset was split at the sequence level, using ten sequences for training, three for validation, and three for testing, with no sequence shared across subsets. The six validation and test sequences jointly contain 226,447 $64\times64$ units and 3,808,703 decision nodes and are used for the results reported in Section~5.
+The dataset was split at the sequence level, using ten sequences for training, three for validation, and three for testing, with no sequence shared across subsets. The three test sequences contain 111,426 $64\times64$ units and 1,816,393 decision nodes and are used for the results reported in Section~5. The validation sequences are used only for ConvNeXt checkpoint selection and are excluded from the evaluation, so that training, validation, and test remain disjoint.
 
 \subsection{Prediction Models and Training}
 
 Each feature-based configuration described in Section~3.2 is evaluated using one multilayer perceptron (MLP) per modeled block size. The MLPs contain two hidden layers with 64 and 32 ReLU units. All feature sets use the same network architecture and training procedure, with only the input dimension adjusted to the corresponding feature set. Models are trained with cross-entropy loss and AdamW~\cite{loshchilov2019adamw}, using a learning rate of $10^{-3}$, batches of 4096 samples, and a fixed budget of 30 epochs. Each configuration is trained with three random seeds, and mean results are reported.
 
-The raw-pixel baseline uses a multi-level ConvNeXt~\cite{liu2022convnext} operating on a two-channel input formed by the luminance samples of the $64\times64$ unit and a constant quantization plane. Features from three stages of the convolutional trunk are combined across spatial scales to provide local and block-level context for the partition prediction. Two training objectives are evaluated: standard cross entropy and a cost-sensitive variant~\cite{elkan2001costsensitivelearning}, in which each sample is weighted according to the RD-cost penalty associated with an incorrect early-termination decision. ConvNeXt checkpoints are selected according to the validation loss on the three validation sequences. The default fusion width is 128 channels; an additional 256-channel configuration is evaluated under standard cross entropy to assess the effect of increased model capacity.
+The raw-pixel baseline uses a multi-level ConvNeXt~\cite{liu2022convnext} operating on a two-channel input formed by the luminance samples of the $64\times64$ unit and a constant quantization plane. Features from three stages of the convolutional trunk are combined across spatial scales to provide local and block-level context for the partition prediction. The model is trained with standard cross entropy; a cost-sensitive variant~\cite{elkan2001costsensitivelearning}, weighting each sample by the RD-cost penalty of an incorrect early-termination decision, was also trained but did not outperform it on the test sequences and is therefore not reported. ConvNeXt checkpoints are selected according to the validation loss on the three validation sequences, which are excluded from the evaluation. The default fusion width is 128 channels; an additional 256-channel configuration is evaluated under standard cross entropy to assess the effect of increased model capacity.
 
 
 
 \section{Results and Discussion}
 
-Table~\ref{tab:frontier} and Fig.~\ref{fig:frontier} compare the normalized RD-cost penalty obtained by the evaluated predictors at partition-search reductions from 10\% to 30\%. Lower values indicate that the predictor more accurately identifies nodes that can be early-terminated under the same amount of search reduction. The feature-based predictors consistently outperform block variance across the evaluated operating points. At 25\% partition-search reduction, BC reduces the penalty from 374 to 53, corresponding to a $7.0\times$ reduction relative to the variance baseline.
+Table~\ref{tab:frontier} and Fig.~\ref{fig:frontier} compare the normalized RD-cost penalty obtained by the evaluated predictors at partition-search reductions from 10\% to 30\%. Lower values indicate that the predictor more accurately identifies nodes that can be early-terminated under the same amount of search reduction. The feature-based predictors consistently outperform block variance across the evaluated operating points. At 25\% partition-search reduction, BC reduces the penalty from 176 to 50, corresponding to a $3.5\times$ reduction relative to the variance baseline.
 
 \begin{table}[t]
 \caption{Normalized RD-cost penalty ($10^{-4}\%$) at equal partition-search reduction.}
@@ -133,17 +133,16 @@ Table~\ref{tab:frontier} and Fig.~\ref{fig:frontier} compare the normalized RD-c
 \textbf{Predictor} & \textbf{10\%} & \textbf{15\%} & \textbf{20\%}
 & \textbf{25\%} & \textbf{30\%} \\
 \hline
-Random control & 1963 & 2989 & 4066 & 5166 & 6342 \\
-Variance & 43 & 127 & 250 & 374 & 555 \\
-ConvNeXt, plain CE & 65 & 105 & 164 & 272 & 442 \\
-ConvNeXt, width 256 & 75 & 122 & 194 & 294 & 444 \\
-ConvNeXt, cost-sensitive & 54 & 80 & 140 & 219 & 379 \\
-BC (24 features) & 5 & 13 & 28 & 53 & 91 \\
-BC+shuffled NC (32 features) & 5 & 13 & 27 & 48 & 86 \\
-\underline{\textbf{BC+NC (32 features)}} & \underline{\textbf{2}} &\underline{ \textbf{5}} & \underline{\textbf{15}}
-& \underline{\textbf{33}} & \underline{\textbf{69}} \\
-BC+CSP (28 features) & 5 & 12 & 27 & 64 & 122 \\
-BC+NC+CSP (36 features) & 2 & 6 & 18 & 40 & 78 \\
+Random control & 1610 & 2465 & 3331 & 4191 & 5122 \\
+Variance & 13 & 49 & 96 & 176 & 298 \\
+ConvNeXt, plain CE & 35 & 61 & 88 & 141 & 221 \\
+ConvNeXt, width 256 & 49 & 71 & 113 & 190 & 285 \\
+BC (24 features) & 6 & 11 & 23 & 50 & 84 \\
+BC+shuffled NC (32 features) & 6 & 11 & 24 & 46 & 76 \\
+\underline{\textbf{BC+NC (32 features)}} & \underline{\textbf{3}} &\underline{ \textbf{5}} & \underline{\textbf{11}}
+& \underline{\textbf{27}} & \underline{\textbf{60}} \\
+BC+CSP (28 features) & 6 & 11 & 28 & 78 & 152 \\
+BC+NC+CSP (36 features) & 2 & 5 & 14 & 34 & 68 \\
 \hline
 \end{tabular}
 \end{table}
@@ -156,14 +155,14 @@ BC+NC+CSP (36 features) & 2 & 6 & 18 & 40 & 78 \\
 \label{fig:frontier}
 \end{figure}
 
-The main result is obtained by adding causal-neighbor partition context to the block-content features. At 25\% partition-search reduction, BC+NC reduces the penalty from 53 to 33, a 37.7\% improvement over BC alone. The benefit is observed throughout the evaluated range, with BC+NC achieving the lowest penalty at all operating points, tying BC+NC+CSP at 10\%. The result is also consistent across random initializations: at 25\%, the worst BC+NC seed reaches 36, whereas the best BC seed reaches 49. These results indicate that previously coded partition decisions provide useful contextual information beyond the block-content features alone.
+The main result is obtained by adding causal-neighbor partition context to the block-content features. At 25\% partition-search reduction, BC+NC reduces the penalty from 50 to 27, a 46.0\% improvement over BC alone. The benefit is observed throughout the evaluated range, with BC+NC achieving the lowest penalty at every operating point except 10\%, where BC+NC+CSP is slightly lower. The result is also consistent across random initializations: at 25\%, the worst BC+NC seed reaches 31, whereas the best BC seed reaches 46. These results indicate that previously coded partition decisions provide useful contextual information beyond the block-content features alone.
 
-The permutation control indicates that this gain follows from the information carried by the neighbor features, and not from the larger input vector. BC+shuffled NC remains at the level of BC over the evaluated range, with overlapping seed ranges at every operating point, and BC+NC improves over it by 54.8\% at 10\% and by 45.1\% at 20\% partition-search reduction. At 25\%, BC+shuffled NC reaches a penalty of 48, against 53 for BC and 33 for BC+NC, and the separation holds across random initializations: the best BC+shuffled NC seed reaches 41, above the 36 of the worst BC+NC seed, so the two configurations do not overlap despite sharing the same input width and the same architecture. Therefore, the eight neighbor features contribute through their association with the current node, rather than through the additional input dimensions they occupy.
+The permutation control indicates that this gain follows from the information carried by the neighbor features, and not from the larger input vector. BC+shuffled NC remains at the level of BC over the evaluated range, with overlapping seed ranges at every operating point, and BC+NC improves over it by 57.4\% at 10\% and by 51.8\% at 20\% partition-search reduction. At 25\%, BC+shuffled NC reaches a penalty of 46, against 50 for BC and 27 for BC+NC, and the separation holds across random initializations: the best BC+shuffled NC seed reaches 39, above the 31 of the worst BC+NC seed, so the two configurations do not overlap despite sharing the same input width and the same architecture. Therefore, the eight neighbor features contribute through their association with the current node, rather than through the additional input dimensions they occupy.
 
 In contrast, the coding-state and position features (CSP) do not provide
-a consistent improvement under the evaluated setup. At 25\% partition-search reduction, BC+CSP increases the penalty from 53 to 64, while adding CSP to BC+NC increases it from 33 to 40. Similar behavior is observed over most of the evaluated operating range. This behavior is consistent with the permutation control, since adding input dimensions is not by itself sufficient to reduce the penalty.
+a consistent improvement under the evaluated setup. At 25\% partition-search reduction, BC+CSP increases the penalty from 50 to 78, while adding CSP to BC+NC increases it from 27 to 34. Similar behavior is observed over the higher reductions. This behavior is consistent with the permutation control, since adding input dimensions is not by itself sufficient to reduce the penalty.
 
-Among the raw-pixel models, cost-sensitive training consistently improves the ConvNeXt over standard cross entropy and is therefore used as the main pixel-based baseline. At 25\% partition-search reduction, it reaches a penalty of 219, compared with 272 for plain cross entropy, while BC reaches 53. The ConvNeXt contains approximately 28.1 million parameters, whereas the three MLPs used by BC jointly contain only about 11.3 thousand. Increasing the ConvNeXt fusion width from 128 to 256 channels does not improve its performance. Thus, under the evaluated architecture and training conditions, increasing model capacity or directly processing raw pixels does not close the gap to the compact pre-search features.
+Among the raw-pixel models, the ConvNeXt reaches a penalty of 141 at 25\% partition-search reduction, while BC reaches 50. The ConvNeXt contains approximately 28.1 million parameters, whereas the three MLPs used by BC jointly contain only about 11.3 thousand. Increasing the ConvNeXt fusion width from 128 to 256 channels does not improve its performance. Thus, under the evaluated architecture and training conditions, increasing model capacity or directly processing raw pixels does not close the gap to the compact pre-search features.
 
 
 
@@ -172,7 +171,7 @@ Among the raw-pixel models, cost-sensitive training consistently improves the Co
 
 This paper presented a controlled offline framework for evaluating which pre-search information is most useful for early AV1 intra partition decisions. By comparing predictors under the same early-termination rule and at equal partition-search reduction, the proposed methodology separates the effect of the input information from differences in pruning behavior.
 The results show that causal-neighbor partition context provides useful information beyond block-content features. 
-Adding this context consistently reduces the normalized RD-cost penalty, with a 37.7\% improvement at 25\% partition-search reduction in the current evaluation. In contrast, the additional coding-state and position features provide no consistent benefit under the evaluated setup.
+Adding this context consistently reduces the normalized RD-cost penalty, with a 46.0\% improvement at 25\% partition-search reduction in the current evaluation. In contrast, the additional coding-state and position features provide no consistent benefit under the evaluated setup.
 The analysis is based on an offline replay of an exhaustive reference encoding and therefore does not capture reconstruction-error propagation or directly estimate BD-rate. Future work will investigate whether the observed ranking between feature sets is preserved when the early-termination decision is integrated into the encoder.
 
 \section{Acknowledgment}

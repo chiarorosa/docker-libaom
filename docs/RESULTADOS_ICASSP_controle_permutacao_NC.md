@@ -168,3 +168,11 @@ outros dois — comparação enviesada e trivialmente reprodutível por quem bai
 
 Conclusão: a ordenação BC+NC < controle ~ BC sobrevive ao *leave-one-seed-out*, o que é um
 resultado de robustez mais forte que a média sobre três sementes isolada.
+
+---
+
+> **Nota de superação (2026-09-12).** Os valores das §4 e §9 deste documento vêm da rodada sobre
+> as **seis** sequências held-out. O artigo passou a reportar apenas as **três de teste**, por
+> colocação do orientador — ver [[RESULTADOS_ICASSP_split_limpo_teste]]. O método, o desenho do
+> controle e as conclusões aqui seguem válidos; sob o conjunto limpo o controle fica **mais**
+> forte (BC+NC melhora 41,3% sobre ele em 25%, contra 30,4% aqui).

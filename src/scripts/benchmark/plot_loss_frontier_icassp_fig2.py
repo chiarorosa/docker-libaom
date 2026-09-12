@@ -3,7 +3,9 @@
 reducao de busca de particionamento casada, uma curva por conjunto de atributos.
 
 Diferente da figura 1, que e diagrama estrutural, esta PLOTA MEDICAO. Le a fonte
-unica do artigo, `results/models/oracle_regret_rpp/frontier.csv`, e nao aceita
+unica do artigo, `results/models/oracle_regret_rpp_test3/frontier.csv` -- as TRES
+sequencias de teste, sem as de validacao, que servem so para escolher o checkpoint
+do ConvNeXt --, e nao aceita
 numero digitado a mao: os valores da Tabela I sao reconferidos contra a
 interpolacao aqui mesmo, e o script para se divergirem. E o que impede a figura e
 a tabela de contarem historias diferentes.
@@ -94,7 +96,6 @@ CURVAS = [
     ("variance",            "Variance",                 "ref",  True),
     ("convnext_ce_h9",      "ConvNeXt, plain CE",       "deep", True),
     ("convnext_ce_h9_f256", "ConvNeXt, width 256",      "deep", True),
-    ("convnext_regret",     "ConvNeXt, cost-sensitive", "deep", True),
     ("RPP_A",               "BC",                       "tab",  True),
     # Controle de permutacao de BC+NC: mesmas 32 entradas, com as oito colunas
     # de NC reatribuidas entre amostras. Fora do desenho pela mesma razao que o
@@ -109,7 +110,7 @@ CURVAS = [
 SEEDS = (0, 1, 2)
 # Ordem da legenda: a da Tabela I, sem o controle aleatorio, que nao e desenhado.
 LEGENDA = ["Variance", "ConvNeXt, plain CE", "ConvNeXt, width 256",
-           "ConvNeXt, cost-sensitive", "BC", "BC+NC", "BC+CSP", "BC+NC+CSP"]
+           "BC", "BC+NC", "BC+CSP", "BC+NC+CSP"]
 LEITURA = [10, 15, 20, 25, 30]     # os pontos da Tabela I
 X_MIN, X_MAX = 6.0, 31.0
 
@@ -117,16 +118,15 @@ X_MIN, X_MAX = 6.0, 31.0
 # coerencia. Os rotulos sao os do artigo: BC, NC e CSP nomeiam os blocos de
 # atributos da Secao III-B; nos artefatos as chaves seguem RPP_A/_B/_C.
 TABELA_I = {
-    "Random control":           [1963, 2989, 4066, 5166, 6342],
-    "Variance":                 [43, 127, 250, 374, 555],
-    "ConvNeXt, plain CE":       [65, 105, 164, 272, 442],
-    "ConvNeXt, width 256":      [75, 122, 194, 294, 444],
-    "ConvNeXt, cost-sensitive": [54, 80, 140, 219, 379],
-    "BC":                       [5, 13, 28, 53, 91],
-    "BC+shuffled NC":           [5, 13, 27, 48, 86],
-    "BC+CSP":                   [5, 12, 27, 64, 122],
-    "BC+NC+CSP":                [2, 6, 18, 40, 78],
-    "BC+NC":                    [2, 5, 15, 33, 69],
+    "Random control":           [1610, 2465, 3331, 4191, 5122],
+    "Variance":                 [13, 49, 96, 176, 298],
+    "ConvNeXt, plain CE":       [35, 61, 88, 141, 221],
+    "ConvNeXt, width 256":      [49, 71, 113, 190, 285],
+    "BC":                       [6, 11, 23, 50, 84],
+    "BC+shuffled NC":           [6, 11, 24, 46, 76],
+    "BC+CSP":                   [6, 11, 28, 78, 152],
+    "BC+NC+CSP":                [2, 5, 14, 34, 68],
+    "BC+NC":                    [3, 5, 11, 27, 60],
 }
 
 # Cor POR CURVA, e nao por familia. A familia tabular ocupa uma faixa estreita do
@@ -320,7 +320,7 @@ def main():
     root = os.path.normpath(os.path.join(here, "..", "..", ".."))
     ap.add_argument("--frontier",
                     default=os.path.join(root, "results", "models",
-                                         "oracle_regret_rpp", "frontier.csv"))
+                                         "oracle_regret_rpp_test3", "frontier.csv"))
     ap.add_argument("--out-dir",
                     default=os.path.join(root, "results", "thesis", "figuras"))
     ap.add_argument("--variante", choices=sorted(PALETAS) + ["ambas"],
