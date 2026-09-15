@@ -163,6 +163,9 @@ The permutation control indicates that this gain follows from the information ca
 
 Table~\ref{tab:slices} reports the same comparison restricted to each quantization point and to each test sequence, replaying the recorded search over the corresponding subset. The improvement of BC+NC over BC holds in all three test sequences and all three seeds up to 20\% reduction, which indicates that the gain is not dominated by a single content, and at three of the four quantization points over the whole range. Two exceptions are visible. At the lowest quantization point BC+NC does not improve over BC; this is also the subset in which early termination is least applicable, since it does not reach 25\% reduction, so the benefit concentrates where there is search to remove. In RiverBank the improvement decreases with the reduction and the two cross between 20\% and 25\%, which may be attributed to the fine spatial detail covering most of the frame, leaving few nodes for which early termination is safe.
 
+In contrast, the coding-state and position features (CSP) do not provide
+a consistent improvement under the evaluated setup. At 25\% partition-search reduction, BC+CSP increases the penalty from 50 to 78, while adding CSP to BC+NC increases it from 27 to 34. Similar behavior is observed over the higher reductions. This behavior is consistent with the permutation control, since adding input dimensions is not by itself sufficient to reduce the penalty.
+
 \begin{table}[t]
 \caption{Improvement of BC+NC over BC (\%) at equal partition-search reduction, by quantization point and by test sequence. Dashes mark operating points that the subset does not reach.}
 \label{tab:slices}
@@ -184,9 +187,6 @@ RiverBank & 49.9 & 49.5 & 19.0 & $-8.9$ & --- \\
 \hline
 \end{tabular}
 \end{table}
-
-In contrast, the coding-state and position features (CSP) do not provide
-a consistent improvement under the evaluated setup. At 25\% partition-search reduction, BC+CSP increases the penalty from 50 to 78, while adding CSP to BC+NC increases it from 27 to 34. Similar behavior is observed over the higher reductions. This behavior is consistent with the permutation control, since adding input dimensions is not by itself sufficient to reduce the penalty.
 
 Among the raw-pixel models, the ConvNeXt trained with standard cross entropy reaches a penalty of 141 at 25\% partition-search reduction, while BC reaches 50. Its two variations do not improve on that result: the 256-channel configuration reaches 190, and the cost-sensitive objective reaches 185 and is worse at every evaluated reduction. The latter is informative, since this objective aligns the training loss with the evaluation metric: the weighting concentrates the loss on the few nodes carrying the largest RD-cost penalty, which may be attributed to content-specific structure that does not transfer to unseen sequences. The ConvNeXt contains approximately 28.1 million parameters, whereas the three MLPs used by BC jointly contain only about 11.3 thousand. Thus, under the evaluated architecture and training conditions, neither model capacity, nor weighting the loss by the RD-cost penalty, nor raw pixels close the gap to the compact pre-search features.
 
