@@ -97,15 +97,27 @@ onde o ConvNeXt vai mal por razão de textura, e esse efeito superou a vantagem 
 checkpoint. Isolar exigiria uma rodada só nas três de validação, comparando a razão ConvNeXt/BC
 nos dois corpora — não executada.
 
-## 5. Decisão sobre o braço custo-sensível
+## 5. Decisão sobre o braço custo-sensível — revertida
 
-Removido da Tabela I e da Figura 2. A regra de seleção é a mesma que já vigorava — **reportar a
-baseline de pixel mais forte** —; antes ela apontava para o custo-sensível, agora aponta para o
-CE puro. Manter o braço mais fraco seria encher a tabela.
+**Primeira decisão (descartada):** remover o braço da Tabela I e da Figura 2, sob o argumento de
+que a regra "reportar a baseline de pixel mais forte" continuava sendo aplicada — antes apontava
+para o custo-sensível, agora para o CE puro.
 
-Para que a remoção não deixe um experimento descrito sem resultado, o §IV-B passa a declarar em
-uma oração que a variante sensível a custo foi treinada, não superou o CE puro no conjunto de
-teste e por isso não é reportada. Sem número no texto, a linha não precisa existir na tabela.
+**O orientador apontou o defeito, e ele procede:** essa regra é decidida *olhando o conjunto de
+avaliação*. Nos dois momentos, o que se reporta foi escolhido pelo resultado — antes porque o
+custo-sensível vencia nas seis sequências, agora porque o CE puro vence nas três de teste. É
+exatamente a prática que o artigo critica na literatura.
+
+**Decisão final:** a linha volta à Tabela I (43, 65, 95, 185, 275) e a curva volta à Figura 2. O
+§IV-B volta a declarar os dois objetivos em pé de igualdade, e o §V reporta o resultado negativo
+com explicação técnica: o objetivo alinha a perda de treino à métrica de avaliação, e a sua falha
+em transferir é informativa — a ponderação concentra a perda nos poucos nós de maior penalidade
+RD, o que pode ser atribuído a estrutura específica do conteúdo que não generaliza para sequências
+não vistas. A explicação leva *hedge* por ser hipótese, não medida.
+
+Custo de página: a linha e o parágrafo empurraram o Agradecimento para a página 5, que deve conter
+apenas referências. Recuperado **sem perder conteúdo** — enxugando redundância de redação e
+comprimindo a folga vertical da Figura 1, de 3,07 para 2,64 polegadas.
 
 ## 6. Limitações
 

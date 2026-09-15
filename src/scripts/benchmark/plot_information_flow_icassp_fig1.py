@@ -77,7 +77,7 @@ matplotlib.rcParams.update({
 
 DPI = 400
 W_PT = 86.0 / 25.4 * 72.0          # 243,78 pt — \columnwidth do spconf.sty
-H_PT = 213.0    # altura do CONTEUDO, do topo do primeiro simbolo a base do ultimo
+H_PT = 182.0    # altura do CONTEUDO, do topo do primeiro simbolo a base do ultimo
 # Respiro vertical. Sem ele o traco dos terminadores, que o matplotlib centra no
 # caminho, perde metade da sua largura no limite do eixo e a figura aparece
 # cortada em cima e embaixo no PDF da pagina.
@@ -111,36 +111,36 @@ S, M, I = False, True, "it"        # serif, monoespacado, italico
 RAIA_ESQ = [
     dict(tipo="terminador", t=2.0, h=13.0, chave="inicio",
          linhas=[[("Node of the partition tree", S)]]),
-    dict(tipo="entrada", t=26.0, h=30.0, chave="entrada",
+    dict(tipo="entrada", t=21.0, h=28.0, chave="entrada",
          linhas=[[("source/block information,", S)],
                  [("coding parameters,", S)],
                  [("causal-neighbor partitions", S)]]),
-    dict(tipo="decisao", t=69.0, h=38.0, realce=True, chave="decisao",
+    dict(tipo="decisao", t=56.0, h=36.0, realce=True, chave="decisao",
          linhas=[[("Early decision:", S)],
                  [("terminate as ", S), ("NONE", M), ("?", S)]]),
-    dict(tipo="processo", t=124.0, h=14.0, chave="yes",
+    dict(tipo="processo", t=108.0, h=14.0, chave="yes",
          linhas=[[("Select ", S), ("NONE", M)]]),
 ]
 RAIA_DIR = [
-    dict(tipo="processo", t=77.5, h=21.0,   # centro alinhado ao do losango
+    dict(tipo="processo", t=64.5, h=19.0,   # centro alinhado ao do losango
          linhas=[[("Evaluate ", S), ("NONE", M)],
                  [(r"$J_{\mathrm{none}}$ available", I)]]),
-    dict(tipo="processo", t=107.5, h=21.0,
+    dict(tipo="processo", t=89.5, h=19.0,
          linhas=[[("Evaluate ", S), ("SPLIT", M)],
                  [("and its recursive descendants", S)]]),
-    dict(tipo="processo", t=137.5, h=21.0,
+    dict(tipo="processo", t=114.5, h=19.0,
          linhas=[[("Evaluate the remaining", S)],
                  [("partition candidates", S)]]),
-    dict(tipo="processo", t=167.5, h=21.0,
+    dict(tipo="processo", t=139.5, h=19.0,
          linhas=[[("Select the best partition", S)],
                  [(r"$J^{*}$ available", I)]]),
 ]
-FINAL = dict(tipo="terminador", t=196.0, h=13.0, x=45.0, w=155.0,
+FINAL = dict(tipo="terminador", t=165.0, h=13.0, x=45.0, w=155.0,
              linhas=[[("Node decided", S)]])
 
 # Rotulo lateral flutuante: diz QUANDO a entrada existe, no espaco livre a
 # direita do paralelogramo, acima da primeira etapa da raia da direita.
-LATERAL = dict(t=41.0, linhas=["before the", "current-node RD search"])
+LATERAL = dict(t=35.0, linhas=["before the", "current-node RD search"])
 
 
 def conferir(tex_path):

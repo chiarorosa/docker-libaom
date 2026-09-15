@@ -96,6 +96,7 @@ CURVAS = [
     ("variance",            "Variance",                 "ref",  True),
     ("convnext_ce_h9",      "ConvNeXt, plain CE",       "deep", True),
     ("convnext_ce_h9_f256", "ConvNeXt, width 256",      "deep", True),
+    ("convnext_regret",     "ConvNeXt, cost-sensitive", "deep", True),
     ("RPP_A",               "BC",                       "tab",  True),
     # Controle de permutacao de BC+NC: mesmas 32 entradas, com as oito colunas
     # de NC reatribuidas entre amostras. E DESENHADA: a sua curva correr colada a
@@ -112,7 +113,8 @@ CURVAS = [
 SEEDS = (0, 1, 2)
 # Ordem da legenda: a da Tabela I, sem o controle aleatorio, que nao e desenhado.
 LEGENDA = ["Variance", "ConvNeXt, plain CE", "ConvNeXt, width 256",
-           "BC", "BC+shuffled NC", "BC+NC", "BC+CSP", "BC+NC+CSP"]
+           "ConvNeXt, cost-sensitive", "BC", "BC+shuffled NC", "BC+NC",
+           "BC+CSP", "BC+NC+CSP"]
 LEITURA = [10, 15, 20, 25, 30]     # os pontos da Tabela I
 X_MIN, X_MAX = 6.0, 31.0
 
@@ -124,6 +126,7 @@ TABELA_I = {
     "Variance":                 [13, 49, 96, 176, 298],
     "ConvNeXt, plain CE":       [35, 61, 88, 141, 221],
     "ConvNeXt, width 256":      [49, 71, 113, 190, 285],
+    "ConvNeXt, cost-sensitive": [43, 65, 95, 185, 275],
     "BC":                       [6, 11, 23, 50, 84],
     "BC+shuffled NC":           [6, 11, 24, 46, 76],
     "BC+CSP":                   [6, 11, 28, 78, 152],
