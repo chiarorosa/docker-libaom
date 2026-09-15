@@ -176,12 +176,12 @@ PALETAS = {
 # matiz, que separam as nove curvas.
 ESTILO = {
     "Random control":           dict(ls=(0, (1.2, 1.2)), marker=None,  lw=0.6),
-    "Variance":                 dict(ls=(0, (4, 1.6)),   marker="v",   lw=0.7),
+    "Variance":                 dict(ls=(0, (4, 1.6)),   marker="v",   lw=0.9),
     "ConvNeXt, plain CE":       dict(ls="-",             marker="s",   lw=0.7),
     "ConvNeXt, width 256":      dict(ls=(0, (2.4, 1.2)), marker="P",   lw=0.7),
     "ConvNeXt, cost-sensitive": dict(ls=(0, (5, 1.4, 1, 1.4)), marker="X", lw=0.7),
     "BC":                       dict(ls="-",             marker="o",   lw=0.85),
-    "BC+shuffled NC":           dict(ls=(0, (2, 1.4)),   marker="o",   lw=0.75,
+    "BC+shuffled NC":           dict(ls=(0, (2, 1.4)),   marker="o",   lw=0.95,
                                 mfc="vazado"),
     "BC+CSP":                   dict(ls=(0, (3, 1.3)),   marker="^",   lw=0.85),
     "BC+NC+CSP":                dict(ls=(0, (1.4, 1.2)), marker="D",   lw=0.85),
