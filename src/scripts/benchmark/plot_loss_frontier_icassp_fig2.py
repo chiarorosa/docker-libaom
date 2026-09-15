@@ -98,11 +98,13 @@ CURVAS = [
     ("convnext_ce_h9_f256", "ConvNeXt, width 256",      "deep", True),
     ("RPP_A",               "BC",                       "tab",  True),
     # Controle de permutacao de BC+NC: mesmas 32 entradas, com as oito colunas
-    # de NC reatribuidas entre amostras. Fora do desenho pela mesma razao que o
-    # controle aleatorio: a sua curva cai SOBRE a de BC -- que e o resultado --
-    # e duas curvas sobrepostas numa coluna de 86 mm tornam ambas ilegiveis sem
-    # acrescentar leitura alguma. A trava de coerencia abaixo continua a conferir.
-    ("RPP_A_Bshuf",         "BC+shuffled NC",           "tab",  False),
+    # de NC reatribuidas entre amostras. E DESENHADA: a sua curva correr colada a
+    # de BC e justamente o resultado, e ve-la e o que dispensa o leitor de voltar
+    # a tabela para conferir o argumento do paragrafo do controle. Por isso ela
+    # recebe matiz proprio e o marcador de BC VAZADO: o vazado a liga a BC --
+    # "o mesmo, sem a informacao" -- e sobrevive a variante monocromatica, onde
+    # o matiz vira luminancia e deixa de separar sozinho.
+    ("RPP_A_Bshuf",         "BC+shuffled NC",           "tab",  True),
     ("RPP_A_C",             "BC+CSP",                   "tab",  True),
     ("RPP_A_B_C",           "BC+NC+CSP",                "tab",  True),
     ("RPP_A_B",             "BC+NC",                    "tab",  True),
@@ -110,7 +112,7 @@ CURVAS = [
 SEEDS = (0, 1, 2)
 # Ordem da legenda: a da Tabela I, sem o controle aleatorio, que nao e desenhado.
 LEGENDA = ["Variance", "ConvNeXt, plain CE", "ConvNeXt, width 256",
-           "BC", "BC+NC", "BC+CSP", "BC+NC+CSP"]
+           "BC", "BC+shuffled NC", "BC+NC", "BC+CSP", "BC+NC+CSP"]
 LEITURA = [10, 15, 20, 25, 30]     # os pontos da Tabela I
 X_MIN, X_MAX = 6.0, 31.0
 
@@ -144,7 +146,10 @@ CURVA_COR = {
     "ConvNeXt, width 256":      "#d99441",
     "ConvNeXt, cost-sensitive": "#8f4a10",
     "BC":                       "#2b7bba",   # azul medio
-    "BC+shuffled NC":           "#7fb2d8",   # o azul de BC, dessaturado
+    "BC+shuffled NC":           "#9c2b22",   # vermelho-sangue: o controle e o
+                                             # unico braco que nao disputa a
+                                             # fronteira, e o matiz proprio o
+                                             # separa de BC onde correm colados
     "BC+CSP":                   "#46a08a",   # verde-azulado, o mais claro
     "BC+NC+CSP":                "#8a5fa8",   # violeta
     "BC+NC":                    "#10375c",   # azul profundo, a protagonista
@@ -176,7 +181,8 @@ ESTILO = {
     "ConvNeXt, width 256":      dict(ls=(0, (2.4, 1.2)), marker="P",   lw=0.7),
     "ConvNeXt, cost-sensitive": dict(ls=(0, (5, 1.4, 1, 1.4)), marker="X", lw=0.7),
     "BC":                       dict(ls="-",             marker="o",   lw=0.85),
-    "BC+shuffled NC":           dict(ls=(0, (2, 1.4)),   marker="o",   lw=0.7),
+    "BC+shuffled NC":           dict(ls=(0, (2, 1.4)),   marker="o",   lw=0.75,
+                                mfc="vazado"),
     "BC+CSP":                   dict(ls=(0, (3, 1.3)),   marker="^",   lw=0.85),
     "BC+NC+CSP":                dict(ls=(0, (1.4, 1.2)), marker="D",   lw=0.85),
     "BC+NC":                    dict(ls="-",             marker="*",   lw=1.05),
@@ -254,8 +260,12 @@ def draw(out_path, p, dados):
                 ax.errorbar(xr, yr, yerr=[yr - lor, hir - yr], fmt="none",
                             ecolor=cor, elinewidth=0.55, capsize=1.2,
                             capthick=0.55, zorder=4)
+            vaz = e.get("mfc") == "vazado"
             ax.plot(xr, yr, linestyle="none", marker=e["marker"],
-                    markersize=3.0, color=cor, markeredgecolor="none",
+                    markersize=3.0, color=cor,
+                    markerfacecolor=p["surface"] if vaz else cor,
+                    markeredgecolor=cor if vaz else "none",
+                    markeredgewidth=0.6 if vaz else 0.0,
                     zorder=5)
 
     ax.set_yscale("log")
@@ -295,7 +305,14 @@ def draw(out_path, p, dados):
     handles = [plt.Line2D([], [], color=p["curva"][r], linewidth=ESTILO[r]["lw"],
                           linestyle=ESTILO[r]["ls"],
                           marker=ESTILO[r]["marker"], markersize=3.0,
-                          markeredgecolor="none")
+                          markerfacecolor=(p["surface"]
+                                           if ESTILO[r].get("mfc") == "vazado"
+                                           else p["curva"][r]),
+                          markeredgecolor=(p["curva"][r]
+                                           if ESTILO[r].get("mfc") == "vazado"
+                                           else "none"),
+                          markeredgewidth=(0.6 if ESTILO[r].get("mfc") == "vazado"
+                                           else 0.0))
                for r in LEGENDA]
     leg = ax.legend(handles, LEGENDA,
                     loc="upper left",
