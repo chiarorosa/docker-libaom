@@ -75,6 +75,11 @@ H_PT = 190.0                       # 1,55 in nao comporta rotulos de 9 pt; a
 COL_W_IN = W_PT / 72.0
 FIG_H_IN = H_PT / 72.0
 PT = 9.0
+# A legenda tem corpo proprio, menor: com nove entradas em duas colunas a
+# caixa em 9 pt fica mais larga que o eixo e e cortada na borda. O piso de
+# 9 pt vale para eixo e marcacoes, que sao a leitura quantitativa; a legenda
+# so nomeia curvas, e a figura 1 do artigo ja compoe entre 5,8 e 7 pt.
+PT_LEG = 8.2
 
 # Margens do eixo, em pontos, para o texto de 9 pt nao ser cortado.
 MARG_ESQ_PT = 38.0         # rotulo do eixo y + marcacoes "1000" + folgas
@@ -319,9 +324,21 @@ def draw(out_path, p, dados):
                for r in LEGENDA]
     leg = ax.legend(handles, LEGENDA,
                     loc="upper left",
-                    ncol=2, fontsize=PT, frameon=True, framealpha=0.94,
+                    ncol=2, fontsize=PT_LEG, frameon=True, framealpha=0.94,
                     borderpad=0.28, labelspacing=0.22, handlelength=1.8,
                     handletextpad=0.38, columnspacing=0.8, borderaxespad=0.30)
+    fig.canvas.draw()
+    rend = fig.canvas.get_renderer()
+    bb_leg = leg.get_window_extent(renderer=rend)
+    bb_ax = ax.get_window_extent(renderer=rend)
+    if bb_leg.x1 > bb_ax.x1 + 0.5 or bb_leg.x0 < bb_ax.x0 - 0.5:
+        sys.stderr.write(
+            "Legenda mais larga que o eixo: %.1f px contra %.1f px."
+            % (bb_leg.width, bb_ax.width)
+            + chr(10) + "Reduza PT_LEG ou encurte um rotulo." + chr(10))
+        raise SystemExit(1)
+    print("  trava da legenda: %.0f%% da largura do eixo"
+          % (100.0 * bb_leg.width / bb_ax.width))
     leg.get_frame().set_linewidth(0.35)
     leg.get_frame().set_edgecolor(p["grade"])
     for t in leg.get_texts():
