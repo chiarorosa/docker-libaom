@@ -63,6 +63,47 @@ Fontes canônicas: `R2_h9a.md` (§2.5 substituição do H9a), `R3_h9c.md` (§3.4
 5. Ao fechar cada etapa: compilar sem `Overfull`/referência indefinida, commit + push (sem atribuição
    de IA na mensagem).
 
+## 3b. Perfil estilístico do molde (LASCAS SNP-AV1 SUBMIT) — recurso vinculante
+
+Medido em 2026-10-03 sobre o corpo do LASCAS (Introdução → Conclusões, 89 frases, 2.798 palavras)
+com `src/scripts/paper/style_profile.py`. O ISCAS **clona** este estilo (léxico, sintaxe, voz, tom);
+o conteúdo e as frases são novos. Após cada bloco, rodar o script no ISCAS e comparar.
+
+**Sintaxe**
+- Frase longa e encadeada: média **31 palavras**, mediana 27, **45%** acima de 30, só 15% abaixo de 15.
+  Por seção (alvo de paridade): Introdução do LASCAS = 16 frases, 418 palavras, média 26,1, mediana 23.
+  Encadeamento por `, so` (14), `since`/`because` (8), `, which ...`, `while`, `whenever`.
+- **Dois-pontos como dobradiça** (22 em 89 frases): afirmação `:` razão ou consequência
+  ("One limit follows, measured in Section V: a node the first stage has committed never reaches the second").
+  Ponto e vírgula raro (8), só em enumeração longa.
+- **Precisão por negação**: `X, not Y` / `X and not Y` / `X rather than Y` / `reported rather than omitted`,
+  `verified rather than assumed` (8 ocorrências).
+- Parágrafo fecha com a consequência, tipicamente `, so ...` ou `, which is why ...`.
+
+**Voz e agente**
+- Passiva no método e no protocolo (40 construções *be*+particípio); nunca `we`/`our` (0).
+- Sujeitos inanimados ativos nos resultados: "Table I opens the two deployed points", "The search is
+  exhaustive by construction", "The coupling dissolves at the aggressive point".
+- Abertura de frase por sintagma nominal definido: `The first ...`, `The second ...`, `The two ...`,
+  `The cost ...`; `This paper presents ...`; `The main strategy of this solution is to ...`.
+- Componentes nomeados pelo papel, não pela sigla interna: "the first stage", "the unpartitioned node",
+  "the extended partitions" (nunca H9a/H9c/H9d no artigo).
+
+**Tom**
+- Declarativo, contábil, sem adjetivo valorativo. **Hedging quase nulo** (1 ocorrência): só onde não
+  há medida. **Zero `However`** — contraste via `but`, `while`, `instead`, `X, not Y`.
+- Verbos de ação concretos do domínio: `commits`, `settles`, `opens`, `removes`, `yields`, `cedes`,
+  `reaches`, `lifts`, `keeps`, `adds`.
+- Limite do próprio método enunciado como fato medido ("One limit follows, measured in ...").
+
+**Números**
+- TS com 2 casas, BD-BR com 3 casas no corpo e 2 no abstract; faixas como "from A on Seq1 to B on Seq2";
+  incremento em "percentage points"; razões como "about 3.4 times".
+
+**A evitar** (marcas que não são do molde): metáfora e personificação ("answered this demand"),
+`However` em início de frase, `furthermore`/`moreover`, frases curtas em série, enumeração de
+contribuições em lista, adjetivos como "significant" fora do sentido estatístico.
+
 ## 4. Arquivos desta pasta
 
 | arquivo | função |
