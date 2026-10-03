@@ -92,6 +92,17 @@ Fontes canônicas: `R2_h9a.md` (§2.5 substituição do H9a), `R3_h9c.md` (§3.4
   como colunas extras (`5c88035`), sem âncora remedida em *user time* — por decisão do usuário, não
   usados no artigo. Ao terminar: `encode_swap_h9d.py --check-integrity` (P0) antes de qualquer leitura.
 
+- 2026-10-03 — acrônimo **NPL-AV1 (Neural Pruner Ladder for AV1)**. Bloco 1 escrito e aprovado:
+  preâmbulo (cópia do LASCAS SUBMIT, `IEEEtran.cls` local como no LASCAS), título, Abstract,
+  Index Terms. Compilação no contêiner `latex_build` (monta `results/` em `/work`): 0 warnings,
+  fontes Type 1 embutidas. Pendente no Abstract: frase do H9d empilhado (após D2).
+
+### Pendências fora do artigo
+- `M3` §3.3: corrigir `--threads=1` → `--threads=2` (o código e a CTC usam 2 para 4K).
+- `R3` §3.4: "menos da metade da taxa BD da nativa nos dois presets" só vale no p1
+  (0,065 vs 0,153); no p2 é 0,173 vs 0,259 (67%). Corrigir o texto.
+- Desvio tempo de parede vs *user time* (CTC §5.7): decidir se/como declarar (afeta também o LASCAS).
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4

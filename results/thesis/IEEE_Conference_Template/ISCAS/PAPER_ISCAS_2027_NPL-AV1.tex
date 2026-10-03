@@ -1,0 +1,86 @@
+\documentclass[conference]{IEEEtran}
+% \IEEEoverridecommandlockouts   % uncomment only if \thanks is needed
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{url}
+\interdisplaylinepenalty=2500
+
+% Template: ../LASCAS/PAPER_LASCAS_2027_SNP-AV1_SUBMIT.tex
+% Binding decisions and pre-registration: ISCAS/CLAUDE.md
+% Every BD-BR and TS value comes from the CTC Class A1 grid only.
+
+\begin{document}
+
+\title{NPL-AV1: A Neural Pruner Ladder for the AV1\\ Intra-Frame Partition Search}
+
+\author{
+\IEEEauthorblockN{
+Pablo Rosa,
+Daniel Palomino,
+Marcelo Porto,
+Luciano Agostini
+}
+\IEEEauthorblockA{
+\textit{Video Technology Research Group (ViTech)}\\
+\textit{Federal University of Pelotas}\\
+Pelotas, Brazil\\
+\{pablo.rosa, dpalomino, porto, agostini\}@inf.ufpel.edu.br
+}
+}
+
+\maketitle
+
+\begin{abstract}
+The intra-frame coding of the AOMedia Video 1 (AV1) codec selects the block
+partitioning through a recursive rate-distortion search, and its reference
+encoder already embeds a convolutional neural network that prunes this search at
+the faster speed presets. Fast partitioning solutions are usually compared
+against whole presets, which reconfigure many unrelated coding stages, so the
+merit of a learned pruner itself remains unmeasured. This paper presents the
+Neural Pruner Ladder for AV1 (NPL-AV1), a set of lightweight neural networks that
+replace the native network as drop-in partition pruners at the same speed preset.
+A pre-search pruner decides how much of the partition tree is opened before any
+rate-distortion evaluation, and a post-NONE pruner decides whether the search
+continues after the unpartitioned node is measured, a decision point that the
+native encoder leaves unused in All-Intra coding. Experimental results over the
+eight UHD 4K sequences of the AOM Common Test Conditions show that the post-NONE
+pruner achieves time savings of 30.34\% with a Bjontegaard delta bitrate (BD-BR)
+of 0.41\% at preset 1, statistically on par with the native network, and lowers
+its BD-BR significantly at high quality at presets 1 and 2, at a cost of losing
+at preset 3. The pre-search pruner extends the time savings of each preset up to
+77.30\%, at a BD-BR of 4.35\%. Twelve of the fifteen nondominated operating points
+measured belong to NPL-AV1. % [completar: frase do H9d empilhado, apos a campanha D2]
+To the best of the authors' knowledge, this is the first solution in the
+literature measured as a drop-in replacement of the native partition network of
+AV1.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Video coding, AV1, computational effort reduction, intra-frame block
+partitioning, neural networks, encoder speed presets.
+\end{IEEEkeywords}
+
+% ---------------------------------------------------------------------------
+% Body: written block by block (ISCAS/CLAUDE.md, section 3).
+% I.   Introduction
+% II.  The AV1 Intra-Frame Partition Search
+% III. Proposed NPL-AV1 Solution
+% IV.  Results and Comparisons
+% V.   Conclusions
+% ---------------------------------------------------------------------------
+
+\section*{Acknowledgment}
+
+This study was financed in part by the Coordena\c{c}\~ao de Aperfei\c{c}oamento de
+Pessoal de N\'ivel Superior -- Brasil (CAPES) -- Finance Code 001, and also by the
+Brazilian research support agencies CNPq and FAPERGS.
+
+% \IEEEtriggeratref{n}  % set only when the last page needs balancing
+% \begin{thebibliography}{00}  % enabled with the first citation
+% \end{thebibliography}
+
+\end{document}
