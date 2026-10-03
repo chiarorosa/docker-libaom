@@ -142,6 +142,11 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
 - `M3` §3.3: corrigir `--threads=1` → `--threads=2` (o código e a CTC usam 2 para 4K).
 - `R3` §3.4: "menos da metade da taxa BD da nativa nos dois presets" só vale no p1
   (0,065 vs 0,153); no p2 é 0,173 vs 0,259 (67%). Corrigir o texto.
+- **LASCAS** (corrigir na versão final): (i) "Motion Picture Expert Group" → "Moving Picture Experts
+  Group"; (ii) ref. Corrêa 2020 com autores errados ("B. Zatt" não é autor; os 6 autores do Xplore,
+  DOI 10.1109/TCSI.2020.2973031, são M. M. Corrêa, B. H. Waskow, J. W. Goebel, D. M. Palomino,
+  G. R. Corrêa, L. V. Agostini → "M. M. Corrêa et al."); (iii) "L. Netto" → "L. Neto" e
+  "intraframe" no título (DOI 10.1109/MDAT.2022.3146083). Já corrigidos no ISCAS.
 - Desvio tempo de parede vs *user time* (CTC §5.7): decidir se/como declarar (afeta também o LASCAS).
 
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
