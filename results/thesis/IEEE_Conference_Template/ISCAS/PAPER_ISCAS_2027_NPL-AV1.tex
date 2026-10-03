@@ -38,25 +38,25 @@ Pelotas, Brazil\\
 The intra-frame coding of the AOMedia Video 1 (AV1) codec selects the block
 partitioning through a recursive rate-distortion search, and its reference
 encoder already embeds a convolutional neural network that prunes this search at
-the faster speed presets. Fast partitioning solutions are usually compared
-against whole presets, which reconfigure many unrelated coding stages, so the
-merit of a learned pruner itself remains unmeasured. This paper presents the
-Neural Pruner Ladder for AV1 (NPL-AV1), a set of lightweight neural networks that
-replace the native network as drop-in partition pruners at the same speed preset.
-A pre-search pruner decides how much of the partition tree is opened before any
+the fast speed presets. Fast partitioning solutions are usually compared against
+whole presets, which reconfigure every other coding stage as well, so the
+contribution of a neural pruner itself is not measured. This paper presents the
+Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow neural networks that
+replace the native network as partition pruners at the same speed preset. A
+pre-search pruner decides how much of the partition tree is opened before any
 rate-distortion evaluation, and a post-NONE pruner decides whether the search
-continues after the unpartitioned node is measured, a decision that no learned
-model of the native encoder takes in All-Intra coding. Experimental results over the
-eight UHD 4K sequences of the AOM Common Test Conditions show that the post-NONE
-pruner achieves time savings of 30.34\% with a Bjontegaard delta bitrate (BD-BR)
-of 0.41\% at preset 1, statistically on par with the native network, and lowers
-its BD-BR significantly at high quality at presets 1 and 2, at a cost of losing
-at preset 3. The pre-search pruner extends the time savings of each preset up to
-77.30\%, at a BD-BR of 4.35\%. Twelve of the fifteen nondominated operating points
-measured belong to NPL-AV1. % [completar: frase do H9d empilhado, apos a campanha D2]
+continues after the unpartitioned node is measured, a decision that no neural
+model of the native encoder takes in All-Intra coding. Experimental results over
+the eight UHD 4K sequences of the AOM Common Test Conditions show that the
+post-NONE pruner achieves time savings of 30.34\% with a Bjontegaard delta
+bitrate (BD-BR) of 0.41\% at preset 1, with no statistically significant BD-BR
+difference from the native network at presets 1 and 2, a significantly lower
+BD-BR at high quality at both presets, and a higher BD-BR at preset 3. The
+pre-search pruner extends the time savings of each preset up to 77.30\%, at a
+BD-BR of 4.35\%. Twelve of the fifteen nondominated operating points measured
+belong to NPL-AV1. % [completar: frase do H9d empilhado, apos a campanha D2]
 To the best of the authors' knowledge, this is the first solution in the
-literature measured as a drop-in replacement of the native partition network of
-AV1.
+literature measured as a replacement of the native partition network of AV1.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -76,22 +76,22 @@ partitioning, neural networks, encoder speed presets.
 \section{Introduction}
 \label{sec_intro}
 
-Online video takes a growing share of the Internet, and the number of users who
-watch it every month keeps rising \cite{statista}. Besides the High Efficiency
-Video Coding (HEVC) \cite{hevc} and the Versatile Video Coding (VVC) \cite{vvc},
-from the ITU-T Video Coding Experts Group and the ISO/IEC Moving Picture Experts
-Group, the Alliance for Open Media (AOMedia) released the AOMedia Video 1 (AV1)
-in 2018 \cite{av1site}. Each step of its hybrid coding flow, from prediction to
-entropy coding, received new tools \cite{han2021,chen2018}. Its coding efficiency
-surpasses that of HEVC under certain conditions \cite{grois2016}, at the price of
-encoding times about twice as long \cite{layek2017}.
+The number of Internet users watching online video every month keeps growing
+\cite{statista}. Alongside the High Efficiency Video Coding (HEVC) \cite{hevc}
+and the Versatile Video Coding (VVC) \cite{vvc}, from the ITU-T Video Coding
+Experts Group and the ISO/IEC Moving Picture Experts Group, the AOMedia Video 1
+(AV1) was released in 2018 by the Alliance for Open Media (AOMedia)
+\cite{av1site}. Each step of its hybrid coding flow, from prediction to entropy
+coding, introduces new techniques \cite{han2021,chen2018}. Its coding efficiency
+is superior to that of HEVC under certain conditions \cite{grois2016}, at the
+price of encoding times about twice as long \cite{layek2017}.
 
-The partition tree processing has a significant impact on the computational cost
-of the AV1 reference encoder \cite{bender2023}. Each superblock is divided by a recursive search that
-evaluates up to ten partition types per node through rate-distortion
-optimization (RDO) \cite{sullivan1998}. The reference software libaom
-\cite{libaom} runs this search exhaustively at \texttt{cpu-used=0} and prunes it
-at the faster presets. From \texttt{cpu-used=1} on, its All-Intra configuration
+The processing of the partition tree is one of the large computational costs of
+the AV1 reference encoder \cite{bender2023}. Each superblock is divided by a
+recursive search that evaluates up to ten partition types per node through
+rate-distortion optimization (RDO) \cite{sullivan1998}. The reference software
+libaom \cite{libaom} performs this search in full at \texttt{cpu-used=0} and
+prunes it at the fast presets. From \texttt{cpu-used=1} on, its All-Intra configuration
 enables the \texttt{intra\_cnn\_based\_part\_prune} speed feature \cite{libaom},
 a convolutional neural network (CNN) that reads each 64$\times$64 block once and, before any RDO, forces or forbids the quad-tree split down to
 8$\times$8 samples. A preset also changes the transform, intra mode and loop
@@ -102,28 +102,31 @@ Few works target the computational effort of AV1, and none acts on the partition
 network of its reference encoder. The works \cite{xu2020,xu2021,jeong2019} reduce
 the intra prediction mode decision, \cite{kim2019} applies decision trees to
 inter prediction, and \cite{correa2020,netto2022} are hardware designs for the
-intra predictor rather than for encoder decisions. Learning-based partition
-prediction was integrated into the VP9 encoder through a hierarchical CNN
-\cite{paul2020} and is mature for VVC, through variance and gradients, random
-forests, gradient boosting, texture complexity and RD cost regression
+intra predictor rather than for encoder decisions. Neural partition prediction
+was integrated into the VP9 encoder through a hierarchical CNN \cite{paul2020},
+and learning-based partitioning solutions exist for VVC, through variance and
+gradients, random forests, gradient boosting, texture complexity and the
+regression of RD costs
 \cite{chen2019,he2021,saldanha2022,song2024,kherchouche2024,kherchouche2025}, but
-over the partition structures of those codecs and on their encoders, which
-prevents a direct and fair comparison. The merit of a learned pruner against the
-native network, at the same preset, remains unmeasured.
+they were designed for the partition structures of those codecs and evaluated on
+their encoders, which prevents a direct and fair comparison. The contribution of
+a neural pruner against the native network, at the same preset, is therefore not
+measured.
 
-This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set of
-lightweight multilayer perceptrons (MLPs) that replace the native CNN in the
-libaom intra-frame partition search. The main strategy of this solution is to
-consult each pruner where the information it reads already exists, and to
-measure it at a fixed preset with the native network off, so only the partition
-pruner changes. A pre-search pruner reads the content and the causal partition
-context of the node before any RDO. A post-NONE pruner also reads the RD cost of
-the unpartitioned node, a decision that no learned model of the native encoder
-takes in All-Intra coding. Over the eight UHD 4K sequences of the AOM Common Test
-Conditions (CTC), the post-NONE pruner is statistically on par with the native
-CNN at presets 1 and 2 and cedes significantly less coding efficiency at high
-quality, while the pre-search pruner extends the time savings of every preset:
-each preset becomes a ladder of three operating points instead of one.
+This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow
+multilayer perceptrons (MLPs) that replace the native CNN in the libaom
+intra-frame partition search. The main strategy of this solution is to consult
+each pruner where the information it reads already exists, and to measure it at
+a fixed preset with the native network disabled, so only the partition pruner
+changes. A pre-search pruner reads the content and the causal partition context
+of the node before any RDO. A post-NONE pruner also reads the RD cost of the
+unpartitioned node and decides whether the search continues, a decision that no
+neural model of the native encoder takes in All-Intra coding. Over the eight UHD
+4K sequences of the AOM Common Test Conditions (CTC), the post-NONE pruner shows
+no statistically significant difference in coding efficiency from the native CNN
+at presets 1 and 2 and a significantly lower coding efficiency loss at high
+quality, while the pre-search pruner extends the time savings of every preset,
+so each preset has three operating points instead of one.
 
 \section{The AV1 Intra-Frame Partition Search}
 \label{sec_search}
@@ -132,9 +135,9 @@ The basic unit of AV1 partitioning is the superblock, of 128$\times$128 or
 64$\times$64 samples, which the partition tree divides recursively down to
 4$\times$4 samples \cite{han2021}. Each node may take one of ten partition types
 \cite{chen2018}: NONE codes the node as a single block, SPLIT divides it into four
-square sub-blocks, HORZ and VERT divide it into two rectangles, the four AB types
-combine one rectangular half with two square quarters, and the two 4-way types
-cut it into four strips of 4:1 aspect ratio. The AB and 4-way families are called
+square sub-blocks, HORZ and VERT divide it into two rectangular sub-blocks, the
+four AB types join a rectangular half to two square sub-blocks, and the two 4-way
+types divide it into four sub-blocks of 4:1 aspect ratio. The AB and 4-way families are called
 the extended partitions.
 
 The libaom encoder evaluates the types of a node in a fixed order, NONE, SPLIT, the
@@ -144,15 +147,15 @@ and the decisions of the already coded neighbors exist; after NONE, the rate, th
 distortion and the RD cost of the unpartitioned node exist as well, at the price
 of having been paid.
 
-The native learned pruners occupy both points, but not with the same reach in
+The native neural pruners act at both points, but not with the same reach in
 All-Intra coding. Before the search, the CNN of Section~\ref{sec_intro} forces or
-forbids the split from \texttt{cpu-used=1} on. After NONE, three learned decisions
-can end or narrow the search of the node: a breakout after NONE, an early
+forbids the split from \texttt{cpu-used=1} on. After NONE, three neural decisions
+can end the search of the node or remove candidates from it: a breakout after NONE, an early
 termination after SPLIT and the pruning of the rectangular types. All three are
 disabled in intra-only frames by a frame-type guard \cite{libaom}, while two other
 networks stay active and prune the AB and 4-way types from the RD costs already
 measured. Whether the search of a node continues once its unpartitioned cost is
-known is, therefore, a decision that no learned model of the native encoder takes
+known is, therefore, a decision that no neural model of the native encoder takes
 in All-Intra coding.
 
 This work is focused on the intra-frame partition search of AV1 under the
@@ -168,15 +171,15 @@ The Neural Pruner Ladder for AV1 (NPL-AV1) inserts MLP pruners at the two points
 of the node search identified in Section~\ref{sec_search}, as shown in
 Fig.~\ref{fig_npl}. The main strategy of this solution is to give each preset of
 libaom a choice of partition pruner instead of a single one: with the native CNN
-switched off, a pre-search or a post-NONE pruner takes its place, and every other
-speed feature of the preset stays as it is.
+disabled, a pre-search or a post-NONE pruner replaces it, and every other speed
+feature of the preset is kept as it is.
 
 \begin{figure}[!t]
   \centering
   % src/scripts/benchmark/plot_npl_ladder_iscas_fig1.py (variante cinza)
   \includegraphics[width=\columnwidth]{fig1_npl_ladder}
-  \caption{NPL-AV1 flowchart for one node at a fixed preset. The rung of the
-  preset selects the pruner that acts before the search, the post-NONE pruners
+  \caption{NPL-AV1 flowchart for one node at a fixed preset. The operating
+  point of the preset selects the pruner that acts before the search, the post-NONE pruners
   act after NONE is evaluated, and the shaded action ends the node.}
   \label{fig_npl}
 \end{figure}
@@ -189,7 +192,7 @@ the point at which the three structural decisions of the native encoder are
 disabled in All-Intra coding. One decides whether the search of the node stops
 there; the other decides whether the AB and 4-way types are worth evaluating, the
 only decision that the native networks still take after NONE. Every pruner only
-removes candidates, so moving along the ladder of a preset is a matter of choosing
+removes candidates, so moving between the operating points of a preset is a matter of choosing
 which pruner replaces the CNN, not of retraining it.
 
 \section*{Acknowledgment}

@@ -9,7 +9,7 @@ reencontro, texto em 8 pt, largura de coluna do IEEEtran, altura derivada das
 linhas, PALETAS importadas do modulo do LASCAS.
 
 O CONTEUDO e proprio do ISCAS e deliberadamente distinto do LASCAS:
-  - losango de topo "rung of the preset": a escolha do podador que substitui a
+  - losango de topo "pruner of the preset": a escolha do podador que substitui a
     CNN nativa (nativo / pre-busca / nenhum, no degrau pos-NONE);
   - a cascata interna do pre-busca fica numa unica caixa de acao (no LASCAS ela
     e o centro da figura);
@@ -187,7 +187,7 @@ def draw(out_path, p):
         rotulo(X_TAG, yc, t, ha="left", italico=True, cor=p["muted"])
 
     # ---------------- degrau do preset --------------------------------------
-    yd, hd = losango("d0", "rung of\nthe preset")
+    yd, hd = losango("d0", "pruner of\nthe preset")
     ypre, hpre = Y["pre"]
     xe = (X_ESQ[0] + X_ESQ[1]) / 2
     xd = (X_DIR[0] + X_DIR[1]) / 2
@@ -202,7 +202,7 @@ def draw(out_path, p):
     seta(xd, yd, xd, ypre + hpre / 2)
     rotulo((X_SPINE + MEIA_LOS + xd) / 2 - 0.010, yd + 0.020, "pre-search")
     caixa(X_DIR[0], X_DIR[1], ypre, hpre,
-          "MLP (%d): NONE\nonly, SPLIT only\nor no rect. types" % N_S1,
+          "MLP (%d): NONE\nonly, SPLIT only or\nno rectangular types" % N_S1,
           borda=p["s1"])
     # pos-NONE: segue pelo eixo, sem podador antes da busca
     ynone, hnone = Y["none"]
@@ -244,7 +244,7 @@ def draw(out_path, p):
 
     # ---------------- parar o no ----------------------------------------------
     losango("cstop", CONDICOES["cstop"], pt=PT_MATH, meia=MEIA_LOS_MAT)
-    tag(ycs, "post-NONE\nrung")
+    tag(ycs, "post-NONE\noperating\npoint")
     sim(ycs, "node ends:\nno other type", terminal=True, meia=MEIA_LOS_MAT)
     yce, hce = Y["cext"]
     nao(ycs, hcs, yce + hce / 2)
@@ -261,7 +261,7 @@ def draw(out_path, p):
 
     # ---------------- poda nativa de AB e 4-way -------------------------------
     ycn, hcn = losango("cnat", "native networks\nprune AB, 4-way")
-    tag(ycn, "native,\nevery rung")
+    tag(ycn, "native, every\noperating\npoint")
     seta(X_SPINE, ymid - hmid / 2, X_SPINE, ycn + hcn / 2)
     h_n = sim(ycn, "pruned types\nare skipped")
     yfim, hfim = Y["fim"]

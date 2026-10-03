@@ -6,7 +6,7 @@ Used to keep the ISCAS NPL-AV1 text in parity with the LASCAS SNP-AV1 mold:
 import re, collections, sys
 t = open(sys.argv[1], encoding="utf-8").read()
 body = t[t.find(r"\section{Introduction}"):t.find(r"\section*{Acknowledgment}")]
-body = re.sub(r"(?m)%.*$", "", body)
+body = re.sub(r"(?m)(?<!\\)%.*$", "", body)   # LaTeX comment, not \%
 body = re.sub(r"\\begin\{(table|figure|equation)\}.*?\\end\{\1\}", "", body, flags=re.S)
 body = re.sub(r"\\(sub)?section\{[^}]*\}|\\label\{[^}]*\}", " ", body)
 body = re.sub(r"\\cite\{[^}]*\}", "[C]", body)

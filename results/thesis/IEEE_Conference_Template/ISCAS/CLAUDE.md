@@ -65,12 +65,21 @@ Fontes canônicas: `R2_h9a.md` (§2.5 substituição do H9a), `R3_h9c.md` (§3.4
 
 ## 3b. Perfil estilístico do molde (LASCAS SNP-AV1 SUBMIT) — recurso vinculante
 
-Medido em 2026-10-03 sobre o corpo do LASCAS (Introdução → Conclusões, 89 frases, 2.798 palavras)
-com `src/scripts/paper/style_profile.py`. O ISCAS **clona** este estilo (léxico, sintaxe, voz, tom);
-o conteúdo e as frases são novos. Após cada bloco, rodar o script no ISCAS e comparar.
+Medido em 2026-10-03 sobre o corpo do LASCAS (Introdução → Conclusões, 93 frases, 2.886 palavras)
+com `src/scripts/paper/style_profile.py` (corrigido no mesmo dia: o filtro de comentário cortava o
+texto após `\%`). O ISCAS **clona** este estilo (léxico, sintaxe, voz, tom); o conteúdo e as frases
+são novos. Após cada bloco, rodar os dois scripts no ISCAS e comparar.
+
+**Contrato lexical (vinculante, após o episódio "rung" de 2026-10-03).** Toda palavra do ISCAS —
+corpo, legendas **e rótulos de figura** — tem de estar no LASCAS, ou ser: (a) palavra gramatical
+comum ou flexão de palavra do LASCAS; (b) fato técnico novo e inevitável (nomes de codec, de função
+do libaom, de teste estatístico); (c) o nome do método. **Termo cunhado, metáfora, expressão
+idiomática ou qualificador fora do LASCAS só entra com aprovação explícita do usuário.** Verificação
+obrigatória após cada bloco: `py src/scripts/paper/lexicon_diff.py <ISCAS.tex> <LASCAS.tex>
+[rótulos.txt]`, revisando cada palavra listada.
 
 **Sintaxe**
-- Frase longa e encadeada: média **31 palavras**, mediana 27, **45%** acima de 30, só 15% abaixo de 15.
+- Frase longa e encadeada: média **31 palavras**, mediana 27, **45%** acima de 30, 14% abaixo de 15.
   Por seção (alvo de paridade): Introdução do LASCAS = 16 frases, 418 palavras, média 26,1, mediana 23.
   Encadeamento por `, so` (14), `since`/`because` (8), `, which ...`, `while`, `whenever`.
 - **Dois-pontos como dobradiça** (22 em 89 frases): afirmação `:` razão ou consequência
