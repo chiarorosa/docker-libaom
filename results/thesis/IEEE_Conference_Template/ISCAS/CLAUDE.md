@@ -146,7 +146,13 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   Group"; (ii) ref. Corrêa 2020 com autores errados ("B. Zatt" não é autor; os 6 autores do Xplore,
   DOI 10.1109/TCSI.2020.2973031, são M. M. Corrêa, B. H. Waskow, J. W. Goebel, D. M. Palomino,
   G. R. Corrêa, L. V. Agostini → "M. M. Corrêa et al."); (iii) "L. Netto" → "L. Neto" e
-  "intraframe" no título (DOI 10.1109/MDAT.2022.3146083). Já corrigidos no ISCAS.
+  "intraframe" no título (DOI 10.1109/MDAT.2022.3146083); (iv) "One of the largest individual costs
+  of AV1 intra-frame coding is the block partitioning decision [bender2023]" extrapola a fonte —
+  Bender perfila o libaom em geral (inter domina, 76,98%) e só afirma que "partition tree processing
+  ... has a significant impact on the overall computational cost". Já corrigidos no ISCAS.
+- CNN nativa: nenhuma publicação revisada por pares a descreve (busca de 2026-10-03: Han 2021 e
+  Bender 2023 não a mencionam; histórico do googlesource inacessível). Fonte = libaom v3.10.0,
+  *speed feature* `intra_cnn_based_part_prune` (`speed_features.h:689`, `partition_strategy.c:189`).
 - Desvio tempo de parede vs *user time* (CTC §5.7): decidir se/como declarar (afeta também o LASCAS).
 
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03

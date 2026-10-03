@@ -86,14 +86,14 @@ entropy coding, received new tools \cite{han2021,chen2018}. Its coding efficienc
 surpasses that of HEVC under certain conditions \cite{grois2016}, at the price of
 encoding times about twice as long \cite{layek2017}.
 
-Block partitioning is one of the most expensive decisions of AV1 intra-frame
-coding \cite{bender2023}. Each superblock is divided by a recursive search that
+The partition tree processing has a significant impact on the computational cost
+of the AV1 reference encoder \cite{bender2023}. Each superblock is divided by a recursive search that
 evaluates up to ten partition types per node through rate-distortion
 optimization (RDO) \cite{sullivan1998}. The reference software libaom
 \cite{libaom} runs this search exhaustively at \texttt{cpu-used=0} and prunes it
 at the faster presets. From \texttt{cpu-used=1} on, its All-Intra configuration
-enables a convolutional neural network (CNN) that reads each 64$\times$64 block
-once and, before any RDO, forces or forbids the quad-tree split down to
+enables the \texttt{intra\_cnn\_based\_part\_prune} speed feature \cite{libaom},
+a convolutional neural network (CNN) that reads each 64$\times$64 block once and, before any RDO, forces or forbids the quad-tree split down to
 8$\times$8 samples. A preset also changes the transform, intra mode and loop
 filter searches, so a solution compared against a preset is measured against
 every speed feature at once, not against the partition pruner alone.
@@ -102,11 +102,12 @@ Few works target the computational effort of AV1, and none acts on the partition
 network of its reference encoder. The works \cite{xu2020,xu2021,jeong2019} reduce
 the intra prediction mode decision, \cite{kim2019} applies decision trees to
 inter prediction, and \cite{correa2020,netto2022} are hardware designs for the
-intra predictor rather than for encoder decisions. Learning-based fast
-partitioning is mature for VVC, through variance and gradients, random forests,
-gradient boosting, texture complexity and RD cost regression
+intra predictor rather than for encoder decisions. Learning-based partition
+prediction was integrated into the VP9 encoder through a hierarchical CNN
+\cite{paul2020} and is mature for VVC, through variance and gradients, random
+forests, gradient boosting, texture complexity and RD cost regression
 \cite{chen2019,he2021,saldanha2022,song2024,kherchouche2024,kherchouche2025}, but
-over the quad-tree with nested multi-type tree of VVC and on its encoder, which
+over the partition structures of those codecs and on their encoders, which
 prevents a direct and fair comparison. The merit of a learned pruner against the
 native network, at the same preset, remains unmeasured.
 
@@ -166,6 +167,8 @@ Brazilian research support agencies CNPq and FAPERGS.
 \bibitem{correa2020} M. M. Corr\^ea \emph{et al.}, ``A high-throughput hardware architecture for AV1 non-directional intra modes,'' \emph{IEEE Trans. Circuits Syst. I, Reg. Papers}, vol. 67, no. 5, pp. 1481--1494, May 2020.
 
 \bibitem{netto2022} L. Neto, M. Corr\^ea, D. Palomino, L. Agostini, and G. Corr\^ea, ``Power-quality configurable hardware design for AV1 directional intraframe prediction,'' \emph{IEEE Des. Test}, vol. 39, no. 2, pp. 38--45, Apr. 2022.
+
+\bibitem{paul2020} S. Paul, A. Norkin, and A. C. Bovik, ``Speeding up VP9 intra encoder with hierarchical deep learning-based partition prediction,'' \emph{IEEE Trans. Image Process.}, vol. 29, pp. 8134--8148, 2020.
 
 \bibitem{chen2019} J. Chen, H. Sun, J. Katto, X. Zeng, and Y. Fan, ``Fast QTMT partition decision algorithm in VVC intra coding based on variance and gradient,'' in \emph{Proc. IEEE Vis. Commun. Image Process. (VCIP)}, Dec. 2019, pp. 1--4.
 
