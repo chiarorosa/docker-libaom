@@ -76,7 +76,13 @@ comum ou flexão de palavra do LASCAS; (b) fato técnico novo e inevitável (nom
 do libaom, de teste estatístico); (c) o nome do método. **Termo cunhado, metáfora, expressão
 idiomática ou qualificador fora do LASCAS só entra com aprovação explícita do usuário.** Verificação
 obrigatória após cada bloco: `py src/scripts/paper/lexicon_diff.py <ISCAS.tex> <LASCAS.tex>
-[rótulos.txt]`, revisando cada palavra listada.
+[rótulos.txt]`, revisando cada palavra listada. **Lado oposto do contrato — frases novas:**
+`py src/scripts/paper/ngram_overlap.py <ISCAS.tex> <LASCAS.tex>` lista as 6-gramas em comum; só
+ficam as de preâmbulo/autores/agradecimento, nomes de padrões, colocações canônicas de B.12 e
+enumerações técnicas. Qualquer outra passagem é reescrita.
+**Nomenclatura fixada:** *pre-search pruner* (H9a), *post-NONE pruner* (H9c, encerra o nó),
+*extended pruner* (H9d); *operating point* (nunca "rung"); *neural* (nunca "learned");
+*shallow* (nunca "lightweight").
 
 **Sintaxe**
 - Frase longa e encadeada: média **31 palavras**, mediana 27, **45%** acima de 30, 14% abaixo de 15.
