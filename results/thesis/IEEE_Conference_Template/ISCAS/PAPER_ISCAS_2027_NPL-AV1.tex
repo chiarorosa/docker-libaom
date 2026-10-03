@@ -43,8 +43,8 @@ whole presets, which reconfigure every other coding stage as well, so the
 contribution of a neural pruner itself is not measured. This paper presents the
 Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow neural networks that
 replace the native network as partition pruners at the same speed preset. A
-pre-search pruner decides how much of the partition tree is opened before any
-rate-distortion evaluation, and a post-NONE pruner decides whether the search
+pre-search pruner removes partition types before any rate-distortion
+evaluation, and a post-NONE pruner decides whether the search
 continues after the unpartitioned node is measured, a decision that no neural
 model of the native encoder takes in All-Intra coding. Experimental results over
 the eight UHD 4K sequences of the AOM Common Test Conditions show that the
@@ -77,11 +77,11 @@ partitioning, neural networks, encoder speed presets.
 \label{sec_intro}
 
 The number of Internet users watching online video every month keeps growing
-\cite{statista}. Alongside the High Efficiency Video Coding (HEVC) \cite{hevc}
-and the Versatile Video Coding (VVC) \cite{vvc}, from the ITU-T Video Coding
-Experts Group and the ISO/IEC Moving Picture Experts Group, the AOMedia Video 1
-(AV1) was released in 2018 by the Alliance for Open Media (AOMedia)
-\cite{av1site}. Each step of its hybrid coding flow, from prediction to entropy
+\cite{statista}. The AOMedia Video 1 (AV1) was released in 2018 by the Alliance
+for Open Media (AOMedia) \cite{av1site}, alongside the High Efficiency Video
+Coding (HEVC) \cite{hevc} and the Versatile Video Coding (VVC) \cite{vvc}, from
+the ITU-T Video Coding Experts Group and the ISO/IEC Moving Picture Experts
+Group. Each step of its hybrid coding flow, from prediction to entropy
 coding, introduces new techniques \cite{han2021,chen2018}. Its coding efficiency
 is superior to that of HEVC under certain conditions \cite{grois2016}, at the
 price of encoding times about twice as long \cite{layek2017}.
@@ -98,14 +98,14 @@ a convolutional neural network (CNN) that reads each 64$\times$64 block once and
 filter searches, so a solution compared against a preset is measured against
 every speed feature at once, not against the partition pruner alone.
 
-Few works target the computational effort of AV1, and none acts on the partition
-network of its reference encoder. The works \cite{xu2020,xu2021,jeong2019} reduce
+Few works act on the computational effort of AV1. None of them acts on the
+partition network of its reference encoder. The works \cite{xu2020,xu2021,jeong2019} reduce
 the intra prediction mode decision, \cite{kim2019} applies decision trees to
 inter prediction, and \cite{correa2020,netto2022} are hardware designs for the
 intra predictor rather than for encoder decisions. Neural partition prediction
 was integrated into the VP9 encoder through a hierarchical CNN \cite{paul2020},
 and learning-based partitioning solutions exist for VVC, through variance and
-gradients, random forests, gradient boosting, texture complexity and the
+gradients, random forests and gradient boosting, texture complexity, or the
 regression of RD costs
 \cite{chen2019,he2021,saldanha2022,song2024,kherchouche2024,kherchouche2025}, but
 they were designed for the partition structures of those codecs and evaluated on
@@ -137,8 +137,8 @@ The basic unit of AV1 partitioning is the superblock, of 128$\times$128 or
 \cite{chen2018}: NONE codes the node as a single block, SPLIT divides it into four
 square sub-blocks, HORZ and VERT divide it into two rectangular sub-blocks, the
 four AB types join a rectangular half to two square sub-blocks, and the two 4-way
-types divide it into four sub-blocks of 4:1 aspect ratio. The AB and 4-way families are called
-the extended partitions.
+types divide it into four sub-blocks of 4:1 aspect ratio. Together, the AB and
+4-way families are the extended partitions.
 
 The libaom encoder evaluates the types of a node in a fixed order, NONE, SPLIT, the
 rectangular and then the extended types \cite{libaom}, so what a pruner can read
@@ -179,21 +179,53 @@ feature of the preset is kept as it is.
   % src/scripts/benchmark/plot_npl_ladder_iscas_fig1.py (variante cinza)
   \includegraphics[width=\columnwidth]{fig1_npl_ladder}
   \caption{NPL-AV1 flowchart for one node at a fixed preset. The operating
-  point of the preset selects the pruner that acts before the search, the post-NONE pruners
-  act after NONE is evaluated, and the shaded action ends the node.}
+  point of the preset selects the pruner that acts before the search, the post-NONE and
+  extended pruners act after NONE is evaluated, and the shaded action ends the node.}
   \label{fig_npl}
 \end{figure}
 
 The pre-search pruner is consulted where the native CNN is and acts on the same
 structural axis: it may settle the node as NONE and cut the whole subtree below
 it, commit the node to SPLIT, or remove the rectangular types and, with them, the
-extended ones. The post-NONE pruners are consulted after NONE has been evaluated,
-the point at which the three structural decisions of the native encoder are
-disabled in All-Intra coding. One decides whether the search of the node stops
-there; the other decides whether the AB and 4-way types are worth evaluating, the
-only decision that the native networks still take after NONE. Every pruner only
-removes candidates, so moving between the operating points of a preset is a matter of choosing
-which pruner replaces the CNN, not of retraining it.
+extended ones. The post-NONE and the extended pruners are consulted after NONE has
+been evaluated, the point at which the three structural decisions of the native
+encoder are disabled in All-Intra coding. The post-NONE pruner decides whether
+the search of the node ends there, and the extended pruner whether the AB and
+4-way types are worth evaluating, the only decision that the native networks
+still take after NONE. Every pruner only removes candidates, so moving between
+the operating points of a preset is a matter of choosing which pruner replaces
+the CNN, not of retraining it.
+
+\subsection{Features, Dataset and Models}
+\label{sec_models}
+
+Every pruner reads features whose extraction demands no rate-distortion
+evaluation of its own. Twenty-four block-content features (BC) are statistics of
+the samples of the node, of its quadrants and of its contrast with the parent and
+sibling sub-blocks, together with the quantization and the position of the node;
+eight causal-neighbor partition context features (NC) read the partition of the
+coded blocks above and on the left; and four coding-state and position features
+(CSP) are added to them, for thirty-six features in the pre-search pruner. The
+post-NONE and the extended pruners also read the logarithms of the rate, the
+distortion and the RD cost of the measured NONE.
+
+The label of every node comes from an extraction with libaom v3.10.0,
+instrumented to record the decision of the encoder with these features at
+\texttt{cpu-used=0}, since only an exhaustive search gives a faithful label. All
+sixteen UHD 4K sequences of UVG \cite{uvg} were encoded over five frames at
+\texttt{cq-level} 20, 32, 43 and 55, with ten sequences kept for training, three
+for validation and three for testing. The CTC sequences of
+Section~\ref{sec_results} do not belong to UVG, which rules out data leakage
+between training, testing and evaluation.
+
+Every pruner is a set of three MLPs, for nodes of 16, 32 and 64 samples, whose
+two hidden layers have 64 and 32 ReLU units. The pre-search and the post-NONE
+pruners give the probabilities of NONE, of SPLIT and of the remaining types, and
+the extended pruner gives the probability $p_{\mathrm{ext}}$ that the best type
+of the node is an extended one. The models were trained over 30 epochs under
+hard-label cross entropy, with the AdamW optimizer \cite{adamw} in PyTorch
+\cite{pytorch}, and the standardization of the features was folded into the
+first layer, so the encoder executes the models over raw features.
 
 \section*{Acknowledgment}
 
@@ -251,6 +283,12 @@ Brazilian research support agencies CNPq and FAPERGS.
 \bibitem{kherchouche2024} M. E. A. Kherchouche, F. Galpin, T. Dumas, D. Menard, and L. Zhang, ``RD-cost regression speed up technique for VVC intra block partitioning,'' in \emph{Proc. IEEE Int. Conf. Acoust., Speech Signal Process. (ICASSP)}, Apr. 2024, pp. 3530--3534.
 
 \bibitem{kherchouche2025} M. E. A. Kherchouche \emph{et al.}, ``Complexity reduction study based on RD costs approximation for VVC intra partitioning,'' in \emph{Proc. Data Compression Conf. (DCC)}, Mar. 2025, p. 377.
+
+\bibitem{uvg} A. Mercat, M. Viitanen, and J. Vanne, ``UVG dataset: 50/120fps 4K sequences for video codec analysis and development,'' in \emph{Proc. 11th ACM Multimedia Syst. Conf. (MMSys)}, Jun. 2020, pp. 297--302.
+
+\bibitem{adamw} I. Loshchilov and F. Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. Int. Conf. Learn. Represent. (ICLR)}, May 2019, pp. 1--18.
+
+\bibitem{pytorch} A. Paszke \emph{et al.}, ``PyTorch: An imperative style, high-performance deep learning library,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, Dec. 2019, pp. 8024--8035.
 
 \end{thebibliography}
 
