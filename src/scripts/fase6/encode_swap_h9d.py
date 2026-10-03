@@ -33,14 +33,31 @@ Reproduction (container av1_bench):
 import argparse
 import csv
 import os
+import resource
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 from encode_ctc import (  # noqa: E402  reuse the vetted Fase 6 primitives
-    TAU_BALANCED, parse_y4m, encode, load_done, append_row,
+    TAU_BALANCED, CSV_FIELDS, parse_y4m, encode, load_done,
 )
+
+# CTC v9 §5.7 makes the *user time* of /usr/bin/time mandatory for runtime.
+# getrusage(RUSAGE_CHILDREN) reads the same wait4() accounting /usr/bin/time
+# reports, without touching the shared encode(); wall time (time_s) is kept
+# so the rows stay comparable with every earlier Fase 6 campaign.
+FIELDS = CSV_FIELDS + ["user_s", "sys_s"]
+
+
+def append_row(csv_path, row):
+    new = not os.path.exists(csv_path)
+    with open(csv_path, "a", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=FIELDS)
+        if new:
+            w.writeheader()
+        w.writerow(row)
+
 
 CNN_OFF = {"AV1_DISABLE_NATIVE_CNN": "1"}
 # H9d thresholds left unset -> baked-in PL10 per-level defaults, the deployed
@@ -137,8 +154,10 @@ def main():
                     continue
                 out_obu = os.path.join(work, "{}_{}_{}.obu".format(
                     name, cname, cq))
+                ru0 = resource.getrusage(resource.RUSAGE_CHILDREN)
                 dt, psnr_y = encode(args.enc, seq, cq, args.frames, bd, cpu,
                                     env, out_obu)
+                ru1 = resource.getrusage(resource.RUSAGE_CHILDREN)
                 nbytes = os.path.getsize(out_obu)
                 os.remove(out_obu)
                 append_row(csv_path, {
@@ -146,10 +165,14 @@ def main():
                     "fps_num": fps_num, "fps_den": fps_den,
                     "frames": args.frames, "bytes": nbytes,
                     "psnr_y": round(psnr_y, 4), "time_s": round(dt, 3),
+                    "user_s": round(ru1.ru_utime - ru0.ru_utime, 3),
+                    "sys_s": round(ru1.ru_stime - ru0.ru_stime, 3),
                 })
                 done.add((name, cname, cq))
-                print("  cq{:>2} {:<18} time={:7.1f}s  {:8d} B  PSNR-Y={:.4f} dB"
-                      .format(cq, cname, dt, nbytes, psnr_y), flush=True)
+                print("  cq{:>2} {:<18} wall={:7.1f}s user={:7.1f}s  {:8d} B  "
+                      "PSNR-Y={:.4f} dB".format(cq, cname, dt,
+                                                ru1.ru_utime - ru0.ru_utime,
+                                                nbytes, psnr_y), flush=True)
 
     print("\nFASE6_SWAP_H9D_ENCODE_DONE ({} rows in {})".format(
         len(done), csv_path), flush=True)
