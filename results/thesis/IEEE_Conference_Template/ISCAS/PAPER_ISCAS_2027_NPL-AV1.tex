@@ -45,8 +45,8 @@ Neural Pruner Ladder for AV1 (NPL-AV1), a set of lightweight neural networks tha
 replace the native network as drop-in partition pruners at the same speed preset.
 A pre-search pruner decides how much of the partition tree is opened before any
 rate-distortion evaluation, and a post-NONE pruner decides whether the search
-continues after the unpartitioned node is measured, a decision point that the
-native encoder leaves unused in All-Intra coding. Experimental results over the
+continues after the unpartitioned node is measured, a decision that no learned
+model of the native encoder takes in All-Intra coding. Experimental results over the
 eight UHD 4K sequences of the AOM Common Test Conditions show that the post-NONE
 pruner achieves time savings of 30.34\% with a Bjontegaard delta bitrate (BD-BR)
 of 0.41\% at preset 1, statistically on par with the native network, and lowers
@@ -118,12 +118,48 @@ consult each pruner where the information it reads already exists, and to
 measure it at a fixed preset with the native network off, so only the partition
 pruner changes. A pre-search pruner reads the content and the causal partition
 context of the node before any RDO. A post-NONE pruner also reads the RD cost of
-the unpartitioned node, a point where the native encoder runs no learned decision
-in All-Intra coding. Over the eight UHD 4K sequences of the AOM Common Test
+the unpartitioned node, a decision that no learned model of the native encoder
+takes in All-Intra coding. Over the eight UHD 4K sequences of the AOM Common Test
 Conditions (CTC), the post-NONE pruner is statistically on par with the native
 CNN at presets 1 and 2 and cedes significantly less coding efficiency at high
 quality, while the pre-search pruner extends the time savings of every preset:
 each preset becomes a ladder of three operating points instead of one.
+
+\section{The AV1 Intra-Frame Partition Search}
+\label{sec_search}
+
+The basic unit of AV1 partitioning is the superblock, of 128$\times$128 or
+64$\times$64 samples, which the partition tree divides recursively down to
+4$\times$4 samples \cite{han2021}. Each node may take one of ten partition types
+\cite{chen2018}: NONE codes the node as a single block, SPLIT divides it into four
+square sub-blocks, HORZ and VERT divide it into two rectangles, the four AB types
+combine one rectangular half with two square quarters, and the two 4-way types
+cut it into four strips of 4:1 aspect ratio. The AB and 4-way families are called
+the extended partitions.
+
+The libaom encoder evaluates the types of a node in a fixed order, NONE, SPLIT, the
+rectangular and then the extended types \cite{libaom}, so what a pruner can read
+depends on where it is consulted. Before NONE, only the samples, the quantization
+and the decisions of the already coded neighbors exist; after NONE, the rate, the
+distortion and the RD cost of the unpartitioned node exist as well, at the price
+of having been paid.
+
+The native learned pruners occupy both points, but not with the same reach in
+All-Intra coding. Before the search, the CNN of Section~\ref{sec_intro} forces or
+forbids the split from \texttt{cpu-used=1} on. After NONE, three learned decisions
+can end or narrow the search of the node: a breakout after NONE, an early
+termination after SPLIT and the pruning of the rectangular types. All three are
+disabled in intra-only frames by a frame-type guard \cite{libaom}, while two other
+networks stay active and prune the AB and 4-way types from the RD costs already
+measured. Whether the search of a node continues once its unpartitioned cost is
+known is, therefore, a decision that no learned model of the native encoder takes
+in All-Intra coding.
+
+This work is focused on the intra-frame partition search of AV1 under the
+All-Intra (AI) configuration. The intra prediction modes, the transform type and
+the loop filters are decided inside each evaluated partition type, not by the
+partition search itself, and therefore they are not focused on this work, nor is
+the inter-frame partition search.
 
 \section*{Acknowledgment}
 

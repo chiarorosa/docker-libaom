@@ -150,6 +150,13 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   of AV1 intra-frame coding is the block partitioning decision [bender2023]" extrapola a fonte —
   Bender perfila o libaom em geral (inter domina, 76,98%) e só afirma que "partition tree processing
   ... has a significant impact on the overall computational cost". Já corrigidos no ISCAS.
+- `R3` §3.4 ("nicho nativamente vazio"): ressalvar que, em AI, as DNNs nativas
+  `av1_ml_prune_ab_partition` e `av1_ml_prune_4_partition` **continuam ativas** depois do NONE
+  (`ml_prune_partition=1` em todos os presets AI, `speed_features.c:339`; a checagem de
+  `frame_is_intra_only` dentro delas só controla a gravação de atributos). Só as três decisões
+  estruturais (breakout, early-term after split, prune rect) estão desligadas. Enunciado correto,
+  usado no ISCAS: "no learned model of the native encoder decides, in AI, whether the search of a
+  node continues once its unpartitioned cost is known".
 - CNN nativa: nenhuma publicação revisada por pares a descreve (busca de 2026-10-03: Han 2021 e
   Bender 2023 não a mencionam; histórico do googlesource inacessível). Fonte = libaom v3.10.0,
   *speed feature* `intra_cnn_based_part_prune` (`speed_features.h:689`, `partition_strategy.c:189`).
