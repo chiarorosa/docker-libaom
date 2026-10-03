@@ -161,6 +161,37 @@ the loop filters are decided inside each evaluated partition type, not by the
 partition search itself, and therefore they are not focused on this work, nor is
 the inter-frame partition search.
 
+\section{Proposed NPL-AV1 Solution}
+\label{sec_method}
+
+The Neural Pruner Ladder for AV1 (NPL-AV1) inserts MLP pruners at the two points
+of the node search identified in Section~\ref{sec_search}, as shown in
+Fig.~\ref{fig_npl}. The main strategy of this solution is to give each preset of
+libaom a choice of partition pruner instead of a single one: with the native CNN
+switched off, a pre-search or a post-NONE pruner takes its place, and every other
+speed feature of the preset stays as it is.
+
+\begin{figure}[!t]
+  \centering
+  % src/scripts/benchmark/plot_npl_ladder_iscas_fig1.py (variante cinza)
+  \includegraphics[width=\columnwidth]{fig1_npl_ladder}
+  \caption{Learned pruners consulted at each point of the AV1 intra-frame node
+  search, in the native All-Intra encoder and in NPL-AV1. Dashed boxes are native
+  decisions disabled in intra-only frames.}
+  \label{fig_npl}
+\end{figure}
+
+The pre-search pruner is consulted where the native CNN is and acts on the same
+structural axis: it may settle the node as NONE and cut the whole subtree below
+it, commit the node to SPLIT, or remove the rectangular types and, with them, the
+extended ones. The post-NONE pruners are consulted after NONE has been evaluated,
+the point at which the three structural decisions of the native encoder are
+disabled in All-Intra coding. One decides whether the search of the node stops
+there; the other decides whether the AB and 4-way types are worth evaluating, the
+only decision that the native networks still take after NONE. Every pruner only
+removes candidates, so moving along the ladder of a preset is a matter of choosing
+which pruner replaces the CNN, not of retraining it.
+
 \section*{Acknowledgment}
 
 This study was financed in part by the Coordena\c{c}\~ao de Aperfei\c{c}oamento de
