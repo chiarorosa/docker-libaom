@@ -175,9 +175,9 @@ speed feature of the preset stays as it is.
   \centering
   % src/scripts/benchmark/plot_npl_ladder_iscas_fig1.py (variante cinza)
   \includegraphics[width=\columnwidth]{fig1_npl_ladder}
-  \caption{Learned pruners consulted at each point of the AV1 intra-frame node
-  search, in the native All-Intra encoder and in NPL-AV1. Dashed boxes are native
-  decisions disabled in intra-only frames.}
+  \caption{NPL-AV1 flowchart for one node at a fixed preset. The rung of the
+  preset selects the pruner that acts before the search, the post-NONE pruners
+  act after NONE is evaluated, and the shaded action ends the node.}
   \label{fig_npl}
 \end{figure}
 
