@@ -85,6 +85,13 @@ Fontes canônicas: `R2_h9a.md` (§2.5 substituição do H9a), `R3_h9c.md` (§3.4
   desligado byte-idêntica à linha `fase6_swap` (BoxingPractice cq32 cpu1: 1.572.268 B, PSNR-Y
   40,9600; tempo 288,8 s vs 287,4 s em julho). Script: `src/scripts/fase6/encode_swap_h9d.py`.
 
+- 2026-10-03 14:14 (-0300) — **campanha D2 enxuta lançada** após o commit do pré-registro
+  (`28f9145`, 14:12). Contêiner `av1_bench`, PID 122, log
+  `results/benchmark/fase6_swap_h9d/run.log`, 192 codificações, ≈ 11 h. Tempo de parede como métrica
+  (consistente com todas as campanhas anteriores, nenhuma tem *user time*); `user_s`/`sys_s` gravados
+  como colunas extras (`5c88035`), sem âncora remedida em *user time* — por decisão do usuário, não
+  usados no artigo. Ao terminar: `encode_swap_h9d.py --check-integrity` (P0) antes de qualquer leitura.
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4
