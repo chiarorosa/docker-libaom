@@ -261,6 +261,107 @@ partition pruner is the only difference from the native configuration. Since
 every pruner removes candidates and never forces one, NPL-AV1 is fully compliant
 with the AV1 specification and does not affect the bitstream syntax.
 
+\section{Results and Comparisons}
+\label{sec_results}
+
+NPL-AV1 was evaluated in the libaom v3.10.0 reference software under the
+All-Intra configuration of the AOM CTC \cite{ctc}, over the eight sequences of
+Class A1, of 3840$\times$2160 samples, 10-bit depth and 4:2:0 chroma subsampling
+\cite{xipha1}, of which the first 15 frames were encoded at \texttt{cq-level} 20,
+32, 43 and 55, with the two-tile setting of the CTC for 4K content, against
+libaom at \texttt{cpu-used=0} as anchor. Three deviations from the CTC are
+declared: the quantization is set by \texttt{cq-level}, since this version of
+libaom has no \texttt{--qp} option; the time is the wall time of each encode;
+and the configurations under evaluation run at presets 1, 2 and 3, while only
+the anchor keeps \texttt{cpu-used=0}, since the preset is the controlled
+variable of this work. The BD-BR \cite{bjontegaard} uses the luma PSNR, and a
+positive value is a coding efficiency loss. With $t(s,q)$ and
+$t_{\mathrm{anc}}(s,q)$ the encoding times of a configuration and of the anchor
+for sequence $s$ at \texttt{cq-level} $q$, and $S$ and $Q$ the sets of sequences
+and of \texttt{cq-level} values, the time savings are
+\begin{equation}
+\mathrm{TS} = \frac{100}{|S|} \sum_{s \in S} \frac{1}{|Q|} \sum_{q \in Q}
+\left( 1 - \frac{t(s,q)}{t_{\mathrm{anc}}(s,q)} \right) \%.
+\label{eq_ts}
+\end{equation}
+Each configuration was encoded once. Five repeated encodes on one sequence give
+0.23 percentage points of standard deviation for TS, so TS differences under 0.46
+points are not resolved; the BD-BR comes from the bitstream size and the PSNR,
+which are exact.
+
+Table~\ref{tab_replace} gives both metrics for the native CNN and for the
+NPL-AV1 pruners that replace it at each preset. The post-NONE pruner and the
+native CNN are comparable at presets 1 and 2: 0.414\% against 0.449\% of BD-BR
+at preset 1 and 0.516\% against 0.536\% at preset 2, for 30.34\% and 40.73\% of
+TS against 32.59\% and 42.72\%. The paired t-tests of Table~\ref{tab_ttest},
+over the eight sequences, show no significant BD-BR difference at either
+preset, while the TS of the post-NONE pruner is lower by 2.25 percentage points
+at preset 1 ($p = 0.046$) and by 1.99 at preset 2 ($p = 0.055$). At preset 3
+the replacement has a BD-BR higher by 0.662 points, in all eight sequences.
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.1}
+\caption{BD-BR and TS of the Native CNN and of the NPL-AV1 Pruners at the Same
+Preset}
+\label{tab_replace}
+\centering
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccccc}
+\hline
+ & \multicolumn{2}{c}{\textbf{Preset 1}} & \multicolumn{2}{c}{\textbf{Preset 2}}
+ & \multicolumn{2}{c}{\textbf{Preset 3}} \\
+\textbf{Pruner} & \textbf{BD-BR} & \textbf{TS} & \textbf{BD-BR} & \textbf{TS}
+ & \textbf{BD-BR} & \textbf{TS} \\
+ & (\%) & (\%) & (\%) & (\%) & (\%) & (\%) \\
+\hline
+Native CNN & 0.449 & 32.59 & 0.536 & 42.72 & 2.722 & 67.94 \\
+Post-NONE & 0.414 & 30.34 & 0.516 & 40.73 & 3.384 & 70.25 \\
+\multicolumn{7}{l}{Pre-search:} \\
+\quad Efficiency-first & 0.915 & 40.20 & 1.030 & 50.05 & 3.866 & 73.09 \\
+\quad\quad + extended$^{\mathrm{a}}$ & 0.947 & 41.15 & 1.069 & 50.99 & 3.868 & 72.96 \\
+\quad Time-first & 1.685 & 51.82 & 1.805 & 60.97 & 4.347 & 77.30 \\
+\hline
+\multicolumn{7}{l}{\footnotesize $^{\mathrm{a}}$With the extended pruner; separate campaign, increment}\\
+\multicolumn{7}{l}{\footnotesize \phantom{$^{\mathrm{a}}$}measured over a re-encoded base and discussed below.}
+\end{tabular}
+\end{table}
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.1}
+\caption{Paired t-Tests of the Post-NONE Pruner Against the Native CNN, Over
+Eight Sequences}
+\label{tab_ttest}
+\centering
+\begin{tabular}{cccccc}
+\hline
+\textbf{Preset} & \textbf{cq-level} & \textbf{$\Delta$BD-BR} & \textbf{$p$}
+ & \textbf{$\Delta$TS} & \textbf{$p$} \\
+ & & (pp) & & (pp) & \\
+\hline
+1 & all & $-0.034$ & 0.278 & $-2.25$ & 0.046 \\
+1 & 20, 32 & $-0.088$ & 0.043 & $-4.29$ & 0.036 \\
+1 & 43, 55 & $+0.009$ & 0.826 & $-0.22$ & 0.678 \\
+2 & all & $-0.020$ & 0.291 & $-1.99$ & 0.055 \\
+2 & 20, 32 & $-0.086$ & 0.015 & $-3.88$ & 0.041 \\
+2 & 43, 55 & $+0.027$ & 0.467 & $-0.10$ & 0.859 \\
+3 & all & $+0.662$ & 0.004 & $+2.30$ & 0.002 \\
+\hline
+\end{tabular}
+\end{table}
+
+The average over the whole grid is the mean of two different regimes. At
+\texttt{cq-level} 20 and 32, the post-NONE pruner lowers the BD-BR of the native
+CNN by 0.088 points at preset 1 and by 0.086 at preset 2, both significant
+($p = 0.043$ and $p = 0.015$) and in six and seven of the eight sequences, at a
+cost of 4.29 and 3.88 percentage points of TS. At \texttt{cq-level} 43 and 55
+the two pruners do not differ in BD-BR. This split by quantization regime was
+made after the result over the whole grid and is not corrected for multiple
+comparisons; its support is the replication of the same sign and magnitude at
+two independent presets. This fact partly explains why a shallow model reaches
+the coding efficiency of the native network: it reads the measured RD cost of
+NONE, which no neural model of the native encoder reads before deciding whether
+the search of the node continues.
+
 \section*{Acknowledgment}
 
 This study was financed in part by the Coordena\c{c}\~ao de Aperfei\c{c}oamento de
@@ -272,11 +373,11 @@ Brazilian research support agencies CNPq and FAPERGS.
 
 \bibitem{statista} Statista. (2025). \emph{Share of Internet Users Watching Online Videos Every Month From 1st Quarter 2022 to 3rd Quarter 2024}. [Online]. Available: \url{https://www.statista.com/statistics/1489445/online-video-viewers-worldwide-quarterly/}
 
+\bibitem{av1site} Alliance for Open Media. (2019). \emph{AV1 Video Codec}. [Online]. Available: \url{https://aomedia.org/av1}
+
 \bibitem{hevc} ITU-T. (2013). \emph{H.265: High Efficiency Video Coding}. [Online]. Available: \url{https://www.itu.int/rec/t-rec-h.265}
 
 \bibitem{vvc} ITU-T. (2020). \emph{H.266: Versatile Video Coding}. [Online]. Available: \url{https://www.itu.int/rec/t-rec-h.266}
-
-\bibitem{av1site} Alliance for Open Media. (2019). \emph{AV1 Video Codec}. [Online]. Available: \url{https://aomedia.org/av1}
 
 \bibitem{han2021} J. Han \emph{et al.}, ``A technical overview of AV1,'' \emph{Proc. IEEE}, vol. 109, no. 9, pp. 1435--1462, Sep. 2021.
 
@@ -323,6 +424,12 @@ Brazilian research support agencies CNPq and FAPERGS.
 \bibitem{adamw} I. Loshchilov and F. Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. Int. Conf. Learn. Represent. (ICLR)}, May 2019, pp. 1--18.
 
 \bibitem{pytorch} A. Paszke \emph{et al.}, ``PyTorch: An imperative style, high-performance deep learning library,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, Dec. 2019, pp. 8024--8035.
+
+\bibitem{ctc} X. Zhao \emph{et al.}, ``AOM common test conditions v9.0,'' Alliance for Open Media, Codec Working Group, doc. CWG-G082, Mar. 2026.
+
+\bibitem{xipha1} Xiph.Org Foundation. \emph{AOM CTC Test Set, Class A1 (4K)}. [Online]. Available: \url{https://media.xiph.org/video/aomctc/test_set/a1_4k/}
+
+\bibitem{bjontegaard} G. Bj{\o}ntegaard, ``Calculation of average PSNR differences between RD-curves,'' Video Coding Experts Group (VCEG), doc. VCEG-M33, Mar. 2001.
 
 \end{thebibliography}
 
