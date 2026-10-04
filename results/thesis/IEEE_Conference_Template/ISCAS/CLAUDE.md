@@ -161,6 +161,12 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   Index Terms. Compilação no contêiner `latex_build` (monta `results/` em `/work`): 0 warnings,
   fontes Type 1 embutidas. Pendente no Abstract: frase do H9d empilhado (após D2).
 
+### Pendências no artigo
+- Abstract: acrescentar (i) a fração de pontos não dominados (13 de 16 configurações, 10 do NPL-AV1)
+  e (ii) a frase do podador de estendidas (+0,87 / +0,83 pp em p1/p2, some em p3). Saíram do `.tex`
+  como comentário `[completar]` em 2026-10-04 e ficam registradas aqui.
+- Seção V (Conclusões) por escrever. Decidir se volta uma Fig. 2 compacta (há ≈ 0,5 coluna livre).
+
 ### Pendências fora do artigo
 - `M3` §3.3: corrigir `--threads=1` → `--threads=2` (o código e a CTC usam 2 para 4K).
 - `R3` §3.4: "menos da metade da taxa BD da nativa nos dois presets" só vale no p1
