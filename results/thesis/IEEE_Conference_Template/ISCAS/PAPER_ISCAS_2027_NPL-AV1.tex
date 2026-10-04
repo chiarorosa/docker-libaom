@@ -317,13 +317,15 @@ Preset}
 \hline
 Native CNN & 0.449 & 32.59 & 0.536 & 42.72 & 2.722 & 67.94 \\
 Post-NONE & 0.414 & 30.34 & 0.516 & 40.73 & 3.384 & 70.25 \\
-\multicolumn{7}{l}{Pre-search:} \\
+\multicolumn{7}{l}{Pre-search$^{\mathrm{b}}$:} \\
 \quad Efficiency-first & 0.915 & 40.20 & 1.030 & 50.05 & 3.866 & 73.09 \\
 \quad\quad + extended$^{\mathrm{a}}$ & 0.947 & 41.15 & 1.069 & 50.99 & 3.868 & 72.96 \\
 \quad Time-first & 1.685 & 51.82 & 1.805 & 60.97 & 4.347 & 77.30 \\
 \hline
 \multicolumn{7}{l}{\footnotesize $^{\mathrm{a}}$With the extended pruner; separate campaign, increment}\\
-\multicolumn{7}{l}{\footnotesize \phantom{$^{\mathrm{a}}$}measured over a re-encoded base and discussed below.}
+\multicolumn{7}{l}{\footnotesize \phantom{$^{\mathrm{a}}$}measured over a re-encoded base and discussed below.}\\
+\multicolumn{7}{l}{\footnotesize $^{\mathrm{b}}$At \texttt{cpu-used=0}, pre-search $(0.90, 0.90)$ with the post-NONE}\\
+\multicolumn{7}{l}{\footnotesize \phantom{$^{\mathrm{b}}$}pruner: 0.160\% of BD-BR for 12.61\% of TS.}
 \end{tabular}
 \end{table}
 
@@ -333,20 +335,21 @@ Post-NONE & 0.414 & 30.34 & 0.516 & 40.73 & 3.384 & 70.25 \\
 Eight Sequences}
 \label{tab_ttest}
 \centering
-\begin{tabular}{cccccc}
+\begin{tabular}{ccccccc}
 \hline
 \textbf{Preset} & \textbf{cq-level} & \textbf{$\Delta$BD-BR} & \textbf{$p$}
- & \textbf{$\Delta$TS} & \textbf{$p$} \\
- & & (pp) & & (pp) & \\
+ & \textbf{Seq.}$^{\mathrm{a}}$ & \textbf{$\Delta$TS} & \textbf{$p$} \\
+ & & (pp) & & & (pp) & \\
 \hline
-1 & all & $-0.034$ & 0.278 & $-2.25$ & 0.046 \\
-1 & 20, 32 & $-0.088$ & 0.043 & $-4.29$ & 0.036 \\
-1 & 43, 55 & $+0.009$ & 0.826 & $-0.22$ & 0.678 \\
-2 & all & $-0.020$ & 0.291 & $-1.99$ & 0.055 \\
-2 & 20, 32 & $-0.086$ & 0.015 & $-3.88$ & 0.041 \\
-2 & 43, 55 & $+0.027$ & 0.467 & $-0.10$ & 0.859 \\
-3 & all & $+0.662$ & 0.004 & $+2.30$ & 0.002 \\
+1 & all & $-0.034$ & 0.278 & 4 & $-2.25$ & 0.046 \\
+1 & 20, 32 & $-0.088$ & 0.043 & 6 & $-4.29$ & 0.036 \\
+1 & 43, 55 & $+0.009$ & 0.826 & 3 & $-0.22$ & 0.678 \\
+2 & all & $-0.020$ & 0.291 & 5 & $-1.99$ & 0.055 \\
+2 & 20, 32 & $-0.086$ & 0.015 & 7 & $-3.88$ & 0.041 \\
+2 & 43, 55 & $+0.027$ & 0.467 & 3 & $-0.10$ & 0.859 \\
+3 & all & $+0.662$ & 0.004 & 0 & $+2.30$ & 0.002 \\
 \hline
+\multicolumn{7}{l}{\footnotesize $^{\mathrm{a}}$Sequences in which the post-NONE pruner has the lower BD-BR.}
 \end{tabular}
 \end{table}
 
@@ -362,6 +365,75 @@ two independent presets. This fact partly explains why a shallow model reaches
 the coding efficiency of the native network: it reads the measured RD cost of
 NONE, which no neural model of the native encoder reads before deciding whether
 the search of the node continues.
+
+The pre-search pruner gives the other end of each preset. At the
+efficiency-first point it reaches 40.20\%, 50.05\% and 73.09\% of TS at presets
+1, 2 and 3, against 32.59\%, 42.72\% and 67.94\% of the native CNN, at a BD-BR
+1.4 to 2.0 times higher, and the time-first point reaches 77.30\% of TS, a
+speedup of 4.47 times, at 4.347\% of BD-BR. At \texttt{cpu-used=0}, the third
+operating point together with the post-NONE pruner gives the lowest BD-BR
+measured, 0.160\% for 12.61\% of TS, below the first preset of libaom.
+
+The extended pruner adds time savings to the efficiency-first point, as
+Table~\ref{tab_seq} shows sequence by sequence. Against the same point
+re-encoded in its own campaign, it lifts the TS by 0.87 percentage points at
+preset 1 and by 0.83 at preset 2, in all eight sequences ($p = 0.001$), at 0.032
+and 0.039 points of BD-BR: 27 and 21 points of TS per point of BD-BR, against
+15.1 and 14.1 when the thresholds of the pre-search pruner are loosened from the
+efficiency-first to the time-first point in Table~\ref{tab_replace}. At preset
+3 the gain collapses to $-0.14$ points in all eight sequences, the preset at
+which libaom itself starts to prune the extended partitions. One rule explains
+both results: two pruners add their time savings when they remove disjoint sets
+of candidates, and compete for them when they remove the same ones, as the
+extended pruner and the native pruning at preset 3, or the pre-search and the
+post-NONE pruners, whose combination at \texttt{cpu-used=0} saves 1.9 points
+less than the sum of their separate time savings over four sequences.
+
+\begin{table}[!t]
+\renewcommand{\arraystretch}{1.1}
+\caption{Per-Sequence Results at Preset 1 and Increment of the Extended Pruner}
+\label{tab_seq}
+\centering
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{lccccccc}
+\hline
+ & \multicolumn{2}{c}{\textbf{Native CNN}} & \multicolumn{2}{c}{\textbf{Post-NONE}}
+ & \multicolumn{3}{c}{\textbf{Ext. $\Delta$TS (pp)}} \\
+\textbf{Sequence} & \textbf{BD-BR} & \textbf{TS} & \textbf{BD-BR} & \textbf{TS}
+ & \textbf{P1} & \textbf{P2} & \textbf{P3} \\
+ & (\%) & (\%) & (\%) & (\%) & & & \\
+\hline
+BoxingPractice & 0.587 & 33.47 & 0.554 & 33.00 & $+0.63$ & $+0.90$ & $-0.11$ \\
+Crosswalk & 0.093 & 32.78 & 0.061 & 33.02 & $+1.21$ & $+1.28$ & $-0.24$ \\
+FoodMarket2 & 0.170 & 29.18 & 0.171 & 26.58 & $+1.38$ & $+1.28$ & $-0.32$ \\
+Neon1224 & 0.725 & 35.60 & 0.520 & 31.42 & $+0.22$ & $+0.13$ & $-0.07$ \\
+NocturneDance & 0.817 & 28.66 & 0.864 & 26.92 & $+0.86$ & $+0.78$ & $-0.20$ \\
+PierSeaSide & 0.481 & 35.88 & 0.382 & 31.60 & $+0.43$ & $+0.44$ & $-0.15$ \\
+Tango & 0.348 & 32.46 & 0.383 & 33.88 & $+1.40$ & $+1.08$ & $-0.03$ \\
+TimeLapse & 0.369 & 32.72 & 0.378 & 26.31 & $+0.80$ & $+0.75$ & $-0.02$ \\
+\hline
+\textbf{Average} & \textbf{0.449} & \textbf{32.59} & \textbf{0.414} & \textbf{30.34}
+ & $\mathbf{+0.87}$ & $\mathbf{+0.83}$ & $\mathbf{-0.14}$ \\
+\hline
+\end{tabular}
+\end{table}
+
+Among the sixteen configurations of Table~\ref{tab_replace}, thirteen are
+nondominated in BD-BR and TS, ten from NPL-AV1 and three from the native CNN, one
+per preset. No NPL-AV1 point dominates the native CNN at the same preset, so the
+contribution of NPL-AV1 is not a point that dominates the native one, but more
+operating points beside it: at every preset, the post-NONE pruner is on the side
+of coding efficiency and the pre-search pruner on the side of time savings.
+
+The cost of the pruners themselves was measured in the encoder over three frames
+of two sequences at preset 1: the post-NONE pruner takes 0.26\% to 0.36\% of the
+encoding time, the efficiency-first pre-search pruner 0.41\% to 0.48\% and the
+extended pruner 0.37\% to 0.42\%, against 0.13\% to 0.19\% of the native CNN,
+so the time savings come from the removed candidates and not from the
+inference. No work in the literature replaces the partition network of the AV1
+reference encoder, and the solutions of Section~\ref{sec_intro} were designed
+for other codecs, so the native CNN is the reference of comparison of this
+work.
 
 \section*{Acknowledgment}
 
