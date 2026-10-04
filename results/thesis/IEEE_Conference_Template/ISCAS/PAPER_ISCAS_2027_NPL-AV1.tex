@@ -133,11 +133,11 @@ The libaom encoder evaluates the types of a node in a fixed order, NONE, SPLIT, 
 rectangular and then the extended types \cite{libaom}, so what a pruner can read
 depends on where it is consulted. Before NONE, only the samples, the quantization
 and the decisions of the already coded neighbors exist; after NONE, the rate, the
-distortion and the RD cost of the unpartitioned node exist as well, at the price
-of having been paid.
+distortion and the RD cost of the unpartitioned node exist as well, and a pruner
+consulted there can still save the evaluation of every remaining type.
 
-The native neural pruners act at both points, but not with the same reach in
-All-Intra coding. Before the search, the CNN of Section~\ref{sec_intro} forces or
+In All-Intra coding, the native neural pruners leave the point after NONE
+almost free. Before the search, the CNN of Section~\ref{sec_intro} forces or
 forbids the split. After NONE, three neural decisions can end the search of the
 node or remove candidates from it: a breakout after NONE, an early termination
 after SPLIT and the pruning of the rectangular types. A frame-type guard disables
@@ -145,7 +145,8 @@ all three in intra-only frames \cite{libaom}. Only two networks stay active afte
 NONE, and they prune the AB and 4-way types from the RD costs already measured.
 Whether the search of a node continues once its unpartitioned cost is
 known is, therefore, a decision that no neural model of the native encoder takes
-in All-Intra coding.
+in All-Intra coding, and the one that the post-NONE pruner of
+Section~\ref{sec_method} takes.
 
 This work is focused on the intra-frame partition search of AV1 under the
 All-Intra (AI) configuration. The intra prediction modes, the transform type and
