@@ -241,6 +241,14 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   é a poda pelo resultado do SPLIT (`prune_ext_part_using_split_info`) → "libaom adds its own
   pruning"; o pós-NONE só fica "do lado da eficiência" em p1 e p2 (em p3 tem BD-BR maior que a CNN).
 
+- 2026-10-04 — **Tabelas I e II refeitas para leitura isolada** (crítica do orientador: notas a/b da
+  Tab. I e a coluna de preset "1, 1, 1" da Tab. II). Tab. I sem notas remissivas: grupo "NPL-AV1:",
+  linha Δ do podador de estendidas (+0,032/+0,87, +0,039/+0,83, +0,002/−0,14) no lugar da linha
+  absoluta (que não fechava a conta: 50,05 + 0,83 ≠ 50,99, base recodificada), uma linha "lower/higher
+  is better". O ponto de `cpu-used=0` e o absoluto 50,16% → 50,99% (1,069%) foram para o texto; a
+  contagem 16/13/10 diz agora de onde vêm as 16. Tab. II com presets como linhas de grupo, BD-BR e TS
+  agrupados, p < 0,05 em negrito. Palavras aprovadas fora do molde: *better, minus, bold, added*.
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4

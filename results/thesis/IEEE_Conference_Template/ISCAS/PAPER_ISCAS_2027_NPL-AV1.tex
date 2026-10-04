@@ -299,54 +299,62 @@ the replacement has a BD-BR higher by 0.662 points, in all eight sequences.
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.1}
-\caption{BD-BR and TS of the Native CNN and of the NPL-AV1 Pruners at the Same
-Preset}
+\caption{BD-BR and TS Against libaom at \texttt{cpu-used=0}: Native CNN and
+NPL-AV1 Pruners at Presets 1 to 3}
 \label{tab_replace}
 \centering
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{3pt}
 \begin{tabular}{lcccccc}
 \hline
  & \multicolumn{2}{c}{\textbf{Preset 1}} & \multicolumn{2}{c}{\textbf{Preset 2}}
  & \multicolumn{2}{c}{\textbf{Preset 3}} \\
-\textbf{Pruner} & \textbf{BD-BR} & \textbf{TS} & \textbf{BD-BR} & \textbf{TS}
+\textbf{Partition pruner} & \textbf{BD-BR} & \textbf{TS} & \textbf{BD-BR} & \textbf{TS}
  & \textbf{BD-BR} & \textbf{TS} \\
  & (\%) & (\%) & (\%) & (\%) & (\%) & (\%) \\
 \hline
-Native CNN & 0.449 & 32.59 & 0.536 & 42.72 & 2.722 & 67.94 \\
-Post-NONE & 0.414 & 30.34 & 0.516 & 40.73 & 3.384 & 70.25 \\
-\multicolumn{7}{l}{Pre-search$^{\mathrm{b}}$:} \\
-\quad Efficiency-first & 0.915 & 40.20 & 1.030 & 50.05 & 3.866 & 73.09 \\
-\quad\quad + extended$^{\mathrm{a}}$ & 0.947 & 41.15 & 1.069 & 50.99 & 3.868 & 72.96 \\
-\quad Time-first & 1.685 & 51.82 & 1.805 & 60.97 & 4.347 & 77.30 \\
+libaom native CNN & 0.449 & 32.59 & 0.536 & 42.72 & 2.722 & 67.94 \\
 \hline
-\multicolumn{7}{l}{\footnotesize $^{\mathrm{a}}$With the extended pruner; separate campaign, increment}\\
-\multicolumn{7}{l}{\footnotesize \phantom{$^{\mathrm{a}}$}measured over a re-encoded base and discussed below.}\\
-\multicolumn{7}{l}{\footnotesize $^{\mathrm{b}}$At \texttt{cpu-used=0}, pre-search $(0.90, 0.90)$, $\tau_{\mathrm{rest}}$ disabled, with}\\
-\multicolumn{7}{l}{\footnotesize \phantom{$^{\mathrm{b}}$}the post-NONE pruner: 0.160\% of BD-BR for 12.61\% of TS.}
+\multicolumn{7}{l}{NPL-AV1:} \\
+\quad Post-NONE & 0.414 & 30.34 & 0.516 & 40.73 & 3.384 & 70.25 \\
+\quad Pre-search, & & & & & & \\
+\quad\quad efficiency-first & 0.915 & 40.20 & 1.030 & 50.05 & 3.866 & 73.09 \\
+\quad\quad time-first & 1.685 & 51.82 & 1.805 & 60.97 & 4.347 & 77.30 \\
+\hline
+\multicolumn{7}{l}{Extended pruner added to efficiency-first (pp):} \\
+\quad $\Delta$ & $+0.032$ & $+0.87$ & $+0.039$ & $+0.83$ & $+0.002$ & $-0.14$ \\
+\hline
+\multicolumn{7}{l}{\footnotesize BD-BR: lower is better. TS: higher is better.}
 \end{tabular}
 \end{table}
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.1}
-\caption{Paired t-Tests of the Post-NONE Pruner Against the Native CNN, Over
-Eight Sequences}
+\caption{Post-NONE Pruner Minus Native CNN at the Same Preset: Paired t-Tests
+Over the Eight Sequences}
 \label{tab_ttest}
 \centering
-\begin{tabular}{ccccccc}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lccccc}
 \hline
-\textbf{Preset} & \textbf{cq-level} & \textbf{$\Delta$BD-BR} & \textbf{$p$}
- & \textbf{Seq.}$^{\mathrm{a}}$ & \textbf{$\Delta$TS} & \textbf{$p$} \\
- & & (pp) & & & (pp) & \\
+ & \multicolumn{3}{c}{\textbf{BD-BR}} & \multicolumn{2}{c}{\textbf{TS}} \\
+\cline{2-4}\cline{5-6}
+\textbf{cq-level} & \textbf{$\Delta$ (pp)} & \textbf{$p$} & \textbf{Seq.}
+ & \textbf{$\Delta$ (pp)} & \textbf{$p$} \\
 \hline
-1 & all & $-0.034$ & 0.278 & 4 & $-2.25$ & 0.046 \\
-1 & 20, 32 & $-0.088$ & 0.043 & 6 & $-4.29$ & 0.036 \\
-1 & 43, 55 & $+0.009$ & 0.826 & 3 & $-0.22$ & 0.678 \\
-2 & all & $-0.020$ & 0.291 & 5 & $-1.99$ & 0.055 \\
-2 & 20, 32 & $-0.086$ & 0.015 & 7 & $-3.88$ & 0.041 \\
-2 & 43, 55 & $+0.027$ & 0.467 & 3 & $-0.10$ & 0.859 \\
-3 & all & $+0.662$ & 0.004 & 0 & $+2.30$ & 0.002 \\
+\multicolumn{6}{l}{\textit{Preset 1}} \\
+20 to 55 & $-0.034$ & 0.278 & 4 & $-2.25$ & \textbf{0.046} \\
+20, 32 & $-0.088$ & \textbf{0.043} & 6 & $-4.29$ & \textbf{0.036} \\
+43, 55 & $+0.009$ & 0.826 & 3 & $-0.22$ & 0.678 \\
+\multicolumn{6}{l}{\textit{Preset 2}} \\
+20 to 55 & $-0.020$ & 0.291 & 5 & $-1.99$ & 0.055 \\
+20, 32 & $-0.086$ & \textbf{0.015} & 7 & $-3.88$ & \textbf{0.041} \\
+43, 55 & $+0.027$ & 0.467 & 3 & $-0.10$ & 0.859 \\
+\multicolumn{6}{l}{\textit{Preset 3}} \\
+20 to 55 & $+0.662$ & \textbf{0.004} & 0 & $+2.30$ & \textbf{0.002} \\
 \hline
-\multicolumn{7}{l}{\footnotesize $^{\mathrm{a}}$Sequences in which the post-NONE pruner has the lower BD-BR.}
+\multicolumn{6}{l}{\footnotesize $\Delta$: post-NONE minus native CNN.}\\
+\multicolumn{6}{l}{\footnotesize Seq.: sequences, of eight, in which post-NONE}\\
+\multicolumn{6}{l}{\footnotesize has the lower BD-BR. Bold: $p < 0.05$.}
 \end{tabular}
 \end{table}
 
@@ -372,7 +380,8 @@ The extended pruner confirms the rule of Section~\ref{sec_method}, as
 Table~\ref{tab_seq} shows sequence by sequence. Against the efficiency-first
 point re-encoded in its own campaign, it lifts the TS by 0.87 percentage points
 at preset 1 and by 0.83 at preset 2, in all eight sequences ($p = 0.001$), at
-0.032 and 0.039 points of BD-BR. This is 27 and 21 points of TS per point of
+0.032 and 0.039 points of BD-BR. At preset 2, it lifts the TS of that
+re-encoded point from 50.16\% to 50.99\%, with 1.069\% of BD-BR. This is 27 and 21 points of TS per point of
 BD-BR, against 15.1 and 14.1 when the thresholds of the pre-search pruner are
 loosened from the efficiency-first to the time-first point. At preset 3, where
 libaom adds its own pruning of the extended partitions, the gain collapses to
@@ -409,8 +418,11 @@ TimeLapse & 0.369 & 32.72 & 0.378 & 26.31 & $+0.80$ & $+0.75$ & $-0.02$ \\
 \end{tabular}
 \end{table}
 
-Among the sixteen configurations of Table~\ref{tab_replace}, thirteen are
-nondominated in BD-BR and TS, ten from NPL-AV1 and three from the native CNN, one
+One more NPL-AV1 point was measured at \texttt{cpu-used=0}, with the pre-search
+pruner at $(0.90, 0.90)$, $\tau_{\mathrm{rest}}$ disabled, and the post-NONE
+pruner: 0.160\% of BD-BR for 12.61\% of TS. Among the sixteen configurations
+measured, the twelve of Table~\ref{tab_replace}, the three with the extended
+pruner and the one at \texttt{cpu-used=0}, thirteen are nondominated in BD-BR and TS, ten from NPL-AV1 and three from the native CNN, one
 per preset. No NPL-AV1 point dominates the native CNN at the same preset. The
 contribution of NPL-AV1 is, therefore, more operating points beside the native
 one: at presets 1 and 2 the post-NONE pruner is on the side of coding
