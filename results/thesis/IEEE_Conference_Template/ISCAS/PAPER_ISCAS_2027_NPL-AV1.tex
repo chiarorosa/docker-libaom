@@ -40,20 +40,21 @@ partitioning through a recursive rate-distortion search. At its fast speed
 presets, the reference encoder prunes this search with a convolutional neural
 network. This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set
 of shallow neural networks that replace the native network at the same speed
-preset, keeping its other speed features unchanged. A pre-search pruner removes
-partition types before any rate-distortion evaluation. A post-NONE pruner
-decides whether the search continues after the unpartitioned node is measured,
-a decision that no neural model of the native encoder takes in All-Intra coding.
-An extended pruner decides whether the extended partition types are evaluated.
-Over the eight UHD 4K sequences of the AOM Common Test Conditions, the post-NONE
-pruner achieves time savings of 30.34\% with a Bjontegaard delta bitrate
-(BD-BR) of 0.41\% at preset 1. Its BD-BR does not differ significantly from
-that of the native network at presets 1 and 2, and is significantly lower at
-high quality. Across presets 1 to 3, the pre-search
-pruner gives time savings from 40.20\% to 77.30\%. The extended pruner alone
-adds up to 0.87 percentage points, and the two combined reach 50.99\% with a
-BD-BR of 1.07\% at preset 2. Ten of the thirteen nondominated operating points
-belong to NPL-AV1.
+preset, keeping its other speed features unchanged. Instead of one network
+consulted once per block before the search, NPL-AV1 consults one network per
+node size at three points of the search. A pre-search pruner removes partition
+types before any rate-distortion evaluation. A post-NONE pruner decides whether
+the search continues after the unpartitioned node is measured, a decision that
+no neural model of the native encoder takes in All-Intra coding. An extended
+pruner decides whether the extended partition types are evaluated. Over the
+eight UHD 4K sequences of the AOM Common Test Conditions, the post-NONE pruner
+equals or improves the coding efficiency of the native network at presets 1 and
+2, significantly at high quality, with time savings of 30.34\% and a Bjontegaard
+delta bitrate (BD-BR) of 0.41\% at preset 1. The pre-search pruner exceeds the
+time savings of the native network at every preset, with 40.20\% to 77.30\%,
+and the extended pruner adds up to 0.87 percentage points in all eight
+sequences, reaching 50.99\% with a BD-BR of 1.07\% at preset 2. Ten of the
+thirteen nondominated operating points belong to NPL-AV1.
 \end{abstract}
 
 \begin{IEEEkeywords}
