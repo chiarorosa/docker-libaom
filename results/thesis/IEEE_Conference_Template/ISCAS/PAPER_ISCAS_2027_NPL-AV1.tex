@@ -426,10 +426,8 @@ of two sequences at preset 1, and every NPL-AV1 pruner takes less than 0.5\% of
 the encoding time: 0.26\% to 0.36\% for the post-NONE pruner, 0.41\% to 0.48\%
 for the efficiency-first pre-search pruner and 0.37\% to 0.42\% for the extended
 pruner. The time savings come, therefore, from the removed candidates and not from the
-inference. No work in the literature replaces the partition network of the AV1
-reference encoder, and the solutions of Section~\ref{sec_intro} were designed
-for other codecs, so the native CNN is the reference of comparison of this
-work.
+inference. Since no work replaces the partition network of the AV1 reference
+encoder, the native CNN is the reference of comparison of this work.
 
 \section{Conclusions}
 
@@ -437,12 +435,9 @@ This paper presented NPL-AV1, a set of shallow neural pruners that replace the
 native CNN of the AV1 intra-frame partition search at the same speed preset, so
 that each preset of libaom gains operating points on both sides of the native
 CNN. Instead of one CNN that reads each 64$\times$64 block once, NPL-AV1
-consults one MLP per node size at three points of the node search. The
-pre-search pruner acts where the native CNN acted. The post-NONE pruner decides,
-from the RD cost of the unpartitioned node, whether the search of the node ends,
-a decision that no neural model of the native encoder takes in All-Intra
-coding. The extended pruner decides whether the AB and 4-way types are
-evaluated. The pruners were implemented in C within libaom v3.10.0 and evaluated
+consults one MLP per node size at three points of the node search: before it,
+after NONE, where no neural model of the native encoder decides in All-Intra
+coding whether the search ends, and before the AB and 4-way types. The pruners were implemented in C within libaom v3.10.0 and evaluated
 over the eight CTC Class A1 sequences at presets 1, 2 and 3. At presets 1 and 2,
 the post-NONE pruner equals or improves the coding efficiency of the native CNN
 in all six comparisons of Table~\ref{tab_ttest}, significantly at high quality,
@@ -452,8 +447,11 @@ pruner exceeds the time savings of the native CNN at every preset, up to
 sequences and, with the pre-search pruner, reaches 50.99\% of time savings with
 1.07\% of BD-BR at preset 2. Ten of the thirteen nondominated operating points
 belong to NPL-AV1. These results come from MLPs with two hidden layers trained
-on five frames of sixteen sequences, so deeper models and larger training sets
-are a direction for future work. Besides, to the best of the authors'
+on a single public dataset, five frames of each of the sixteen UVG sequences,
+which indicates that the architecture of NPL-AV1 already equals or improves the
+native CNN with a small training budget. Larger and more diverse training sets
+and deeper models at the same three points of the search are, therefore, a
+direction for future work. Besides, to the best of the authors'
 knowledge, this is the first work that measures a replacement of the native
 partition network of AV1 at the same preset.
 
