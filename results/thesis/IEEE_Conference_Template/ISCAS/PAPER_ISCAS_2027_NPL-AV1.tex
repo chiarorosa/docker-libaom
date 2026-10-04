@@ -36,23 +36,24 @@ Pelotas, Brazil\\
 
 \begin{abstract}
 In the AOMedia Video 1 (AV1) codec, intra-frame coding selects the block
-partitioning through a recursive rate-distortion search, which the reference
-encoder prunes at its fast speed presets with a convolutional neural network.
-This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow
-neural networks that replace the native network at the same speed preset,
-keeping its other speed features unchanged. A pre-search pruner removes partition types before any rate-distortion evaluation,
-a post-NONE pruner decides whether the search continues after the unpartitioned
-node is measured, a decision that no neural model of the native encoder takes in
-All-Intra coding, and an extended pruner decides whether the extended partition
-types are evaluated. Over the eight UHD 4K sequences of the AOM Common Test
-Conditions, the post-NONE pruner achieves time savings
-of 30.34\% with a Bjontegaard delta bitrate (BD-BR) of 0.41\% at preset 1, with
-no significant BD-BR difference from the native network at presets 1 and 2 and
-a significantly lower BD-BR at high quality, but a higher one at preset 3. Across
-presets 1 to 3, the pre-search pruner gives time savings from 40.20\% to
-77.30\%; combined with the extended pruner, which alone adds up to 0.87
-percentage points, it reaches 50.99\% with a BD-BR of 1.07\% at preset 2. Ten of the thirteen nondominated operating
-points belong to NPL-AV1.
+partitioning through a recursive rate-distortion search. At its fast speed
+presets, the reference encoder prunes this search with a convolutional neural
+network. This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set
+of shallow neural networks that replace the native network at the same speed
+preset, keeping its other speed features unchanged. A pre-search pruner removes
+partition types before any rate-distortion evaluation. A post-NONE pruner
+decides whether the search continues after the unpartitioned node is measured,
+a decision that no neural model of the native encoder takes in All-Intra coding.
+An extended pruner decides whether the extended partition types are evaluated.
+Over the eight UHD 4K sequences of the AOM Common Test Conditions, the post-NONE
+pruner achieves time savings of 30.34\% with a Bjontegaard delta bitrate
+(BD-BR) of 0.41\% at preset 1. Its BD-BR does not differ significantly from
+that of the native network at presets 1 and 2, is significantly lower at high
+quality, and is higher at preset 3. Across presets 1 to 3, the pre-search
+pruner gives time savings from 40.20\% to 77.30\%. The extended pruner alone
+adds up to 0.87 percentage points, and the two combined reach 50.99\% with a
+BD-BR of 1.07\% at preset 2. Ten of the thirteen nondominated operating points
+belong to NPL-AV1.
 \end{abstract}
 
 \begin{IEEEkeywords}
