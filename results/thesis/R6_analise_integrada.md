@@ -259,16 +259,37 @@ porque a sua ação é disjunta.
 
 O H9d partilha com o H9c exatamente o mesmo ponto de inserção, pós-NONE, e
 exatamente o mesmo vetor de trinta e nove atributos. Ainda assim, soma **+1,02
-ponto percentual** de redução de tempo sobre o H9a no ponto implantado — quatro
-vezes o que o H9c somou (+0,26 ponto percentual). A sua pergunta não é *"posso
+ponto percentual** de redução de tempo sobre o H9a no ponto implantado, ao passo
+que a composição do H9c com o H9a tem interação **negativa**, de −1,9 ponto
+percentual. A sua pergunta não é *"posso
 encerrar a busca aqui?"*, e sim *"vale avaliar as partições estendidas?"*: as
 formas AB e as formas 4-way, que consomem 34,3% do tempo de busca local e que
 nenhum dos outros dois podadores jamais visava.
 
 Se a não-aditividade fosse limite informacional, este resultado seria impossível.
 Dois podadores com o mesmo ponto de inserção e o mesmo vetor de entrada
-produziram contribuições marginais quatro vezes distintas, e só o conjunto de
+produziram composições de **sinais opostos** com o H9a, e só o conjunto de
 candidatos que cada um retira da busca difere entre eles.
+
+Cabe registrar a assimetria entre as duas medições. A interação do H9c foi medida
+em quatro sequências, sobre o H9a nos limiares compilados por padrão, e o marginal
+do H9d em oito sequências, sobre o ponto equilibrado implantado; por isso o
+contraste é de sinal, e não de magnitude, e uma comparação pareada entre os dois
+podadores sobre a mesma base não foi executada. A razão de "quatro vezes" que
+versões anteriores deste texto apresentavam, apoiada num marginal do H9c de +0,26
+ponto percentual, foi retirada: aquele valor provém de uma única sequência, e, na
+média das quatro sequências medidas, o H9c soma +3,74 pontos percentuais sobre a
+base de limiares padrão (`docs/RESULTADOS_auditoria_artigos_lascas_iscas.md` §4).
+
+A terceira prova é independente do par H9a e H9c e foi obtida com previsões
+registradas antes da medição (`docs/RESULTADOS_fase6_swap_h9d.md`). Sobre o H9a
+equilibrado na substituição direta da rede nativa, o H9d soma +0,87 e +0,83 ponto
+percentual de redução de tempo nos *presets* 1 e 2, nas oito sequências, com
+p = 0,001, ao custo de +0,032 e +0,039 ponto percentual de taxa BD. No *preset*
+3, o ganho se anula, em −0,14 ponto percentual e com sinal negativo nas oito
+sequências, justamente o *preset* a partir do qual o próprio codificador passa a
+podar as partições estendidas (`prune_ext_part_using_split_info`): mesma ação,
+sobreposição.
 
 O enunciado correto e prescritivo é, por conseguinte: **dois podadores se somam na
 medida em que os seus conjuntos de candidatos podados são disjuntos**,

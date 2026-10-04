@@ -261,9 +261,9 @@ de sinal oposto entre as duas alavancas — e este efeito é uma contribuição
 própria.
 
 Decompondo por regime de quantização, no regime de alta qualidade (níveis 20 e 32)
-o H9c a τ=0,95 custa **menos da metade** da taxa BD da nativa nos dois *presets*
-testados: 0,065% contra 0,153% no *preset* 1, e 0,173% contra 0,259% no *preset*
-2.
+o H9c a τ=0,95 custa **menos da metade** da taxa BD da nativa no *preset* 1, com
+0,065% contra 0,153%, e cerca de **dois terços** no *preset* 2, com 0,173% contra
+0,259%.
 
 A vantagem é estatisticamente significativa e **replica em dois níveis
 independentes** de *preset*: −0,088 ponto percentual com p = 0,043 e vantagem em 6
@@ -278,10 +278,19 @@ nativos que agem **após** o candidato `PARTITION_NONE` — `av1_ml_predict_brea
 `av1_ml_early_term_after_split` e `av1_ml_prune_rect_partition` — estão desligados
 por guarda de tipo de quadro, todos sob a condição `!frame_is_intra_only(cm)`.
 
-O nicho que o H9c ocupa — decidir depois de conhecer o custo de taxa-distorção
-real do `PARTITION_NONE` — é, deste modo, **nativamente vazio** neste regime. Isso
-explica por que o H9c alcança o empate, ao passo que o H9a compete de frente com a
-rede convolucional intraquadro, que neste regime está ativa.
+O nicho que o H9c ocupa — decidir, depois de conhecer o custo de taxa-distorção
+real do `PARTITION_NONE`, se a busca do nó continua — é, deste modo,
+**nativamente vazio** neste regime. Isso explica por que o H9c alcança o empate,
+ao passo que o H9a compete de frente com a rede convolucional intraquadro, que
+neste regime está ativa.
+
+O vazio se restringe, contudo, a esta decisão estrutural, e não a toda decisão
+aprendida posterior ao `PARTITION_NONE`. As redes nativas de poda das partições
+estendidas, `av1_ml_prune_ab_partition` e `av1_ml_prune_4_partition`, **continuam
+ativas** em codificação *All-Intra*, uma vez que `ml_prune_partition=1` vale em
+todos os *presets* intraquadro e que a verificação de `frame_is_intra_only` no
+interior delas controla apenas a gravação de atributos em arquivo. Elas agem,
+porém, somente sobre as formas AB e 4-way, e nenhuma decide encerrar o nó.
 
 Cabe registrar, ainda, que a vantagem de qualidade em alta taxa vem acompanhada de
 custo de tempo. Nos níveis 20 e 32 do *preset* 1, o H9c economiza 20,97% contra
@@ -432,15 +441,20 @@ ambos medidos sobre as oito sequências CTC —, mas não pode ser creditada ao
 podador pós-NONE.
 
 **O H9c é substituto competitivo da rede convolucional nativa nos *presets*
-práticos.** Sob substituição direta, há paridade de taxa BD e de tempo nos
-*presets* 1 e 2 sobre as oito sequências, com vantagem de qualidade
-estatisticamente significativa no regime de alta taxa em dois níveis independentes
-de *preset*.
+práticos.** Sob substituição direta, há paridade de taxa BD nos *presets* 1 e 2
+sobre as oito sequências, com vantagem de qualidade estatisticamente
+significativa no regime de alta taxa em dois níveis independentes de *preset*. A
+paridade não se estende ao tempo: a redução de tempo do H9c é menor em 2,25
+pontos percentuais no *preset* 1, com p = 0,046, e em 1,99 no *preset* 2, com
+p = 0,055. A perda de taxa BD ocorre apenas no *preset* 3.
 
-O custo computacional é, ademais, muito menor: a inferência do perceptrone de
-múltiplas camadas é cerca de cinquenta vezes mais barata por chamada do que a da
-rede convolucional nativa — cerca de 486 nanossegundos contra cerca de 24.700
-nanossegundos. A perda ocorre apenas no *preset* 3.
+O custo próprio do podador no codificador é desprezível, e não constitui vantagem
+nem desvantagem: medido com extração de atributos e inferência somadas, o H9c
+consome de 0,26% a 0,36% do tempo de codificação, contra 0,13% a 0,19% da rede
+convolucional nativa. A razão de cerca de cinquenta vezes entre as inferências
+isoladas por chamada caracteriza o algoritmo, e não o podador implantado, e por
+isso não é citada como vantagem, conforme a retratação registrada em
+`docs/RESULTADOS_microbench_pruner.md` §6.
 
 Um perceptrone de trinta e nove atributos alcançar paridade com uma rede
 convolucional sintonizada e embarcada no codificador de referência **já é
@@ -473,7 +487,11 @@ são apresentados na próxima seção.
 > `docs/RESULTADOS_BLOCO7_E1_E4.md` §1 e §3 (extremo de baixa taxa BD sobre 8/8
 > sequências e a leitura correta da atribuição); `docs/SINTESE_resultados_metodologia.md`
 > §6, Conclusões 1, 2 e 3 e o argumento transversal de custo de inferência;
-> `docs/RESULTADOS_microbench_pruner.md` (486 ns contra 24.700 ns por chamada);
+> `docs/RESULTADOS_microbench_pruner.md` §6 (retratação da razão por chamada como
+> vantagem); `docs/RESULTADOS_overhead_podadores_iscas.md` §3 (custo implantado do
+> H9c, 0,26% a 0,36%, e da rede nativa, 0,13% a 0,19%, medidos em 2026-10-04);
+> `results/benchmark/fase6_analysis/paired_tests.csv` (redução de tempo pareada do
+> H9c contra a nativa, −2,25 pp com p = 0,046 e −1,99 pp com p = 0,055);
 > `results/thesis/M1_objeto_e_formulacao.md` §1.3 (34,3% do tempo de busca local nas
 > partições estendidas) e §1.5 (escada de *presets* nativos). Scripts:
 > `src/scripts/fase6/{encode_h9c_cq20.py, report_bloco7.py}`.

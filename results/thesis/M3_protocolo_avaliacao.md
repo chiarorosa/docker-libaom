@@ -115,8 +115,11 @@ determinística.
 do documento CTC — `--cpu-used=0 --passes=1 --end-usage=q --kf-min-dist=0
 --kf-max-dist=0 --deltaq-mode=0 --enable-tpl-model=0
 --enable-keyframe-filtering=0 --obu`, mais a regra de ladrilhamento 4K da Classe
-A1 — e adota os **quinze quadros** que a CTC especifica para o cenário
-intraquadro. São a especificação, e não um recorte próprio.
+A1, ou seja, `--tile-columns=1 --tile-rows=0 --threads=2 --row-mt=0` — e adota os
+**quinze quadros** que a CTC especifica para o cenário intraquadro. São a
+especificação, e não um recorte próprio. Cabe registrar que esta é a única grade
+da tese codificada com duas *threads*, uma por ladrilho, uma vez que a grade de
+validação descrita acima usa `--threads=1`.
 
 Duas divergências são impostas pelo codificador. O `aomenc` do libaom v3.10.0 não
 expõe `--qp`, restando `--cq-level` como única escala de quantização, e a opção
@@ -127,6 +130,18 @@ tese, por consistência com a validação, em vez dos valores de `qindex` exatos
 guia CTC. Como todo quadro é quadro-chave sob `--kf-max-dist=0`, deslocamentos
 fixos de quantização entre tipos de quadro não teriam efeito. A grade é aplicada
 de forma idêntica a todas as configurações, inclusive à âncora.
+
+Uma quarta divergência diz respeito à medida de custo. A CTC exige, na sua §5.7,
+que o tempo de execução seja reportado pelo *user time* de `/usr/bin/time`, ao
+passo que esta tese mede o tempo de parede de cada codificação. Sob
+`--threads=2`, as duas grandezas divergem, pois o *user time* soma o tempo das
+duas *threads*: na campanha de 2026-10-03, em que ambas foram registradas, o
+*user time* foi, em média, 1,72 vez o tempo de parede, de 1,52 a 1,92 vez nas 192
+codificações (`results/benchmark/fase6_swap_h9d/raw_results.csv`, colunas
+`user_s` e `time_s`). Como a redução de tempo é
+uma razão entre configurações medidas da mesma forma, o desvio não favorece
+configuração alguma, mas a equivalência entre as duas definições de redução de
+tempo não foi medida, porque a âncora não tem *user time* registrado.
 
 > **Procedência.** Documento-fonte: `docs/PROTOCOLO_avaliacao.md` §2;
 > `docs/DECISOES_escopo.md` §2 e §3. Especificação externa:

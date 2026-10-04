@@ -472,9 +472,14 @@ informação estariam condenados a colher o mesmo tempo.
 
 O H9d refuta este enunciado por medição direta. Ele soma **+1,02 ponto
 percentual** sobre o H9a utilizando **exatamente o mesmo vetor de atributos e
-exatamente o mesmo ponto de inserção do H9c**, que somara apenas +0,26 ponto
-percentual. Isso seria impossível se a informação partilhada fosse a causa do teto
-de composição.
+exatamente o mesmo ponto de inserção do H9c**, cuja composição com o H9a tem
+interação negativa, de −1,9 ponto percentual (Seção 3.5). Isso seria impossível
+se a informação partilhada fosse a causa do teto de composição. O contraste é de
+sinal, e não de magnitude, porque as duas medições usam bases e coberturas
+distintas — quatro sequências sobre os limiares padrão, para o H9c, e oito sobre
+o ponto equilibrado, para o H9d —, e a razão de "quatro vezes" de versões
+anteriores, apoiada num marginal do H9c medido numa única sequência, foi retirada
+(`docs/RESULTADOS_auditoria_artigos_lascas_iscas.md` §4).
 
 O enunciado correto que substitui o refutado é, por conseguinte, de outra
 natureza: **dois podadores se somam na medida em que os seus conjuntos de
@@ -503,5 +508,6 @@ próxima seção.
 > e a correção do enunciado) e §6 (as três conclusões);
 > `docs/ANDAMENTO_tese.md` §0.1 (correção da Conclusão 3: a não-aditividade é
 > sobreposição de ação, não limite informacional). Nenhum valor novo é
-> introduzido nesta síntese, à exceção do ganho marginal do H9c (+0,26 ponto
-> percentual), cuja procedência é a Seção 3 deste capítulo.
+> introduzido nesta síntese; a interação do H9c com o H9a (−1,9 ponto percentual)
+> provém da Seção 3.5 deste capítulo, e a retratação do marginal de +0,26 ponto
+> percentual, de `docs/RESULTADOS_auditoria_artigos_lascas_iscas.md` §4.
