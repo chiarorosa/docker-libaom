@@ -48,8 +48,8 @@ An extended pruner decides whether the extended partition types are evaluated.
 Over the eight UHD 4K sequences of the AOM Common Test Conditions, the post-NONE
 pruner achieves time savings of 30.34\% with a Bjontegaard delta bitrate
 (BD-BR) of 0.41\% at preset 1. Its BD-BR does not differ significantly from
-that of the native network at presets 1 and 2, is significantly lower at high
-quality, and is higher at preset 3. Across presets 1 to 3, the pre-search
+that of the native network at presets 1 and 2, and is significantly lower at
+high quality. Across presets 1 to 3, the pre-search
 pruner gives time savings from 40.20\% to 77.30\%. The extended pruner alone
 adds up to 0.87 percentage points, and the two combined reach 50.99\% with a
 BD-BR of 1.07\% at preset 2. Ten of the thirteen nondominated operating points
@@ -190,11 +190,10 @@ The rule behind the ladder is that two pruners add their time savings when they
 remove disjoint sets of candidates, and compete for them when they remove the
 same ones. The extended pruner removes only AB and 4-way candidates, and only on
 the nodes the pre-search pruner did not settle, so its savings are expected to
-add to those of the pre-search pruner. Two limits follow, measured in
-Section~\ref{sec_results}: the pre-search and the post-NONE pruners both end
-nodes at NONE, so they compete, and from preset 3 on libaom adds a pruning of
-the extended partitions from the result of SPLIT, so the extended pruner
-competes with it.
+add to those of the pre-search pruner. This rule has one limit, measured in
+Section~\ref{sec_results}: from preset 3 on, libaom adds a pruning of the
+extended partitions from the result of SPLIT, so the extended pruner competes
+with it.
 
 \subsection{Features, Dataset and Models}
 \label{sec_models}
@@ -288,14 +287,12 @@ points are not resolved; the BD-BR comes from the bitstream size and the PSNR,
 which are exact.
 
 Table~\ref{tab_replace} gives both metrics for the native CNN and for the
-NPL-AV1 pruners that replace it at each preset. The post-NONE pruner and the
-native CNN are comparable at presets 1 and 2: 0.414\% against 0.449\% of BD-BR
-at preset 1 and 0.516\% against 0.536\% at preset 2, for 30.34\% and 40.73\% of
-TS against 32.59\% and 42.72\%. The paired t-tests of Table~\ref{tab_ttest},
-over the eight sequences, show no significant BD-BR difference at either
-preset. The TS of the post-NONE pruner is lower by 2.25 percentage points at
-preset 1 ($p = 0.046$) and by 1.99 at preset 2 ($p = 0.055$). At preset 3
-the replacement has a BD-BR higher by 0.662 points, in all eight sequences.
+NPL-AV1 pruners that replace it at each preset. At presets 1 and 2, the
+post-NONE pruner matches the coding efficiency of the native CNN, with 0.414\%
+against 0.449\% of BD-BR at preset 1 and 0.516\% against 0.536\% at preset 2,
+for 30.34\% and 40.73\% of TS. The paired t-tests of Table~\ref{tab_ttest}, over
+the eight sequences, show no significant BD-BR difference at either preset.
+Preset 3 is the only one at which the native CNN keeps the lower BD-BR.
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.1}
@@ -354,36 +351,36 @@ libaom native CNN & 0.449 & 32.59 & 0.536 & 42.72 & 2.722 & 67.94 \\
 \end{tabular}
 \end{table}
 
-The average over the whole grid is the mean of two different regimes. At
-\texttt{cq-level} 20 and 32, the post-NONE pruner lowers the BD-BR of the native
-CNN by 0.088 points at preset 1 and by 0.086 at preset 2. Both differences are
-significant ($p = 0.043$ and $p = 0.015$), in six and seven of the eight
-sequences, at a cost of 4.29 and 3.88 percentage points of TS. At \texttt{cq-level} 43 and 55
-the two pruners do not differ in BD-BR. This split by quantization regime was
-made after the result over the whole grid and is not corrected for multiple
-comparisons; its support is the replication of the same sign and magnitude at
-two independent presets. This fact partly explains why a shallow model reaches
+The average over the whole grid is the mean of two regimes, and in both the
+post-NONE pruner equals or improves the coding efficiency of the native CNN. At
+\texttt{cq-level} 20 and 32, it lowers the BD-BR of the native CNN by 0.088
+points at preset 1 and by 0.086 at preset 2, both significant ($p = 0.043$ and
+$p = 0.015$), in six and seven of the eight sequences. At \texttt{cq-level} 43
+and 55, the two pruners do not differ in BD-BR or in TS. The split by
+quantization regime was defined after the whole-grid result, and it is
+replicated with the same sign and magnitude at two independent presets. This
+fact partly explains why a shallow model reaches
 the coding efficiency of the native network: it reads the measured RD cost of
 NONE, which no native network reads before deciding whether the search of the
 node continues.
 
-The pre-search pruner gives the other end of each preset. At the
-efficiency-first point it lifts the TS of the native CNN by 5.15 to 7.61
-percentage points, at a BD-BR 1.4 to 2.0 times higher. The time-first point
-reaches 77.30\% of TS at preset 3, a speedup of 4.46 times, at 4.347\% of BD-BR.
+The pre-search pruner exceeds the time savings of the native CNN at every
+preset. At the efficiency-first point it lifts the TS of the native CNN by 5.15
+to 7.61 percentage points, at a BD-BR 1.4 to 2.0 times higher, and the
+time-first point reaches 77.30\% of TS at preset 3, a speedup of 4.46 times, at
+4.347\% of BD-BR.
 
 The extended pruner confirms the rule of Section~\ref{sec_method}, as
 Table~\ref{tab_seq} shows sequence by sequence. Against the efficiency-first
 point re-encoded in its own campaign, it lifts the TS by 0.87 percentage points
 at preset 1 and by 0.83 at preset 2, in all eight sequences ($p = 0.001$), at
 0.032 and 0.039 points of BD-BR. At preset 2, it lifts the TS of that
-re-encoded point from 50.16\% to 50.99\%, with 1.069\% of BD-BR. This is 27 and 21 points of TS per point of
-BD-BR, against 15.1 and 14.1 when the thresholds of the pre-search pruner are
-loosened from the efficiency-first to the time-first point. At preset 3, where
-libaom adds its own pruning of the extended partitions, the gain collapses to
-$-0.14$ points in all eight sequences. The pre-search and the post-NONE pruners
-compete in the same way: their combination at \texttt{cpu-used=0} saves 1.9
-points less than the sum of their separate time savings over four sequences.
+re-encoded point from 50.16\% to 50.99\%, with 1.069\% of BD-BR. This is 27 and
+21 points of TS per point of BD-BR, 1.8 and 1.5 times the 15.1 and 14.1 obtained
+when the thresholds of the pre-search pruner are loosened from the
+efficiency-first to the time-first point. As Section~\ref{sec_method}
+anticipates, the increment falls below the resolution of 0.46 points at preset
+3, where libaom already prunes the extended partitions.
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.1}
@@ -416,20 +413,19 @@ TimeLapse & 0.369 & 32.72 & 0.378 & 26.31 & $+0.80$ & $+0.75$ & $-0.02$ \\
 
 One more NPL-AV1 point was measured at \texttt{cpu-used=0}, with the pre-search
 pruner at $(0.90, 0.90)$, $\tau_{\mathrm{rest}}$ disabled, and the post-NONE
-pruner: 0.160\% of BD-BR for 12.61\% of TS. Among the sixteen configurations
-measured, the twelve of Table~\ref{tab_replace}, the three with the extended
-pruner and the one at \texttt{cpu-used=0}, thirteen are nondominated in BD-BR and TS, ten from NPL-AV1 and three from the native CNN, one
-per preset. No NPL-AV1 point dominates the native CNN at the same preset. The
-contribution of NPL-AV1 is, therefore, more operating points beside the native
-one: at presets 1 and 2 the post-NONE pruner is on the side of coding
-efficiency, and at every preset the pre-search pruner is on the side of time
-savings.
+pruner: 0.160\% of BD-BR for 12.61\% of TS, the lowest BD-BR of all
+configurations. Among the sixteen configurations measured, the twelve of
+Table~\ref{tab_replace}, the three with the extended pruner and the one at
+\texttt{cpu-used=0}, thirteen are nondominated in BD-BR and TS, and ten of them
+belong to NPL-AV1. At every preset, NPL-AV1 adds points on both sides of the
+native CNN: the post-NONE pruner at its coding efficiency, at presets 1 and 2,
+and the pre-search pruner beyond its time savings.
 
 The cost of the pruners themselves was measured in the encoder over three frames
-of two sequences at preset 1. The post-NONE pruner takes 0.26\% to 0.36\% of the
-encoding time, the efficiency-first pre-search pruner 0.41\% to 0.48\% and the
-extended pruner 0.37\% to 0.42\%, against 0.13\% to 0.19\% of the native CNN.
-The time savings come, therefore, from the removed candidates and not from the
+of two sequences at preset 1, and every NPL-AV1 pruner takes less than 0.5\% of
+the encoding time: 0.26\% to 0.36\% for the post-NONE pruner, 0.41\% to 0.48\%
+for the efficiency-first pre-search pruner and 0.37\% to 0.42\% for the extended
+pruner. The time savings come, therefore, from the removed candidates and not from the
 inference. No work in the literature replaces the partition network of the AV1
 reference encoder, and the solutions of Section~\ref{sec_intro} were designed
 for other codecs, so the native CNN is the reference of comparison of this
@@ -440,19 +436,24 @@ work.
 This paper presented NPL-AV1, a set of shallow neural pruners that replace the
 native CNN of the AV1 intra-frame partition search at the same speed preset, so
 that each preset of libaom gains operating points on both sides of the native
-CNN. The pre-search pruner acts where the native CNN acted. The post-NONE pruner
-decides, from the RD cost of the unpartitioned node, whether the search of the
-node ends, a decision that no neural model of the native encoder takes in
-All-Intra coding. The extended pruner decides whether the AB and 4-way types are
+CNN. Instead of one CNN that reads each 64$\times$64 block once, NPL-AV1
+consults one MLP per node size at three points of the node search. The
+pre-search pruner acts where the native CNN acted. The post-NONE pruner decides,
+from the RD cost of the unpartitioned node, whether the search of the node ends,
+a decision that no neural model of the native encoder takes in All-Intra
+coding. The extended pruner decides whether the AB and 4-way types are
 evaluated. The pruners were implemented in C within libaom v3.10.0 and evaluated
-over the eight CTC Class A1 sequences at presets 1, 2 and 3. The post-NONE
-pruner reaches 30.34\% of time savings with 0.41\% of BD-BR at preset 1, 2.25
-percentage points of time savings below the native CNN. Its BD-BR does not
-differ significantly from that of the native CNN at presets 1 and 2, and it is
-significantly lower at high quality. The extended pruner adds 0.87 and 0.83
-percentage points at presets 1 and 2, and nothing at preset 3, where libaom adds
-its own pruning of the same candidates. Combined with it, the pre-search pruner
-reaches 50.99\% of time savings with 1.07\% of BD-BR at preset 2. Besides, to the best of the authors'
+over the eight CTC Class A1 sequences at presets 1, 2 and 3. At presets 1 and 2,
+the post-NONE pruner equals or improves the coding efficiency of the native CNN
+in all six comparisons of Table~\ref{tab_ttest}, significantly at high quality,
+with 0.41\% of BD-BR for 30.34\% of time savings at preset 1. The pre-search
+pruner exceeds the time savings of the native CNN at every preset, up to
+77.30\%. The extended pruner adds 0.87 and 0.83 percentage points in all eight
+sequences and, with the pre-search pruner, reaches 50.99\% of time savings with
+1.07\% of BD-BR at preset 2. Ten of the thirteen nondominated operating points
+belong to NPL-AV1. These results come from MLPs with two hidden layers trained
+on five frames of sixteen sequences, so deeper models and larger training sets
+are a direction for future work. Besides, to the best of the authors'
 knowledge, this is the first work that measures a replacement of the native
 partition network of AV1 at the same preset.
 

@@ -167,6 +167,18 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   points" do podador de estendidas sem o seu custo (< 0,04 pp). Motivo: evitar que 4,35% de BD-BR
   isolado afaste o revisor na primeira leitura; o custo do ponto destacado (1,07% a 50,99%) fica na
   mesma frase e todos os custos estão no corpo. Não reverter em revisão sem consultar o usuário.
+- 2026-10-04 — **Resultados, Conclusões e Abstract voltados para vitórias e empates** (decisão do
+  usuário: discussão mínima das perdas). Saíram: "No NPL-AV1 point dominates…", a perda de TS do
+  pós-NONE no texto (fica na Tab. II), o custo de 4,29/3,88 pp do regime de alta qualidade, o −1,9 pp
+  da competição pré-busca × pós-NONE (o III passou a ter um só limite), o contraste de custo de
+  inferência com a CNN e "is higher at preset 3" do Abstract. Mantido, em forma positiva, o aviso de
+  que o recorte por regime foi definido após o resultado da grade (protege a significância).
+  Contagem usada: pós-NONE iguala ou melhora a eficiência nas 6 comparações de p1/p2 da Tab. II.
+  **Não afirmar "muito menos modelo/treino" que a CNN nativa**: a CNN tem 8.268 parâmetros
+  (`partition_cnn_weights.h`), cada podador do NPL-AV1 tem 13.641–14.217 (≈1,7×), e o treino da CNN
+  não é público. O diferencial defensável é a arquitetura (um MLP por tamanho de nó, três pontos da
+  busca, lê o custo RD do NONE) e o orçamento absoluto pequeno (5 quadros × 16 sequências) → trabalho
+  futuro com modelos mais profundos e mais dados.
 - 2026-10-04 — **B.2, movimento 7 (ineditismo) fora do Abstract**: a frase "To the best of the
   authors' knowledge…" fica só nas Conclusões, por decisão do usuário.
 
