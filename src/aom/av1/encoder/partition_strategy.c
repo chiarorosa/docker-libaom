@@ -138,8 +138,9 @@ static void write_features_to_file(const char *const path,
 // -----------------------------------------------------------------------------
 // Pruner inference-cost instrumentation (opt-in via AV1_PRUNER_TIMING). Times
 // the real calls during an encode: native intra CNN vs the distilled MLP
-// students (H9a inference + feature prep, H9c inference). Zero overhead when
-// off. Totals + call counts are printed to stderr at process exit.
+// students (feature prep and inference of H9a, H9c and H9d, each in its own
+// accumulator). Zero overhead when off. Totals + call counts are printed to
+// stderr at process exit.
 // -----------------------------------------------------------------------------
 #include <time.h>
 static int av1_pruner_timing_on(void) {
@@ -153,7 +154,8 @@ static int av1_pruner_timing_on(void) {
 typedef struct {
   unsigned long long ns, calls;
 } AV1PrunerAcc;
-static AV1PrunerAcc g_pt_cnn, g_pt_h9a_inf, g_pt_h9a_feat, g_pt_h9c_inf;
+static AV1PrunerAcc g_pt_cnn, g_pt_h9a_inf, g_pt_h9a_feat, g_pt_h9c_inf,
+    g_pt_h9c_feat, g_pt_h9d_inf, g_pt_h9d_feat;
 static int g_pt_atexit_registered = 0;
 static unsigned long long av1_pt_now_ns(void) {
   struct timespec t;
@@ -161,12 +163,15 @@ static unsigned long long av1_pt_now_ns(void) {
   return (unsigned long long)t.tv_sec * 1000000000ull + (unsigned long long)t.tv_nsec;
 }
 static void av1_pt_report(void) {
-  const AV1PrunerAcc *a[4] = { &g_pt_cnn, &g_pt_h9a_inf, &g_pt_h9a_feat,
-                               &g_pt_h9c_inf };
-  const char *nm[4] = { "native_cnn        ", "h9a_infer (MLP)   ",
-                        "h9a_feature_prep  ", "h9c_infer (MLP)   " };
+  const AV1PrunerAcc *a[7] = { &g_pt_cnn,     &g_pt_h9a_inf,  &g_pt_h9a_feat,
+                               &g_pt_h9c_inf, &g_pt_h9c_feat, &g_pt_h9d_inf,
+                               &g_pt_h9d_feat };
+  const char *nm[7] = { "native_cnn        ", "h9a_infer (MLP)   ",
+                        "h9a_feature_prep  ", "h9c_infer (MLP)   ",
+                        "h9c_feature_prep  ", "h9d_infer (MLP)   ",
+                        "h9d_feature_prep  " };
   fprintf(stderr, "\n[PRUNER_TIMING] (isolated inference cost, real encode)\n");
-  for (int i = 0; i < 4; ++i) {
+  for (int i = 0; i < 7; ++i) {
     double perc = a[i]->calls ? (double)a[i]->ns / a[i]->calls : 0.0;
     fprintf(stderr,
             "  %s calls=%-9llu total_ms=%9.3f  ns/call=%9.1f\n",
@@ -2196,15 +2201,21 @@ static void student_h9c_decide(const AV1_COMMON *cm, MACROBLOCK *x,
   const NN_CONFIG *nnconfig = av1_partition_student_h9c_nnconfig(blk->bsize);
   if (!nnconfig) return;
   float feats[AV1_PARTITION_STUDENT_H9C_NUM_FEATURES];
+  const int pt_on = av1_pruner_timing_on();
+  unsigned long long pt_t0 = 0;
+  if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
   student_node_features(cm, x, blk, feats);  // fills [0..35] (A+B+C)
   const RD_STATS *none_rdc = &part_state->this_rdc;
   feats[36] = (float)log1p((double)AOMMAX(none_rdc->rate, 0));
   feats[37] = (float)log1p((double)AOMMAX(none_rdc->dist, 0));
   feats[38] = (float)log1p((double)AOMMAX(none_rdc->rdcost, 0));
+  if (pt_on) {
+    const unsigned long long pt_t1 = av1_pt_now_ns();
+    g_pt_h9c_feat.ns += pt_t1 - pt_t0;
+    g_pt_h9c_feat.calls++;
+    pt_t0 = pt_t1;
+  }
   float logits[3], probs[3];
-  const int pt_on = av1_pruner_timing_on();
-  unsigned long long pt_t0 = 0;
-  if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
   av1_nn_predict(feats, nnconfig, 1, logits);
   if (pt_on) { g_pt_h9c_inf.ns += av1_pt_now_ns() - pt_t0; g_pt_h9c_inf.calls++; }
   av1_nn_softmax(logits, probs, 3);
@@ -2248,17 +2259,23 @@ static void student_h9d_decide(const AV1_COMMON *cm, MACROBLOCK *x,
   const NN_CONFIG *nnconfig = av1_partition_student_h9d_nnconfig(blk->bsize);
   if (!nnconfig) return;
   float feats[AV1_PARTITION_STUDENT_H9D_NUM_FEATURES];
+  const int pt_on = av1_pruner_timing_on();
+  unsigned long long pt_t0 = 0;
+  if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
   student_node_features(cm, x, blk, feats);  // fills [0..35] (A+B+C)
   const RD_STATS *none_rdc = &part_state->this_rdc;
   feats[36] = (float)log1p((double)AOMMAX(none_rdc->rate, 0));
   feats[37] = (float)log1p((double)AOMMAX(none_rdc->dist, 0));
   feats[38] = (float)log1p((double)AOMMAX(none_rdc->rdcost, 0));
+  if (pt_on) {
+    const unsigned long long pt_t1 = av1_pt_now_ns();
+    g_pt_h9d_feat.ns += pt_t1 - pt_t0;
+    g_pt_h9d_feat.calls++;
+    pt_t0 = pt_t1;
+  }
   float logits[2], probs[2];
-  const int pt_on = av1_pruner_timing_on();
-  unsigned long long pt_t0 = 0;
-  if (pt_on) { av1_pt_arm(); pt_t0 = av1_pt_now_ns(); }
   av1_nn_predict(feats, nnconfig, 1, logits);
-  if (pt_on) { g_pt_h9c_inf.ns += av1_pt_now_ns() - pt_t0; g_pt_h9c_inf.calls++; }
+  if (pt_on) { g_pt_h9d_inf.ns += av1_pt_now_ns() - pt_t0; g_pt_h9d_inf.calls++; }
   av1_nn_softmax(logits, probs, 2);
   // probs = [P(NAO_EXT), P(EXT)]; skip AB/4-way when P(EXT) is low.
   const float tau = student_h9d_get_tau(block_size_wide[blk->bsize]);
