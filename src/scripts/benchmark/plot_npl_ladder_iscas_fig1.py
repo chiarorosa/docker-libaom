@@ -224,7 +224,7 @@ def draw(out_path, p):
     # ---------------- legenda de pertenca ------------------------------------
     yl, hl = Y["leg"]
     itens = [(NPL, "NPL-AV1 (proposed)"), (NAT, "native libaom"),
-             (OFF, "native, disabled")]
+             (OFF, "CNN, disabled")]
     xs = [0.004, 0.395, 0.700]
     for (st, t), x in zip(itens, xs):
         ax.add_patch(Rectangle((x, yl - hl * 0.35), 0.045, hl * 0.70,
