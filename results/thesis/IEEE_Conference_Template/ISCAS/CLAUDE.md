@@ -177,6 +177,13 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   *speed feature* `intra_cnn_based_part_prune` (`speed_features.h:689`, `partition_strategy.c:189`).
 - Desvio tempo de parede vs *user time* (CTC §5.7): decidir se/como declarar (afeta também o LASCAS).
 
+- 2026-10-04 — **campanha D2 concluída** às 01:46 (-0300): 192/192 linhas, 0 erros; **P0 cumprida**,
+  96/96 linhas-base byte-idênticas a `fase6_swap`. O watcher por `kill -0` não disparou (processo
+  zumbi sob PID 1 `sleep infinity`); encerrado manualmente. P1–P3 ainda não lidas.
+- 2026-10-04 — III-C escrito: só τ_stop = 0,95 no artigo (0,90 equivalente no ruído, R3 §3.4);
+  fronteira sem τ = 0,90 = 9 de 12 pontos não dominados aprendidos (antes da D2); número do Abstract
+  fica `[completar]` até recalcular a fronteira com a D2.
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4

@@ -53,8 +53,8 @@ bitrate (BD-BR) of 0.41\% at preset 1, with no statistically significant BD-BR
 difference from the native network at presets 1 and 2, a significantly lower
 BD-BR at high quality at both presets, and a higher BD-BR at preset 3. The
 pre-search pruner extends the time savings of each preset up to 77.30\%, at a
-BD-BR of 4.35\%. Twelve of the fifteen nondominated operating points measured
-belong to NPL-AV1. % [completar: frase do H9d empilhado, apos a campanha D2]
+BD-BR of 4.35\%. % [completar: fracao de pontos nao dominados de NPL-AV1, recalculada com tau_stop=0.95 apenas e com os pontos da campanha D2 (sem D2: 9 de 12)]
+% [completar: frase do H9d empilhado, apos a campanha D2]
 To the best of the authors' knowledge, this is the first solution in the
 literature measured as a replacement of the native partition network of AV1.
 \end{abstract}
@@ -226,6 +226,34 @@ of the node is an extended one. The models were trained over 30 epochs under
 hard-label cross entropy, with the AdamW optimizer \cite{adamw} in PyTorch
 \cite{pytorch}, and the standardization of the features was folded into the
 first layer, so the encoder executes the models over raw features.
+
+\subsection{Decision Rules and Encoder Integration}
+\label{sec_policy}
+
+The pre-search pruner reads its probabilities in a fixed order: the node is
+settled as NONE, with the whole subtree below it cut, when
+$p_{\mathrm{none}} > \tau_{\mathrm{none}}$; otherwise it is committed to SPLIT
+when $p_{\mathrm{split}} > \tau_{\mathrm{split}}$; otherwise its rectangular
+types are disabled, together with the extended ones, when
+$p_{\mathrm{rest}} < \tau_{\mathrm{rest}}$. The post-NONE pruner ends the search
+of the node when its probability of NONE, $p_{\mathrm{stop}}$, exceeds
+$\tau_{\mathrm{stop}} = 0.95$, and the extended pruner disables the AB and 4-way
+types when $p_{\mathrm{ext}} < \theta_{\mathrm{size}}$, with
+$\theta_{\mathrm{size}} = 0.0910$ for nodes of 16 samples, 0.1031 for 32 and
+0.0144 for 64.
+
+Three operating points of the pre-search pruner are evaluated, set by
+$(\tau_{\mathrm{none}}, \tau_{\mathrm{split}}, \tau_{\mathrm{rest}})$: the
+balanced one, $(0.95, 0.90, 0.20)$; the aggressive one, $(0.60, 0.85, 0.40)$; and
+a third one, $(0.90, 0.90)$ with $\tau_{\mathrm{rest}}$ disabled, which is only
+evaluated at \texttt{cpu-used=0} together with the post-NONE pruner.
+
+All pruners were implemented in C within libaom v3.10.0. With their compile-time
+guard disabled, the build gives the bitstream of the reference software byte for
+byte, and the native CNN is disabled in the same binary, so at each preset the
+partition pruner is the only difference from the native configuration. Since
+every pruner removes candidates and never forces one, NPL-AV1 is fully compliant
+with the AV1 specification and does not affect the bitstream syntax.
 
 \section*{Acknowledgment}
 
