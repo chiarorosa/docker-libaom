@@ -179,22 +179,21 @@ The pre-search pruner is consulted where the native CNN is and acts on the same
 structural axis: it may settle the node as NONE and cut the whole subtree below
 it, commit the node to SPLIT, or remove the rectangular types and, with them, the
 extended ones. The post-NONE and the extended pruners are consulted after NONE has
-been evaluated, the point at which the three structural decisions of the native
-encoder are disabled in All-Intra coding. The post-NONE pruner decides whether
-the search of the node ends there, and the extended pruner whether the AB and
-4-way types are worth evaluating, the only decision that the native networks
-still take after NONE. Every pruner only removes candidates, so moving between
+been evaluated, a point at which the native encoder takes no structural neural
+decision in All-Intra coding, so NPL-AV1 uses the RD cost that the native CNN
+never reads. The post-NONE pruner decides whether the search of the node
+ends there, and the extended pruner whether the AB and 4-way types are worth
+evaluating. Every pruner only removes candidates, so moving between
 the operating points of a preset is a matter of choosing which pruner replaces
 the CNN, not of retraining it.
 
 The rule behind the ladder is that two pruners add their time savings when they
-remove disjoint sets of candidates, and compete for them when they remove the
-same ones. The extended pruner removes only AB and 4-way candidates, and only on
-the nodes the pre-search pruner did not settle, so its savings are expected to
-add to those of the pre-search pruner. This rule has one limit, measured in
-Section~\ref{sec_results}: from preset 3 on, libaom adds a pruning of the
-extended partitions from the result of SPLIT, so the extended pruner competes
-with it.
+remove disjoint sets of candidates. The extended pruner removes only AB and
+4-way candidates, and only on the nodes the pre-search pruner did not settle, so
+its savings are expected to add to those of the pre-search pruner. From preset 3
+on, libaom itself prunes the extended partitions from the result of SPLIT, so
+the gain of the extended pruner is expected at presets 1 and 2, as
+Section~\ref{sec_results} confirms.
 
 \subsection{Features, Dataset and Models}
 \label{sec_models}
@@ -242,13 +241,13 @@ $\theta_{\mathrm{size}} = 0.0910$ for nodes of 16 samples, 0.1031 for 32 and
 
 A higher $\tau_{\mathrm{none}}$ or $\tau_{\mathrm{split}}$, or a lower
 $\tau_{\mathrm{rest}}$, demands more confidence from the model before a candidate
-is removed. Fewer nodes are then pruned and fewer wrong decisions are taken, so
-less coding efficiency is lost, at the price of smaller time savings. Loosening
-the three thresholds moves the pruner the other way. Two operating points were
-selected at opposite sides of this trade-off, set by
-$(\tau_{\mathrm{none}}, \tau_{\mathrm{split}}, \tau_{\mathrm{rest}})$: the
-efficiency-first one, $(0.95, 0.90, 0.20)$, which is stricter in all three
-thresholds, and the time-first one, $(0.60, 0.85, 0.40)$, which is looser in all
+is removed, so fewer wrong decisions are taken and more coding efficiency is
+kept. Loosening the three thresholds moves the pruner toward larger time
+savings. Two operating points were selected at opposite sides of this
+trade-off, from the same models and without retraining. Set by
+$(\tau_{\mathrm{none}}, \tau_{\mathrm{split}}, \tau_{\mathrm{rest}})$, the
+efficiency-first one, $(0.95, 0.90, 0.20)$, is stricter in all three
+thresholds, and the time-first one, $(0.60, 0.85, 0.40)$, is looser in all
 three.
 
 All pruners were implemented in C within libaom v3.10.0. With their compile-time
