@@ -161,6 +161,13 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   Index Terms. Compilação no contêiner `latex_build` (monta `results/` em `/work`): 0 warnings,
   fontes Type 1 embutidas. Pendente no Abstract: frase do H9d empilhado (após D2).
 
+### Exceções às normas autorizadas pelo usuário
+- 2026-10-04 — **B.15 (ganho sem custo) no Abstract**: a faixa "time savings from 40.20% to 77.30%"
+  do pré-busca entra sem a faixa de BD-BR (0,92% a 4,35%), e o incremento "up to 0.87 percentage
+  points" do podador de estendidas sem o seu custo (< 0,04 pp). Motivo: evitar que 4,35% de BD-BR
+  isolado afaste o revisor na primeira leitura; o custo do ponto destacado (1,07% a 50,99%) fica na
+  mesma frase e todos os custos estão no corpo. Não reverter em revisão sem consultar o usuário.
+
 ### Pendências no artigo
 - 2026-10-04 — **rascunho completo**: Abstract reescrito (246 palavras, três podadores, "Ten of the
   thirteen"; opção (a), sem a ressalva de não dominância, que fica no corpo) e Seção V escrita.
