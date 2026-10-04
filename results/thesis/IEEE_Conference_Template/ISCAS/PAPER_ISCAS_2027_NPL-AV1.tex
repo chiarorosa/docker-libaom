@@ -35,26 +35,26 @@ Pelotas, Brazil\\
 \maketitle
 
 \begin{abstract}
-The intra-frame coding of the AOMedia Video 1 (AV1) codec selects the block
-partitioning through a recursive rate-distortion search, and its reference
-encoder already embeds a convolutional neural network that prunes this search at
-the fast speed presets. Fast partitioning solutions are usually compared against
-whole presets, which reconfigure every other coding stage as well, so the
-contribution of a neural pruner itself is not measured. This paper presents the
-Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow neural networks that
-replace the native network as partition pruners at the same speed preset. A
-pre-search pruner removes partition types before any rate-distortion
-evaluation, and a post-NONE pruner decides whether the search
-continues after the unpartitioned node is measured, a decision that no neural
-model of the native encoder takes in All-Intra coding. Experimental results over
-the eight UHD 4K sequences of the AOM Common Test Conditions show that the
-post-NONE pruner achieves time savings of 30.34\% with a Bjontegaard delta
-bitrate (BD-BR) of 0.41\% at preset 1, with no statistically significant BD-BR
-difference from the native network at presets 1 and 2, a significantly lower
-BD-BR at high quality at both presets, and a higher BD-BR at preset 3. The
-pre-search pruner extends the time savings of each preset up to 77.30\%, at a
-BD-BR of 4.35\%. To the best of the authors' knowledge, this is the first solution in the
-literature measured as a replacement of the native partition network of AV1.
+In the AOMedia Video 1 (AV1) codec, intra-frame coding selects the block
+partitioning through a recursive rate-distortion search, which the reference
+encoder prunes at its fast speed presets with a convolutional neural network.
+This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow
+neural networks that replace the native network at the same speed preset. A
+pre-search pruner removes partition types before any rate-distortion evaluation,
+a post-NONE pruner decides whether the search continues after the unpartitioned
+node is measured, a decision that no neural model of the native encoder takes in
+All-Intra coding, and an extended pruner decides whether the extended partition
+types are evaluated. Experimental results over the eight UHD 4K sequences of the
+AOM Common Test Conditions show that the post-NONE pruner achieves time savings
+of 30.34\% with a Bjontegaard delta bitrate (BD-BR) of 0.41\% at preset 1, with
+no significant BD-BR difference from the native network at presets 1 and 2 and
+a significantly lower BD-BR at high quality, but a higher one at preset 3. The
+pre-search pruner reaches up to 77.30\% of time savings, at a BD-BR of 4.35\%,
+and the extended pruner adds 0.87 and 0.83 percentage points at presets 1 and 2
+for less than 0.04 points of BD-BR. Ten of the thirteen nondominated operating
+points belong to NPL-AV1. To the best of the authors' knowledge, this is the
+first solution in the literature measured as a replacement of the native
+partition network of AV1.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -423,6 +423,27 @@ inference. No work in the literature replaces the partition network of the AV1
 reference encoder, and the solutions of Section~\ref{sec_intro} were designed
 for other codecs, so the native CNN is the reference of comparison of this
 work.
+
+\section{Conclusions}
+
+This paper presented NPL-AV1, a set of shallow neural pruners that replace the
+native CNN of the AV1 intra-frame partition search at the same speed preset, so
+that each preset of libaom has three operating points instead of one. The
+pre-search pruner acts where the native CNN acted; the post-NONE pruner decides,
+from the RD cost of the unpartitioned node, whether the search of the node ends,
+a decision that no neural model of the native encoder takes in All-Intra coding;
+and the extended pruner decides whether the AB and 4-way types are evaluated.
+The pruners were implemented in C within libaom v3.10.0 and evaluated over the
+eight CTC Class A1 sequences at presets 1, 2 and 3. The post-NONE pruner reaches
+30.34\% of time savings with 0.41\% of BD-BR at preset 1, with no significant
+BD-BR difference from the native CNN at presets 1 and 2 and a significantly
+lower BD-BR at high quality, at the price of 2.25 percentage points of time
+savings at preset 1; the pre-search pruner reaches up to 77.30\% of time
+savings; and the extended pruner adds 0.87 and 0.83 percentage points at presets
+1 and 2 and nothing at preset 3, where libaom already prunes the same
+candidates. Besides, to the best of the authors' knowledge, this is the first
+work that measures a replacement of the native partition network of AV1 at the
+same preset.
 
 \section*{Acknowledgment}
 
