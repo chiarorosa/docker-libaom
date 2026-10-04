@@ -184,6 +184,11 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   fronteira sem τ = 0,90 = 9 de 12 pontos não dominados aprendidos (antes da D2); número do Abstract
   fica `[completar]` até recalcular a fronteira com a D2.
 
+- 2026-10-04 — **leitura da D2: P0–P3 cumpridas** (`docs/RESULTADOS_fase6_swap_h9d.md`).
+  H9d sobre H9a bal. substituto: ΔTS +0,87 pp (p1) e +0,83 pp (p2), 8/8 seq., p = 0,001; ΔBD +0,032 e
+  +0,039 pp; p3: ΔTS −0,14 pp (0/8), ΔBD +0,002. Fronteira (sem τ=0,90 e sem pontos de p0 do LASCAS):
+  **13 não dominados, 10 do NPL-AV1**; novo ponto não dominado H9a bal.+H9d p2 (1,069% / 50,99%).
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4
