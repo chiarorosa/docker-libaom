@@ -294,6 +294,8 @@ post-NONE pruner matches the coding efficiency of the native CNN, with 0.414\%
 against 0.449\% of BD-BR at preset 1 and 0.516\% against 0.536\% at preset 2,
 for 30.34\% and 40.73\% of TS. The paired t-tests of Table~\ref{tab_ttest}, over
 the eight sequences, show no significant BD-BR difference at either preset.
+Table~\ref{tab_seq} shows the comparison sequence by sequence: the post-NONE
+pruner has the lower BD-BR in nine of the sixteen cases and in both averages.
 Preset 3 is the only one at which the native CNN keeps the lower BD-BR.
 
 \begin{table}[!t]
@@ -327,7 +329,7 @@ libaom native CNN & 0.449 & 32.59 & 0.536 & 42.72 & 2.722 & 67.94 \\
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.1}
-\caption{Post-NONE Pruner Compared With the Native CNN at the Same Preset}
+\caption{Post-NONE Pruner Compared With the Native CNN}
 \label{tab_ttest}
 \centering
 \setlength{\tabcolsep}{5pt}
@@ -372,8 +374,7 @@ to 7.61 percentage points, at a BD-BR 1.4 to 2.0 times higher, and the
 time-first point reaches 77.30\% of TS at preset 3, a speedup of 4.46 times, at
 4.347\% of BD-BR.
 
-The extended pruner confirms the rule of Section~\ref{sec_method}, as
-Table~\ref{tab_seq} shows sequence by sequence. Against the efficiency-first
+The extended pruner confirms the rule of Section~\ref{sec_method}. Against the efficiency-first
 point re-encoded in its own campaign, it lifts the TS by 0.87 percentage points
 at preset 1 and by 0.83 at preset 2, in all eight sequences ($p = 0.001$), at
 0.032 and 0.039 points of BD-BR. At preset 2, it lifts the TS of that
@@ -386,30 +387,27 @@ anticipates, the increment falls below the resolution of 0.46 points at preset
 
 \begin{table}[!t]
 \renewcommand{\arraystretch}{1.1}
-\caption{Per-Sequence Results at Preset 1 and Increment of the Extended Pruner}
+\caption{Per-Sequence BD-BR and TS at Presets 1 and 2}
 \label{tab_seq}
 \centering
-\setlength{\tabcolsep}{2.6pt}
-\begin{tabular}{lccccccc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
 \hline
- & \multicolumn{2}{c}{\textbf{Native CNN}} & \multicolumn{2}{c}{\textbf{Post-NONE}}
- & \multicolumn{3}{c}{\textbf{Ext. $\Delta$TS (pp)}} \\
-\textbf{Sequence} & \textbf{BD-BR} & \textbf{TS} & \textbf{BD-BR} & \textbf{TS}
- & \textbf{P1} & \textbf{P2} & \textbf{P3} \\
- & (\%) & (\%) & (\%) & (\%) & & & \\
+ & \multicolumn{2}{c}{\textbf{Preset 1}} & \multicolumn{2}{c}{\textbf{Preset 2}} \\
+\textbf{Sequence} & \textbf{Native} & \textbf{Post-NONE} & \textbf{Native} & \textbf{Post-NONE} \\
 \hline
-BoxingPractice & 0.587 & 33.47 & 0.554 & 33.00 & $+0.63$ & $+0.90$ & $-0.11$ \\
-Crosswalk & 0.093 & 32.78 & 0.061 & 33.02 & $+1.21$ & $+1.28$ & $-0.24$ \\
-FoodMarket2 & 0.170 & 29.18 & 0.171 & 26.58 & $+1.38$ & $+1.28$ & $-0.32$ \\
-Neon1224 & 0.725 & 35.60 & 0.520 & 31.42 & $+0.22$ & $+0.13$ & $-0.07$ \\
-NocturneDance & 0.817 & 28.66 & 0.864 & 26.92 & $+0.86$ & $+0.78$ & $-0.20$ \\
-PierSeaSide & 0.481 & 35.88 & 0.382 & 31.60 & $+0.43$ & $+0.44$ & $-0.15$ \\
-Tango & 0.348 & 32.46 & 0.383 & 33.88 & $+1.40$ & $+1.08$ & $-0.03$ \\
-TimeLapse & 0.369 & 32.72 & 0.378 & 26.31 & $+0.80$ & $+0.75$ & $-0.02$ \\
+BoxingPractice & 0.587\,/\,33.47 & \textbf{0.554}\,/\,33.00 & \textbf{0.600}\,/\,42.34 & 0.637\,/\,41.80 \\
+Crosswalk      & 0.093\,/\,32.78 & \textbf{0.061}\,/\,33.02 & 0.530\,/\,46.30 & \textbf{0.498}\,/\,46.63 \\
+FoodMarket2    & \textbf{0.170}\,/\,29.18 & 0.171\,/\,26.58 & \textbf{0.184}\,/\,38.79 & 0.203\,/\,36.48 \\
+Neon1224       & 0.725\,/\,35.60 & \textbf{0.520}\,/\,31.42 & 0.773\,/\,43.90 & \textbf{0.649}\,/\,40.25 \\
+NocturneDance  & \textbf{0.817}\,/\,28.66 & 0.864\,/\,26.92 & 0.888\,/\,39.36 & \textbf{0.854}\,/\,37.45 \\
+PierSeaSide    & 0.481\,/\,35.88 & \textbf{0.382}\,/\,31.60 & 0.436\,/\,46.91 & \textbf{0.423}\,/\,43.14 \\
+Tango          & \textbf{0.348}\,/\,32.46 & 0.383\,/\,33.88 & \textbf{0.437}\,/\,42.47 & 0.454\,/\,44.21 \\
+TimeLapse      & \textbf{0.369}\,/\,32.72 & 0.378\,/\,26.31 & 0.440\,/\,41.71 & \textbf{0.409}\,/\,35.89 \\
 \hline
-\textbf{Average} & \textbf{0.449} & \textbf{32.59} & \textbf{0.414} & \textbf{30.34}
- & $\mathbf{+0.87}$ & $\mathbf{+0.83}$ & $\mathbf{-0.14}$ \\
+Average        & 0.449\,/\,32.59 & \textbf{0.414}\,/\,30.34 & 0.536\,/\,42.72 & \textbf{0.516}\,/\,40.73 \\
 \hline
+\multicolumn{5}{l}{\footnotesize Each cell: BD-BR (\%)\,/\,TS (\%). Bold: the lower BD-BR of the preset.}
 \end{tabular}
 \end{table}
 

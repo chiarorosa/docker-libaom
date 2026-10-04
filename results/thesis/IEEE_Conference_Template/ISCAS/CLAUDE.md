@@ -261,6 +261,15 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   contagem 16/13/10 diz agora de onde vêm as 16. Tab. II com presets como linhas de grupo, BD-BR e TS
   agrupados, p < 0,05 em negrito. Palavras aprovadas fora do molde: *better, minus, bold, added*.
 
+- 2026-10-04 — **Tabela III refeita**: BD-BR/TS por sequência da CNN nativa e do pós-NONE nos
+  presets 1 e 2, célula compacta "BD-BR / TS", negrito no menor BD-BR de cada par (neutro: pós-NONE
+  vence 9 dos 16 pares e as duas médias). Fonte: `results/benchmark/fase6_swap_h9c/swap_per_seq.csv`
+  (kind `native` e `h9c_tau95`); o auditor de números não conhece os valores do p2 (falso "sem
+  fonte"). Saíram as colunas Ext. ΔTS por sequência (o 8/8 do H9d fica no texto, fonte
+  `docs/RESULTADOS_fase6_swap_h9d.md`). Identificador `intra_cnn_based_part_prune` trocado por
+  "the CNN-based intra partition pruning of libaom". Legendas das Tabelas II e III em uma linha
+  para manter os Agradecimentos na página 4.
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4
