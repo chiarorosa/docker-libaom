@@ -229,6 +229,18 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   instrumentação (inferência do H9d somada no acumulador do H9c). Extração duplicada pelo podador de
   estendidas declarada.
 
+- 2026-10-04 — **passada de legibilidade contra a narrativa do LASCAS** (blocos 1–4, commits
+  `81930e5`, `5dd67f8`, `750ec7a` e o do bloco 4): corpo de 31,0/27 (LASCAS) e 34,1/33 (ISCAS antes)
+  para **24,9 de média e 25 de mediana**, máx. 47 palavras. Decisões: (i) a Introdução nomeia os três
+  podadores e o argumento do preset vai para o §4, como justificativa da avaliação; (ii) a "main
+  strategy" do III é a mesma da Introdução; (iii) a regra de composição é **enunciada no III** com os
+  dois limites ("Two limits follow, measured in Section IV") e só confirmada no IV; (iv) o terceiro
+  ponto (0,90/0,90, τ_rest desligado) fica só na nota b da Tabela I; (v) Resultados citam faixas
+  (5,15 a 7,61 pp, derivadas da Tabela I), não triplas. Correções de rigor: o p3 não é onde o libaom
+  "começa" a podar estendidas (as redes AB/4-way estão ativas em todos os presets); o que entra no p3
+  é a poda pelo resultado do SPLIT (`prune_ext_part_using_split_info`) → "libaom adds its own
+  pruning"; o pós-NONE só fica "do lado da eficiência" em p1 e p2 (em p3 tem BD-BR maior que a CNN).
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4
