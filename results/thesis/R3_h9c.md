@@ -284,7 +284,7 @@ real do `PARTITION_NONE`, se a busca do nó continua — é, deste modo,
 ao passo que o H9a compete de frente com a rede convolucional intraquadro, que
 neste regime está ativa.
 
-O vazio se restringe, contudo, a esta decisão estrutural, e não a toda decisão
+Mas o vazio se restringe a esta decisão estrutural, e não a toda decisão
 aprendida posterior ao `PARTITION_NONE`. As redes nativas de poda das partições
 estendidas, `av1_ml_prune_ab_partition` e `av1_ml_prune_4_partition`, **continuam
 ativas** em codificação *All-Intra*, uma vez que `ml_prune_partition=1` vale em

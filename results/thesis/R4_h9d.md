@@ -451,7 +451,88 @@ Metodologia.
 
 ---
 
-## 4.9 Síntese — o que o H9d estabelece
+## 4.9 O H9d sobre a substituição direta da rede nativa
+
+Esta seção apresenta a campanha que levou o H9d aos *presets* 1, 2 e 3, fechando a
+lacuna registrada na Seção 6.1 deste capítulo, segundo a qual o podador havia sido
+medido apenas em `cpu-used=0`. Nesta campanha, o H9d foi empilhado sobre o H9a no
+ponto equilibrado, no mesmo arranjo de substituição direta da rede convolucional
+nativa descrito na Seção 2.5, e as previsões sobre o seu efeito foram registradas
+antes da primeira codificação.
+
+O desenho manteve, em cada *preset*, a rede convolucional nativa desligada e todas
+as demais características de velocidade inalteradas, de modo que a única diferença
+entre os dois braços comparados é o próprio H9d. Para cada sequência, cada nível de
+quantização e cada *preset*, a base, ou seja, o H9a equilibrado sem o H9d, foi
+codificada de novo no mesmo binário e em seguida ao braço com o H9d, totalizando
+cento e noventa e duas codificações sobre as oito sequências da Classe A1. A base
+agressiva foi excluída antes da medição, uma vez que, sobre ela, o H9d havia somado
+apenas +0,17 ponto percentual em `cpu-used=0` (Seção 4.7).
+
+O pré-registro, feito em 2026-10-03, fixou quatro previsões e as regras de leitura
+correspondentes. A primeira (P0) era a de que as noventa e seis linhas da base
+reproduziriam, byte a byte, a campanha de substituição de julho. A segunda (P1) era
+a de que o ganho de redução de tempo do H9d ficaria entre a resolução de 0,46 ponto
+percentual e o valor de +1,02 ponto percentual medido em `cpu-used=0`, nos
+*presets* 1 e 2, pois a avaliação das formas AB se torna mais barata a partir do
+*preset* 1. A terceira (P2) limitava o custo a +0,05 ponto percentual de taxa BD. A
+quarta (P3) previa um ganho menor no *preset* 3 do que nos dois primeiros, uma vez
+que, a partir deste *preset*, o próprio codificador passa a podar as partições
+estendidas, através de `prune_ext_part_using_split_info`.
+
+A integridade foi confirmada em todas as noventa e seis linhas da base, que
+reproduziram os bytes e o PSNR-Y da campanha de julho. O tempo destas linhas
+variou, em média, +0,07% em relação a julho, mas com uma linha a −5,01% e outra a
++1,86%, o que justifica a remedição da base dentro da própria campanha, em vez da
+comparação contra os tempos de julho. A Tabela 4.1 apresenta o resultado médio
+sobre as oito sequências.
+
+**Tabela 4.1** — H9d empilhado sobre o H9a equilibrado na substituição direta da
+rede nativa. Âncora libaom `cpu-used=0`; oito sequências da Classe A1; redução de
+tempo na definição canônica; testes t pareados com n = 8.
+
+| *preset* | base: taxa BD | base: redução de tempo | +H9d: taxa BD | +H9d: redução de tempo | Δ taxa BD (pp) | Δ redução de tempo (pp) | sequências com Δ > 0 |
+|:--:|--:|--:|--:|--:|--:|--:|:--:|
+| 1 | 0,915% | 40,28% | 0,947% | 41,15% | +0,032 (p = 0,080) | **+0,87** (p = 0,001) | 8/8 |
+| 2 | 1,030% | 50,16% | 1,069% | 50,99% | +0,039 (p = 0,026) | **+0,83** (p = 0,001) | 8/8 |
+| 3 | 3,866% | 73,10% | 3,868% | 72,96% | +0,002 (p = 0,820) | **−0,14** (p = 0,007) | 0/8 |
+
+As quatro previsões foram cumpridas. Nos *presets* 1 e 2, o H9d soma 0,87 e 0,83
+ponto percentual de redução de tempo, positivo nas oito sequências, ao custo de
+0,032 e 0,039 ponto percentual de taxa BD, ou seja, uma eficiência marginal de 27 e
+21 pontos de redução de tempo por ponto de taxa BD. Afrouxar os limiares do H9a do
+ponto equilibrado para o agressivo, na mesma substituição, rende 15,1 e 14,1, de
+modo que o H9d é cerca de 1,8 e 1,5 vez mais eficiente do que o botão de limiar,
+com a ressalva de que os dois termos desta comparação vêm de campanhas distintas.
+
+No *preset* 3, por outro lado, o ganho se anula, com −0,14 ponto percentual e sinal
+negativo nas oito sequências. Este é, justamente, o *preset* a partir do qual o
+codificador poda as partições estendidas por conta própria, e, então, o H9d e a
+poda nativa disputam o mesmo resíduo de candidatos, o que reproduz, por um caminho
+independente do par H9a e H9c, a sobreposição de ação discutida na Seção 3.5. O
+sinal negativo é consistente entre as sequências, mas a sua magnitude fica abaixo
+da resolução de 0,46 ponto percentual, e atribuí-lo ao custo da inferência do H9d
+sem poda correspondente seria uma hipótese não medida.
+
+A consequência para esta seção é que a dependência do ponto de operação, descrita
+na Seção 4.7, ganha uma segunda dimensão. O resíduo sobre o qual o H9d atua depende
+não apenas dos limiares do H9a, mas também do que o próprio *preset* já poda, e o
+H9d é, deste modo, um complemento útil enquanto a poda nativa das partições
+estendidas não está ativa.
+
+> **Procedência.** `docs/RESULTADOS_fase6_swap_h9d.md` §1 a §6 (desenho,
+> integridade, resultados, leitura do pré-registro e limitações);
+> `results/thesis/IEEE_Conference_Template/ISCAS/CLAUDE.md` §6 (pré-registro,
+> commit `28f9145`); `src/aom/av1/encoder/speed_features.c`
+> (`prune_ext_part_using_split_info` e `reuse_best_prediction_for_part_ab` nos
+> *presets* intraquadro). Artefatos:
+> `results/benchmark/fase6_swap_h9d/{raw_results,marginal_per_seq,marginal_average}.csv`
+> (não versionados). Scripts: `src/scripts/fase6/{encode_swap_h9d.py,
+> report_swap_h9d.py}`.
+
+---
+
+## 4.10 Síntese — o que o H9d estabelece
 
 O H9d está, então, fechado como a segunda solução positiva implantada desta tese:
 um podador aprendido, de trinta e nove atributos, inserido na chamada de poda
@@ -487,6 +568,13 @@ candidatos podados são disjuntos, independentemente de partilharem a mesma
 informação de entrada** — e, pela evidência da Seção 4.7, na medida em que essa
 disjunção se realiza no ponto de operação em que os dois efetivamente rodam.
 
+A Seção 4.9 confirmou este enunciado por um caminho independente e com previsões
+registradas antes da medição. Sobre o H9a na substituição direta da rede nativa, o
+H9d soma +0,87 e +0,83 ponto percentual de redução de tempo nos *presets* 1 e 2,
+nas oito sequências, e o ganho se anula no *preset* 3, justamente onde o próprio
+codificador passa a podar as partições estendidas e, então, disputa com o H9d o
+mesmo resíduo de candidatos.
+
 O H9a e o H9c caçam ambos os blocos fáceis e disputam o mesmo tempo economizável.
 O H9d caça um conjunto de candidatos disjunto, e por isso soma. Este enunciado é
 prescritivo, uma vez que orienta a procura por ações não disputadas em vez da
@@ -503,7 +591,7 @@ uma vez que delimitam por medição o que a informação de pixels e as reformul
 do problema não conseguem entregar. Os resultados negativos são apresentados na
 próxima seção.
 
-> **Procedência.** Consolidação das notas das Seções 4.1 a 4.8;
+> **Procedência.** Consolidação das notas das Seções 4.1 a 4.9;
 > `docs/SINTESE_resultados_metodologia.md` §5-quater (leitura sobre a Conclusão 3
 > e a correção do enunciado) e §6 (as três conclusões);
 > `docs/ANDAMENTO_tese.md` §0.1 (correção da Conclusão 3: a não-aditividade é

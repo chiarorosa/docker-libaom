@@ -108,24 +108,26 @@ de operação do H9a viver em `cpu-used=0`, regime no qual os presets nativos a
 `cpu-used` 1 e 2 entregam mais redução de tempo por menos taxa BD.
 
 A conclusão da tese sobre o H9d não muda, deste modo, mas passa a ser enunciável
-de forma mais precisa. Ponto algum do H9a, somado ou não ao H9d, é não dominado na
-fronteira global. O valor destas soluções é a granularidade fina dentro da curva
-de limiares, apresentada na Seção 6.3, e não uma posição própria na fronteira
-global.
+de forma mais precisa. Ponto algum do H9a em `cpu-used=0`, somado ou não ao H9d, é
+não dominado na fronteira global. O valor destas soluções neste regime é a
+granularidade fina dentro da curva de limiares, apresentada na Seção 6.3, e não uma
+posição própria na fronteira global.
 
-A limitação que resta sobre esta fronteira não é mais a ausência do H9d, fechada
-para o regime `cpu-used=0`, que é onde o H9d foi medido e implantado. É a sua
-ausência nos demais níveis de preset.
+A limitação que restava sobre esta fronteira, a ausência do H9d nos *presets* 1, 2
+e 3, foi fechada pela campanha de 2026-10-03, apresentada na Seção 4.9. Nela, o H9d
+foi empilhado sobre o H9a equilibrado na substituição direta da rede nativa, com a
+base remedida na mesma campanha, em cento e noventa e duas codificações, e com a
+base agressiva excluída antes da medição, em função do marginal de apenas +0,17
+ponto percentual que o H9d havia somado sobre ela em `cpu-used=0`.
 
-O H9d não foi codificado empilhado sobre `cpu-used` 1, 2 e 3, e fechar esta lacuna
-custaria cerca de cento e noventa e duas codificações — duas bases do H9a por três
-níveis de preset por oito sequências por quatro pontos de quantização.
-
-Há razão medida para esperar rendimento baixo desta campanha. O H9d mostrou-se
-inerte sobre a base agressiva do H9a, com apenas +0,17 ponto percentual de redução
-de tempo, acima da resolução temporal medida em somente uma das oito sequências. E
-os presets nativos mais rápidos já podam de forma agressiva, de modo que o resíduo
-sobre o qual o H9d atua tende a encolher conforme o preset avança.
+As três configurações novas alteram a fronteira em um ponto. Das vinte e sete
+configurações resultantes, dezesseis são não dominadas, e a única nova é o H9a
+equilibrado somado ao H9d no *preset* 2, com 1,069% de taxa BD a 50,99% de redução
+de tempo. Então, pela primeira vez nesta tese, um ponto do H9d ocupa uma posição
+própria na fronteira global. No *preset* 1, a configuração somada ao H9d é
+dominada pela rede nativa no *preset* 2 e pelo H9c a τ=0,90 no *preset* 2, e, no
+*preset* 3, é dominada pela própria base, uma vez que o ganho do H9d se anula
+neste *preset*, onde o codificador já poda as partições estendidas.
 
 > **Procedência.** `docs/RESULTADOS_fronteira_pareto_global.md` §3 (tabela dos
 > quinze pontos não dominados), §4.1, §4.2 (leitura da dominância do H9d) e §5
@@ -134,7 +136,12 @@ sobre o qual o H9d atua tende a encolher conforme o preset avança.
 > 2026-07-29, 24 configurações, 15 não dominadas); `docs/SINTESE_resultados_metodologia.md`
 > §6 e §8 (definição canônica de redução de tempo); `docs/ANDAMENTO_tese.md`
 > §0.3 e §8.3 (nota de correção de 2026-07-29); `results/thesis/A3_RETRATACOES_E_LACUNAS.md`
-> L1 (lacuna sobre a fronteira, fechada para `cpu-used=0`).
+> L1 (lacuna sobre a fronteira, fechada para `cpu-used=0`); fechamento da lacuna nos
+> *presets* 1 a 3: `docs/RESULTADOS_fase6_swap_h9d.md` §3 e §5 e
+> `results/benchmark/fase6_swap_h9d/marginal_average.csv`; fronteira de 27
+> configurações recalculada em 2026-10-04 sobre `pareto_frontier.csv` acrescido das
+> três configurações da campanha (16 não dominadas), com o mesmo critério de
+> dominância de `src/scripts/fase6/analyze_frontier.py`.
 
 ---
 
@@ -320,7 +327,8 @@ operação em que efetivamente rodam**.
 > (qualificação pelo ponto de operação); `docs/RESULTADOS_BLOCO7_E1_E4.md` §2
 > (E4, 64% de sobreposição); `docs/RESULTADOS_BLOCO7_E3_DEC_E2.md` §2 e §3.2
 > (interação −1,9 pp e resolução temporal ~0,46 pp); `docs/RESULTADOS_H9d_CTC.md`
-> §3; `results/thesis/R4_h9d.md` §4.7 e §4.9.
+> §3; `results/thesis/R4_h9d.md` §4.7, §4.9 e §4.10;
+> `docs/RESULTADOS_fase6_swap_h9d.md` §3 a §5 (terceira prova, com pré-registro).
 
 ---
 
@@ -352,6 +360,24 @@ e 0,32%. Ambos os podadores custam, deste modo, **menos de um terço de um por
 cento** do tempo de codificação, e a diferença entre eles é imaterial frente ao
 que a poda economiza ou desperdiça na busca de taxa-distorção.
 
+Esta medição cobria apenas o H9a, e foi estendida, em 2026-10-04, aos dois
+podadores que agem depois do `PARTITION_NONE`, com o mesmo protocolo de três
+quadros em `cpu-used=1`. Para tanto, a instrumentação passou a acumular a
+extração de atributos e a inferência de cada podador em separado, o que corrigiu
+também um defeito, uma vez que a inferência do H9d era somada ao acumulador do
+H9c. O H9c custa de 0,26% a 0,36% do tempo de codificação, o H9a no ponto
+equilibrado de 0,41% a 0,48% e o H9d de 0,37% a 0,42%, contra 0,13% a 0,19% da
+rede convolucional nativa, de modo que cada podador permanece abaixo de meio por
+cento, e a configuração mais cara, o H9a somado ao H9d, soma de 0,78% a 0,90%.
+
+Dois achados desta extensão precisam de registro. Por um lado, o H9d recalcula os
+trinta e seis atributos que o H9a já extraiu no mesmo nó, e esta extração repetida
+responde por cerca de três quartos do seu custo, o que seria evitável pelo
+reaproveitamento do vetor do H9a. Por outro lado, nas campanhas de substituição do
+H9c, o H9a neutralizado continuou a extrair e a inferir sem podar, ao custo de
+0,27% a 0,38% do tempo, e as reduções de tempo publicadas para o H9c são, então,
+ligeiramente conservadoras.
+
 A consequência declarada é dupla, e precisa de ser enunciada nos dois sentidos.
 
 Resultado algum de taxa BD contra tempo apresentado neste capítulo precisa ser
@@ -360,13 +386,17 @@ não da leveza de cada inferência, uma vez que o custo de inferência é ruído
 ao custo de busca que a poda evita ou preserva.
 
 Ao mesmo tempo, a alegação de leveza de inferência **sai da lista de vantagens**
-desta proposta, pois não é isso que sustenta o ganho medido. Ela não se transforma,
-contudo, em desvantagem: o custo absoluto, em qualquer dos dois modelos, é
+desta proposta, pois não é isso que sustenta o ganho medido. Mas ela não se
+transforma em desvantagem: o custo absoluto, em qualquer dos podadores, é
 desprezível frente ao tempo total de codificação.
 
 > **Procedência.** `docs/RESULTADOS_microbench_pruner.md` §2 a §4 (inferência
 > isolada, ~486 ns contra ~24.700 ns, escopo declarado) e §6.2b e §6.3 (custo
-> implantado, ≤0,32% do tempo de codificação); `docs/SINTESE_resultados_metodologia.md`
+> implantado, ≤0,32% do tempo de codificação); `docs/RESULTADOS_overhead_podadores_iscas.md`
+> §1 a §5 (extensão ao H9c e ao H9d, defeito corrigido na instrumentação, extração
+> repetida e conservadorismo das reduções de tempo do H9c; artefato
+> `results/benchmark/overhead_iscas/overhead.csv`; script
+> `src/scripts/fase6/overhead_pruners_iscas.py`); `docs/SINTESE_resultados_metodologia.md`
 > §6, argumento transversal de custo de inferência;
 > `results/thesis/A3_RETRATACOES_E_LACUNAS.md` R10 (retratação da leveza de
 > inferência como vantagem).
