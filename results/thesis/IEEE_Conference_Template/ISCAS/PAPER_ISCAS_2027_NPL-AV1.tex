@@ -178,9 +178,10 @@ feature of the preset is kept as it is.
   \centering
   % src/scripts/benchmark/plot_npl_ladder_iscas_fig1.py (variante cinza)
   \includegraphics[width=\columnwidth]{fig1_npl_ladder}
-  \caption{NPL-AV1 flowchart for one node at a fixed preset. The operating
-  point of the preset selects the pruner that acts before the search, the post-NONE and
-  extended pruners act after NONE is evaluated, and the shaded action ends the node.}
+  \caption{NPL-AV1 flowchart for one node at a fixed preset. The proposed pruners
+  act at points 1 (pre-search, where the disabled native CNN acted), 2
+  (post-NONE) and 3 (extended); each operating point enables only some of them,
+  and the native networks of the AB and 4-way types stay active.}
   \label{fig_npl}
 \end{figure}
 
