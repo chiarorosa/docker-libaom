@@ -212,10 +212,7 @@ Every pruner is a set of three MLPs, for nodes of 16, 32 and 64 samples, whose
 two hidden layers have 64 and 32 ReLU units. The pre-search and the post-NONE
 pruners give the probabilities of NONE, of SPLIT and of the remaining types, and
 the extended pruner gives the probability $p_{\mathrm{ext}}$ that the best type
-of the node is an extended one. The models were trained over 30 epochs under
-hard-label cross entropy, with the AdamW optimizer \cite{adamw} in PyTorch
-\cite{pytorch}, and the standardization of the features was folded into the
-first layer, so the encoder executes the models over raw features.
+of the node is an extended one.
 
 \subsection{Decision Rules and Encoder Integration}
 \label{sec_policy}
@@ -506,10 +503,6 @@ responsibility for the final work.
 \bibitem{kherchouche2025} M. E. A. Kherchouche \emph{et al.}, ``Complexity reduction study based on RD costs approximation for VVC intra partitioning,'' in \emph{Proc. Data Compression Conf. (DCC)}, Mar. 2025, p. 377.
 
 \bibitem{uvg} A. Mercat, M. Viitanen, and J. Vanne, ``UVG dataset: 50/120fps 4K sequences for video codec analysis and development,'' in \emph{Proc. 11th ACM Multimedia Syst. Conf. (MMSys)}, Jun. 2020, pp. 297--302.
-
-\bibitem{adamw} I. Loshchilov and F. Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. Int. Conf. Learn. Represent. (ICLR)}, May 2019, pp. 1--18.
-
-\bibitem{pytorch} A. Paszke \emph{et al.}, ``PyTorch: An imperative style, high-performance deep learning library,'' in \emph{Proc. Adv. Neural Inf. Process. Syst. (NeurIPS)}, Dec. 2019, pp. 8024--8035.
 
 \bibitem{ctc} X. Zhao \emph{et al.}, ``AOM common test conditions v9.0,'' Alliance for Open Media, Codec Working Group, doc. CWG-G082, Mar. 2026.
 
