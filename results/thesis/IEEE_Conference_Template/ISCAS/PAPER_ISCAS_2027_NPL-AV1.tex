@@ -81,7 +81,7 @@ rate-distortion optimization (RDO) \cite{sullivan1998}. The reference software
 libaom \cite{libaom} performs this search in full at its highest-quality speed
 preset, \texttt{cpu-used=0}. From \texttt{cpu-used=1} on, its All-Intra
 configuration prunes this search with a convolutional neural network (CNN), the
-\texttt{intra\_cnn\_based\_part\_prune} speed feature \cite{libaom}. This CNN
+CNN-based intra partition pruning of libaom \cite{libaom}. This CNN
 reads each 64$\times$64 block once and, before any RDO, forces or forbids the
 quad-tree split down to 8$\times$8 samples.
 
