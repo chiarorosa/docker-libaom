@@ -195,6 +195,13 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   +0,039 pp; p3: ΔTS −0,14 pp (0/8), ΔBD +0,002. Fronteira (sem τ=0,90 e sem pontos de p0 do LASCAS):
   **13 não dominados, 10 do NPL-AV1**; novo ponto não dominado H9a bal.+H9d p2 (1,069% / 50,99%).
 
+- 2026-10-04 — **custo implantado medido para todos os podadores**
+  (`docs/RESULTADOS_overhead_podadores_iscas.md`, commit `9cf1899`): pós-NONE 0,26–0,36%, pré-busca
+  efficiency-first 0,41–0,48%, estendidas 0,37–0,42% (pré-busca + estendidas 0,78–0,90%), CNN nativa
+  0,13–0,19% do tempo de codificação (3 quadros, p1, `--threads=1`). Defeito corrigido na
+  instrumentação (inferência do H9d somada no acumulador do H9c). Extração duplicada pelo podador de
+  estendidas declarada.
+
 ## 5b. Conformidade com a CTC (CWG-G082 v9, `src/samples/aomctc_test_set/`), conferida em 2026-10-03
 
 Conforme: sequências A1, 15 quadros (`--limit=15`), flags do §4.1, ladrilhamento 4K do §4
