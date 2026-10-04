@@ -121,10 +121,10 @@ native CNN.
 The basic unit of AV1 partitioning is the superblock, of 128$\times$128 or
 64$\times$64 samples, which the partition tree divides recursively down to
 4$\times$4 samples \cite{han2021}. Each node may take one of ten partition types
-\cite{chen2018}: NONE codes the node as a single block, SPLIT divides it into four
-square sub-blocks, HORZ and VERT divide it into two rectangular sub-blocks, the
-four AB types join a rectangular half to two square sub-blocks, and the two 4-way
-types divide it into four sub-blocks of 4:1 aspect ratio. Together, the AB and
+\cite{chen2018}. NONE codes the node as a single block, SPLIT divides it into
+four square sub-blocks, and HORZ and VERT divide it into two rectangular
+sub-blocks. The four AB types join a rectangular half to two square sub-blocks,
+and the two 4-way types divide it into four sub-blocks of 4:1 aspect ratio. Together, the AB and
 4-way families are the extended partitions.
 
 The libaom encoder evaluates the types of a node in a fixed order, NONE, SPLIT, the
@@ -136,12 +136,12 @@ of having been paid.
 
 The native neural pruners act at both points, but not with the same reach in
 All-Intra coding. Before the search, the CNN of Section~\ref{sec_intro} forces or
-forbids the split from \texttt{cpu-used=1} on. After NONE, three neural decisions
-can end the search of the node or remove candidates from it: a breakout after NONE, an early
-termination after SPLIT and the pruning of the rectangular types. All three are
-disabled in intra-only frames by a frame-type guard \cite{libaom}, while two other
-networks stay active and prune the AB and 4-way types from the RD costs already
-measured. Whether the search of a node continues once its unpartitioned cost is
+forbids the split. After NONE, three neural decisions can end the search of the
+node or remove candidates from it: a breakout after NONE, an early termination
+after SPLIT and the pruning of the rectangular types. A frame-type guard disables
+all three in intra-only frames \cite{libaom}. Only two networks stay active after
+NONE, and they prune the AB and 4-way types from the RD costs already measured.
+Whether the search of a node continues once its unpartitioned cost is
 known is, therefore, a decision that no neural model of the native encoder takes
 in All-Intra coding.
 
@@ -156,10 +156,11 @@ the inter-frame partition search.
 
 The Neural Pruner Ladder for AV1 (NPL-AV1) inserts MLP pruners at the two points
 of the node search identified in Section~\ref{sec_search}, as shown in
-Fig.~\ref{fig_npl}. The main strategy of this solution is to give each preset of
-libaom a choice of partition pruner instead of a single one: with the native CNN
-disabled, a pre-search or a post-NONE pruner replaces it, and every other speed
-feature of the preset is kept as it is.
+Fig.~\ref{fig_npl}. The main strategy of this solution is to consult each pruner
+where the information it reads already exists. At each preset, the native CNN is
+disabled and replaced by the post-NONE pruner or by the pre-search pruner, the
+latter alone or with the extended pruner, and every other speed feature of the
+preset is kept as it is.
 
 \begin{figure}[!t]
   \centering
@@ -184,16 +185,27 @@ still take after NONE. Every pruner only removes candidates, so moving between
 the operating points of a preset is a matter of choosing which pruner replaces
 the CNN, not of retraining it.
 
+The rule behind the ladder is that two pruners add their time savings when they
+remove disjoint sets of candidates, and compete for them when they remove the
+same ones. The extended pruner removes only AB and 4-way candidates, and only on
+the nodes the pre-search pruner did not settle, so its savings are expected to
+add to those of the pre-search pruner. Two limits follow, measured in
+Section~\ref{sec_results}: the pre-search and the post-NONE pruners both end
+nodes at NONE, so they compete, and from preset 3 on libaom adds a pruning of
+the extended partitions from the result of SPLIT, so the extended pruner
+competes with it.
+
 \subsection{Features, Dataset and Models}
 \label{sec_models}
 
 Every pruner reads features whose extraction demands no rate-distortion
-evaluation of its own. Twenty-four block-content features (BC) are statistics of
-the samples of the node, of its quadrants and of its contrast with the parent and
-sibling sub-blocks, together with the quantization and the position of the node;
-eight causal-neighbor partition context features (NC) read the partition of the
-coded blocks above and on the left; and four coding-state and position features
-(CSP) are added to them, for thirty-six features in the pre-search pruner. The
+evaluation of its own. The pre-search pruner reads thirty-six features in three
+sets. Twenty-four block-content features (BC) are statistics of the samples of
+the node, of its quadrants and of its contrast with the parent and sibling
+sub-blocks, together with the quantization and the position of the node. Eight
+causal-neighbor partition context features (NC) read the partition of the coded
+blocks above and on the left, and four coding-state and position features (CSP)
+are added to them. The
 post-NONE and the extended pruners also read the logarithms of the rate, the
 distortion and the RD cost of the measured NONE.
 
@@ -229,19 +241,18 @@ $\theta_{\mathrm{size}} = 0.0910$ for nodes of 16 samples, 0.1031 for 32 and
 
 A higher $\tau_{\mathrm{none}}$ or $\tau_{\mathrm{split}}$, or a lower
 $\tau_{\mathrm{rest}}$, demands more confidence from the model before a candidate
-is removed, so fewer nodes are pruned, fewer wrong decisions are taken and less
-coding efficiency is lost, at the price of smaller time savings; loosening the
-three thresholds moves the pruner the other way. Two operating points were
+is removed. Fewer nodes are then pruned and fewer wrong decisions are taken, so
+less coding efficiency is lost, at the price of smaller time savings. Loosening
+the three thresholds moves the pruner the other way. Two operating points were
 selected at opposite sides of this trade-off, set by
 $(\tau_{\mathrm{none}}, \tau_{\mathrm{split}}, \tau_{\mathrm{rest}})$: the
 efficiency-first one, $(0.95, 0.90, 0.20)$, which is stricter in all three
 thresholds, and the time-first one, $(0.60, 0.85, 0.40)$, which is looser in all
-three. A third one, $(0.90, 0.90)$ with $\tau_{\mathrm{rest}}$ disabled, is only
-evaluated at \texttt{cpu-used=0} together with the post-NONE pruner.
+three.
 
 All pruners were implemented in C within libaom v3.10.0. With their compile-time
 guard disabled, the build gives the bitstream of the reference software byte for
-byte, and the native CNN is disabled in the same binary, so at each preset the
+byte. The native CNN is disabled in the same binary, so at each preset the
 partition pruner is the only difference from the native configuration. Since
 every pruner removes candidates and never forces one, NPL-AV1 is fully compliant
 with the AV1 specification and does not affect the bitstream syntax.
