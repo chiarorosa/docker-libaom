@@ -60,6 +60,10 @@ Fontes canônicas: `R2_h9a.md` (§2.5 substituição do H9a), `R3_h9c.md` (§3.4
 4. Estilo de prosa: espelhar `../LASCAS/PAPER_LASCAS_2027_SNP-AV1_SUBMIT.tex` (frases longas
    encadeadas, ganho→custo, "The main strategy of this solution is to ...", declaração de escopo
    no fim da fundamentação, declaração de conformidade com a especificação AV1).
+4b. **Nunca passar LaTeX por heredoc do Git Bash nem por `py -c`**: o shell colapsa `\\` em `\`
+   (quebrou as linhas das Tabelas I e II em 2026-10-04). Texto LaTeX entra no `.tex` só pelas
+   ferramentas Edit/Write ou por script Python salvo em arquivo. Após cada inserção, conferir a
+   ordem da bibliografia contra a primeira citação.
 5. Ao fechar cada etapa: compilar sem `Overfull`/referência indefinida, commit + push (sem atribuição
    de IA na mensagem).
 
