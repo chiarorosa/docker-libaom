@@ -167,6 +167,8 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   points" do podador de estendidas sem o seu custo (< 0,04 pp). Motivo: evitar que 4,35% de BD-BR
   isolado afaste o revisor na primeira leitura; o custo do ponto destacado (1,07% a 50,99%) fica na
   mesma frase e todos os custos estão no corpo. Não reverter em revisão sem consultar o usuário.
+- 2026-10-04 — **B.2, movimento 7 (ineditismo) fora do Abstract**: a frase "To the best of the
+  authors' knowledge…" fica só nas Conclusões, por decisão do usuário.
 
 ### Pendências no artigo
 - 2026-10-04 — **rascunho completo**: Abstract reescrito (246 palavras, três podadores, "Ten of the
