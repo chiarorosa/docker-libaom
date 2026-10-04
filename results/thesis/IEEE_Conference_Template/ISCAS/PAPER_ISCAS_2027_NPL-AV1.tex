@@ -39,13 +39,13 @@ In the AOMedia Video 1 (AV1) codec, intra-frame coding selects the block
 partitioning through a recursive rate-distortion search, which the reference
 encoder prunes at its fast speed presets with a convolutional neural network.
 This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow
-neural networks that replace the native network at the same speed preset. A
-pre-search pruner removes partition types before any rate-distortion evaluation,
+neural networks that replace the native network at the same speed preset,
+keeping every other speed feature of the preset unchanged. A pre-search pruner removes partition types before any rate-distortion evaluation,
 a post-NONE pruner decides whether the search continues after the unpartitioned
 node is measured, a decision that no neural model of the native encoder takes in
 All-Intra coding, and an extended pruner decides whether the extended partition
-types are evaluated. Experimental results over the eight UHD 4K sequences of the
-AOM Common Test Conditions show that the post-NONE pruner achieves time savings
+types are evaluated. Over the eight UHD 4K sequences of the AOM Common Test
+Conditions, the post-NONE pruner achieves time savings
 of 30.34\% with a Bjontegaard delta bitrate (BD-BR) of 0.41\% at preset 1, with
 no significant BD-BR difference from the native network at presets 1 and 2 and
 a significantly lower BD-BR at high quality, but a higher one at preset 3. The
@@ -53,8 +53,8 @@ pre-search pruner reaches up to 77.30\% of time savings, at a BD-BR of 4.35\%,
 and the extended pruner adds 0.87 and 0.83 percentage points at presets 1 and 2
 for less than 0.04 points of BD-BR. Ten of the thirteen nondominated operating
 points belong to NPL-AV1. To the best of the authors' knowledge, this is the
-first solution in the literature measured as a replacement of the native
-partition network of AV1.
+first replacement of the native partition network of AV1 measured at the same
+preset.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -84,8 +84,10 @@ prunes it at the fast presets. From \texttt{cpu-used=1} on, its All-Intra config
 enables the \texttt{intra\_cnn\_based\_part\_prune} speed feature \cite{libaom},
 a convolutional neural network (CNN) that reads each 64$\times$64 block once and, before any RDO, forces or forbids the quad-tree split down to
 8$\times$8 samples. A preset also changes the transform, intra mode and loop
-filter searches, so a solution compared against a preset is measured against
-every speed feature at once, not against the partition pruner alone.
+filter searches, so a pruner applied at \texttt{cpu-used=0} and compared against
+a preset is credited, or charged, with every other speed feature of that preset;
+only a replacement of the native CNN at the same preset, with every other speed
+feature kept, measures the partition pruner alone.
 
 Few works act on the computational effort of AV1. None of them acts on the
 partition network of its reference encoder. The works \cite{xu2020,xu2021,jeong2019} reduce
