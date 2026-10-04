@@ -100,7 +100,9 @@ evaluated on their encoders, which prevents a direct and fair comparison.
 This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow
 multilayer perceptrons (MLPs) that replace the native CNN in the libaom
 intra-frame partition search. The main strategy of this solution is to consult
-each pruner where the information it reads already exists. A pre-search pruner
+each pruner where the information it reads already exists. Instead of one CNN
+that reads each 64$\times$64 block once, NPL-AV1 consults one MLP per node size
+at three points of the node search. A pre-search pruner
 acts before any RDO, where the native CNN acts. A post-NONE pruner reads the RD
 cost of the unpartitioned node and decides whether the search continues, a
 decision that no neural model of the native encoder takes in All-Intra coding.
@@ -109,12 +111,11 @@ Section~\ref{sec_search} are evaluated. Every pruner is measured at a fixed
 preset with the native CNN disabled, since a preset also changes the transform,
 intra mode and loop filter searches: only a replacement at the same preset
 measures the partition pruner alone. Over the eight UHD 4K sequences of the AOM
-Common Test Conditions (CTC), the post-NONE pruner shows no statistically
-significant difference in coding efficiency from the native CNN at presets 1
-and 2 and a significantly lower coding efficiency loss at high quality. The
-pre-search pruner, alone or with the extended pruner, extends the time savings
-of every preset, so each preset gains operating points on both sides of the
-native CNN.
+Common Test Conditions (CTC), the post-NONE pruner equals or improves the coding
+efficiency of the native CNN at presets 1 and 2, significantly at high quality.
+The pre-search pruner exceeds the time savings of the native CNN at every
+preset, and the extended pruner adds time savings in all eight sequences, so
+ten of the thirteen nondominated operating points belong to NPL-AV1.
 
 \section{The AV1 Intra-Frame Partition Search}
 \label{sec_search}
