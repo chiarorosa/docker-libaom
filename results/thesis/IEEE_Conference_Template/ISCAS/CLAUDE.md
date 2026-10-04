@@ -183,9 +183,11 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   Fontes STIX TrueType na Fig. 1, como no LASCAS aceito.
 
 ### Pendências fora do artigo
-- `M3` §3.3: corrigir `--threads=1` → `--threads=2` (o código e a CTC usam 2 para 4K).
-- `R3` §3.4: "menos da metade da taxa BD da nativa nos dois presets" só vale no p1
-  (0,065 vs 0,153); no p2 é 0,173 vs 0,259 (67%). Corrigir o texto.
+- ✔ 2026-10-04 (commit `ce0b4a5`): `M3` — a pendência de `--threads` era equívoco (o M3 descreve
+  a grade UVG, `--threads=1`); explicitado o ladrilhamento 4K da CTC (`--threads=2`) e declarado o
+  tempo de parede (razão user/parede medida 1,72). `R3` — "menos da metade" corrigido (p2 = 2/3),
+  ressalva das redes AB/4-way, paridade só de BD-BR, retirada a razão ~50×. `R4`/`R6` — contraste
+  "+0,26, quatro vezes" trocado pelo contraste de sinal; R6 ganhou a D2 como terceira prova.
 - **LASCAS** (corrigir na versão final): (i) "Motion Picture Expert Group" → "Moving Picture Experts
   Group"; (ii) ref. Corrêa 2020 com autores errados ("B. Zatt" não é autor; os 6 autores do Xplore,
   DOI 10.1109/TCSI.2020.2973031, são M. M. Corrêa, B. H. Waskow, J. W. Goebel, D. M. Palomino,
@@ -196,7 +198,7 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   ... has a significant impact on the overall computational cost". Já corrigidos no ISCAS;
   (v) trocar "balanced/aggressive" por "efficiency-first/time-first", com a frase de mecanismo do
   III-C do ISCAS, para que os dois artigos usem a mesma terminologia.
-- `R3` §3.4 ("nicho nativamente vazio"): ressalvar que, em AI, as DNNs nativas
+- ✔ (resolvido em `ce0b4a5`) `R3` §3.4 ("nicho nativamente vazio"): ressalvar que, em AI, as DNNs nativas
   `av1_ml_prune_ab_partition` e `av1_ml_prune_4_partition` **continuam ativas** depois do NONE
   (`ml_prune_partition=1` em todos os presets AI, `speed_features.c:339`; a checagem de
   `frame_is_intra_only` dentro delas só controla a gravação de atributos). Só as três decisões
