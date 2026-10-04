@@ -82,7 +82,11 @@ ficam as de preâmbulo/autores/agradecimento, nomes de padrões, colocações ca
 enumerações técnicas. Qualquer outra passagem é reescrita.
 **Nomenclatura fixada:** *pre-search pruner* (H9a), *post-NONE pruner* (H9c, encerra o nó),
 *extended pruner* (H9d); *operating point* (nunca "rung"); *neural* (nunca "learned");
-*shallow* (nunca "lightweight").
+*shallow* (nunca "lightweight"). Pontos do pré-busca: **efficiency-first** (0,95/0,90/0,20) e
+**time-first** (0,60/0,85/0,40) — nunca "balanced/aggressive" (crítica do orientador, 2026-10-04: não
+dizia se o sentido era aceitar perda de BD-BR ou buscar TS); o III-C explica o eixo (limiar mais
+exigente → menos poda → menos perda e menos TS). Terceiro ponto (0,90/0,90, τ_rest desligado) fica
+sem nome: são os limiares compilados, sem intenção de projeto.
 
 **Sintaxe**
 - Frase longa e encadeada: média **31 palavras**, mediana 27, **45%** acima de 30, 14% abaixo de 15.
@@ -164,7 +168,9 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   "intraframe" no título (DOI 10.1109/MDAT.2022.3146083); (iv) "One of the largest individual costs
   of AV1 intra-frame coding is the block partitioning decision [bender2023]" extrapola a fonte —
   Bender perfila o libaom em geral (inter domina, 76,98%) e só afirma que "partition tree processing
-  ... has a significant impact on the overall computational cost". Já corrigidos no ISCAS.
+  ... has a significant impact on the overall computational cost". Já corrigidos no ISCAS;
+  (v) trocar "balanced/aggressive" por "efficiency-first/time-first", com a frase de mecanismo do
+  III-C do ISCAS, para que os dois artigos usem a mesma terminologia.
 - `R3` §3.4 ("nicho nativamente vazio"): ressalvar que, em AI, as DNNs nativas
   `av1_ml_prune_ab_partition` e `av1_ml_prune_4_partition` **continuam ativas** depois do NONE
   (`ml_prune_partition=1` em todos os presets AI, `speed_features.c:339`; a checagem de
