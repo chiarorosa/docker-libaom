@@ -174,10 +174,13 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
 - 2026-10-04 — **rascunho completo**: Abstract reescrito (246 palavras, três podadores, "Ten of the
   thirteen"; opção (a), sem a ressalva de não dominância, que fica no corpo) e Seção V escrita.
   Sem Fig. 2, por decisão do usuário.
-- Diagramação: espaços verticais grandes entre os parágrafos da coluna 2 da página 1
-  (`\flushbottom` esticando a coluna); resolver na revisão final sem mexer em margens.
-- Revisão final: auditoria de todos os números contra os artefatos, checklist da Parte C,
-  equilíbrio da última página (`\IEEEtriggeratref`).
+- 2026-10-04 — **revisão final concluída**: auditoria de números
+  (`src/scripts/paper/audit_numbers_iscas.py`, 201/206 casados; os 5 restantes são parâmetros de
+  layout e um falso positivo de arredondamento); corrigido 4,47 → 4,46 (arredondamento duplo);
+  siglas BD-BR, PSNR, TS e RD definidas no corpo; frase de 97 palavras das Conclusões dividida
+  (máx. agora 71); `\IEEEtriggeratref{16}` equilibra a página 5; Underfull da página 1 resolvido com
+  quatro cortes de redundância na Introdução. Frase do treino (AdamW/PyTorch) retirada a pedido.
+  Fontes STIX TrueType na Fig. 1, como no LASCAS aceito.
 
 ### Pendências fora do artigo
 - `M3` §3.3: corrigir `--threads=1` → `--threads=2` (o código e a CTC usam 2 para 4K).
