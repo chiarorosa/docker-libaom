@@ -59,6 +59,23 @@ Artefato: `results/benchmark/overhead_iscas/overhead.csv`.
 4. Nas campanhas de substituição do pós-NONE, o pré-busca neutralizado custou 0,27–0,38% sem podar
    nada; os TS publicados do pós-NONE são, portanto, ligeiramente **conservadores**.
 
+## 4b. Custo por consulta (derivado do mesmo CSV; usado no ISCAS em 2026-10-21)
+
+Custo por consulta = (ms de extração + ms de inferência) / chamadas; só os podadores que decidem.
+
+| sequência | CNN nativa | pré-busca eff.-first | pós-NONE | estendidas |
+|---|--:|--:|--:|--:|
+| Tango cq32 | 25,24 µs × 5.940 | 3,45 µs × 105.580 | 4,19 µs × 65.627 | 3,74 µs × 87.587 |
+| BoxingPractice cq43 | 24,85 µs × 5.938 | 3,47 µs × 97.387 | 3,97 µs × 71.756 | 3,67 µs × 80.490 |
+
+Leitura: uma consulta do NPL-AV1 custa 3,4–4,2 µs, **6,0 a 7,3 vezes menos** que uma inferência da
+CNN (~25 µs), e é feita **11 a 18 vezes mais** (todo nó de 16 a 64 amostras vs uma vez por bloco
+64×64); por isso o total do NPL-AV1 (0,26–0,48%) fica acima do da CNN (0,13–0,19%). Não usar a
+razão só de inferência (~50×) como vantagem: a extração domina o custo do NPL-AV1.
+Comparação de binários: as linhas `native_cpuN` das campanhas rodaram em `libaom_perf_anchor`
+(intocado); o braço pós-NONE rodou em `libaom_perf` com o pré-busca neutralizado (2/2/−1), que
+custa 0,27–0,38% (§3), logo o TS do pós-NONE frente à CNN é conservador nessa magnitude.
+
 ## 5. Limitações
 
 1. Duas sequências, um cq cada, 3 quadros e `cpu-used=1`, como o protocolo de julho; não varre

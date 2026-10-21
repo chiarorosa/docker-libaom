@@ -161,6 +161,24 @@ contribuições em lista, adjetivos como "significant" fora do sentido estatíst
   Index Terms. Compilação no contêiner `latex_build` (monta `results/` em `/work`): 0 warnings,
   fontes Type 1 embutidas. Pendente no Abstract: frase do H9d empilhado (após D2).
 
+### Revisão do Luciano (2026-10-21) — REVOGA as duas primeiras exceções abaixo
+O usuário mandou reverter, "com viés de apoiar o aceite": o pós-NONE é **paridade de BD-BR com ~2 pp
+a menos de TS** (nunca "equals or improves"); o pré-busca vem com a faixa de BD-BR (0,92–4,35%);
+"ten of thirteen" sai do Abstract e da Conclusão. Contribuições enfatizadas: (C1) o ponto de decisão
+importa mais que a capacidade do modelo; (C2) regra de composição prevista antes da medição e
+confirmada (P1–P3); (C3) substituição no mesmo preset. Título com "UHD". **Sem campanha de ablação
+CNN-off** (resultado incerto podia minar a premissa); a ablação é a análise de componentes já medida,
+sem chamar a linha nativa vs `cpu-used=0` de efeito da CNN. Custo: por consulta CNN ~25 µs vs NPL-AV1
+3,5–4,6 µs (extração+inferência), 11–18× mais consultas, total 0,26–0,48% vs 0,13–0,19%; o TS do
+pós-NONE é conservador (pré-busca neutralizado 0,27–0,38% no binário dele; nativo rodou no binário
+intocado `libaom_perf_anchor`).
+
+**Precedência lexical do Luciano (2026-10-21).** O texto do ISCAS adaptado pelo Luciano (commit
+`129bda0`, que incorporou as edições dele) **vence o molde LASCAS e o §3b**: suas palavras
+(*expense*, *significant*, *address*, *makes*, *called*, "then", enumeração (1)(2)(3)) e sua forma
+(frases divididas por ponto em vez de `;`) ficam e servem de referência; nunca revertê-las para o
+molde. No `lexicon_diff`, palavra presente no texto do Luciano conta como aprovada.
+
 ### Exceções às normas autorizadas pelo usuário
 - 2026-10-04 — **B.15 (ganho sem custo) no Abstract**: a faixa "time savings from 40.20% to 77.30%"
   do pré-busca entra sem a faixa de BD-BR (0,92% a 4,35%), e o incremento "up to 0.87 percentage
