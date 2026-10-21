@@ -177,7 +177,9 @@ intocado `libaom_perf_anchor`).
 `129bda0`, que incorporou as edições dele) **vence o molde LASCAS e o §3b**: suas palavras
 (*expense*, *significant*, *address*, *makes*, *called*, "then", enumeração (1)(2)(3)) e sua forma
 (frases divididas por ponto em vez de `;`) ficam e servem de referência; nunca revertê-las para o
-molde. No `lexicon_diff`, palavra presente no texto do Luciano conta como aprovada.
+molde. No `lexicon_diff`, palavra presente no texto do Luciano conta como aprovada. **Nada que o
+Luciano inseriu é removido** (decisão do usuário, 2026-10-21) — nem para ganhar espaço; ex.: o ¶1 da
+Introdução ("alongside HEVC ... and VVC ... of the ITU-T and ISO/IEC international bodies") fica.
 
 ### Exceções às normas autorizadas pelo usuário
 - 2026-10-04 — **B.15 (ganho sem custo) no Abstract**: a faixa "time savings from 40.20% to 77.30%"

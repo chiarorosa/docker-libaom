@@ -90,14 +90,12 @@ Few works address the computational effort of AV1. None of them address the
 partition network of its reference encoder. The works \cite{xu2020,xu2021,jeong2019} reduce
 the intra prediction mode decision, \cite{kim2019} applies decision trees to
 inter prediction, and \cite{correa2020,netto2022} are hardware designs for the
-intra predictor rather than for encoder decisions. Neural partition prediction
-was integrated into the VP9 encoder through a hierarchical CNN \cite{paul2020}.
-For VVC, learning-based partitioning solutions use variance and gradients,
-random forests and gradient boosting, texture complexity, or the regression of
-rate-distortion (RD) costs
-\cite{chen2019,he2021,saldanha2022,song2024,kherchouche2024,kherchouche2025}.
-These solutions were designed for the partition structures of those codecs and
-evaluated on their encoders, which prevents a direct and fair comparison.
+intra predictor rather than for encoder decisions. Learning-based partition
+solutions were proposed for VP9 \cite{paul2020} and for VVC
+\cite{chen2019,he2021,saldanha2022,song2024,kherchouche2024,kherchouche2025},
+some of them regressing rate-distortion (RD) costs, but they were designed for
+the partition structures of those codecs and evaluated on their encoders, which
+prevents a direct and fair comparison.
 
 This paper presents the Neural Pruner Ladder for AV1 (NPL-AV1), a set of shallow
 multilayer perceptrons (MLPs) that replace the native CNN in the libaom
@@ -383,7 +381,8 @@ The extended pruner confirms the three predictions of
 Section~\ref{sec_method}. Against the efficiency-first point re-encoded in its
 own campaign, it lifts the TS by 0.87 percentage points
 at preset 1 and by 0.83 at preset 2, in all eight sequences ($p = 0.001$), at
-0.032 and 0.039 points of BD-BR. As
+0.032 and 0.039 points of BD-BR. At preset 2, it lifts the TS of that point
+from 50.16\% to 50.99\%, with 1.069\% of BD-BR. As
 Section~\ref{sec_method} anticipates, the increment falls below the resolution of 0.46 points at preset
 3, where libaom already prunes the extended partitions.
 
